@@ -1,9 +1,9 @@
-import 'dotenv/config';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { hashPassword } from '../auth/tokens.js';
+import { loadEnvFile } from '../config/load-env.js';
 import { DEFAULT_PLAN_ID } from '../config/plans.js';
 import {
   buildSanitizedUser,
@@ -15,6 +15,9 @@ import { disconnectDatabase, runStoreTransaction } from '../db/store.js';
 import { buildSubscriptionWriteData } from '../services/prisma-views.js';
 import { normalizeUserProfile } from '../services/profiles.js';
 import { normalizeEmail, normalizeText, nowIso } from '../validation/common.js';
+
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+loadEnvFile(path.join(scriptDir, '..', '.env'));
 
 function parseArgs(argv) {
   const args = {};

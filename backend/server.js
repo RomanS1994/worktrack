@@ -2,16 +2,15 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import dotenv from 'dotenv';
-
 import { requireApiKey } from './auth/api-key.js';
+import { loadEnvFile } from './config/load-env.js';
 import { assertRuntimeEnv } from './config/runtime-env.js';
 import { bindRequestContext, handleCors } from './lib/http.js';
 import { sendHttpError } from './lib/errors.js';
 import { routeRequest } from './routes/index.js';
 
 const serverDir = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.join(serverDir, '.env') });
+loadEnvFile(path.join(serverDir, '.env'));
 
 const PORT = Number(process.env.BACKEND_PORT || process.env.PORT || 3001);
 

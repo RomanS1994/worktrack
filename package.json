@@ -32,7 +32,6 @@
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "@reduxjs/toolkit": "^2.11.2",
-    "dotenv": "^17.4.2",
     "lucide-static": "^1.14.0",
     "prisma": "^6.19.3",
     "react": "^19.2.5",

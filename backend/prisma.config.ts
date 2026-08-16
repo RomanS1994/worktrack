@@ -1,11 +1,11 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import dotenv from 'dotenv';
 import { defineConfig } from 'prisma/config';
+import { loadEnvFile } from './config/load-env.js';
 
 const configDir = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.join(configDir, '.env') });
+loadEnvFile(path.join(configDir, '.env'));
 
 const prismaDatasourceUrl =
   process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL;

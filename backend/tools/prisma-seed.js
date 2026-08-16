@@ -1,12 +1,11 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import dotenv from 'dotenv';
-
 import { PLANS } from '../config/plans.js';
+import { loadEnvFile } from '../config/load-env.js';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.join(scriptDir, '..', '.env') });
+loadEnvFile(path.join(scriptDir, '..', '.env'));
 
 async function seedPlans() {
   const { prisma } = await import('../db/prisma.js');
