@@ -8,8 +8,6 @@ services:
     healthCheckPath: /api/health
     autoDeployTrigger: commit
     envVars:
-      - key: NODE_ENV
-        value: production
       - key: TZ
         value: Europe/Prague
       - key: DATABASE_URL
