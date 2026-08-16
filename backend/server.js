@@ -12,7 +12,8 @@ import { routeRequest } from './routes/index.js';
 const serverDir = path.dirname(fileURLToPath(import.meta.url));
 loadEnvFile(path.join(serverDir, '.env'));
 
-const PORT = Number(process.env.BACKEND_PORT || process.env.PORT || 3001);
+const PORT = Number(process.env.PORT || process.env.BACKEND_PORT || 3000);
+const HOST = '0.0.0.0';
 
 try {
   assertRuntimeEnv();
@@ -50,8 +51,8 @@ async function initializeDatabase() {
 async function startServer() {
   await initializeDatabase();
 
-  server.listen(PORT, () => {
-    console.log(`WorkTrack backend is running on http://localhost:${PORT}`);
+  server.listen(PORT, HOST, () => {
+    console.log(`WorkTrack backend is running on http://${HOST}:${PORT}`);
   });
 }
 

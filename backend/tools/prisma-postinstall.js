@@ -2,8 +2,13 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { loadEnvFile } from '../config/load-env.js';
+
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const schemaPath = path.join(scriptDir, '..', 'prisma', 'schema.prisma');
+const envPath = path.join(scriptDir, '..', '.env');
+
+loadEnvFile(envPath);
 
 const hasDatabaseUrl = Boolean(
   process.env.DATABASE_URL || process.env.DIRECT_DATABASE_URL,
