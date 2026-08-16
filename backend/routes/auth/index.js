@@ -4,7 +4,10 @@ import { handleRefresh } from './refresh.js';
 import { handleRegister } from './register.js';
 
 export async function handleAuthRoutes(request, response, { pathName }) {
-  if (request.method === 'POST' && pathName === '/api/auth/register') {
+  if (
+    request.method === 'POST' &&
+    (pathName === '/api/auth/register' || pathName === '/api/auth/register-company')
+  ) {
     await handleRegister(request, response);
     return true;
   }

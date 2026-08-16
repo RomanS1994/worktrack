@@ -142,7 +142,11 @@ export async function handleMeRoutes(request, response, { pathName }) {
     const context = await getAuthContext(request, response);
     if (!context) return true;
 
-    const user = await buildSanitizedUser(prisma, context.user);
+    const user = await buildSanitizedUser(prisma, context.user, {
+      memberships: context.memberships,
+      activeMembership: context.activeMembership,
+      activeCompany: context.activeCompany,
+    });
     sendJson(response, 200, { user });
     return true;
   }

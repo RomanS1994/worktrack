@@ -1,7 +1,10 @@
 import { Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-import { hasManagerAccess } from '../../../features/auth/authAccess.js';
+import {
+  hasEmployeeAccess,
+  hasManagerAccess,
+} from '../../../features/auth/authAccess.js';
 import {
   selectSessionInitialized,
   selectToken,
@@ -11,6 +14,7 @@ import './ProtectedRoute.css';
 
 export function ProtectedRoute({
   children,
+  requireEmployee = false,
   requireManager = false,
 }) {
   const initialized = useSelector(selectSessionInitialized);
@@ -26,7 +30,11 @@ export function ProtectedRoute({
   }
 
   if (requireManager && !hasManagerAccess(user)) {
-    return <Navigate to="/sign-in" replace />;
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (requireEmployee && !hasEmployeeAccess(user)) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;

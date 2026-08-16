@@ -237,6 +237,8 @@ export const baseApi = createApi({
   tagTypes: [
     'Me',
     'Employees',
+    'Projects',
+    'Company',
     'WorkEntries',
     'WeeklySubmissions',
     'AuditLogs',

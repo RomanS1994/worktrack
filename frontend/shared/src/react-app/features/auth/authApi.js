@@ -22,6 +22,13 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
     }),
+    registerCompany: builder.mutation({
+      query: body => ({
+        url: '/auth/register-company',
+        method: 'POST',
+        body,
+      }),
+    }),
     logout: builder.mutation({
       query: () => ({
         url: '/auth/logout',
@@ -53,6 +60,7 @@ export const {
   useRefreshSessionMutation,
   useLoginMutation,
   useRegisterMutation,
+  useRegisterCompanyMutation,
   useLogoutMutation,
   useLazyGetMeQuery,
   useUpdateProfileMutation,

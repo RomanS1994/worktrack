@@ -26,12 +26,14 @@ export function BottomTabs() {
         <span className="bottomTab-label">{t('app.dashboard')}</span>
       </NavLink>
 
-      <NavLink className={linkProps => getTabClassName(linkProps)} to="/hours">
-        <span className="bottomTab-icon" aria-hidden="true">
-          <SvgIcon name="clock" />
-        </span>
-        <span className="bottomTab-label">{t('app.hours')}</span>
-      </NavLink>
+      {!isManager ? (
+        <NavLink className={linkProps => getTabClassName(linkProps)} to="/hours">
+          <span className="bottomTab-icon" aria-hidden="true">
+            <SvgIcon name="clock" />
+          </span>
+          <span className="bottomTab-label">{t('app.hours')}</span>
+        </NavLink>
+      ) : null}
 
       {isManager ? (
         <>
@@ -43,6 +45,13 @@ export function BottomTabs() {
               <SvgIcon name="accounts" />
             </span>
             <span className="bottomTab-label">{t('app.employees')}</span>
+          </NavLink>
+
+          <NavLink className={linkProps => getTabClassName(linkProps)} to="/projects">
+            <span className="bottomTab-icon" aria-hidden="true">
+              <SvgIcon name="location" />
+            </span>
+            <span className="bottomTab-label">Projects</span>
           </NavLink>
 
           <NavLink className={linkProps => getTabClassName(linkProps)} to="/approvals">

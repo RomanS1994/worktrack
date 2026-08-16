@@ -12,6 +12,16 @@ enum UserRole {
   EMPLOYEE
 }
 
+enum MembershipRole {
+  MANAGER
+  EMPLOYEE
+}
+
+enum MembershipStatus {
+  ACTIVE
+  INACTIVE
+}
+
 enum WorkEntryStatus {
   DRAFT
   SUBMITTED
@@ -27,30 +37,26 @@ enum WeeklySubmissionStatus {
 }
 
 model User {
-  id            String    @id
-  email         String    @unique
-  passwordHash  String
-  firstName     String    @default("")
-  lastName      String    @default("")
-  name          String
-  phone         String?   @unique
-  role          UserRole  @default(EMPLOYEE)
-  managerId     String?
-  hourlyRateCzk Decimal   @default(0) @db.Decimal(10, 2)
-  profile       Json
-  deletedAt     DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                 String    @id
+  email              String    @unique
+  passwordHash       String
+  firstName          String    @default("")
+  lastName           String    @default("")
+  name               String
+  phone              String?   @unique
+  profile            Json
+  mustChangePassword Boolean   @default(false)
+  deletedAt          DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  manager                   User?              @relation("ManagerEmployees", fields: [managerId], references: [id], onDelete: SetNull)
-  employees                 User[]             @relation("ManagerEmployees")
-  sessions                  Session[]
-  workEntries               WorkEntry[]        @relation("EmployeeWorkEntries")
-  weeklySubmissions         WeeklySubmission[] @relation("EmployeeWeeklySubmissions")
-  reviewedWeeklySubmissions WeeklySubmission[] @relation("ManagerWeeklySubmissions")
+  legacyRole          UserRole @default(EMPLOYEE) @map("role") @ignore
+  legacyManagerId     String?  @map("managerId") @ignore
+  legacyHourlyRateCzk Decimal  @default(0) @map("hourlyRateCzk") @db.Decimal(10, 2) @ignore
 
-  @@index([managerId])
-  @@index([role])
+  sessions    Session[]
+  memberships CompanyMembership[]
+
   @@index([deletedAt])
   @@map("users")
 }
@@ -69,45 +75,118 @@ model Session {
   @@map("sessions")
 }
 
+model Company {
+  id        String   @id
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships      CompanyMembership[]
+  projects         Project[]
+  workEntries      WorkEntry[]
+  weeklySubmissions WeeklySubmission[]
+
+  @@index([slug])
+  @@map("companies")
+}
+
+model CompanyMembership {
+  id                 String           @id
+  companyId          String
+  userId             String
+  role               MembershipRole
+  hourlyRateCzk      Decimal?         @db.Decimal(10, 2)
+  status             MembershipStatus @default(ACTIVE)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  workEntries               WorkEntry[]        @relation("EmployeeMembershipWorkEntries")
+  weeklySubmissions         WeeklySubmission[] @relation("EmployeeMembershipWeeklySubmissions")
+  reviewedWeeklySubmissions WeeklySubmission[] @relation("ReviewerMembershipWeeklySubmissions")
+
+  @@unique([companyId, userId])
+  @@index([userId])
+  @@index([companyId, role])
+  @@index([companyId, status])
+  @@map("company_memberships")
+}
+
+model Project {
+  id          String   @id
+  companyId   String
+  name        String
+  address     String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company     Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  workEntries WorkEntry[]
+
+  @@index([companyId])
+  @@index([companyId, isActive])
+  @@map("projects")
+}
+
 model WorkEntry {
-  id                 String          @id
-  employeeId         String
-  weeklySubmissionId String?
-  workDate           DateTime
-  hours              Decimal         @db.Decimal(5, 2)
-  status             WorkEntryStatus @default(DRAFT)
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  id                   String          @id
+  companyId            String
+  employeeMembershipId String
+  projectId            String
+  weeklySubmissionId   String?
+  workDate             DateTime
+  hours                Decimal         @db.Decimal(5, 2)
+  status               WorkEntryStatus @default(DRAFT)
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
 
-  employee         User              @relation("EmployeeWorkEntries", fields: [employeeId], references: [id], onDelete: Cascade)
-  weeklySubmission WeeklySubmission? @relation(fields: [weeklySubmissionId], references: [id], onDelete: SetNull)
+  legacyEmployeeId String? @map("employeeId") @ignore
 
-  @@index([employeeId])
-  @@index([employeeId, workDate])
+  company            Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employeeMembership CompanyMembership  @relation("EmployeeMembershipWorkEntries", fields: [employeeMembershipId], references: [id], onDelete: Cascade)
+  project            Project            @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  weeklySubmission   WeeklySubmission?  @relation(fields: [weeklySubmissionId], references: [id], onDelete: SetNull)
+
+  @@unique([employeeMembershipId, projectId, workDate])
+  @@index([companyId])
+  @@index([employeeMembershipId])
+  @@index([employeeMembershipId, workDate])
+  @@index([projectId])
   @@index([weeklySubmissionId])
   @@index([status])
   @@map("work_entries")
 }
 
 model WeeklySubmission {
-  id          String                 @id
-  employeeId  String
-  managerId   String?
-  weekStart   DateTime
-  weekEnd     DateTime
-  status      WeeklySubmissionStatus @default(DRAFT)
-  submittedAt DateTime?
-  reviewedAt  DateTime?
-  createdAt   DateTime               @default(now())
-  updatedAt   DateTime               @updatedAt
+  id                     String                 @id
+  companyId              String
+  employeeMembershipId   String
+  reviewedByMembershipId String?
+  weekStart              DateTime
+  weekEnd                DateTime
+  status                 WeeklySubmissionStatus @default(DRAFT)
+  submittedAt            DateTime?
+  reviewedAt             DateTime?
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
 
-  employee    User        @relation("EmployeeWeeklySubmissions", fields: [employeeId], references: [id], onDelete: Cascade)
-  manager     User?       @relation("ManagerWeeklySubmissions", fields: [managerId], references: [id], onDelete: SetNull)
-  workEntries WorkEntry[]
+  legacyEmployeeId String? @map("employeeId") @ignore
+  legacyManagerId  String? @map("managerId") @ignore
 
-  @@unique([employeeId, weekStart])
-  @@index([employeeId])
-  @@index([managerId])
+  company              Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employeeMembership   CompanyMembership @relation("EmployeeMembershipWeeklySubmissions", fields: [employeeMembershipId], references: [id], onDelete: Cascade)
+  reviewedByMembership CompanyMembership? @relation("ReviewerMembershipWeeklySubmissions", fields: [reviewedByMembershipId], references: [id], onDelete: SetNull)
+  workEntries          WorkEntry[]
+
+  @@unique([employeeMembershipId, weekStart])
+  @@index([companyId])
+  @@index([employeeMembershipId])
+  @@index([reviewedByMembershipId])
   @@index([status])
   @@index([weekStart])
   @@map("weekly_submissions")

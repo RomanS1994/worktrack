@@ -30,7 +30,7 @@ export function LoginForm() {
         lastVerifiedAt: new Date().toISOString(),
       });
       dispatch(setSession({ token: data.token, user: data.user }));
-      navigate('/', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch {
       setError(t('auth.loginFailed'));
     }

@@ -1,0 +1,55 @@
+.companySettingsPanel {
+  display: grid;
+  gap: 14px;
+  max-width: 680px;
+}
+
+.companySettingsField {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.companySettingsField input {
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(15, 95, 215, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--text);
+  font: inherit;
+}
+
+.companySettingsMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(15, 95, 215, 0.08);
+  border-bottom: 1px solid rgba(15, 95, 215, 0.08);
+}
+
+.companySettingsMeta span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.companySettingsMeta strong {
+  color: var(--text);
+}
+
+.companySettingsButton {
+  justify-self: start;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(15, 95, 215, 0.16);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(31, 111, 255, 0.98), rgba(15, 95, 215, 0.96));
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}

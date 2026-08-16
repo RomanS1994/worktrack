@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -79,7 +79,12 @@ function readFileFromSource(filePath) {
   if (mode === "staged") {
     return runGit(["show", `:${filePath}`]);
   }
-  return readFileSync(path.join(repoRoot, filePath));
+  const absolutePath = path.join(repoRoot, filePath);
+  if (!existsSync(absolutePath)) {
+    return null;
+  }
+
+  return readFileSync(absolutePath);
 }
 
 function isBinary(buffer) {
@@ -200,6 +205,10 @@ function scanLine(filePath, lineNumber, line, findings) {
 
 function scanFile(filePath) {
   const buffer = readFileFromSource(filePath);
+  if (!buffer) {
+    return [];
+  }
+
   if (isBinary(buffer)) {
     return [];
   }

@@ -3,8 +3,44 @@
 }
 
 .hoursHeader {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
   border-color: rgba(37, 99, 235, 0.12);
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(240, 253, 250, 0.88));
+}
+
+.hoursStatusBadge {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  border-radius: 999px;
+  color: #1d4ed8;
+  background: rgba(238, 244, 255, 0.86);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.hoursStatusBadge--submitted {
+  color: #b45309;
+  background: rgba(254, 243, 199, 0.86);
+  border-color: rgba(245, 158, 11, 0.22);
+}
+
+.hoursStatusBadge--approved {
+  color: #166534;
+  background: rgba(220, 252, 231, 0.86);
+  border-color: rgba(22, 101, 52, 0.18);
+}
+
+.hoursStatusBadge--rejected {
+  color: #b42318;
+  background: rgba(254, 226, 226, 0.86);
+  border-color: rgba(180, 35, 24, 0.18);
 }
 
 .hoursWeek {
@@ -15,85 +51,200 @@
 
 .hoursWeekGrid {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .hoursDay {
   display: grid;
-  gap: 6px;
-  min-height: 72px;
-  align-content: center;
-  justify-items: center;
-  padding: 10px 6px;
+  grid-template-rows: auto 1fr auto;
+  gap: 10px;
+  min-height: 236px;
+  padding: 12px;
   border: 1px solid rgba(71, 85, 105, 0.1);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.82);
 }
 
-.hoursDay span {
+.hoursDay-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hoursDay-top span {
   color: var(--muted);
   font-size: 11px;
+  font-weight: 800;
+}
+
+.hoursDay-top strong {
+  color: var(--text);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.hoursEntries {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.hoursEntryRow {
+  display: grid;
+  gap: 7px;
+}
+
+.hoursEntryRow select,
+.hoursEntryRow input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid rgba(71, 85, 105, 0.14);
+  border-radius: 14px;
+  color: var(--text);
+  background: rgba(248, 250, 252, 0.9);
   font-weight: 700;
 }
 
-.hoursDay strong {
-  color: var(--text);
-  font-size: 15px;
+.hoursEntryRow select:disabled,
+.hoursEntryRow input:disabled {
+  color: var(--muted);
+  background: rgba(226, 232, 240, 0.42);
 }
 
-.hoursEmptyState {
-  display: flex;
+.hoursEntryRow--new {
+  padding-top: 10px;
+  border-top: 1px solid rgba(71, 85, 105, 0.1);
+}
+
+.hoursEntryRow--new button {
+  min-height: 40px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.hoursDay-status {
+  display: inline-flex;
+  min-height: 24px;
+  width: fit-content;
   align-items: center;
-  gap: 14px;
-  padding: 16px;
-  border: 1px dashed rgba(71, 85, 105, 0.22);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.58);
+  padding: 0 8px;
+  border-radius: 999px;
+  color: #475569;
+  background: rgba(241, 245, 249, 0.92);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
-.hoursEmptyState-icon {
+.hoursDay-status--submitted {
+  color: #b45309;
+  background: rgba(254, 243, 199, 0.86);
+}
+
+.hoursDay-status--approved {
+  color: #166534;
+  background: rgba(220, 252, 231, 0.86);
+}
+
+.hoursDay-status--rejected {
+  color: #b42318;
+  background: rgba(254, 226, 226, 0.86);
+}
+
+.hoursDay-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  gap: 8px;
+  align-items: center;
+}
+
+.hoursDay-actions button {
+  min-height: 40px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.hoursDay-delete {
   display: grid;
   place-items: center;
-  flex: 0 0 auto;
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
-  color: #0f766e;
-  background: #ccfbf1;
+  padding: 0;
+  color: #b42318;
 }
 
-.hoursEmptyState-icon svg {
-  width: 22px;
-  height: 22px;
+.hoursDay-delete svg,
+.hoursSubmitButton svg {
+  width: 18px;
+  height: 18px;
   stroke: currentColor;
   fill: none;
 }
 
-.hoursEmptyState h2,
-.hoursEmptyState p {
+.hoursSubmitPanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.hoursSubmitPanel strong,
+.hoursSubmitPanel p {
   margin: 0;
 }
 
-.hoursEmptyState h2 {
-  font-size: 16px;
-  line-height: 1.1;
+.hoursSubmitPanel strong {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 15px;
+  text-transform: uppercase;
 }
 
-.hoursEmptyState p {
-  margin-top: 4px;
+.hoursSubmitPanel p {
   color: var(--muted);
-  font-size: 13px;
+}
+
+.hoursSubmitButton {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 136px;
+  color: #ffffff;
+  background: linear-gradient(180deg, #2563eb, #1d4ed8);
+}
+
+@media (max-width: 900px) {
+  .hoursWeekGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 640px) {
   .hoursWeekGrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: 1fr;
+  }
+
+  .hoursSubmitPanel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .hoursSubmitButton {
+    width: 100%;
   }
 }
 
 @media (max-width: 420px) {
-  .hoursWeekGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .hoursHeader {
+    grid-template-columns: 1fr;
   }
 }

@@ -1,11 +1,15 @@
 import { handleAuthRoutes } from './auth/index.js';
+import { handleManagerRoutes } from './manager/index.js';
 import { handleMeRoutes } from './me.js';
 import { handlePublicRoutes } from './public.js';
+import { handleWorkTrackRoutes } from './worktrack.js';
 
 const routeHandlers = [
   handlePublicRoutes,
   handleAuthRoutes,
   handleMeRoutes,
+  handleWorkTrackRoutes,
+  handleManagerRoutes,
 ];
 
 export async function routeRequest(request, response) {

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 
 import { useI18n } from "@shared/app/i18n/useI18n.js";
 import { LoginForm } from "@shared/features/auth/components/LoginForm/LoginForm.jsx";
+import { RegisterForm } from "@shared/features/auth/components/RegisterForm/RegisterForm.jsx";
+import { AuthModeSwitch } from "../AuthModeSwitch/AuthModeSwitch.jsx";
 import "./GuestStage.css";
 
 const LANGUAGE_OPTIONS = [
@@ -42,18 +44,28 @@ export function GuestStage({ defaultMode = "login" }) {
             })}
           </div>
         </div>
-        <h1>{t('guest.titleLogin')}</h1>
-        <p>{t('guest.textLogin')}</p>
+        <h1>{mode === 'register' ? 'Create your company workspace' : t('guest.titleLogin')}</h1>
+        <p>
+          {mode === 'register'
+            ? 'Register as a manager and start with a dedicated company account.'
+            : t('guest.textLogin')}
+        </p>
       </div>
 
       <section className="guestAuth screenCard">
         <div className="compactHeader">
-          <h2>{t('guest.signInHeading')}</h2>
-          <p>{t('guest.signInCopy')}</p>
+          <h2>{mode === 'register' ? 'Company registration' : t('guest.signInHeading')}</h2>
+          <p>
+            {mode === 'register'
+              ? 'The first account becomes the manager for this company.'
+              : t('guest.signInCopy')}
+          </p>
         </div>
 
+        <AuthModeSwitch value={mode} onChange={setMode} />
+
         <div className="guestAuthForms">
-          <LoginForm />
+          {mode === 'register' ? <RegisterForm /> : <LoginForm />}
         </div>
       </section>
     </section>

@@ -2,7 +2,9 @@ export { requireApiKey } from './api-key.js';
 export {
   getAccessTokenClaims,
   getAuthContext,
+  hasEmployeeAccess,
   hasManagerAccess,
+  requireEmployee,
   requireManager,
 } from './guards.js';
 export {

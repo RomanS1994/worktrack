@@ -5,11 +5,13 @@ import { App } from '@shared/app/App.jsx';
 import { ProtectedRoute } from '@shared/app/components/ProtectedRoute/ProtectedRoute.jsx';
 import { RouterError } from '@shared/app/components/RouterError/RouterError.jsx';
 import { ApprovalsPage } from './pages/ApprovalsPage/ApprovalsPage.jsx';
+import { CompanySettingsPage } from './pages/CompanySettingsPage/CompanySettingsPage.jsx';
 import { DashboardPage } from './pages/DashboardPage/DashboardPage.jsx';
 import { EmployeesPage } from './pages/EmployeesPage/EmployeesPage.jsx';
 import { HomePage } from './pages/HomePage/HomePage.jsx';
 import { HoursPage } from './pages/HoursPage/HoursPage.jsx';
 import { ProfilePage } from './pages/ProfilePage/ProfilePage.jsx';
+import { ProjectsPage } from './pages/ProjectsPage/ProjectsPage.jsx';
 import { SignInPage } from './pages/SignInPage/SignInPage.jsx';
 
 export const router = createBrowserRouter([
@@ -26,6 +28,10 @@ export const router = createBrowserRouter([
         element: <SignInPage />,
       },
       {
+        path: 'register',
+        element: <SignInPage defaultMode="register" />,
+      },
+      {
         path: 'dashboard',
         element: (
           <ProtectedRoute>
@@ -36,8 +42,24 @@ export const router = createBrowserRouter([
       {
         path: 'hours',
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute requireEmployee>
             <HoursPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'projects',
+        element: (
+          <ProtectedRoute requireManager>
+            <ProjectsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'company-settings',
+        element: (
+          <ProtectedRoute requireManager>
+            <CompanySettingsPage />
           </ProtectedRoute>
         ),
       },

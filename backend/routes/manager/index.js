@@ -1,113 +1,90 @@
-import { handleManagerAudit } from './audit.js';
+import { requireManager } from '../../auth/context.js';
+import { runStoreRead, runStoreTransaction } from '../../db/store.js';
+import { readJsonBody, sendJson } from '../../lib/http.js';
 import {
-  handleManagerOrderDetail,
-  handleManagerOrders,
-  handleManagerOrderRestore,
-} from './orders.js';
-import {
-  handleManagerPlanCreate,
-  handleManagerPlansList,
-  handleManagerPlanUpdate,
-} from './plans.js';
-import { handleManagerUserRole } from './roles.js';
-import {
-  handleManagerUserCancel,
-  handleManagerUserConfirmSubscription,
-  handleManagerUserExtend,
-  handleManagerUserSubscription,
-} from './subscriptions.js';
-import {
-  handleManagerUserDetail,
-  handleManagerUserList,
-} from './users.js';
+  createManagerEmployee,
+  getManagerSubmissionById,
+  listManagerEmployees,
+  listManagerSubmissions,
+  reviewWeeklySubmission,
+  updateEmployeeMembership,
+} from '../../services/worktrack.js';
 
 export async function handleManagerRoutes(request, response, { pathName, url }) {
-  if (request.method === 'GET' && pathName === '/api/manager/users') {
-    await handleManagerUserList(request, response, url);
+  if (request.method === 'GET' && pathName === '/api/manager/employees') {
+    const context = await requireManager(request, response);
+    if (!context) return true;
+
+    const payload = await runStoreRead({
+      prisma: client => listManagerEmployees(client, context),
+    });
+    sendJson(response, 200, payload);
     return true;
   }
 
-  const managerUserMatch = pathName.match(/^\/api\/manager\/users\/([^/]+)$/);
-  if (request.method === 'GET' && managerUserMatch) {
-    await handleManagerUserDetail(request, response, managerUserMatch[1]);
+  if (request.method === 'POST' && pathName === '/api/manager/employees') {
+    const context = await requireManager(request, response);
+    if (!context) return true;
+
+    const body = await readJsonBody(request);
+    const employee = await runStoreTransaction({
+      prisma: client => createManagerEmployee(client, context, body),
+    });
+    sendJson(response, 201, { employee });
     return true;
   }
 
-  const managerSubscriptionMatch = pathName.match(
-    /^\/api\/manager\/users\/([^/]+)\/subscription$/
+  const employeeMatch = pathName.match(/^\/api\/manager\/employees\/([^/]+)$/);
+  if (request.method === 'PATCH' && employeeMatch) {
+    const context = await requireManager(request, response);
+    if (!context) return true;
+
+    const body = await readJsonBody(request);
+    const employee = await runStoreTransaction({
+      prisma: client => updateEmployeeMembership(client, context, employeeMatch[1], body),
+    });
+    sendJson(response, 200, { employee });
+    return true;
+  }
+
+  if (request.method === 'GET' && pathName === '/api/manager/submissions') {
+    const context = await requireManager(request, response);
+    if (!context) return true;
+
+    const payload = await runStoreRead({
+      prisma: client =>
+        listManagerSubmissions(client, context, {
+          status: url.searchParams.get('status'),
+        }),
+    });
+    sendJson(response, 200, payload);
+    return true;
+  }
+
+  const submissionMatch = pathName.match(/^\/api\/manager\/submissions\/([^/]+)$/);
+  if (request.method === 'GET' && submissionMatch) {
+    const context = await requireManager(request, response);
+    if (!context) return true;
+
+    const submission = await runStoreRead({
+      prisma: client => getManagerSubmissionById(client, context, submissionMatch[1]),
+    });
+    sendJson(response, 200, { submission });
+    return true;
+  }
+
+  const approvalMatch = pathName.match(
+    /^\/api\/manager\/submissions\/([^/]+)\/(approve|reject)$/
   );
-  if (request.method === 'PATCH' && managerSubscriptionMatch) {
-    await handleManagerUserSubscription(request, response, managerSubscriptionMatch[1]);
-    return true;
-  }
+  if (request.method === 'POST' && approvalMatch) {
+    const context = await requireManager(request, response);
+    if (!context) return true;
 
-  const managerExtendMatch = pathName.match(
-    /^\/api\/manager\/users\/([^/]+)\/subscription\/extend$/
-  );
-  if (request.method === 'POST' && managerExtendMatch) {
-    await handleManagerUserExtend(request, response, managerExtendMatch[1]);
-    return true;
-  }
-
-  const managerCancelMatch = pathName.match(
-    /^\/api\/manager\/users\/([^/]+)\/subscription\/cancel$/
-  );
-  if (request.method === 'POST' && managerCancelMatch) {
-    await handleManagerUserCancel(request, response, managerCancelMatch[1]);
-    return true;
-  }
-
-  const managerConfirmMatch = pathName.match(
-    /^\/api\/manager\/users\/([^/]+)\/subscription\/confirm-payment$/
-  );
-  if (request.method === 'POST' && managerConfirmMatch) {
-    await handleManagerUserConfirmSubscription(request, response, managerConfirmMatch[1]);
-    return true;
-  }
-
-  const managerRoleMatch = pathName.match(/^\/api\/manager\/users\/([^/]+)\/role$/);
-  if (request.method === 'PATCH' && managerRoleMatch) {
-    await handleManagerUserRole(request, response, managerRoleMatch[1]);
-    return true;
-  }
-
-  if (request.method === 'GET' && pathName === '/api/manager/plans') {
-    await handleManagerPlansList(request, response);
-    return true;
-  }
-
-  if (request.method === 'GET' && pathName === '/api/manager/orders') {
-    await handleManagerOrders(request, response, url);
-    return true;
-  }
-
-  const managerOrderMatch = pathName.match(/^\/api\/manager\/orders\/([^/]+)$/);
-  if (request.method === 'GET' && managerOrderMatch) {
-    await handleManagerOrderDetail(request, response, managerOrderMatch[1], url);
-    return true;
-  }
-
-  const managerOrderRestoreMatch = pathName.match(
-    /^\/api\/manager\/orders\/([^/]+)\/restore$/
-  );
-  if (request.method === 'POST' && managerOrderRestoreMatch) {
-    await handleManagerOrderRestore(request, response, managerOrderRestoreMatch[1]);
-    return true;
-  }
-
-  if (request.method === 'POST' && pathName === '/api/manager/plans') {
-    await handleManagerPlanCreate(request, response);
-    return true;
-  }
-
-  const managerPlanMatch = pathName.match(/^\/api\/manager\/plans\/([^/]+)$/);
-  if (request.method === 'PATCH' && managerPlanMatch) {
-    await handleManagerPlanUpdate(request, response, managerPlanMatch[1]);
-    return true;
-  }
-
-  if (request.method === 'GET' && pathName === '/api/manager/audit') {
-    await handleManagerAudit(request, response, url);
+    const submission = await runStoreTransaction({
+      prisma: client =>
+        reviewWeeklySubmission(client, context, approvalMatch[1], approvalMatch[2]),
+    });
+    sendJson(response, 200, { submission });
     return true;
   }
 

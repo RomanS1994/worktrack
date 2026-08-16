@@ -12,6 +12,7 @@
     "db:migrate": "prisma migrate dev --schema backend/prisma/schema.prisma",
     "db:migrate:deploy": "prisma migrate deploy --schema backend/prisma/schema.prisma",
     "hooks:install": "node tools/install-git-hooks.js",
+    "create:manager": "node backend/tools/create-manager.js",
     "prepare": "node tools/install-git-hooks.js",
     "postinstall": "node backend/tools/prisma-postinstall.js",
     "secrets:check": "node tools/check-secrets.js",

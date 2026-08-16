@@ -11,6 +11,7 @@ function getName(user) {
 export function ProfilePage() {
   const user = useSelector(selectUser);
   const roleLabel = hasManagerAccess(user) ? 'MANAGER' : 'EMPLOYEE';
+  const rate = user?.activeMembership?.hourlyRateCzk || user?.hourlyRateCzk || '';
 
   return (
     <section className="profilePage pageStack">
@@ -18,7 +19,7 @@ export function ProfilePage() {
         <div className="appTitleBlock">
           <p className="sectionEyebrow">Profile</p>
           <h1>{getName(user)}</h1>
-          <p>{roleLabel}</p>
+          <p>{user?.activeCompany?.name || roleLabel}</p>
         </div>
       </header>
 
@@ -32,8 +33,12 @@ export function ProfilePage() {
           <strong>{roleLabel}</strong>
         </div>
         <div className="profileRow">
+          <span>Company</span>
+          <strong>{user?.activeCompany?.name || '-'}</strong>
+        </div>
+        <div className="profileRow">
           <span>Hourly rate</span>
-          <strong>{user?.hourlyRateCzk ? `${user.hourlyRateCzk} CZK` : '0 CZK'}</strong>
+          <strong>{rate ? `${rate} CZK` : '-'}</strong>
         </div>
       </section>
     </section>
