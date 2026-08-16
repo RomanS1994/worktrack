@@ -8,6 +8,8 @@ const backendDir = path.join(rootDir, 'backend');
 const backendServerPath = path.join(backendDir, 'server.js');
 const backendRequire = createRequire(backendServerPath);
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const isRenderBuildPhase =
+  process.env.RENDER === 'true' && process.env.NODE_ENV !== 'production';
 
 function canResolvePackage(packageName) {
   try {
@@ -52,6 +54,14 @@ function generatePrismaClient() {
   }
 
   runChecked(npmCommand, ['--prefix', 'backend', 'run', 'db:generate']);
+}
+
+if (isRenderBuildPhase) {
+  console.log(
+    'Detected npm start during Render build phase. Running build and exiting.',
+  );
+  runChecked(npmCommand, ['run', 'build']);
+  process.exit(0);
 }
 
 ensureBackendDependencies();
