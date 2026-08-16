@@ -17,6 +17,7 @@
     "build:driver": "vite build --config vite.config.js",
     "build": "npm run build:driver",
     "preview": "vite preview",
+    "start": "node backend/server.js",
     "start:server": "npm --prefix backend run start"
   },
   "devDependencies": {
@@ -37,6 +38,5 @@
     "react-router-dom": "^7.14.2",
     "vite-plugin-full-reload": "^1.2.0",
     "vite-plugin-html-inject": "^1.1.2"
-  },
-  "packageManager": "npm@10.9.7"
+  }
 }
