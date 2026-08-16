@@ -1,0 +1,90 @@
+.profileWorkspace {
+  display: grid;
+  gap: 12px;
+}
+
+.profileWorkspace-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.profileWorkspace-card {
+  display: grid;
+  gap: 4px;
+  min-height: 104px;
+  padding: 12px;
+  border-radius: 20px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 255, 0.92));
+  border: 1px solid rgba(60, 60, 67, 0.07);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.profileWorkspace-card span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.profileWorkspace-card strong {
+  font-size: 16px;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  font-weight: 700;
+}
+
+.profileWorkspace-card p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+/* Desktop profile stats:
+   keep the side column compact while preserving two quick summary cards. */
+@media (min-width: 1024px) {
+  .profileWorkspace-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profileWorkspace-card {
+    min-height: 96px;
+  }
+}
+
+@media (max-width: 560px) {
+  .profileWorkspace-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .profileWorkspace {
+    gap: 9px;
+  }
+
+  .profileWorkspace-grid {
+    gap: 9px;
+  }
+
+  .profileWorkspace-card {
+    min-height: 80px;
+    padding: 10px;
+    border-radius: 18px;
+  }
+
+  .profileWorkspace-card span {
+    font-size: 9px;
+  }
+
+  .profileWorkspace-card strong {
+    font-size: 14px;
+  }
+
+  .profileWorkspace-card p {
+    font-size: 10px;
+  }
+}

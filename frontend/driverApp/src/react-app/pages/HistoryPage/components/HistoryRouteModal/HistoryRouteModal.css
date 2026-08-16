@@ -1,0 +1,195 @@
+.historyRouteModal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.historyRouteModal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.38);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.historyRouteModal-sheet {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 420px);
+  max-height: calc(100dvh - 36px);
+  overflow: auto;
+  padding: 20px;
+  border: 1px solid rgba(15, 95, 215, 0.12);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.98), rgba(244, 248, 255, 0.96));
+  box-shadow:
+    0 24px 60px rgba(15, 23, 42, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+.historyRouteModal-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(0, 122, 255, 0.14);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.98), rgba(236, 245, 255, 0.98));
+  color: #0f5fd7;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 8px 20px rgba(28, 32, 40, 0.08);
+}
+
+.historyRouteModal-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.historyRouteModal-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.historyRouteModal-eyebrow {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.historyRouteModal-copy h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.25rem;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.historyRouteModal-copy p {
+  margin: 0;
+  color: #576074;
+  line-height: 1.45;
+}
+
+.historyRouteModal-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.historyRouteModal-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 16px;
+  font-weight: 800;
+  text-decoration: none;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease;
+}
+
+.historyRouteModal-button span:first-child {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.historyRouteModal-buttonIcon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+}
+
+.historyRouteModal-buttonIcon img {
+  display: block;
+  object-fit: contain;
+}
+
+.historyRouteModal-buttonIcon--waze img {
+  width: 22px;
+  height: 22px;
+}
+
+.historyRouteModal-buttonIcon--google img {
+  width: 22px;
+  height: 22px;
+}
+
+.historyRouteModal-button--waze .historyRouteModal-buttonIcon,
+.historyRouteModal-button--google .historyRouteModal-buttonIcon {
+  background: transparent;
+}
+
+.historyRouteModal-button--waze {
+  border: 1px solid rgba(0, 122, 255, 0.14);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 255, 0.95));
+  color: #0f5fd7;
+}
+
+.historyRouteModal-button--google {
+  border: 1px solid rgba(52, 199, 89, 0.18);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(238, 250, 242, 0.95));
+  color: #137a3c;
+}
+
+.historyRouteModal-button:hover,
+.historyRouteModal-button:focus-visible {
+  transform: translateY(-1px);
+}
+
+.historyRouteModal-close {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 12px;
+  border: 1px solid rgba(15, 95, 215, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text);
+  font-weight: 800;
+}
+
+@media (max-width: 480px) {
+  .historyRouteModal {
+    padding: 14px;
+  }
+
+  .historyRouteModal-sheet {
+    padding: 18px;
+    border-radius: 24px;
+  }
+
+  .historyRouteModal-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Desktop route modal:
+   center the route chooser inside the desktop workspace, away from left nav. */
+@media (min-width: 1024px) {
+  .historyRouteModal {
+    padding: 28px 28px 28px 320px;
+  }
+
+  .historyRouteModal-sheet {
+    width: min(460px, calc(100vw - 380px));
+  }
+}

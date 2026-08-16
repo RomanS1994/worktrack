@@ -1,0 +1,279 @@
+.providerSelector {
+  display: grid;
+}
+
+.providerSelector-card {
+  display: grid;
+  gap: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid rgba(218, 226, 239, 0.92);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 8px 18px rgba(15, 23, 42, 0.04);
+}
+
+.providerSelector-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 58px;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  box-shadow: none;
+}
+
+.providerSelector-header strong {
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 16px;
+  line-height: 1.16;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.providerSelector-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(236, 253, 245, 0.82);
+  color: #164e45;
+}
+
+.providerSelector-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.providerSelector-chevron {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: #64748b;
+  transform: rotate(90deg);
+  transition: transform 160ms ease;
+}
+
+.providerSelector-chevron svg {
+  width: 18px;
+  height: 18px;
+}
+
+.providerSelector-card.is-open .providerSelector-chevron {
+  transform: rotate(-90deg);
+}
+
+.providerSelector-details {
+  display: grid;
+  gap: 0;
+}
+
+.providerSelector-panel {
+  display: grid;
+  gap: 10px;
+  padding: 0 12px 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.providerSelector-field {
+  display: grid;
+  gap: 6px;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.providerSelector-field select {
+  min-height: 40px;
+  width: 100%;
+  padding: 0 40px 0 12px;
+  border: 1px solid rgba(203, 213, 225, 0.95);
+  border-radius: 12px;
+  background:
+    linear-gradient(45deg, transparent 50%, #64748b 50%) right 18px center / 8px 8px no-repeat,
+    linear-gradient(135deg, #64748b 50%, transparent 50%) right 12px center / 8px 8px no-repeat,
+    rgba(255, 255, 255, 0.96);
+  color: #0f172a;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  appearance: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.providerSelector-info {
+  display: grid;
+  gap: 6px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.providerSelector-infoRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  align-items: center;
+  min-height: 0;
+  padding: 8px 10px;
+  border: 1px solid rgba(226, 232, 240, 0.88);
+  border-radius: 12px;
+  background: rgba(248, 250, 255, 0.72);
+}
+
+.providerSelector-infoCopy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.providerSelector-infoCopy span {
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.providerSelector-infoCopy strong {
+  color: #0f172a;
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.providerSelector-manage {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid rgba(226, 232, 240, 0.96);
+  border-radius: 12px;
+  background: #f8faff;
+  color: #0f5fd7;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 8px 16px rgba(15, 23, 42, 0.04);
+}
+
+.providerSelector-manage svg {
+  width: 20px;
+  height: 20px;
+}
+
+.providerSelector-manage svg:last-child {
+  color: #64748b;
+}
+
+.providerSelector-empty {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(226, 232, 240, 0.96);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.providerSelector-empty p {
+  margin: 0;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.providerSelector-empty a {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid rgba(226, 232, 240, 0.96);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #0f5fd7;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.providerSelector-empty a svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* Desktop provider selector:
+   expanded supplier details use horizontal space instead of turning into a tall mobile block. */
+@media (min-width: 1024px) {
+  .providerSelector-panel {
+    gap: 12px;
+  }
+
+  .providerSelector-info {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .providerSelector-infoRow {
+    align-content: start;
+    min-height: 72px;
+  }
+
+  .providerSelector-manage {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .providerSelector-card {
+    border-radius: 16px;
+  }
+
+  .providerSelector-header {
+    min-height: 56px;
+    gap: 10px;
+  }
+
+  .providerSelector-header strong {
+    font-size: 15px;
+  }
+
+  .providerSelector-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .providerSelector-icon svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .providerSelector-panel {
+    padding: 0 12px 12px;
+  }
+}

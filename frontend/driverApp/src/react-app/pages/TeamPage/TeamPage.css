@@ -1,0 +1,813 @@
+.teamPage {
+  display: grid;
+  gap: 16px;
+  padding-bottom: 20px;
+}
+
+.teamPage-header {
+  display: grid;
+  gap: 18px;
+}
+
+.teamPage .appTitleBlock {
+  gap: 8px;
+}
+
+.teamPage .appTitleBlock h1 {
+  font-size: clamp(28px, 6vw, 38px);
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.teamPage .appTitleBlock p {
+  max-width: 620px;
+  font-size: 15px;
+  line-height: 1.42;
+}
+
+.teamPage-section {
+  display: grid;
+  gap: 12px;
+}
+
+.teamPage-section h2 {
+  margin: 0;
+  color: #64748b;
+  font-size: 21px;
+  line-height: 1.2;
+}
+
+.teamPage-searchSection {
+  gap: 12px;
+}
+
+.teamPage-teamGrid {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.teamPage-teamCard {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(13, 148, 136, 0.2);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(240, 253, 250, 0.88), rgba(255, 255, 255, 0.96)),
+    #ffffff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 18px 36px rgba(15, 23, 42, 0.07);
+}
+
+.teamPage-teamCardHeader {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.teamPage-teamIcon,
+.teamPage-createPlus {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+}
+
+.teamPage-teamIcon {
+  background: linear-gradient(180deg, #14b8a6, #0f766e);
+  color: #ffffff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 14px 24px rgba(15, 118, 110, 0.18);
+}
+
+.teamPage-teamIcon svg,
+.teamPage-createPlus svg {
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+}
+
+.teamPage-teamCardCopy {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.teamPage-teamCardCopy strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.teamPage-teamCardCopy span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.teamPage-teamCardCopy span svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+}
+
+.teamPage-menuDots {
+  color: #475569;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+.teamPage-teamCardActions {
+  display: grid;
+  gap: 8px;
+}
+
+.teamPage-cardAction {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(15, 95, 215, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--accent);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.teamPage-cardAction--open {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.teamPage-cardAction svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+}
+
+.teamPage-cardAction span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.teamPage-cardAction--danger {
+  border-color: rgba(220, 38, 38, 0.25);
+  color: #dc2626;
+}
+
+.teamPage-createTile {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 150px;
+  padding: 22px 16px;
+  border: 1.5px dashed rgba(148, 163, 184, 0.45);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--text);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.teamPage-createPlus {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  background: rgba(248, 250, 252, 0.92);
+  color: #334155;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 12px 24px rgba(15, 23, 42, 0.06);
+}
+
+.teamPage-createTile strong {
+  color: var(--accent);
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.teamPage-createTile > span:not(.teamPage-createPlus) {
+  max-width: 340px;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.teamPage-createTile--open {
+  justify-items: stretch;
+  min-height: 0;
+  cursor: default;
+}
+
+.teamPage-createTile--open .teamPage-createPlus {
+  justify-self: center;
+}
+
+.teamPage-createField {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  text-align: left;
+}
+
+.teamPage-createField span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.teamPage-createField input,
+.teamPage-search input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid rgba(20, 41, 78, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 10px 22px rgba(15, 23, 42, 0.04);
+}
+
+.teamPage-createField input {
+  padding: 0 12px;
+}
+
+.teamPage-createField input:focus,
+.teamPage-search input:focus {
+  border-color: rgba(15, 95, 215, 0.36);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 0 0 4px rgba(15, 95, 215, 0.08);
+}
+
+.teamPage-createActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.teamPage-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 76px;
+  padding: 14px;
+  border: 1px solid rgba(20, 41, 78, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 18px 36px rgba(15, 23, 42, 0.07);
+}
+
+.teamPage-summaryCopy {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.teamPage-summaryCopy p,
+.teamPage-summaryCopy strong {
+  margin: 0;
+}
+
+.teamPage-summaryCopy p {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.teamPage-summaryCopy strong {
+  display: block;
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.teamPage-summaryActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.teamPage-save,
+.teamPage-actionButton,
+.teamPage-selectBar button,
+.teamPage-filterButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border: 0;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.teamPage-save {
+  min-width: 150px;
+  padding: 0 16px;
+  background: #0f5fd7;
+  color: #ffffff;
+  text-decoration: none;
+  box-shadow: 0 12px 22px rgba(15, 95, 215, 0.22);
+}
+
+.teamPage-save:disabled,
+.teamPage-actionButton:disabled,
+.teamPage-selectBar button:disabled,
+.teamPage-cardAction:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.teamPage-actionButton {
+  padding: 0 14px;
+  border: 1px solid rgba(15, 95, 215, 0.13);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--accent);
+}
+
+.teamPage-searchRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 54px;
+  gap: 8px;
+}
+
+.teamPage-search {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+
+.teamPage-search > svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  color: #64748b;
+  stroke: currentColor;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.teamPage-search input {
+  padding: 0 14px 0 44px;
+}
+
+.teamPage-filterButton {
+  width: 54px;
+  border: 1px solid rgba(20, 41, 78, 0.1);
+  background: rgba(255, 255, 255, 0.94);
+  color: #334155;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 10px 22px rgba(15, 23, 42, 0.05);
+}
+
+.teamPage-filterButton.is-active {
+  border-color: rgba(15, 95, 215, 0.26);
+  color: var(--accent);
+}
+
+.teamPage-filterButton svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+}
+
+.teamPage-selectBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 18px;
+  border: 1px solid rgba(20, 41, 78, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 10px 22px rgba(15, 23, 42, 0.05);
+}
+
+.teamPage-selectActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.teamPage-selectBar button {
+  min-height: 38px;
+  padding: 0;
+  background: transparent;
+  color: var(--accent);
+}
+
+.teamPage-selectBar button:disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.teamPage-selectBar .teamPage-clearSelection {
+  color: #64748b;
+}
+
+.teamPage-selectBar span {
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.teamPage-message,
+.teamPage-error,
+.teamPage-state {
+  margin: 0;
+  border-radius: 14px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.teamPage-message {
+  background: rgba(220, 252, 231, 0.74);
+  color: #047857;
+}
+
+.teamPage-error,
+.teamPage-state--error {
+  background: rgba(254, 226, 226, 0.76);
+  color: #b91c1c;
+}
+
+.teamPage-state {
+  background: rgba(241, 245, 249, 0.9);
+  color: #64748b;
+}
+
+.teamPage-tip {
+  display: grid;
+  gap: 10px;
+  margin-top: 32px;
+  padding: 16px;
+  border: 1px solid rgba(20, 41, 78, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #475569;
+}
+
+.teamPage-tipTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #475569;
+}
+
+.teamPage-tipTitle svg {
+  width: 22px;
+  height: 22px;
+  color: var(--accent);
+  stroke: currentColor;
+}
+
+.teamPage-tip p {
+  max-width: 500px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.teamPage-driverList {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.teamPage-driverItem {
+  margin: 0;
+  padding: 0;
+}
+
+.teamPage-driverButton {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 70px;
+  padding: 10px 12px;
+  border: 1px solid rgba(20, 41, 78, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 14px 28px rgba(15, 23, 42, 0.06);
+}
+
+.teamPage-driverButton.is-selected {
+  border-color: rgba(13, 148, 136, 0.26);
+  background:
+    linear-gradient(180deg, rgba(240, 253, 250, 0.88), rgba(255, 255, 255, 0.94)),
+    #ffffff;
+}
+
+.teamPage-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(13, 148, 136, 0.13);
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(204, 251, 241, 0.82);
+}
+
+.teamPage-avatarImage,
+.teamPage-avatarFallback {
+  width: 100%;
+  height: 100%;
+}
+
+.teamPage-avatarImage {
+  object-fit: cover;
+}
+
+.teamPage-avatarFallback {
+  display: grid;
+  place-items: center;
+  color: #0f766e;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.teamPage-driverCopy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.teamPage-driverCopy strong,
+.teamPage-driverCopy span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.teamPage-driverCopy strong {
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.15;
+}
+
+.teamPage-driverCopy span {
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.teamPage-driverMeta {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.teamPage-driverAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 96px;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(20, 41, 78, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 900;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 10px 20px rgba(15, 23, 42, 0.04);
+}
+
+.teamPage-driverAction.is-selected {
+  color: #0f766e;
+}
+
+.teamPage-driverAction svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+}
+
+.teamPage-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: rgba(254, 226, 226, 0.72);
+  color: #b91c1c;
+}
+
+.teamPage-remove svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+}
+
+/* Desktop team workspace:
+   management cards and driver results use the wider page without stretching forms too far. */
+@media (min-width: 1024px) {
+  .teamPage {
+    max-width: 1040px;
+    margin-inline: auto;
+    gap: 20px;
+  }
+
+  .teamPage-header {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 16px;
+  }
+
+  .teamPage-section {
+    gap: 16px;
+  }
+
+  .teamPage-teamGrid,
+  .teamPage-driverList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .teamPage-teamCard {
+    padding: 18px;
+  }
+
+  .teamPage-createTile {
+    min-height: 132px;
+  }
+
+  .teamPage-searchSection {
+    max-width: 900px;
+    margin-inline: auto;
+    width: 100%;
+  }
+
+  .teamPage-searchRow {
+    grid-template-columns: minmax(0, 1fr) 58px;
+  }
+
+  .teamPage-tip {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .teamPage {
+    gap: 14px;
+  }
+
+  .teamPage-header {
+    gap: 14px;
+  }
+
+  .teamPage .appTitleBlock h1 {
+    font-size: 30px;
+  }
+
+  .teamPage .appTitleBlock p {
+    font-size: 14px;
+  }
+
+  .teamPage-teamCard,
+  .teamPage-summary,
+  .teamPage-createTile {
+    border-radius: 18px;
+  }
+
+  .teamPage-teamCard {
+    padding: 14px;
+  }
+
+  .teamPage-teamCardHeader,
+  .teamPage-summaryCopy {
+    gap: 10px;
+  }
+
+  .teamPage-teamIcon,
+  .teamPage-createPlus {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  .teamPage-createPlus {
+    border-radius: 999px;
+  }
+
+  .teamPage-teamCardCopy strong {
+    font-size: 17px;
+  }
+
+  .teamPage-createActions {
+    grid-template-columns: 1fr;
+  }
+
+  .teamPage-summary {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .teamPage-summaryActions {
+    width: auto;
+  }
+
+  .teamPage-save {
+    min-width: 128px;
+  }
+
+  .teamPage-selectBar {
+    align-items: flex-start;
+    flex-direction: column;
+    min-height: 52px;
+    gap: 6px;
+    padding: 8px 14px;
+  }
+
+  .teamPage-selectActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .teamPage-tip {
+    margin-top: 20px;
+  }
+
+  .teamPage-driverButton {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    min-height: 64px;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .teamPage-driverAction {
+    min-width: 86px;
+    min-height: 38px;
+    padding: 0 10px;
+  }
+
+  .teamPage-avatar {
+    width: 42px;
+    height: 42px;
+  }
+}

@@ -1,0 +1,13 @@
+.adminSignInPage {
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.adminSignInPage-card {
+  width: min(100%, 560px);
+  margin: 0 auto;
+  padding: 24px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+}

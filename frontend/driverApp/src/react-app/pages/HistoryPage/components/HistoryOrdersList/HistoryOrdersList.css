@@ -1,0 +1,137 @@
+.orderHistoryList {
+  margin: 0;
+  padding: 0;
+}
+
+.orderHistoryCompletedBlock {
+  display: grid;
+  gap: 12px;
+}
+
+.orderHistoryCompletedToggle {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 12px;
+  border: 1px solid rgba(215, 106, 61, 0.16);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 247, 241, 0.96));
+  color: #19243c;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 10px 22px rgba(28, 32, 40, 0.05);
+}
+
+.orderHistoryCompletedToggle:hover,
+.orderHistoryCompletedToggle:focus-visible {
+  transform: none;
+  border-color: rgba(215, 106, 61, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 12px 24px rgba(28, 32, 40, 0.07);
+}
+
+.orderHistoryCompletedToggleIcon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: rgba(215, 106, 61, 0.1);
+  color: #9f4a23;
+  transform: rotate(90deg);
+  transition: transform 160ms ease;
+}
+
+.orderHistoryCompletedBlock.is-open .orderHistoryCompletedToggleIcon {
+  transform: rotate(-90deg);
+}
+
+.orderHistoryCompletedToggleIcon svg {
+  width: 13px;
+  height: 13px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.orderHistoryCompletedToggleLabel {
+  min-width: 0;
+  overflow: hidden;
+  color: #19243c;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orderHistoryCompletedToggleCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(215, 106, 61, 0.12);
+  color: #9f4a23;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.orderHistoryCompletedList {
+  gap: 12px;
+}
+
+/* Desktop history list:
+   order cards become a two-column working list while completed groups stay full width. */
+@media (min-width: 1024px) {
+  .orderHistoryList,
+  .orderHistoryCompletedList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .orderHistoryCompletedBlock {
+    grid-column: 1 / -1;
+  }
+
+  .orderHistoryCompletedToggle {
+    min-height: 52px;
+  }
+}
+
+@media (max-width: 480px) {
+  .orderHistoryCompletedToggle {
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    min-height: 44px;
+    padding: 7px 10px;
+  }
+
+  .orderHistoryCompletedToggleIcon {
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+  }
+
+  .orderHistoryCompletedToggleLabel {
+    font-size: 12px;
+  }
+
+  .orderHistoryCompletedToggleCount {
+    min-width: 22px;
+    height: 22px;
+    padding: 0 7px;
+    font-size: 10px;
+  }
+}

@@ -1,0 +1,65 @@
+.adminOrdersPage {
+  display: grid;
+  gap: 12px;
+}
+
+.adminOrdersPage-header {
+  display: grid;
+  gap: 6px;
+}
+
+.adminOrdersPage-title {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.adminOrdersPage-copy {
+  margin: 0;
+  color: var(--muted, #667085);
+}
+
+.adminOrdersPage-users {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 12px 24px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.adminOrdersPage-usersHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.adminOrdersPage-usersTitle {
+  margin: 0;
+  color: #122033;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.adminOrdersPage-state {
+  margin: 0;
+  color: #526173;
+}
+
+@media (max-width: 720px) {
+  .adminOrdersPage {
+    gap: 10px;
+  }
+
+  .adminOrdersPage-users {
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .adminOrdersPage-usersTitle {
+    font-size: 0.86rem;
+  }
+}

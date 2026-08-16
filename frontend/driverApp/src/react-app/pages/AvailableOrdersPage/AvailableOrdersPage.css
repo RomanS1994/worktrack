@@ -1,0 +1,216 @@
+.availableOrdersPage {
+  display: grid;
+  gap: 12px;
+}
+
+.availableOrdersList {
+  display: grid;
+  gap: 14px;
+}
+
+.availableOrdersPage-empty {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+  border: 1px dashed rgba(15, 95, 215, 0.14);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(245, 249, 255, 0.92));
+  color: var(--muted);
+}
+
+.availableOrdersPage-message,
+.availableOrdersPage-error {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-weight: 800;
+}
+
+.availableOrdersPage-message {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.availableOrdersPage-error {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.availableOrderCard {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+}
+
+.availableOrderCard-header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.availableOrderCard-icon {
+  display: inline-grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 14px;
+  color: #0f766e;
+  background: #ccfbf1;
+}
+
+.availableOrderCard-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.availableOrderCard-titleBlock {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.availableOrderCard-titleBlock span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.availableOrderCard-titleBlock strong {
+  color: var(--text);
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+
+.availableOrderRoute {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.availableOrderRoute div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.availableOrderRoute span,
+.availableOrderMeta dt {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.availableOrderRoute strong,
+.availableOrderMeta dd {
+  color: var(--text);
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.availableOrderRoute > svg {
+  width: 18px;
+  height: 18px;
+  color: #0f766e;
+}
+
+.availableOrderMeta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.availableOrderMeta div {
+  min-width: 0;
+}
+
+.availableOrderMeta dt,
+.availableOrderMeta dd {
+  margin: 0;
+}
+
+.availableOrderMeta dt {
+  margin-bottom: 4px;
+}
+
+.availableOrderActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.availableOrderButton {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  font-weight: 850;
+}
+
+.availableOrderButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.availableOrderButton--accept {
+  color: #065f46;
+  border-color: rgba(5, 150, 105, 0.18);
+  background: #d1fae5;
+}
+
+.availableOrderButton--skip {
+  color: #475569;
+  border-color: rgba(71, 85, 105, 0.16);
+  background: #f1f5f9;
+}
+
+.availableOrderButton:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+/* Desktop available orders:
+   incoming shared orders can be scanned in cards across the workspace width. */
+@media (min-width: 1024px) {
+  .availableOrdersPage {
+    gap: 16px;
+  }
+
+  .availableOrdersList {
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 16px;
+  }
+
+  .availableOrderCard {
+    align-content: start;
+  }
+}
+
+@media (max-width: 480px) {
+  .availableOrdersPage-empty {
+    padding: 14px;
+  }
+
+  .availableOrderRoute,
+  .availableOrderMeta,
+  .availableOrderActions {
+    grid-template-columns: 1fr;
+  }
+
+  .availableOrderRoute > svg {
+    display: none;
+  }
+}

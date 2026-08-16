@@ -1,0 +1,25 @@
+.languagePage {
+  display: grid;
+  gap: 12px;
+}
+
+.languagePage-header {
+  display: grid;
+  gap: 12px;
+}
+
+/* Desktop language settings:
+   the language picker is a focused settings panel, not a full-width dashboard. */
+@media (min-width: 1024px) {
+  .languagePage {
+    max-width: 680px;
+    margin-inline: auto;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .languagePage {
+    gap: 10px;
+  }
+}

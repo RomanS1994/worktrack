@@ -1,0 +1,82 @@
+.contractForm {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: 10px;
+}
+
+.contractForm-header {
+  display: grid;
+}
+
+.contractForm-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.contractForm-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.contractSection {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(15, 95, 215, 0.12);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 248, 255, 0.92));
+}
+
+.contractSection-title {
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.contractSection-price {
+  padding-bottom: 14px;
+}
+
+/* Desktop order form:
+   wide screens split the contract into work columns while mobile keeps the one-column flow. */
+@media (min-width: 1024px) {
+  .contractForm {
+    gap: 16px;
+  }
+
+  .contractForm-title {
+    font-size: 1.45rem;
+  }
+
+  .contractForm-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: start;
+    gap: 16px;
+  }
+
+  .contractForm-grid > .providerSelector,
+  .contractForm-grid > .contractActions {
+    grid-column: 1 / -1;
+  }
+
+  .contractForm-grid > .priceField {
+    grid-column: 1 / -1;
+    max-width: 560px;
+  }
+
+  .contractSection {
+    gap: 12px;
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .contractSection-title {
+    font-size: 1rem;
+  }
+}

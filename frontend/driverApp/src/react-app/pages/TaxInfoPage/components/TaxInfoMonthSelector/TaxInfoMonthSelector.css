@@ -1,0 +1,90 @@
+.taxInfoMonthSelector {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 5px;
+  width: min(100%, 214px);
+  margin: 0 auto 2px;
+  padding: 4px;
+  border: 1px solid rgba(15, 95, 215, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.taxInfoMonthSelector-button,
+.taxInfoMonthSelector-current {
+  display: inline-grid;
+  place-items: center;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+
+.taxInfoMonthSelector-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+}
+
+.taxInfoMonthSelector-button svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+}
+
+.taxInfoMonthSelector-current {
+  grid-template-columns: minmax(0, auto) auto;
+  gap: 4px;
+  min-height: 30px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.taxInfoMonthSelector-current span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taxInfoMonthSelector-caret {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+}
+
+@media (max-width: 360px) {
+  .taxInfoMonthSelector {
+    width: 100%;
+  }
+
+  .taxInfoMonthSelector-current {
+    font-size: 14px;
+  }
+}
+
+/* Desktop month selector:
+   keep month navigation compact while improving click targets slightly. */
+@media (min-width: 1024px) {
+  .taxInfoMonthSelector {
+    grid-template-columns: 38px minmax(0, 1fr) 38px;
+    width: min(100%, 280px);
+    padding: 5px;
+  }
+
+  .taxInfoMonthSelector-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .taxInfoMonthSelector-current {
+    min-height: 36px;
+    font-size: 16px;
+  }
+}

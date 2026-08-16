@@ -1,0 +1,19 @@
+.adminAuditPage {
+  display: grid;
+  gap: 16px;
+}
+
+.adminAuditPage-header {
+  display: grid;
+  gap: 6px;
+}
+
+.adminAuditPage-title {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.adminAuditPage-copy {
+  margin: 0;
+  color: var(--muted, #667085);
+}

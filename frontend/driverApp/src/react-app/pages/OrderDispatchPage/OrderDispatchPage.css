@@ -1,0 +1,645 @@
+.orderDispatchPage {
+  gap: 18px;
+}
+
+.orderDispatchPage-header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.orderDispatchSummary {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: 12px;
+  min-height: 148px;
+  padding: 12px 12px 10px 12px;
+  border: 1px solid rgba(15, 95, 215, 0.12);
+  border-radius: 12px;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(0, 122, 255, 0.12),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at left top,
+      rgba(52, 199, 89, 0.14),
+      transparent 24%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.992),
+      rgba(236, 250, 242, 0.98)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.98),
+    0 14px 32px rgba(28, 32, 40, 0.07);
+}
+
+.orderDispatchSummary::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, #34c759, rgba(52, 199, 89, 0.06));
+}
+
+.orderDispatchSummary-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.orderDispatchSummary-identity {
+  display: grid;
+  min-width: 0;
+}
+
+.orderDispatchSummary-customer {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orderDispatchSummary-status {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(52, 199, 89, 0.12);
+  color: #15783a;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.orderDispatchSummary-statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.55);
+}
+
+.orderDispatchSummary-status--planned {
+  background: rgba(47, 120, 255, 0.12);
+  color: #1769e8;
+}
+
+.orderDispatchSummary-status--completed,
+.orderDispatchSummary-status--done {
+  background: rgba(215, 106, 61, 0.12);
+  color: #9f4a23;
+}
+
+.orderDispatchSummary-status--draft {
+  background: rgba(118, 124, 141, 0.12);
+  color: #5f6675;
+}
+
+.orderDispatchSummary-routeCard {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 0;
+  min-width: 0;
+  padding: 5px 5px 4px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.orderDispatchSummary-routeTrack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 1px;
+}
+
+.orderDispatchSummary-routeIcon {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgba(244, 247, 255, 0.98),
+    rgba(236, 242, 252, 0.98)
+  );
+  color: #2f78ff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+.orderDispatchSummary-routeIcon--end {
+  background: transparent;
+  color: #27c24a;
+  box-shadow: none;
+}
+
+.orderDispatchSummary-routeIcon svg {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+
+.orderDispatchSummary-routeLine {
+  flex: 1;
+  width: 2px;
+  min-height: 36px;
+  margin: 3px 0;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgba(140, 154, 178, 0.62) 0,
+    rgba(140, 154, 178, 0.62) 45%,
+    transparent 45%,
+    transparent 70%,
+    rgba(140, 154, 178, 0.62) 70%,
+    rgba(140, 154, 178, 0.62) 100%
+  );
+  background-size: 2px 8px;
+}
+
+.orderDispatchSummary-route {
+  display: grid;
+  min-width: 0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.orderDispatchSummary-routePoint {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 4px 4px 4px 2px;
+  min-width: 0;
+}
+
+.orderDispatchSummary-routePoint strong {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: #19243c;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orderDispatchSummary-stats {
+  grid-column: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px 2px 0 2px;
+}
+
+.orderDispatchSummary-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 22px;
+  color: #607089;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.orderDispatchSummary-statIcon {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  color: #2f78ff;
+}
+
+.orderDispatchSummary-statIcon svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.orderDispatchSummary-meta {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 1px minmax(0, max-content);
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding-top: 8px;
+  border-top: 1px solid rgba(220, 228, 241, 0.88);
+}
+
+.orderDispatchSummary-metaIcon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: linear-gradient(
+    180deg,
+    rgba(229, 248, 232, 0.98),
+    rgba(219, 245, 223, 0.98)
+  );
+  color: #2ca13b;
+}
+
+.orderDispatchSummary-metaIcon svg,
+.orderDispatchSummary-dateIcon svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.orderDispatchSummary-price {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orderDispatchSummary-divider {
+  width: 1px;
+  height: 18px;
+  justify-self: center;
+  background: rgba(220, 228, 241, 0.92);
+}
+
+.orderDispatchSummary-dateWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  justify-self: end;
+  color: #6a778c;
+}
+
+.orderDispatchSummary-dateIcon {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(235, 242, 255, 0.95);
+  color: #2f78ff;
+}
+
+.orderDispatchSummary-date {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  overflow: hidden;
+  color: #6a778c;
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orderDispatchSummary-date strong {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.orderDispatchSummary-createdBy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: #65748b;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.orderDispatchSummary-createdBy span {
+  flex: 0 0 auto;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.orderDispatchSummary-createdBy strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #19243c;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orderDispatchAction-icon,
+.orderDispatchListIcon {
+  display: inline-grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 14px;
+  color: #0f766e;
+  background: #ccfbf1;
+}
+
+.orderDispatchAction-icon svg,
+.orderDispatchListIcon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.orderDispatchActions,
+.orderDispatchList {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.orderDispatchAction,
+.orderDispatchListButton {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 16px;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.9);
+  text-align: left;
+  text-decoration: none;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.07);
+}
+
+.orderDispatchAction:not(:disabled):hover,
+.orderDispatchListButton:not(:disabled):hover {
+  border-color: rgba(14, 116, 144, 0.22);
+  transform: translateY(-1px);
+}
+
+.orderDispatchAction:disabled,
+.orderDispatchAction.is-disabled,
+.orderDispatchListButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.orderDispatchAction--danger {
+  border-color: rgba(220, 38, 38, 0.2);
+  background: #fff1f2;
+}
+
+.orderDispatchAction--danger .orderDispatchAction-icon {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.orderDispatchAction-copy,
+.orderDispatchListCopy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.orderDispatchAction-copy strong,
+.orderDispatchListCopy strong {
+  color: var(--text);
+  font-size: 0.96rem;
+}
+
+.orderDispatchAction-copy span,
+.orderDispatchListCopy span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.orderDispatchAction-chevron,
+.orderDispatchListButton > svg {
+  width: 18px;
+  height: 18px;
+  color: var(--muted);
+}
+
+.orderDispatchSearch {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.orderDispatchSearch input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 14px;
+  padding: 0 14px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.92);
+  font: inherit;
+}
+
+.orderDispatchMessage,
+.orderDispatchError,
+.orderDispatchState {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-weight: 800;
+}
+
+.orderDispatchMessage {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.orderDispatchError {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.orderDispatchState {
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+/* Desktop dispatch workspace:
+   order context remains on the left while sending targets and search controls sit on the right. */
+@media (min-width: 1024px) {
+  .orderDispatchPage {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+    align-items: start;
+    gap: 18px;
+    max-width: 1040px;
+    margin-inline: auto;
+  }
+
+  .orderDispatchPage-header,
+  .orderDispatchMessage,
+  .orderDispatchError,
+  .orderDispatchState {
+    grid-column: 1 / -1;
+  }
+
+  .orderDispatchSummary {
+    grid-column: 1;
+    min-height: 0;
+  }
+
+  .orderDispatchActions,
+  .orderDispatchList,
+  .orderDispatchSearch {
+    grid-column: 2;
+  }
+
+  .orderDispatchActions,
+  .orderDispatchList {
+    align-self: start;
+  }
+
+  .orderDispatchAction,
+  .orderDispatchListButton {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .orderDispatchPage-header {
+    grid-template-columns: 1fr;
+  }
+
+  .orderDispatchSummary {
+    padding: 10px 10px 8px 10px;
+    gap: 12px;
+  }
+
+  .orderDispatchSummary-customer {
+    font-size: 17px;
+  }
+
+  .orderDispatchSummary-status {
+    min-height: 24px;
+    padding: 0 8px;
+    font-size: 9px;
+    letter-spacing: 0.13em;
+  }
+
+  .orderDispatchSummary-routeCard {
+    grid-template-columns: 24px minmax(0, 1fr);
+    padding: 4px;
+  }
+
+  .orderDispatchSummary-routeIcon {
+    width: 15px;
+    height: 15px;
+  }
+
+  .orderDispatchSummary-routeIcon svg {
+    width: 11px;
+    height: 11px;
+  }
+
+  .orderDispatchSummary-routeLine {
+    min-height: 30px;
+    margin: 2px 0;
+  }
+
+  .orderDispatchSummary-routePoint {
+    min-height: 38px;
+    padding: 4px 4px 4px 2px;
+  }
+
+  .orderDispatchSummary-stats {
+    gap: 7px;
+    padding-top: 7px;
+  }
+
+  .orderDispatchSummary-stat {
+    font-size: 12px;
+  }
+
+  .orderDispatchSummary-meta {
+    grid-template-columns: 28px minmax(0, 1fr) 1px minmax(0, max-content);
+    gap: 7px;
+  }
+
+  .orderDispatchSummary-metaIcon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .orderDispatchSummary-price {
+    font-size: 12px;
+  }
+
+  .orderDispatchSummary-dateWrap {
+    gap: 4px;
+  }
+
+  .orderDispatchSummary-dateIcon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .orderDispatchSummary-dateIcon svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .orderDispatchSummary-date {
+    font-size: 9px;
+  }
+
+  .orderDispatchSummary-date strong {
+    font-size: 15px;
+  }
+
+  .orderDispatchAction,
+  .orderDispatchListButton {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .orderDispatchAction-chevron,
+  .orderDispatchListButton > svg {
+    display: none;
+  }
+}

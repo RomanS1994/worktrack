@@ -1,0 +1,19 @@
+.adminLanguagePage {
+  display: grid;
+  gap: 16px;
+}
+
+.adminLanguagePage-header {
+  display: grid;
+  gap: 6px;
+}
+
+.adminLanguagePage-title {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.adminLanguagePage-copy {
+  margin: 0;
+  color: var(--muted, #667085);
+}

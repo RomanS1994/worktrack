@@ -1,0 +1,82 @@
+.planUpgradePage {
+  display: grid;
+  gap: 10px;
+}
+
+.planUpgradePage-header {
+  display: grid;
+  gap: 10px;
+}
+
+.planUpgradePage-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  min-height: 30px;
+  padding: 0 10px 0 8px;
+  border: 1px solid rgba(15, 95, 215, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 8px 16px rgba(15, 23, 42, 0.06);
+}
+
+.planUpgradePage-card {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+}
+
+.planUpgradePage .appTitleBlock h1 {
+  font-size: clamp(24px, 5.4vw, 30px);
+  font-weight: 650;
+}
+
+.planUpgradePage .appTitleBlock p:last-child {
+  max-width: 19rem;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+/* Desktop plan upgrade:
+   pricing controls stay centered so comparison text and buttons remain easy to scan. */
+@media (min-width: 1024px) {
+  .planUpgradePage {
+    max-width: 860px;
+    margin-inline: auto;
+    gap: 16px;
+  }
+
+  .planUpgradePage-card {
+    padding: 16px;
+  }
+
+  .planUpgradePage .appTitleBlock p:last-child {
+    max-width: 32rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .planUpgradePage {
+    gap: 8px;
+  }
+
+  .planUpgradePage-card {
+    gap: 9px;
+    padding: 8px;
+  }
+
+  .planUpgradePage .appTitleBlock h1 {
+    font-size: 24px;
+  }
+
+  .planUpgradePage .appTitleBlock p:last-child {
+    font-size: 12px;
+  }
+}

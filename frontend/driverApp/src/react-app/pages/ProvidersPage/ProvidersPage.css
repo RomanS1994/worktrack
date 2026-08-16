@@ -1,0 +1,405 @@
+.providersPage {
+  display: grid;
+  gap: 10px;
+}
+
+.providersPage-header {
+  display: grid;
+  gap: 8px;
+}
+
+.providersPage-header .appBackButton {
+  gap: 6px;
+  min-height: 32px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.providersPage-header .appBackButton-icon {
+  width: 26px;
+  height: 26px;
+}
+
+.providersPage .appTitleBlock {
+  gap: 5px;
+}
+
+.providersPage .appTitleBlock h1 {
+  font-size: 28px;
+  line-height: 1.02;
+  letter-spacing: 0;
+}
+
+.providersPage .appTitleBlock p:last-child {
+  max-width: 19rem;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.providersPage-card {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.providersPage-toolbar {
+  display: grid;
+  gap: 8px;
+}
+
+.providersPage-addButton,
+.providersPage-secondaryButton,
+.providersPage-deleteButton,
+.providersPage-saveNewButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid rgba(218, 226, 239, 0.96);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--accent);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 6px 14px rgba(15, 23, 42, 0.035);
+}
+
+.providersPage-addButton {
+  width: 100%;
+  min-height: 42px;
+  font-size: 13px;
+}
+
+.providersPage-addButton svg,
+.providersPage-secondaryButton svg,
+.providersPage-deleteButton svg,
+.providersPage-saveNewButton svg {
+  width: 16px;
+  height: 16px;
+}
+
+.providersPage-list {
+  display: grid;
+  gap: 7px;
+}
+
+.providersPage-providerCard {
+  display: grid;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid rgba(218, 226, 239, 0.92);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 7px 16px rgba(15, 23, 42, 0.035);
+}
+
+.providersPage-providerCard--new {
+  padding: 12px;
+  gap: 10px;
+  overflow: visible;
+  border-color: rgba(20, 184, 166, 0.18);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(240, 253, 250, 0.52));
+}
+
+.providersPage-providerCard.is-expanded {
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.providersPage-providerHeader {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.providersPage-providerToggle {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 11px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  box-shadow: none;
+}
+
+.providersPage-providerIcon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: rgba(236, 253, 245, 0.82);
+  color: #164e45;
+}
+
+.providersPage-providerIcon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.providersPage-providerTitle {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.providersPage-providerTitle strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.15;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.providersPage-providerTitle span {
+  justify-self: start;
+  min-height: 16px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.12);
+  color: rgba(22, 163, 74, 0.98);
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.providersPage-providerChevron {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  color: rgba(100, 116, 139, 0.92);
+  transform: rotate(90deg);
+  transition: transform 160ms ease;
+}
+
+.providersPage-providerChevron svg {
+  width: 16px;
+  height: 16px;
+}
+
+.providersPage-providerCard.is-expanded .providersPage-providerChevron {
+  transform: rotate(-90deg);
+}
+
+.providersPage-providerDetails {
+  display: grid;
+  gap: 10px;
+  padding: 0 12px 12px;
+  background: transparent;
+}
+
+.providersPage-fields {
+  display: grid;
+  gap: 8px;
+}
+
+.providersPage-fieldGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.providersPage-field {
+  display: grid;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.providersPage-field input {
+  min-height: 38px;
+  min-width: 0;
+  padding: 0 12px;
+  border: 1px solid rgba(15, 95, 215, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.providersPage-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.providersPage-secondaryButton {
+  color: rgba(15, 95, 215, 0.96);
+}
+
+.providersPage-deleteButton {
+  border-color: rgba(248, 113, 113, 0.22);
+  color: rgba(185, 28, 28, 0.96);
+}
+
+.providersPage-saveNewButton {
+  border-color: rgba(15, 95, 215, 0.18);
+  background: linear-gradient(180deg, rgba(31, 111, 255, 0.98), rgba(15, 95, 215, 0.96));
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 10px 22px rgba(15, 95, 215, 0.16);
+}
+
+.providersPage-saveNewButton:disabled,
+.providersPage-secondaryButton:disabled,
+.providersPage-deleteButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.providersPage-empty {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  padding: 22px 16px;
+  border: 1px solid rgba(15, 95, 215, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  text-align: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.providersPage-empty > span {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 15px;
+  background: linear-gradient(180deg, #14b8a6, #0f9188);
+  color: #ffffff;
+}
+
+.providersPage-empty svg {
+  width: 24px;
+  height: 24px;
+}
+
+.providersPage-empty h2,
+.providersPage-empty p {
+  margin: 0;
+}
+
+.providersPage-empty h2 {
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.15;
+}
+
+.providersPage-empty p {
+  max-width: 320px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.providersPage-message,
+.providersPage-error {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.providersPage-message {
+  color: var(--success);
+}
+
+.providersPage-error {
+  color: var(--danger);
+}
+
+.providersPage-saveButton {
+  min-height: 42px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 95, 215, 0.18);
+  background: linear-gradient(180deg, rgba(31, 111, 255, 0.98), rgba(15, 95, 215, 0.96));
+  color: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.24) inset,
+    0 10px 22px rgba(15, 95, 215, 0.18);
+}
+
+.providersPage-saveButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Desktop providers:
+   keep supplier management as one readable list instead of stretching rows across the full workspace. */
+@media (min-width: 1024px) {
+  .providersPage {
+    max-width: 760px;
+  }
+
+  .providersPage-header .appTitleBlock p:last-child {
+    max-width: 30rem;
+  }
+
+  .providersPage-addButton,
+  .providersPage-saveButton {
+    min-height: 46px;
+    font-size: 14px;
+  }
+
+  .providersPage-providerToggle {
+    min-height: 56px;
+    padding: 10px 14px;
+  }
+
+  .providersPage-providerIcon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .providersPage-providerTitle strong {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 520px) {
+  .providersPage-card {
+    padding: 0;
+  }
+
+  .providersPage-toolbar,
+  .providersPage-actions {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .providersPage-toolbar {
+    display: grid;
+  }
+
+  .providersPage-fieldGrid {
+    grid-template-columns: 1fr;
+  }
+}

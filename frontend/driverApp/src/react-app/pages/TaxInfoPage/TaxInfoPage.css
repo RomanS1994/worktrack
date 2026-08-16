@@ -1,0 +1,100 @@
+.taxInfoPage {
+  display: grid;
+  gap: 9px;
+}
+
+.taxInfoPage-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+}
+
+.taxInfoPage-header .appTitleBlock {
+  gap: 3px;
+  padding-top: 2px;
+}
+
+.taxInfoPage-header .appTitleBlock h1 {
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: 0;
+}
+
+.taxInfoPage-header .appTitleBlock p:last-child {
+  max-width: 18rem;
+  font-size: 12px;
+  line-height: 1.32;
+}
+
+.taxInfoPage-header .appBackButton-label {
+  display: none;
+}
+
+.taxInfoPage-header .appBackButton-icon {
+  width: 30px;
+  height: 30px;
+}
+
+.taxInfoPage-desktopGrid,
+.taxInfoPage-mainColumn,
+.taxInfoPage-sideColumn {
+  display: grid;
+  gap: 9px;
+}
+
+/* Desktop tax workspace:
+   the calendar remains the primary work area, reports move into a right-side column. */
+@media (min-width: 1024px) {
+  .taxInfoPage {
+    gap: 16px;
+  }
+
+  .taxInfoPage-header {
+    max-width: 720px;
+    gap: 12px;
+  }
+
+  .taxInfoPage-header .appBackButton-label {
+    display: inline;
+  }
+
+  .taxInfoPage-header .appTitleBlock h1 {
+    font-size: 34px;
+    line-height: 1;
+  }
+
+  .taxInfoPage-header .appTitleBlock p:last-child {
+    max-width: 32rem;
+    font-size: 15px;
+  }
+
+  .taxInfoPage-desktopGrid {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+    align-items: start;
+    gap: 16px;
+  }
+
+  .taxInfoPage-mainColumn,
+  .taxInfoPage-sideColumn {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .taxInfoPage {
+    gap: 8px;
+  }
+
+  .taxInfoPage-header {
+    gap: 7px;
+  }
+
+  .taxInfoPage-header .appTitleBlock h1 {
+    font-size: 23px;
+  }
+
+  .taxInfoPage-header .appTitleBlock p:last-child {
+    font-size: 11px;
+  }
+}

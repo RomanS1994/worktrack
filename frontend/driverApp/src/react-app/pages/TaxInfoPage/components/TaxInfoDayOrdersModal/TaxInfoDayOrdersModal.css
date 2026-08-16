@@ -1,0 +1,318 @@
+.taxDayOrdersModal {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  padding: 14px;
+}
+
+.taxDayOrdersModal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.28);
+  backdrop-filter: blur(12px) saturate(112%);
+  -webkit-backdrop-filter: blur(12px) saturate(112%);
+}
+
+.taxDayOrdersModal-sheet {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 10px;
+  width: min(100%, 420px);
+  height: min(76dvh, 620px);
+  max-height: min(76dvh, 620px);
+  padding: 8px 10px calc(12px + env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
+  border: 1px solid rgba(218, 226, 239, 0.95);
+  border-radius: 22px 22px 18px 18px;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.96), transparent 30%),
+    linear-gradient(180deg, rgba(248, 251, 255, 0.99), rgba(239, 246, 255, 0.96));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    0 -18px 42px rgba(15, 23, 42, 0.18);
+}
+
+.taxDayOrdersModal-handle {
+  justify-self: center;
+  width: 42px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.55);
+}
+
+.taxDayOrdersModal-header {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+}
+
+.taxDayOrdersModal-titleBlock {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.taxDayOrdersModal-eyebrow {
+  overflow: hidden;
+  color: #2563eb;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taxDayOrdersModal-titleBlock h2,
+.taxDayOrdersModal-empty h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.taxDayOrdersModal-titleBlock p,
+.taxDayOrdersModal-empty p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.taxDayOrdersModal-close {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0;
+  border: 1px solid rgba(203, 213, 225, 0.82);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #64748b;
+  font-size: 17px;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.taxDayOrdersModal-close svg {
+  width: 14px;
+  height: 14px;
+}
+
+.taxDayOrdersModal-list {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding-right: 2px;
+}
+
+.taxDayOrdersModal-order {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(218, 226, 239, 0.92);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 10px 22px rgba(15, 23, 42, 0.06);
+}
+
+.taxDayOrdersModal-orderTop {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.taxDayOrdersModal-orderIcon,
+.taxDayOrdersModal-emptyIcon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 11px;
+  background: linear-gradient(180deg, #3b82f6, #2563eb);
+  color: #ffffff;
+}
+
+.taxDayOrdersModal-orderIcon svg,
+.taxDayOrdersModal-emptyIcon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.taxDayOrdersModal-orderCopy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.taxDayOrdersModal-orderCopy strong,
+.taxDayOrdersModal-orderCopy span,
+.taxDayOrdersModal-route span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taxDayOrdersModal-orderCopy strong {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1.15;
+}
+
+.taxDayOrdersModal-orderCopy span {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.12;
+}
+
+.taxDayOrdersModal-amount {
+  color: #15803d;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.taxDayOrdersModal-orderMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.taxDayOrdersModal-orderMeta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 22px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: rgba(241, 245, 249, 0.88);
+  color: #64748b;
+  font-size: 9px;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.taxDayOrdersModal-orderMeta svg,
+.taxDayOrdersModal-route svg {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+}
+
+.taxDayOrdersModal-route {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.taxDayOrdersModal-empty {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 8px;
+  min-height: 190px;
+  padding: 18px;
+  text-align: center;
+}
+
+.taxDayOrdersModal-emptyIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #94a3b8, #64748b);
+}
+
+@media (max-width: 380px) {
+  .taxDayOrdersModal {
+    padding: 10px;
+  }
+
+  .taxDayOrdersModal-sheet {
+    height: min(78dvh, 620px);
+    border-radius: 20px 20px 16px 16px;
+  }
+}
+
+/* Desktop day orders modal:
+   center the sheet and use the wider viewport for readable order rows. */
+@media (min-width: 1024px) {
+  .taxDayOrdersModal {
+    align-items: center;
+    padding: 28px 28px 28px 320px;
+  }
+
+  .taxDayOrdersModal-sheet {
+    width: min(720px, calc(100vw - 380px));
+    height: min(78vh, 660px);
+    max-height: min(78vh, 660px);
+    padding: 14px 16px 18px;
+    border-radius: 24px;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 22px 58px rgba(15, 23, 42, 0.2);
+  }
+
+  .taxDayOrdersModal-titleBlock h2,
+  .taxDayOrdersModal-empty h3 {
+    font-size: 20px;
+  }
+
+  .taxDayOrdersModal-order {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 12px;
+  }
+
+  .taxDayOrdersModal-orderTop {
+    gap: 12px;
+  }
+
+  .taxDayOrdersModal-orderIcon,
+  .taxDayOrdersModal-emptyIcon {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+  }
+
+  .taxDayOrdersModal-orderCopy strong {
+    font-size: 11px;
+  }
+
+  .taxDayOrdersModal-orderCopy span {
+    font-size: 14px;
+  }
+
+  .taxDayOrdersModal-orderMeta span {
+    min-height: 24px;
+    font-size: 10px;
+  }
+
+  .taxDayOrdersModal-route {
+    font-size: 11px;
+  }
+}

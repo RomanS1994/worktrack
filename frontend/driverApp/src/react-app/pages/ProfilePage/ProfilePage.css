@@ -1,0 +1,45 @@
+.profilePage {
+  gap: 14px;
+}
+
+.profileHeader {
+  border-color: rgba(71, 85, 105, 0.12);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.94));
+}
+
+.profileDetails {
+  gap: 0;
+  overflow: hidden;
+  padding: 0;
+  border-radius: 20px;
+}
+
+.profileRow {
+  display: grid;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  min-height: 58px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(71, 85, 105, 0.1);
+}
+
+.profileRow:last-child {
+  border-bottom: 0;
+}
+
+.profileRow span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profileRow strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 14px;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

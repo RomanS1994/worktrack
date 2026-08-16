@@ -1,0 +1,224 @@
+.statsPanel {
+  display: grid;
+  gap: 10px;
+}
+
+.statsHero {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.statsRing {
+  --progress: 0%;
+  position: relative;
+  width: 180px;
+  height: 180px;
+  margin: 0 auto;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at center, var(--surface) 59%, transparent 60%),
+    conic-gradient(
+      #2f7df6 0 var(--progress),
+      rgba(89, 183, 245, 0.16) var(--progress) 100%
+    );
+}
+
+.statsRing::after {
+  content: '';
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px rgba(60, 60, 67, 0.08);
+}
+
+.statsRing-inner {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-content: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.statsRing-inner strong {
+  font-size: 31px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.statsRing-inner span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.statsMiniGrid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+}
+
+.statsMiniCard {
+  padding: 11px 11px 10px;
+  min-height: 86px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(247, 248, 252, 0.94));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 6px 14px rgba(28, 32, 40, 0.04);
+  display: grid;
+  gap: 3px;
+}
+
+.statsMiniCard span,
+.usageForecast-card span,
+.usageCard-head span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.statsMiniCard strong,
+.usageForecast-card strong {
+  font-size: 16px;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.usageCard {
+  padding: 12px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(247, 248, 252, 0.94));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 6px 14px rgba(28, 32, 40, 0.04);
+}
+
+.usageCard-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.usageCard-head h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.usageBar {
+  height: 7px;
+  border-radius: 999px;
+  background: #e5e5ea;
+  overflow: hidden;
+}
+
+.usageBar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8fd7ff 0%, #5bb9f4 42%, #2f7df6 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 0 0 1px rgba(47, 125, 246, 0.08);
+}
+
+.usageForecast {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.usageForecast-card {
+  padding: 9px 10px;
+  min-height: 0;
+  border-radius: var(--radius-xl);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 255, 0.92)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(248, 249, 252, 0.82));
+  border: 1px solid rgba(60, 60, 67, 0.08);
+  display: grid;
+  gap: 3px;
+  align-content: start;
+}
+
+.usageForecast-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+/* Desktop usage panel:
+   the progress ring becomes a side summary and counters fill the remaining width. */
+@media (min-width: 1024px) {
+  .statsPanel {
+    gap: 16px;
+  }
+
+  .statsHero {
+    grid-template-columns: 220px minmax(0, 1fr);
+    align-items: center;
+    justify-items: stretch;
+    gap: 18px;
+  }
+
+  .statsRing {
+    width: 210px;
+    height: 210px;
+  }
+
+  .statsRing-inner strong {
+    font-size: 38px;
+  }
+
+  .statsMiniGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .statsMiniCard {
+    min-height: 104px;
+    padding: 14px;
+  }
+
+  .usageCard {
+    padding: 16px;
+  }
+
+  .usageForecast {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .statsRing {
+    width: 168px;
+    height: 168px;
+  }
+
+  .usageForecast {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .statsRing {
+    width: min(100%, 180px);
+    height: min(100vw - 108px, 180px);
+    max-width: 180px;
+    max-height: 180px;
+  }
+
+  .statsMiniGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

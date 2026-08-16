@@ -1,0 +1,177 @@
+.ordersPage {
+  position: relative;
+}
+
+.ordersPage-blocked {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid rgba(15, 95, 215, 0.12);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top right, rgba(239, 68, 68, 0.08), transparent 30%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(252, 246, 246, 0.96));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 16px 34px rgba(15, 23, 42, 0.08);
+}
+
+.ordersPage-blockedEyebrow {
+  margin: 0;
+  color: #8f2f2f;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ordersPage-blocked h2,
+.ordersPage-blocked p {
+  margin: 0;
+}
+
+.ordersPage-blocked h2 {
+  color: var(--text);
+  font-size: 1.35rem;
+  line-height: 1.08;
+}
+
+.ordersPage-blocked p:last-of-type {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.ordersPage-blockedButton {
+  width: fit-content;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 95, 215, 0.16);
+  background:
+    linear-gradient(180deg, rgba(31, 111, 255, 0.96), rgba(15, 95, 215, 0.94));
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+}
+
+.ordersPage-errorModal {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.ordersPage-errorBackdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.22);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.ordersPage-errorSheet {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 16px;
+  width: min(100%, 360px);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(15, 95, 215, 0.12);
+  background:
+    radial-gradient(circle at top right, rgba(15, 95, 215, 0.08), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(245, 248, 255, 0.97));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 18px 40px rgba(15, 23, 42, 0.12);
+}
+
+.ordersPage-errorModal--expired .ordersPage-errorSheet {
+  gap: 14px;
+  width: min(100%, 340px);
+  text-align: center;
+}
+
+.ordersPage-errorArt {
+  display: grid;
+  place-items: center;
+}
+
+.ordersPage-errorArt img {
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+  border-radius: 22px;
+  padding: 8px;
+  background:
+    radial-gradient(circle at top left, rgba(31, 111, 255, 0.12), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 246, 255, 0.94));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.ordersPage-errorCopy {
+  display: grid;
+  gap: 8px;
+}
+
+.ordersPage-errorEyebrow {
+  margin: 0;
+  color: #215fd7;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.ordersPage-errorCopy h2 {
+  margin: 0;
+  font-size: 1.28rem;
+  letter-spacing: -0.04em;
+}
+
+.ordersPage-errorCopy p:last-child {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.ordersPage-errorButton {
+  min-height: 46px;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 95, 215, 0.16);
+  background:
+    linear-gradient(180deg, rgba(31, 111, 255, 0.96), rgba(15, 95, 215, 0.94));
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+}
+
+.ordersPage-errorModal--expired .ordersPage-errorButton {
+  width: 100%;
+}
+
+/* Desktop order page states:
+   empty or blocked states stay centered and readable inside the wider workspace. */
+@media (min-width: 1024px) {
+  .ordersPage-blocked {
+    max-width: 720px;
+    margin-inline: auto;
+    padding: 22px;
+  }
+
+  .ordersPage-errorSheet {
+    width: min(100%, 420px);
+  }
+}
+
+@media (max-width: 480px) {
+  .ordersPage-blockedButton {
+    width: 100%;
+  }
+}

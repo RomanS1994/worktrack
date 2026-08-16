@@ -1,0 +1,458 @@
+.providersInfoPage {
+  display: grid;
+  gap: 12px;
+  color: #0f172a;
+}
+
+.providersInfoPage-header {
+  display: flex;
+}
+
+.providersInfoPage-header .appBackButton {
+  --back-button-color: #0f5fd7;
+}
+
+.providersInfoPage-hero {
+  position: relative;
+  min-height: 306px;
+  overflow: hidden;
+  border: 1px solid rgba(20, 184, 166, 0.28);
+  border-radius: 26px;
+  color: #0f172a;
+  background:
+    radial-gradient(circle at 78% 46%, rgba(45, 212, 191, 0.22), transparent 34%),
+    linear-gradient(135deg, #f8fffd 0%, #f5fbff 52%, #effcf8 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 18px 38px rgba(15, 118, 110, 0.09);
+  isolation: isolate;
+}
+
+.providersInfoPage-hero::before,
+.providersInfoPage-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.providersInfoPage-hero::before {
+  background:
+    linear-gradient(90deg, rgba(20, 184, 166, 0.04) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(20, 184, 166, 0.035) 1px, transparent 1px);
+  background-size: 52px 52px;
+}
+
+.providersInfoPage-hero::after {
+  background:
+    linear-gradient(90deg, rgba(248, 255, 253, 0.98) 0%, rgba(248, 255, 253, 0.88) 48%, rgba(248, 255, 253, 0.3) 100%),
+    radial-gradient(circle at 86% 18%, rgba(20, 184, 166, 0.12), transparent 30%),
+    radial-gradient(circle at 82% 86%, rgba(59, 130, 246, 0.1), transparent 30%);
+}
+
+.providersInfoPage-heroContent {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  max-width: 22.5rem;
+  min-height: 306px;
+  padding: 20px;
+}
+
+.providersInfoPage-eyebrow,
+.providersInfoPage-sectionHeader span,
+.providersInfoPage-finalCta span {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 22px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.providersInfoPage-eyebrow {
+  gap: 6px;
+  padding: 0 11px;
+  color: #0f766e;
+  background: rgba(204, 251, 241, 0.76);
+  border: 1px solid rgba(45, 212, 191, 0.26);
+  box-shadow: 0 0 22px rgba(20, 184, 166, 0.1);
+}
+
+.providersInfoPage-eyebrow svg {
+  width: 13px;
+  height: 13px;
+}
+
+.providersInfoPage-hero h1,
+.providersInfoPage-sectionHeader h2,
+.providersInfoPage-finalCta h2 {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.providersInfoPage-hero h1 {
+  max-width: 20rem;
+  font-size: 27px;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.providersInfoPage-hero p {
+  max-width: 20rem;
+  margin: 0;
+  color: #526987;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.providersInfoPage-heroStats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  max-width: 17.5rem;
+  margin-top: 2px;
+}
+
+.providersInfoPage-heroStats span {
+  display: grid;
+  gap: 3px;
+  min-height: 52px;
+  padding: 9px 10px;
+  border: 1px solid rgba(20, 184, 166, 0.16);
+  border-radius: 16px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1.25;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.providersInfoPage-heroStats strong {
+  color: #0f766e;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.providersInfoPage-primaryCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: fit-content;
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.08;
+  text-align: center;
+  background: linear-gradient(135deg, #14b8a6 0%, #0f8f7d 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 12px 26px rgba(15, 159, 135, 0.24);
+}
+
+.providersInfoPage-primaryCta svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.providersInfoPage-visual {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.providersInfoPage-document,
+.providersInfoPage-detail,
+.providersInfoPage-route {
+  position: absolute;
+}
+
+.providersInfoPage-document,
+.providersInfoPage-detail {
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(20, 184, 166, 0.18);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 18px 34px rgba(15, 118, 110, 0.12);
+}
+
+.providersInfoPage-document {
+  top: 54px;
+  right: 58px;
+  width: 118px;
+  height: 142px;
+  border-radius: 28px;
+  color: #0f766e;
+}
+
+.providersInfoPage-document svg {
+  width: 52px;
+  height: 52px;
+}
+
+.providersInfoPage-detail {
+  width: 54px;
+  height: 54px;
+  border-radius: 19px;
+}
+
+.providersInfoPage-detail svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.providersInfoPage-detail--address {
+  right: 174px;
+  bottom: 62px;
+  color: #2563eb;
+}
+
+.providersInfoPage-detail--ico {
+  right: 44px;
+  bottom: 50px;
+  color: #ea580c;
+}
+
+.providersInfoPage-detail--dic {
+  right: 118px;
+  bottom: 18px;
+  color: #7c3aed;
+}
+
+.providersInfoPage-route {
+  z-index: 1;
+  right: 78px;
+  width: 190px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(20, 184, 166, 0), rgba(20, 184, 166, 0.42), rgba(20, 184, 166, 0));
+  transform-origin: center;
+}
+
+.providersInfoPage-route--top {
+  top: 184px;
+  transform: rotate(28deg);
+}
+
+.providersInfoPage-route--bottom {
+  top: 218px;
+  transform: rotate(-20deg);
+}
+
+.providersInfoPage-section,
+.providersInfoPage-benefits,
+.providersInfoPage-finalCta {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(15, 95, 215, 0.1);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 12px 26px rgba(15, 23, 42, 0.05);
+}
+
+.providersInfoPage-sectionHeader {
+  display: grid;
+  gap: 5px;
+}
+
+.providersInfoPage-sectionHeader span,
+.providersInfoPage-finalCta span {
+  color: #0f766e;
+}
+
+.providersInfoPage-sectionHeader h2,
+.providersInfoPage-finalCta h2 {
+  color: #0f172a;
+  font-size: 20px;
+  line-height: 1.08;
+}
+
+.providersInfoPage-workflow,
+.providersInfoPage-benefitGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.providersInfoPage-step,
+.providersInfoPage-benefit {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 142px;
+  padding: 13px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 18px;
+  background: rgba(248, 250, 252, 0.78);
+}
+
+.providersInfoPage-stepIcon,
+.providersInfoPage-benefitIcon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  color: #0f766e;
+  background: rgba(204, 251, 241, 0.58);
+}
+
+.providersInfoPage-stepIcon svg,
+.providersInfoPage-benefitIcon svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.providersInfoPage-step strong,
+.providersInfoPage-benefit strong {
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.18;
+}
+
+.providersInfoPage-step p,
+.providersInfoPage-benefit p,
+.providersInfoPage-finalCta p {
+  margin: 0;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.38;
+}
+
+.providersInfoPage-finalCta {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+}
+
+.providersInfoPage-finalCta > div {
+  display: grid;
+  gap: 6px;
+}
+
+/* Desktop providers info page:
+   match the other feature detail pages with a wider hero and consistent content rhythm. */
+@media (min-width: 1024px) {
+  .providersInfoPage {
+    max-width: 1080px;
+    margin-inline: auto;
+    gap: 16px;
+  }
+
+  .providersInfoPage-hero,
+  .providersInfoPage-heroContent {
+    min-height: 360px;
+  }
+
+  .providersInfoPage-heroContent {
+    max-width: 31rem;
+    padding: 28px;
+  }
+
+  .providersInfoPage-hero h1 {
+    max-width: 28rem;
+    font-size: 36px;
+  }
+
+  .providersInfoPage-hero p {
+    max-width: 27rem;
+    font-size: 14px;
+  }
+
+  .providersInfoPage-section,
+  .providersInfoPage-benefits,
+  .providersInfoPage-finalCta {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 620px) {
+  .providersInfoPage-hero {
+    min-height: auto;
+  }
+
+  .providersInfoPage-hero::after {
+    background:
+      linear-gradient(180deg, rgba(248, 255, 253, 0.97) 0%, rgba(248, 255, 253, 0.9) 68%, rgba(248, 255, 253, 0.54) 100%),
+      radial-gradient(circle at 86% 14%, rgba(20, 184, 166, 0.11), transparent 32%);
+  }
+
+  .providersInfoPage-heroContent {
+    min-height: auto;
+    padding: 18px;
+  }
+
+  .providersInfoPage-hero h1 {
+    font-size: 25px;
+  }
+
+  .providersInfoPage-document {
+    top: 24px;
+    right: 18px;
+    width: 74px;
+    height: 84px;
+    border-radius: 22px;
+    opacity: 0.42;
+  }
+
+  .providersInfoPage-document svg {
+    width: 34px;
+    height: 34px;
+  }
+
+  .providersInfoPage-detail,
+  .providersInfoPage-route {
+    display: none;
+  }
+
+  .providersInfoPage-workflow,
+  .providersInfoPage-benefitGrid,
+  .providersInfoPage-finalCta {
+    grid-template-columns: 1fr;
+  }
+
+  .providersInfoPage-step,
+  .providersInfoPage-benefit {
+    min-height: 0;
+  }
+
+  .providersInfoPage-primaryCta {
+    width: 100%;
+  }
+}

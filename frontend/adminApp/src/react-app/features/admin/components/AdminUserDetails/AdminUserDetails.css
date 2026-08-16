@@ -1,0 +1,285 @@
+.adminUserDetails {
+  display: grid;
+  gap: 0.8rem;
+  padding: 0;
+}
+
+.adminUserDetails-summary {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.9rem 0.95rem;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 95, 215, 0.12);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 255, 0.92));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 8px 16px rgba(15, 23, 42, 0.04);
+}
+
+.adminUserDetails-summaryName {
+  color: #122033;
+  font-size: 1.02rem;
+  line-height: 1.2;
+}
+
+.adminUserDetails-summaryEmail {
+  color: #526173;
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.adminUserDetails-summaryRole {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(226, 232, 240, 0.8);
+  color: #526173;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.adminUserDetails-summaryRole--admin {
+  background: rgba(219, 234, 254, 0.95);
+  color: #1d4ed8;
+}
+
+.adminUserDetails-summaryRole--manager {
+  background: rgba(233, 213, 255, 0.9);
+  color: #7c3aed;
+}
+
+.adminUserDetails-summaryRole--user {
+  background: rgba(226, 232, 240, 0.8);
+  color: #526173;
+}
+
+.adminUserDetails-grid {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.adminUserDetails-row {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.75rem 0.8rem;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 95, 215, 0.08);
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.adminUserDetails-label {
+  color: #526173;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 800;
+}
+
+.adminUserDetails-value {
+  color: #122033;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.adminUserDetails-state {
+  margin: 0;
+  color: #526173;
+}
+
+.adminUserDetails-section {
+  display: grid;
+  gap: 0;
+  padding: 0;
+  border: 1px solid rgba(15, 95, 215, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 8px 16px rgba(15, 23, 42, 0.03);
+}
+
+.adminUserDetails-sectionSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0.88rem 0.95rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.adminUserDetails-sectionTitle {
+  margin: 0;
+  color: #526173;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 900;
+}
+
+.adminUserDetails-sectionSummary::-webkit-details-marker {
+  display: none;
+}
+
+.adminUserDetails-sectionChevron {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid #94a3b8;
+  border-bottom: 2px solid #94a3b8;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.adminUserDetails-section[open] .adminUserDetails-sectionChevron {
+  transform: rotate(-135deg);
+}
+
+.adminUserDetails-sectionBody {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0 0.95rem 0.95rem;
+}
+
+.adminUserDetails-periodGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.adminUserDetails-pending,
+.adminUserDetails-extend {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.75rem 0.8rem;
+  border: 1px solid rgba(15, 95, 215, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.adminUserDetails-pending strong {
+  color: #122033;
+  font-size: 0.94rem;
+}
+
+.adminUserDetails-pending p {
+  margin: 0;
+  color: #526173;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.adminUserDetails-extend {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+}
+
+.adminUserDetails-field {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.adminUserDetails-select {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 0.7rem;
+  border: 1px solid rgba(15, 95, 215, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #122033;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.adminUserDetails-button {
+  width: fit-content;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid rgba(15, 95, 215, 0.16);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(31, 111, 255, 0.98), rgba(15, 95, 215, 0.96));
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.24) inset,
+    0 10px 22px rgba(15, 95, 215, 0.18);
+}
+
+.adminUserDetails-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.adminUserDetails-button--success {
+  border-color: rgba(22, 163, 74, 0.18);
+  background:
+    linear-gradient(180deg, rgba(34, 197, 94, 0.98), rgba(22, 163, 74, 0.96));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.24) inset,
+    0 10px 22px rgba(22, 163, 74, 0.16);
+}
+
+.adminUserDetails-message,
+.adminUserDetails-note,
+.adminUserDetails-error {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.adminUserDetails-message {
+  color: #1f6b38;
+}
+
+.adminUserDetails-note {
+  color: #526173;
+}
+
+.adminUserDetails-error {
+  color: #b42318;
+}
+
+@media (max-width: 720px) {
+  .adminUserDetails {
+    gap: 0.7rem;
+  }
+
+  .adminUserDetails-summary,
+  .adminUserDetails-section {
+    border-radius: 14px;
+  }
+
+  .adminUserDetails-sectionSummary {
+    padding: 0.78rem 0.8rem;
+  }
+
+  .adminUserDetails-sectionBody {
+    padding: 0.8rem;
+  }
+
+  .adminUserDetails-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .adminUserDetails-periodGrid,
+  .adminUserDetails-extend {
+    grid-template-columns: 1fr;
+  }
+
+  .adminUserDetails-button {
+    width: 100%;
+  }
+
+  .adminUserDetails-summaryName {
+    font-size: 0.98rem;
+  }
+
+  .adminUserDetails-value {
+    font-size: 0.88rem;
+  }
+}

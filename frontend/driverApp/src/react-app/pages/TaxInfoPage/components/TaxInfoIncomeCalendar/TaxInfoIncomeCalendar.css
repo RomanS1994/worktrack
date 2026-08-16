@@ -1,0 +1,210 @@
+.taxInfoCalendar {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.taxInfoCalendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.taxInfoCalendar-weekday {
+  display: grid;
+  place-items: center;
+  min-height: 20px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.taxInfoCalendar-day {
+  position: relative;
+  display: grid;
+  place-items: center;
+  gap: 1px;
+  min-width: 0;
+  min-height: 36px;
+  padding: 3px 1px 6px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+
+.taxInfoCalendar-dayNumber {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.taxInfoCalendar-amount {
+  color: #64748b;
+  font-size: 8px;
+  font-weight: 750;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.taxInfoCalendar-day.is-green .taxInfoCalendar-amount {
+  color: #15803d;
+}
+
+.taxInfoCalendar-day.is-selected .taxInfoCalendar-dayNumber {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.24);
+}
+
+.taxInfoCalendar-day.is-muted {
+  color: #cbd5e1;
+}
+
+.taxInfoCalendar-day.is-muted .taxInfoCalendar-amount {
+  display: none;
+}
+
+.taxInfoCalendar-dots {
+  position: absolute;
+  bottom: 2px;
+  display: inline-flex;
+  gap: 3px;
+}
+
+.taxInfoCalendar-dots span {
+  width: 2px;
+  height: 2px;
+  border-radius: 999px;
+  background: #16a34a;
+}
+
+.taxInfoCalendar-note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  min-height: 30px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: rgba(239, 246, 255, 0.9);
+  color: #64748b;
+}
+
+.taxInfoCalendar-note span {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(100, 116, 139, 0.38);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.taxInfoCalendar-note p {
+  margin: 0;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Desktop calendar:
+   larger cells make day selection easier with a mouse and keep monthly income readable. */
+@media (min-width: 1024px) {
+  .taxInfoCalendar {
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .taxInfoCalendar-grid {
+    gap: 6px;
+  }
+
+  .taxInfoCalendar-weekday {
+    min-height: 26px;
+    font-size: 12px;
+  }
+
+  .taxInfoCalendar-day {
+    min-height: 68px;
+    gap: 5px;
+    padding: 8px 4px 12px;
+    border-radius: 16px;
+    background: rgba(248, 250, 252, 0.54);
+  }
+
+  .taxInfoCalendar-day:hover:not(.is-muted) {
+    background: rgba(239, 246, 255, 0.9);
+  }
+
+  .taxInfoCalendar-dayNumber {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+  }
+
+  .taxInfoCalendar-amount {
+    font-size: 11px;
+  }
+
+  .taxInfoCalendar-dots {
+    bottom: 6px;
+  }
+
+  .taxInfoCalendar-dots span {
+    width: 4px;
+    height: 4px;
+  }
+
+  .taxInfoCalendar-note {
+    min-height: 42px;
+    padding: 10px 12px;
+    border-radius: 13px;
+  }
+
+  .taxInfoCalendar-note span {
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
+  }
+
+  .taxInfoCalendar-note p {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 380px) {
+  .taxInfoCalendar {
+    gap: 7px;
+    padding: 8px;
+  }
+
+  .taxInfoCalendar-grid {
+    gap: 3px;
+  }
+
+  .taxInfoCalendar-day {
+    min-height: 34px;
+  }
+
+  .taxInfoCalendar-dayNumber {
+    width: 19px;
+    height: 19px;
+    font-size: 10px;
+  }
+
+  .taxInfoCalendar-amount {
+    font-size: 7px;
+  }
+}

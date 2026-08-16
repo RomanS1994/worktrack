@@ -1,0 +1,129 @@
+.appLayout {
+  min-height: 100dvh;
+  color: var(--text);
+}
+
+.pageContainer {
+  width: 100%;
+  max-width: 404px;
+  margin: 0 auto;
+  padding: 0 10px 24px;
+}
+
+.appLayout--workspace .pageContainer {
+  max-width: 404px;
+}
+
+.appLayout--dashboard {
+  background: #f5f7fb;
+}
+
+.appLayout-body {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px;
+}
+
+.appLayout--workspace {
+  position: relative;
+}
+
+.appLayout--home {
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+.appLayout-workspaceBody {
+  padding: 12px 0 calc(92px + env(safe-area-inset-bottom));
+}
+
+.appLayout--home .appLayout-workspaceBody {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.appLayout--home .pageContainer,
+.appLayout--home .appLayout-main {
+  height: 100%;
+  min-height: 0;
+}
+
+.appLayout--home .pageContainer {
+  padding-bottom: 0;
+}
+
+.appLayout-main {
+  min-width: 0;
+}
+
+/* Desktop workspace:
+   authenticated screens get room for the left navigation while mobile keeps the phone layout. */
+@media (min-width: 1024px) {
+  .appLayout--workspace {
+    min-height: 100dvh;
+  }
+
+  .appLayout--withNav .appLayout-workspaceBody {
+    padding: 24px 32px 40px 292px;
+  }
+
+  .appLayout--withNav .pageContainer {
+    max-width: min(1120px, calc(100vw - 340px));
+    padding: 0;
+  }
+
+  .appLayout--home {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .appLayout--home .appLayout-workspaceBody,
+  .appLayout--home .pageContainer,
+  .appLayout--home .appLayout-main {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+}
+
+@media (max-width: 760px) {
+  .appLayout-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 761px) {
+  .pageContainer {
+    padding: 0 12px 24px;
+  }
+
+  .appLayout--workspace:not(.appLayout--withNav) .pageContainer {
+    max-width: 404px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .appLayout--workspace:not(.appLayout--withNav) .pageContainer {
+    max-width: 428px;
+    padding: 0 14px 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .appLayout-workspaceBody {
+    padding: 8px 0 calc(88px + env(safe-area-inset-bottom));
+  }
+
+  .appLayout--workspace .pageContainer {
+    max-width: none;
+    padding: 0 4px 12px;
+  }
+
+  .appLayout--home .pageContainer {
+    padding-bottom: 0;
+  }
+}

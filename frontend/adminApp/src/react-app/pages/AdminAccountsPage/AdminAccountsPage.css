@@ -1,0 +1,145 @@
+.adminAccountsPage {
+  display: grid;
+  gap: 8px;
+}
+
+.adminAccountsPage-header {
+  display: grid;
+  gap: 8px;
+}
+
+.adminAccountsPage-headerRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.adminAccountsPage-title {
+  margin: 0;
+  font-size: clamp(1.08rem, 4vw, 1.3rem);
+}
+
+.adminAccountsPage-count {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 95, 215, 0.16);
+  background: rgba(255, 255, 255, 0.86);
+  color: #1d4ed8;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.adminAccountsPage-copy {
+  margin: 0;
+  color: #526173;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  max-width: 52ch;
+}
+
+.adminAccountsPage-panel {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow:
+    0 12px 24px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.adminAccountsPage-panel--empty {
+  padding: 14px 12px;
+}
+
+.adminAccountsPage-search {
+  display: grid;
+  gap: 5px;
+}
+
+.adminAccountsPage-searchLabel {
+  color: #526173;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.adminAccountsPage-searchInput {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 0.8rem;
+  border: 1px solid rgba(15, 95, 215, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #122033;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.adminAccountsPage-empty {
+  margin: 0;
+  color: #526173;
+  font-size: 0.88rem;
+}
+
+.adminAccountsPage-layout {
+  display: none;
+}
+
+.adminAccountsPage-panelHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.adminAccountsPage-panelTitle {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.92rem;
+  line-height: 1.2;
+}
+
+.adminAccountsPage-panelMeta {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.adminAccountsPage-state {
+  margin: 0;
+  color: var(--muted, #667085);
+}
+
+@media (max-width: 720px) {
+  .adminAccountsPage {
+    gap: 8px;
+  }
+
+  .adminAccountsPage-layout {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .adminAccountsPage-panel {
+    padding: 10px;
+    border-radius: 14px;
+    gap: 8px;
+  }
+
+  .adminAccountsPage-count {
+    min-height: 24px;
+    padding: 0 8px;
+    font-size: 0.74rem;
+  }
+
+  .adminAccountsPage-copy {
+    font-size: 0.8rem;
+  }
+}

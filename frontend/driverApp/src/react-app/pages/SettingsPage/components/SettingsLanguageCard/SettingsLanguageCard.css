@@ -1,0 +1,53 @@
+.settingsLanguageCard {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.settingsLanguageCard-field {
+  display: grid;
+  gap: 6px;
+}
+
+.settingsLanguageCard-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.settingsLanguageCard-field select {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid rgba(15, 95, 215, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  font: inherit;
+}
+
+.settingsLanguageCard-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+@media (max-width: 480px) {
+  .settingsLanguageCard {
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .settingsLanguageCard-label {
+    font-size: 12px;
+  }
+
+  .settingsLanguageCard-field select {
+    min-height: 40px;
+    padding: 0 12px;
+    border-radius: 14px;
+  }
+
+  .settingsLanguageCard-note {
+    font-size: 11px;
+  }
+}

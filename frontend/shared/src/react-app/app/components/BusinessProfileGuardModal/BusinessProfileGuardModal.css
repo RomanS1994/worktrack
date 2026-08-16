@@ -1,0 +1,116 @@
+.businessProfileGuardModal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.businessProfileGuardModal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(9, 15, 28, 0.42);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.businessProfileGuardModal-sheet {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 460px);
+  max-height: calc(100dvh - 36px);
+  overflow: auto;
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid rgba(15, 95, 215, 0.12);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(247, 250, 255, 0.96));
+  box-shadow:
+    0 24px 60px rgba(15, 23, 42, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+.businessProfileGuardModal-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.businessProfileGuardModal-eyebrow {
+  margin: 0;
+  color: rgba(100, 116, 139, 0.96);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.businessProfileGuardModal-copy h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 24px;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+.businessProfileGuardModal-copy p:last-child {
+  margin: 0;
+  color: rgba(82, 84, 90, 0.92);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.businessProfileGuardModal-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.businessProfileGuardModal-link,
+.businessProfileGuardModal-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 16px;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.businessProfileGuardModal-link {
+  gap: 8px;
+}
+
+.businessProfileGuardModal-linkIcon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: currentColor;
+}
+
+.businessProfileGuardModal-linkIcon svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.businessProfileGuardModal-link {
+  border: 1px solid rgba(15, 95, 215, 0.14);
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--primary);
+}
+
+.businessProfileGuardModal-button {
+  border: 0;
+  background: linear-gradient(180deg, rgba(31, 111, 255, 0.98), rgba(15, 95, 215, 0.96));
+  color: #fff;
+}

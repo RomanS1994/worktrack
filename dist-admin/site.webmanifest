@@ -1,0 +1,24 @@
+{
+  "name": "DocTra",
+  "short_name": "DocTra",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/shared/assets/doctra-icon.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/shared/assets/doctra-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "theme_color": "#0f5fd7",
+  "background_color": "#ffffff",
+  "display": "standalone"
+}

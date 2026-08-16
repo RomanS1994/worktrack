@@ -1,0 +1,40 @@
+.settingsPage {
+  display: grid;
+  gap: 12px;
+}
+
+.settingsPage-card {
+  display: grid;
+  gap: 14px;
+}
+
+/* Desktop settings:
+   navigation cards become a two-column control panel, while account/session blocks stay full width. */
+@media (min-width: 1024px) {
+  .settingsPage {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 14px;
+  }
+
+  .settingsPage > .settingsAccountSummary,
+  .settingsPage > .settingsAdminAccess,
+  .settingsPage > .settingsPage-card {
+    grid-column: 1 / -1;
+  }
+
+  .settingsPage-card {
+    padding: 18px;
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .settingsPage {
+    gap: 8px;
+  }
+
+  .settingsPage-card {
+    gap: 10px;
+  }
+}

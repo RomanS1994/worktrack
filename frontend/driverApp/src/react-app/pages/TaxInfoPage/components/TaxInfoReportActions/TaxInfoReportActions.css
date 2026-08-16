@@ -1,0 +1,209 @@
+.taxInfoReportActions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.taxInfoReportAction {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto 1fr auto;
+  gap: 6px 7px;
+  min-width: 0;
+  min-height: 104px;
+  padding: 10px 9px;
+  border: 1px solid rgba(15, 95, 215, 0.1);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 10px 24px rgba(28, 32, 40, 0.05);
+}
+
+.taxInfoReportAction--red {
+  border-color: rgba(239, 68, 68, 0.16);
+}
+
+.taxInfoReportAction--green {
+  border-color: rgba(34, 197, 94, 0.18);
+}
+
+.taxInfoReportAction--blue {
+  border-color: rgba(37, 99, 235, 0.16);
+}
+
+.taxInfoReportAction:focus-visible {
+  outline: 2px solid rgba(18, 103, 232, 0.35);
+  outline-offset: 2px;
+}
+
+.taxInfoReportAction:active {
+  transform: translateY(1px);
+}
+
+.taxInfoReportAction-icon {
+  display: grid;
+  grid-column: 1 / -1;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.1);
+}
+
+.taxInfoReportAction-icon--red {
+  background: linear-gradient(180deg, #ff5a5f, #ef4444);
+}
+
+.taxInfoReportAction-icon--green {
+  background: linear-gradient(180deg, #2dd46f, #16a34a);
+}
+
+.taxInfoReportAction-icon--blue {
+  background: linear-gradient(180deg, #3b82f6, #1267e8);
+}
+
+.taxInfoReportAction-icon svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+}
+
+.taxInfoReportAction strong {
+  display: -webkit-box;
+  grid-column: 1 / -1;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  align-self: end;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.taxInfoReportAction span:not(.taxInfoReportAction-icon, .taxInfoReportAction-arrow) {
+  align-self: center;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taxInfoReportAction-arrow {
+  display: grid;
+  place-items: center;
+  align-self: end;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.16);
+  color: #7c8797;
+}
+
+.taxInfoReportAction-arrow svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+}
+
+/* Desktop report actions:
+   in the side column these work better as readable list rows instead of compact tiles. */
+@media (min-width: 1024px) {
+  .taxInfoReportActions {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .taxInfoReportAction {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    min-height: 88px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .taxInfoReportAction-icon {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+
+  .taxInfoReportAction-icon svg {
+    width: 25px;
+    height: 25px;
+  }
+
+  .taxInfoReportAction strong {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+    font-size: 15px;
+    -webkit-line-clamp: 1;
+  }
+
+  .taxInfoReportAction span:not(.taxInfoReportAction-icon, .taxInfoReportAction-arrow) {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+    font-size: 12px;
+  }
+
+  .taxInfoReportAction-arrow {
+    grid-column: 3;
+    grid-row: 1 / 3;
+    align-self: center;
+  }
+}
+
+@media (max-width: 360px) {
+  .taxInfoReportActions {
+    gap: 6px;
+  }
+
+  .taxInfoReportAction {
+    min-height: 88px;
+    padding: 8px 7px;
+    gap: 5px;
+  }
+
+  .taxInfoReportAction-icon {
+    width: 31px;
+    height: 31px;
+    border-radius: 8px;
+  }
+
+  .taxInfoReportAction-icon svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .taxInfoReportAction strong {
+    font-size: 10px;
+  }
+
+  .taxInfoReportAction span:not(.taxInfoReportAction-icon, .taxInfoReportAction-arrow) {
+    font-size: 9px;
+  }
+
+  .taxInfoReportAction-arrow {
+    width: 24px;
+    height: 24px;
+  }
+
+  .taxInfoReportAction-arrow svg {
+    width: 14px;
+    height: 14px;
+  }
+}

@@ -1,0 +1,449 @@
+.taxInfoFilePage {
+  display: grid;
+  gap: 12px;
+  padding-inline: 2px;
+}
+
+.taxInfoFilePage-header {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  padding: 4px 2px 2px;
+}
+
+.taxInfoFilePage-header .appBackButton {
+  min-height: 32px;
+  padding: 0;
+}
+
+.taxInfoFilePage-header .appBackButton-label {
+  display: none;
+}
+
+.taxInfoFilePage-header .appBackButton-icon {
+  width: 30px;
+  height: 30px;
+}
+
+.taxInfoFilePage-header .appTitleBlock {
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.taxInfoFilePage-header .appTitleBlock h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.15;
+}
+
+.taxInfoFilePage-header .appTitleBlock p:last-child {
+  max-width: 19rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.taxInfoFileHero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 13px;
+  align-items: center;
+  min-height: 86px;
+  padding: 16px 14px;
+  border: 1px solid rgba(15, 95, 215, 0.12);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.taxInfoFileHero--red {
+  border-color: rgba(239, 68, 68, 0.18);
+  background: linear-gradient(180deg, rgba(255, 246, 247, 0.98), rgba(255, 255, 255, 0.92));
+}
+
+.taxInfoFileHero--green {
+  border-color: rgba(34, 197, 94, 0.18);
+  background: linear-gradient(180deg, rgba(244, 253, 247, 0.98), rgba(255, 255, 255, 0.92));
+}
+
+.taxInfoFileHero--blue {
+  border-color: rgba(59, 130, 246, 0.18);
+  background: linear-gradient(180deg, rgba(247, 251, 255, 0.98), rgba(255, 255, 255, 0.92));
+}
+
+.taxInfoFileHero-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1);
+}
+
+.taxInfoFileHero--red .taxInfoFileHero-icon {
+  background: linear-gradient(180deg, #ff5a5f, #ef4444);
+}
+
+.taxInfoFileHero--green .taxInfoFileHero-icon {
+  background: linear-gradient(180deg, #2dd46f, #16a34a);
+}
+
+.taxInfoFileHero--blue .taxInfoFileHero-icon {
+  background: linear-gradient(180deg, #3b82f6, #1267e8);
+}
+
+.taxInfoFileHero-icon svg {
+  width: 19px;
+  height: 19px;
+  stroke: currentColor;
+}
+
+.taxInfoFileHero strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.taxInfoFileHero p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.42;
+}
+
+.taxInfoFileStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.taxInfoFileStat {
+  min-width: 0;
+  min-height: 68px;
+  padding: 11px 10px;
+  border: 1px solid rgba(15, 95, 215, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+.taxInfoFileStat--green {
+  border-color: rgba(34, 197, 94, 0.14);
+  background: linear-gradient(180deg, rgba(244, 253, 247, 0.96), rgba(255, 255, 255, 0.9));
+}
+
+.taxInfoFileStat--blue {
+  border-color: rgba(59, 130, 246, 0.14);
+  background: linear-gradient(180deg, rgba(247, 251, 255, 0.96), rgba(255, 255, 255, 0.9));
+}
+
+.taxInfoFileStat--purple {
+  border-color: rgba(139, 92, 246, 0.14);
+  background: linear-gradient(180deg, rgba(250, 247, 255, 0.96), rgba(255, 255, 255, 0.9));
+}
+
+.taxInfoFileStat span {
+  display: block;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taxInfoFileStat--green span {
+  color: #177a55;
+}
+
+.taxInfoFileStat--blue span {
+  color: #1d4ed8;
+}
+
+.taxInfoFileStat--purple span {
+  color: #7c3aed;
+}
+
+.taxInfoFileStat strong {
+  display: block;
+  overflow: hidden;
+  margin-top: 9px;
+  color: var(--text);
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taxInfoFileDetails {
+  padding: 15px 13px 10px;
+  border: 1px solid rgba(15, 95, 215, 0.1);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 10px 24px rgba(28, 32, 40, 0.045);
+}
+
+.taxInfoFileDetails h2 {
+  margin: 0 0 14px;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.taxInfoFileDetails ul {
+  display: grid;
+  gap: 15px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.taxInfoFileDetails li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.taxInfoFileDetails-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+}
+
+.taxInfoFileDetails-icon svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+}
+
+.taxInfoFileDetails-icon--green {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.taxInfoFileDetails-icon--blue {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.taxInfoFileDetails-icon--purple {
+  background: #f0e7ff;
+  color: #7c3aed;
+}
+
+.taxInfoFileDetails-icon--orange {
+  background: #ffedd5;
+  color: #f97316;
+}
+
+.taxInfoFileDetails li strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.22;
+}
+
+.taxInfoFileDetails li small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.38;
+}
+
+.taxInfoFileMeta {
+  display: grid;
+  grid-template-columns: auto minmax(0, auto);
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  min-height: 32px;
+  margin: 18px 0 0;
+  padding: 7px 10px;
+  border-radius: 10px;
+  background: rgba(239, 246, 255, 0.82);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.taxInfoFileMeta svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+}
+
+.taxInfoFileMeta span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taxInfoFileActions {
+  display: grid;
+  gap: 9px;
+}
+
+.taxInfoFileActions-primary,
+.taxInfoFileActions-secondary {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  border-radius: 11px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.taxInfoFileActions-primary {
+  border: 0;
+  background: linear-gradient(180deg, #1d7cff, #1267e8);
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(18, 103, 232, 0.18);
+}
+
+.taxInfoFileActions-secondary {
+  border: 1px solid rgba(15, 95, 215, 0.12);
+  background: rgba(255, 255, 255, 0.94);
+  color: #1267e8;
+}
+
+.taxInfoFileActions-primary:disabled,
+.taxInfoFileActions-secondary:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.taxInfoFileActions-primary svg,
+.taxInfoFileActions-secondary svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+}
+
+.taxInfoFileActions-message {
+  margin: 1px 4px 0;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.taxInfoFileActions-message.is-error {
+  color: #b91c1c;
+}
+
+/* Desktop report file screen:
+   file details stay in the main column and download/share actions become a side panel. */
+@media (min-width: 1024px) {
+  .taxInfoFilePage {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+    align-items: start;
+    gap: 16px;
+    max-width: 980px;
+    margin-inline: auto;
+  }
+
+  .taxInfoFilePage-header,
+  .taxInfoFilePage-state,
+  .taxInfoFilePage > .statusNote,
+  .taxInfoFileHero {
+    grid-column: 1 / -1;
+  }
+
+  .taxInfoFileStats,
+  .taxInfoFileDetails {
+    grid-column: 1;
+  }
+
+  .taxInfoFileActions {
+    position: sticky;
+    top: 24px;
+    grid-column: 2;
+    grid-row: 3 / span 2;
+    padding: 14px;
+    border: 1px solid rgba(15, 95, 215, 0.1);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      0 12px 28px rgba(28, 32, 40, 0.05);
+  }
+
+  .taxInfoFilePage-state ~ .taxInfoFileActions,
+  .taxInfoFilePage > .statusNote ~ .taxInfoFileActions {
+    grid-row: 4 / span 2;
+  }
+
+  .taxInfoFilePage-state ~ .statusNote ~ .taxInfoFileActions {
+    grid-row: 5 / span 2;
+  }
+
+  .taxInfoFileDetails ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .taxInfoFilePage {
+    gap: 10px;
+  }
+
+  .taxInfoFileStats {
+    gap: 6px;
+  }
+
+  .taxInfoFileStat {
+    min-height: 62px;
+    padding: 9px 7px;
+  }
+
+  .taxInfoFileStat span {
+    font-size: 9px;
+  }
+
+  .taxInfoFileStat strong {
+    font-size: 18px;
+  }
+
+  .taxInfoFileHero {
+    padding: 14px 12px;
+  }
+
+  .taxInfoFileDetails {
+    padding-inline: 11px;
+  }
+
+  .taxInfoFileMeta {
+    font-size: 9px;
+  }
+}

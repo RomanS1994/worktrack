@@ -1,0 +1,400 @@
+.contractDatePickerModal {
+  position: fixed;
+  inset: 0 0 0 0;
+  z-index: 1200;
+  display: grid;
+  align-items: end;
+  justify-items: stretch;
+  padding: 0;
+}
+
+.contractDatePickerModal-backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.72), rgba(236, 242, 255, 0.62));
+  backdrop-filter: blur(16px) saturate(118%) brightness(1.04);
+  -webkit-backdrop-filter: blur(16px) saturate(118%) brightness(1.04);
+}
+
+.contractDatePickerModal-sheet {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  max-height: calc(100vh - 10px);
+  overflow: auto;
+  padding: 8px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+  border-radius: 24px 24px 0 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.992), rgba(247, 249, 255, 0.984));
+  box-shadow:
+    0 -1px 0 rgba(255, 255, 255, 0.78) inset,
+    0 -16px 34px rgba(15, 23, 42, 0.1);
+}
+
+.contractDatePickerModal-handle {
+  width: 36px;
+  height: 4px;
+  margin: 0 auto;
+  border-radius: 999px;
+  background: rgba(99, 110, 128, 0.18);
+}
+
+.contractDatePickerModal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.contractDatePickerModal-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.contractDatePickerModal-header h3 {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  color: var(--text);
+}
+
+.contractDatePickerModal-copy p {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: rgba(100, 116, 139, 0.92);
+}
+
+.contractDatePickerModal-close {
+  min-height: 36px;
+  min-width: 36px;
+  padding: 0;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(245, 247, 252, 0.98), rgba(239, 243, 249, 0.94));
+  color: rgba(15, 23, 42, 0.92);
+  box-shadow: none;
+}
+
+.contractDatePickerModal-body {
+  display: grid;
+  gap: 10px;
+}
+
+.contractDatePickerField {
+  display: grid;
+  gap: 8px;
+}
+
+.contractDatePickerLabel {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-transform: none;
+  color: rgba(15, 23, 42, 0.92);
+}
+
+.contractDatePickerDateField {
+  position: relative;
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid rgba(184, 199, 224, 0.68);
+  border-radius: 18px;
+  background: rgba(246, 248, 252, 0.94);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 1px 6px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+}
+
+.contractDatePickerDateNativeInput {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.contractDatePickerDateSurface {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 50px;
+  padding: 0 12px 0 10px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+}
+
+.contractDatePickerDateIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(37, 99, 235, 0.08);
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.contractDatePickerDateIcon svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+}
+
+.contractDatePickerDateValue {
+  min-width: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contractDatePickerDateValue.is-placeholder {
+  color: rgba(148, 156, 168, 0.72);
+}
+
+.contractDatePickerDateChevron {
+  width: 14px;
+  height: 14px;
+  display: grid;
+  place-items: center;
+  color: rgba(100, 116, 139, 0.88);
+}
+
+.contractDatePickerDateChevron svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  transform: rotate(90deg);
+}
+
+.contractDatePickerWheel {
+  position: relative;
+  padding: 2px 0;
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(249, 251, 255, 0.996), rgba(245, 248, 254, 0.99));
+  border: 1px solid rgba(197, 210, 229, 0.42);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 1px 8px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+  isolation: isolate;
+  contain: layout paint;
+  transform: translateZ(0);
+}
+
+.contractDatePickerWheelColumns {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: min(360px, 72%);
+  height: 220px;
+  margin: 0 auto;
+}
+
+.contractDatePickerWheelColumn {
+  height: 220px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  scroll-padding-block: 88px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  background: transparent;
+}
+
+.contractDatePickerWheelColumn::-webkit-scrollbar {
+  display: none;
+}
+
+.contractDatePickerWheelColumnTrack {
+  display: grid;
+  padding-block: 88px;
+}
+
+.contractDatePickerWheelSeparator {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 6;
+  transform: translate(-50%, -52%);
+  pointer-events: none;
+  color: var(--text);
+  font-size: 1.28rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.contractDatePickerWheel::before,
+.contractDatePickerWheel::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: calc((220px - 44px) / 2);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.contractDatePickerWheel::before {
+  top: 0;
+  background: linear-gradient(180deg, rgba(247, 249, 253, 0.72), rgba(247, 249, 253, 0.3), rgba(247, 249, 253, 0));
+}
+
+.contractDatePickerWheel::after {
+  bottom: 0;
+  background: linear-gradient(0deg, rgba(247, 249, 253, 0.72), rgba(247, 249, 253, 0.3), rgba(247, 249, 253, 0));
+}
+
+.contractDatePickerWheelItem {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  z-index: 5;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  cursor: default;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: rgba(100, 116, 139, 0.58);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  transform: translateZ(0) scale(0.94);
+  transition: color 90ms ease, opacity 90ms ease, transform 90ms ease;
+  will-change: transform, color, opacity;
+}
+
+.contractDatePickerWheelItem:hover:not(:disabled),
+.contractDatePickerWheelItem:active:not(:disabled),
+.contractDatePickerWheelItem:focus,
+.contractDatePickerWheelItem:focus-visible {
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  transform: translateZ(0) scale(0.94);
+}
+
+.contractDatePickerWheelItem.is-selected {
+  color: var(--text);
+  font-weight: 800;
+  opacity: 1;
+  transform: translateZ(0) scale(1.08);
+}
+
+.contractDatePickerWheelItem.is-selected:hover:not(:disabled),
+.contractDatePickerWheelItem.is-selected:active:not(:disabled),
+.contractDatePickerWheelItem.is-selected:focus,
+.contractDatePickerWheelItem.is-selected:focus-visible {
+  background: transparent;
+  box-shadow: none;
+  transform: translateZ(0) scale(1.08);
+}
+
+.contractDatePickerModal-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.contractDatePickerModal-secondary,
+.contractDatePickerModal-primary {
+  min-height: 44px;
+  border-radius: 16px;
+  font-size: 0.96rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.contractDatePickerModal-secondary {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 249, 252, 0.96));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
+.contractDatePickerModal-primary {
+  color: #ffffff;
+  background: linear-gradient(180deg, #3b82f6, #2563eb);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 14px 24px rgba(37, 99, 235, 0.24);
+}
+
+@media (max-width: 480px) {
+  .contractDatePickerModal-sheet {
+    width: 100%;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .contractDatePickerModal-header h3 {
+    font-size: 1rem;
+  }
+
+  .contractDatePickerModal-copy p {
+    font-size: 0.78rem;
+  }
+
+  .contractDatePickerWheelItem {
+    font-size: 0.96rem;
+  }
+
+  .contractDatePickerWheelColumns {
+    width: min(280px, 76%);
+  }
+}
+
+/* Desktop date picker:
+   present the mobile wheel as a centered dialog inside the desktop workspace. */
+@media (min-width: 1024px) {
+  .contractDatePickerModal {
+    align-items: center;
+    justify-items: center;
+    padding: 28px 28px 28px 320px;
+  }
+
+  .contractDatePickerModal-sheet {
+    width: min(480px, calc(100vw - 380px));
+    max-height: min(84vh, 680px);
+    padding: 16px;
+    border: 1px solid rgba(197, 210, 229, 0.72);
+    border-radius: 24px;
+    box-shadow:
+      0 22px 54px rgba(15, 23, 42, 0.14),
+      0 -1px 0 rgba(255, 255, 255, 0.78) inset;
+  }
+
+  .contractDatePickerModal-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

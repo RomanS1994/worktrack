@@ -1,0 +1,107 @@
+.advertisingCarousel {
+  --advertisingCarousel-cardHeight: 216px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 6% 2px 0;
+  scroll-padding-inline: 0;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 480px) {
+  .advertisingCarousel {
+    --advertisingCarousel-cardHeight: 212px;
+  }
+}
+
+.advertisingCarousel::-webkit-scrollbar {
+  display: none;
+}
+
+.advertisingCarousel[hidden] {
+  display: none;
+}
+
+.advertisingCarousel-slide {
+  display: grid;
+  flex: 0 0 94%;
+  height: var(--advertisingCarousel-cardHeight);
+  min-width: 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.advertisingCarousel-slide > * {
+  min-width: 0;
+  height: 100%;
+}
+
+.advertisingCarousel-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 16px;
+  margin-top: -5px;
+}
+
+.advertisingCarousel-dots[hidden] {
+  display: none;
+}
+
+.advertisingCarousel-dot {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 6px;
+  min-width: 0;
+  height: 6px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(100, 116, 139, 0.28);
+  box-shadow: none;
+  cursor: pointer;
+  transition:
+    width 160ms ease,
+    background-color 160ms ease,
+    opacity 160ms ease;
+}
+
+.advertisingCarousel-dot.is-active {
+  width: 18px;
+  background: #2563eb;
+}
+
+.advertisingCarousel-dot:hover,
+.advertisingCarousel-dot:active,
+.advertisingCarousel-dot:focus,
+.advertisingCarousel-dot:focus-visible {
+  background: #2563eb;
+  border: 0;
+  box-shadow: none;
+  outline: none;
+  transform: none;
+}
+
+/* Desktop promo carousel:
+   keep all promo cards equal height while giving each slide a desktop card width. */
+@media (min-width: 1024px) {
+  .advertisingCarousel {
+    --advertisingCarousel-cardHeight: 252px;
+    gap: 14px;
+    padding-right: 0;
+  }
+
+  .advertisingCarousel-slide {
+    flex-basis: min(760px, 78%);
+  }
+}

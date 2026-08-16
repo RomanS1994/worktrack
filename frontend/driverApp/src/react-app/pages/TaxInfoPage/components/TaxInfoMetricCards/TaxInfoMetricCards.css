@@ -1,0 +1,114 @@
+.taxInfoMetrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.taxInfoMetric {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  min-height: 88px;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.taxInfoMetric--green {
+  border-color: rgba(34, 197, 94, 0.18);
+  background: linear-gradient(180deg, rgba(240, 253, 244, 0.96), rgba(255, 255, 255, 0.88));
+}
+
+.taxInfoMetric--blue {
+  border-color: rgba(59, 130, 246, 0.18);
+  background: linear-gradient(180deg, rgba(239, 246, 255, 0.96), rgba(255, 255, 255, 0.88));
+}
+
+.taxInfoMetric-title,
+.taxInfoMetric-copy {
+  overflow: hidden;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+}
+
+.taxInfoMetric-title {
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.taxInfoMetric--green .taxInfoMetric-title {
+  color: #16a34a;
+}
+
+.taxInfoMetric--blue .taxInfoMetric-title {
+  color: #2563eb;
+}
+
+.taxInfoMetric strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taxInfoMetric-copy {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+/* Desktop tax metrics:
+   wider screens can show all summary cards in one row with less cramped text. */
+@media (min-width: 1024px) {
+  .taxInfoMetrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .taxInfoMetric {
+    min-height: 112px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .taxInfoMetric-title {
+    font-size: 12px;
+  }
+
+  .taxInfoMetric strong {
+    font-size: 28px;
+  }
+
+  .taxInfoMetric-copy {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .taxInfoMetrics {
+    gap: 6px;
+  }
+
+  .taxInfoMetric {
+    min-height: 82px;
+    padding: 7px;
+    border-radius: 12px;
+  }
+
+  .taxInfoMetric-title {
+    font-size: 9px;
+  }
+
+  .taxInfoMetric strong {
+    font-size: 18px;
+  }
+
+  .taxInfoMetric-copy {
+    font-size: 8px;
+  }
+}

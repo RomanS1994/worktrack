@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  MANAGER
+  EMPLOYEE
+}
+
+enum WorkEntryStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum WeeklySubmissionStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id            String    @id
+  email         String    @unique
+  passwordHash  String
+  firstName     String    @default("")
+  lastName      String    @default("")
+  name          String
+  phone         String?   @unique
+  role          UserRole  @default(EMPLOYEE)
+  managerId     String?
+  hourlyRateCzk Decimal   @default(0) @db.Decimal(10, 2)
+  profile       Json
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  manager                   User?              @relation("ManagerEmployees", fields: [managerId], references: [id], onDelete: SetNull)
+  employees                 User[]             @relation("ManagerEmployees")
+  sessions                  Session[]
+  workEntries               WorkEntry[]        @relation("EmployeeWorkEntries")
+  weeklySubmissions         WeeklySubmission[] @relation("EmployeeWeeklySubmissions")
+  reviewedWeeklySubmissions WeeklySubmission[] @relation("ManagerWeeklySubmissions")
+
+  @@index([managerId])
+  @@index([role])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  tokenHash String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model WorkEntry {
+  id                 String          @id
+  employeeId         String
+  weeklySubmissionId String?
+  workDate           DateTime
+  hours              Decimal         @db.Decimal(5, 2)
+  status             WorkEntryStatus @default(DRAFT)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  employee         User              @relation("EmployeeWorkEntries", fields: [employeeId], references: [id], onDelete: Cascade)
+  weeklySubmission WeeklySubmission? @relation(fields: [weeklySubmissionId], references: [id], onDelete: SetNull)
+
+  @@index([employeeId])
+  @@index([employeeId, workDate])
+  @@index([weeklySubmissionId])
+  @@index([status])
+  @@map("work_entries")
+}
+
+model WeeklySubmission {
+  id          String                 @id
+  employeeId  String
+  managerId   String?
+  weekStart   DateTime
+  weekEnd     DateTime
+  status      WeeklySubmissionStatus @default(DRAFT)
+  submittedAt DateTime?
+  reviewedAt  DateTime?
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  employee    User        @relation("EmployeeWeeklySubmissions", fields: [employeeId], references: [id], onDelete: Cascade)
+  manager     User?       @relation("ManagerWeeklySubmissions", fields: [managerId], references: [id], onDelete: SetNull)
+  workEntries WorkEntry[]
+
+  @@unique([employeeId, weekStart])
+  @@index([employeeId])
+  @@index([managerId])
+  @@index([status])
+  @@index([weekStart])
+  @@map("weekly_submissions")
+}
+
+model AuditLog {
+  id           String   @id
+  action       String
+  actorUserId  String?
+  targetUserId String?
+  entityType   String
+  entityId     String?
+  before       Json?
+  after        Json?
+  meta         Json?
+  createdAt    DateTime @default(now())
+
+  @@index([actorUserId])
+  @@index([targetUserId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

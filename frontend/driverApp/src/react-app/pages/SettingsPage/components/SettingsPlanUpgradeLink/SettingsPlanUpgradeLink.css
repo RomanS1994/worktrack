@@ -1,0 +1,86 @@
+.settingsPlanUpgradeLink {
+  display: grid;
+}
+
+.settingsPlanUpgradeLink-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 68px;
+  padding: 10px 14px;
+  border: 1px solid rgba(15, 95, 215, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--text);
+  text-decoration: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 10px 24px rgba(28, 32, 40, 0.05);
+}
+
+.settingsPlanUpgradeLink-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #22c55e, #16a34a);
+  color: #ffffff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 10px 20px rgba(22, 163, 74, 0.18);
+}
+
+.settingsPlanUpgradeLink-icon svg {
+  width: 21px;
+  height: 21px;
+  stroke: currentColor;
+}
+
+.settingsPlanUpgradeLink-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.settingsPlanUpgradeLink-copy strong {
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.settingsPlanUpgradeLink-copy span {
+  color: var(--muted);
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settingsPlanUpgradeLink-chevron {
+  color: rgba(100, 116, 139, 0.82);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+@media (max-width: 480px) {
+  .settingsPlanUpgradeLink-row {
+    min-height: 64px;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 18px;
+  }
+
+  .settingsPlanUpgradeLink-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+  }
+
+  .settingsPlanUpgradeLink-copy strong {
+    font-size: 15px;
+  }
+}

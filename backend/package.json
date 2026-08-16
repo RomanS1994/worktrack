@@ -1,0 +1,21 @@
+{
+  "name": "worktrack-backend",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Backend API for WorkTrack with Prisma and PostgreSQL",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "test": "node --test tests/worktrack-foundation.test.js",
+    "postinstall": "node tools/prisma-postinstall.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "dotenv": "^17.4.1",
+    "prisma": "^6.19.3"
+  }
+}

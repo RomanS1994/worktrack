@@ -1,0 +1,86 @@
+.accountPage {
+  display: grid;
+  gap: 12px;
+}
+
+.accountPage-top {
+  padding-bottom: 18px;
+}
+
+.accountPage-card {
+  display: grid;
+  gap: 14px;
+}
+
+.profileAuth {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.profileAuthForms {
+  display: grid;
+  gap: 16px;
+}
+
+/* Desktop account workspace:
+   profile editing stays readable while summary cards and session actions use a second column. */
+@media (min-width: 1024px) {
+  .accountPage {
+    grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+    align-items: start;
+    gap: 18px;
+    max-width: 1040px;
+    margin-inline: auto;
+  }
+
+  .accountPage-top,
+  .profileHero,
+  .profileAuth {
+    grid-column: 1 / -1;
+  }
+
+  .accountPage-card {
+    grid-column: 1;
+    padding: 18px;
+  }
+
+  .profileWorkspace,
+  .profileDanger {
+    grid-column: 2;
+  }
+
+  .profileAuth {
+    max-width: 760px;
+    width: 100%;
+    margin-inline: auto;
+  }
+
+  .profileAuthForms {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+@media (max-width: 480px) {
+  .accountPage {
+    gap: 8px;
+  }
+
+  .accountPage-top {
+    padding-bottom: 12px;
+  }
+
+  .accountPage-card {
+    gap: 10px;
+  }
+
+  .profileAuth {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .profileAuthForms {
+    gap: 12px;
+  }
+}

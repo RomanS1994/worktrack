@@ -1,0 +1,45 @@
+.authModeSwitch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgba(15, 95, 215, 0.12);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(245, 248, 255, 0.8));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 10px 22px rgba(28, 32, 40, 0.05);
+}
+
+.authModeSwitch-btn {
+  min-height: 44px;
+  border: 0;
+  border-radius: 14px;
+  padding: 0 14px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.authModeSwitch-btn.is-active {
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--text);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.96) inset,
+    0 10px 20px rgba(36, 41, 48, 0.1);
+}
+
+/* Desktop auth switch:
+   preserve the segmented control width inside the wider guest auth card. */
+@media (min-width: 1024px) {
+  .authModeSwitch {
+    max-width: 520px;
+  }
+
+  .authModeSwitch-btn {
+    min-height: 46px;
+    font-size: 13px;
+  }
+}

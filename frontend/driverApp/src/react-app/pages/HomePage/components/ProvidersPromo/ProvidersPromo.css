@@ -1,0 +1,427 @@
+.providersPromo {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  min-height: var(--advertisingCarousel-cardHeight, 188px);
+  padding: 14px 16px 12px;
+  overflow: hidden;
+  border: 1px solid rgba(20, 184, 166, 0.2);
+  border-radius: 24px;
+  color: #102033;
+  background:
+    radial-gradient(circle at 78% 44%, rgba(45, 212, 191, 0.2), transparent 34%),
+    linear-gradient(135deg, #f8fffd 0%, #f5fbff 50%, #effcf8 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 12px 28px rgba(15, 118, 110, 0.08);
+  isolation: isolate;
+}
+
+.providersPromo::before,
+.providersPromo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.providersPromo::before {
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(248, 255, 253, 0.98) 0%, rgba(248, 255, 253, 0.9) 45%, rgba(248, 255, 253, 0.4) 74%, rgba(248, 255, 253, 0.12) 100%),
+    linear-gradient(90deg, rgba(20, 184, 166, 0.034) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(20, 184, 166, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 44px 44px, 44px 44px;
+}
+
+.providersPromo::after {
+  right: 2%;
+  bottom: -28%;
+  left: auto;
+  z-index: 1;
+  width: 58%;
+  height: 62%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(153, 246, 228, 0.24), transparent 68%);
+  filter: blur(4px);
+}
+
+.providersPromo-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  box-sizing: border-box;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  padding-right: 96px;
+  min-width: 0;
+}
+
+.providersPromo-intro {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.providersPromo-eyebrow,
+.providersPromo h2,
+.providersPromo-copy {
+  margin: 0;
+}
+
+.providersPromo-eyebrow {
+  min-height: 14px;
+  color: #0f9f87;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.providersPromo h2 {
+  max-width: none;
+  color: #0f172a;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.08;
+  overflow-wrap: anywhere;
+}
+
+.providersPromo-copy {
+  max-width: none;
+  color: #42617f;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.providersPromo-features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.providersPromo-features li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 5px 8px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 12px;
+  color: #102033;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 8px 18px rgba(15, 118, 110, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.providersPromo-featureIcon {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: #0f9f87;
+  background: linear-gradient(145deg, rgba(240, 253, 250, 0.96), rgba(204, 251, 241, 0.72));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    0 8px 18px rgba(15, 159, 135, 0.08);
+}
+
+.providersPromo-features li:nth-child(2) .providersPromo-featureIcon {
+  color: #2563eb;
+  background: linear-gradient(145deg, rgba(239, 246, 255, 0.96), rgba(219, 234, 254, 0.74));
+}
+
+.providersPromo-features li:nth-child(3) .providersPromo-featureIcon {
+  color: #ea580c;
+  background: linear-gradient(145deg, rgba(255, 247, 237, 0.96), rgba(254, 215, 170, 0.62));
+}
+
+.providersPromo-featureIcon svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.providersPromo-features strong {
+  display: block;
+  color: #102033;
+  font-size: 8.8px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.18;
+}
+
+.providersPromo-cta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.providersPromo-ctaIcon {
+  display: none;
+}
+
+.providersPromo-ctaIcon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.providersPromo-cta strong {
+  display: none;
+}
+
+.providersPromo-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 14px;
+  border-radius: 12px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #14b8a6 0%, #0f8f7d 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 12px 24px rgba(15, 159, 135, 0.22);
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.providersPromo-button svg {
+  width: 13px;
+  height: 13px;
+}
+
+.providersPromo-visual {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.providersPromo-card,
+.providersPromo-line {
+  position: absolute;
+}
+
+.providersPromo-card {
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(20, 184, 166, 0.18);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 12px 26px rgba(15, 118, 110, 0.12);
+}
+
+.providersPromo-card svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.providersPromo-card--main {
+  top: 34px;
+  right: 22px;
+  width: 58px;
+  height: 58px;
+  border-radius: 20px;
+  color: #0f766e;
+}
+
+.providersPromo-card--main svg {
+  width: 27px;
+  height: 27px;
+}
+
+.providersPromo-card--address,
+.providersPromo-card--id {
+  width: 38px;
+  height: 38px;
+  border-radius: 15px;
+}
+
+.providersPromo-card--address {
+  right: 120px;
+  bottom: 42px;
+  color: #2563eb;
+}
+
+.providersPromo-card--id {
+  right: 24px;
+  bottom: 34px;
+  color: #ea580c;
+}
+
+.providersPromo-card--address svg,
+.providersPromo-card--id svg {
+  width: 18px;
+  height: 18px;
+}
+
+.providersPromo-line {
+  z-index: 1;
+  right: 58px;
+  width: 116px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(20, 184, 166, 0), rgba(20, 184, 166, 0.42), rgba(20, 184, 166, 0));
+  transform-origin: center;
+}
+
+.providersPromo-line--one {
+  top: 102px;
+  transform: rotate(30deg);
+}
+
+.providersPromo-line--two {
+  top: 128px;
+  transform: rotate(-24deg);
+}
+
+@media (max-width: 480px) {
+  .providersPromo {
+    min-height: var(--advertisingCarousel-cardHeight, 186px);
+    padding: 11px 13px 10px;
+  }
+
+  .providersPromo-content {
+    width: 100%;
+    padding-right: 68px;
+  }
+
+  .providersPromo-features {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .providersPromo-features li {
+    min-height: 30px;
+    padding: 4px 7px;
+  }
+
+  .providersPromo-features li:nth-child(3) {
+    display: none;
+  }
+
+  .providersPromo-cta {
+    margin: 0;
+    padding: 0;
+  }
+
+  .providersPromo-button {
+    width: 100%;
+    min-height: 30px;
+  }
+
+  .providersPromo-card--main {
+    right: 16px;
+    top: 46px;
+    width: 50px;
+    height: 50px;
+    border-radius: 17px;
+  }
+
+  .providersPromo-card--main svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .providersPromo-card--address,
+  .providersPromo-card--id,
+  .providersPromo-line {
+    display: none;
+  }
+}
+
+/* Desktop providers promo:
+   use the taller carousel card without leaving empty space below the CTA. */
+@media (min-width: 1024px) {
+  .providersPromo {
+    min-height: var(--advertisingCarousel-cardHeight, 252px);
+    padding: 20px 22px 18px;
+  }
+
+  .providersPromo-content {
+    max-width: 72%;
+    padding-right: 126px;
+  }
+
+  .providersPromo-eyebrow {
+    font-size: 10px;
+  }
+
+  .providersPromo h2 {
+    font-size: 20px;
+  }
+
+  .providersPromo-copy {
+    max-width: 34rem;
+    font-size: 14px;
+  }
+
+  .providersPromo-features {
+    max-width: 520px;
+    gap: 10px;
+  }
+
+  .providersPromo-features li {
+    min-height: 42px;
+    border-radius: 14px;
+  }
+
+  .providersPromo-features strong {
+    font-size: 11px;
+  }
+
+  .providersPromo-button {
+    min-height: 42px;
+    font-size: 14px;
+  }
+
+  .providersPromo-card--main {
+    top: 52px;
+    right: 40px;
+    width: 76px;
+    height: 76px;
+    border-radius: 24px;
+  }
+
+  .providersPromo-card--main svg {
+    width: 34px;
+    height: 34px;
+  }
+}

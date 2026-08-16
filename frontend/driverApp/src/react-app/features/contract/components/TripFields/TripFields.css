@@ -1,0 +1,321 @@
+.contractFieldsBlock {
+  display: grid;
+  gap: 8px;
+}
+
+.contractField {
+  display: grid;
+  gap: 6px;
+}
+
+.contractField-input {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 30px 0 12px;
+  border: 1px solid rgba(15, 95, 215, 0.14);
+  border-radius: 12px;
+  font: inherit;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text);
+}
+
+.contractOptionalFields {
+  display: grid;
+  gap: 8px;
+}
+
+.contractOptionalField {
+  display: grid;
+  gap: 6px;
+}
+
+.contractOptionalField-trigger {
+  width: 100%;
+  min-height: 46px;
+  padding: 7px 11px;
+  border: 1px solid rgba(218, 226, 239, 0.92);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--text);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 8px 18px rgba(15, 23, 42, 0.035);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+
+.contractOptionalField-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.contractOptionalField-title {
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--text);
+}
+
+.contractOptionalField-value {
+  overflow: hidden;
+  color: rgba(100, 116, 139, 0.92);
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contractOptionalField-chevron {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  color: rgba(100, 116, 139, 0.9);
+  transition: transform 160ms ease;
+}
+
+.contractOptionalField-chevron svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+}
+
+.contractDateField {
+  position: relative;
+  width: min(100%, 280px);
+  min-height: 42px;
+  justify-self: end;
+  cursor: pointer;
+}
+
+.contractDateField-trigger {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 40px 10px 12px;
+  border: 1px solid rgba(60, 60, 67, 0.1);
+  border-radius: 16px;
+  background: rgba(248, 249, 252, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 1px 2px rgba(28, 32, 40, 0.04);
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.contractDateField.is-selected .contractDateField-trigger {
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.contractDateField-trigger:focus-visible {
+  outline: none;
+  border-color: rgba(0, 122, 255, 0.32);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow:
+    0 0 0 4px rgba(0, 122, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.contractDateField-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(37, 99, 235, 0.08);
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.contractDateField-icon svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+}
+
+.contractDateField-value {
+  min-width: 0;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contractDateField-value.is-placeholder {
+  color: rgba(148, 156, 168, 0.72);
+}
+
+.contractField-clear {
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  min-width: 20px;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 1px solid rgba(15, 95, 215, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: rgba(100, 116, 139, 0.96);
+  font: inherit;
+  font-size: 0.78rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: none;
+  appearance: none;
+  display: grid;
+  place-items: center;
+  z-index: 1;
+}
+
+.contractDateField-clear {
+  right: 10px;
+  z-index: 3;
+}
+
+.contractField-clear:hover:not(:disabled),
+.contractField-clear:active:not(:disabled) {
+  transform: translateY(-50%);
+  box-shadow: none;
+  background: rgba(15, 95, 215, 0.08);
+  border-color: rgba(15, 95, 215, 0.2);
+}
+
+.contractField-clear:focus-visible {
+  outline: 2px solid rgba(15, 95, 215, 0.24);
+  outline-offset: 2px;
+}
+
+.paymentMethodBlock {
+  display: grid;
+  gap: 6px;
+}
+
+.paymentMethodLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(100, 116, 139, 0.94);
+}
+
+.paymentMethodRequired {
+  color: rgba(220, 38, 38, 0.9);
+}
+
+.paymentMethodButtons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.paymentMethodButton {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid rgba(15, 95, 215, 0.14);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 245, 255, 0.9));
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 8px 18px rgba(15, 23, 42, 0.04);
+}
+
+.paymentMethodButton.is-active {
+  border-color: rgba(15, 95, 215, 0.32);
+  background: linear-gradient(180deg, rgba(31, 111, 255, 0.16), rgba(15, 95, 215, 0.1));
+  color: var(--primary);
+}
+
+.paymentMethodButton-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  color: currentColor;
+  flex: none;
+}
+
+.paymentMethodButton-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Desktop trip fields:
+   date and payment controls stay compact inside the two-column contract form. */
+@media (min-width: 1024px) {
+  .contractOptionalFields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .contractDateField {
+    width: 100%;
+  }
+
+  .paymentMethodButtons {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .contractDateField {
+    width: min(100%, 100%);
+  }
+
+  .contractDateField-trigger {
+    width: 100%;
+    padding-right: 38px;
+  }
+
+  .paymentMethodButton {
+    min-height: 40px;
+    padding: 0 10px;
+    border-radius: 13px;
+    gap: 6px;
+  }
+
+  .paymentMethodButton-icon {
+    width: 15px;
+    height: 15px;
+  }
+
+  .paymentMethodButton-icon svg {
+    width: 15px;
+    height: 15px;
+  }
+}

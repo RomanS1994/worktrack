@@ -1,0 +1,271 @@
+.historyDisplayScreen {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+  padding: 24px;
+  --back-button-color: var(--display-accent);
+}
+
+.historyDisplayScreen-top {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  z-index: 2;
+}
+
+.historyDisplayScreen-toolbar {
+  position: relative;
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+  align-self: flex-start;
+}
+
+.historyDisplayScreen-controlsToggle {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--display-text);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.historyDisplayScreen-controlsToggle svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.historyDisplayScreen-controlsPanel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  justify-items: end;
+  transition:
+    transform 220ms ease,
+    opacity 220ms ease;
+  transform-origin: top right;
+}
+
+.historyDisplayScreen-controlsPanel.is-open {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.historyDisplayScreen-controlsPanel.is-closed {
+  transform: translateY(calc(-100% - 12px));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.historyDisplayScreen-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.historyDisplayScreen-control {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.historyDisplayScreen-controlLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--display-secondary);
+}
+
+.historyDisplayScreen-selectShell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: 146px;
+  min-height: 42px;
+  padding: 0 4px 0 4px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.historyDisplayScreen-selectShell::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid rgba(15, 23, 42, 0.62);
+  border-bottom: 1.5px solid rgba(15, 23, 42, 0.62);
+  transform: translateY(-60%) rotate(45deg);
+  pointer-events: none;
+}
+
+.historyDisplayScreen-selectIcon,
+.historyDisplayScreen-selectSwatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.historyDisplayScreen-selectIcon {
+  min-width: 26px;
+  min-height: 26px;
+  margin-right: 8px;
+  border-radius: 999px;
+  color: rgba(15, 23, 42, 0.68);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.historyDisplayScreen-selectSwatch {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 50%;
+  background: var(--swatch-color);
+}
+
+.historyDisplayScreen-select {
+  width: 100%;
+  padding: 0 22px 0 0;
+  border: 0;
+  background: transparent;
+  color: var(--display-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.historyDisplayScreen-body {
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.historyDisplayScreen-copy {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  max-width: min(92vw, 900px);
+  transform: translateY(-10vh);
+}
+
+.historyDisplayScreen-name {
+  margin: 0;
+  color: var(--display-text);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+
+.historyDisplayScreen-name--compact {
+  font-size: clamp(36px, 8vw, 64px);
+}
+
+.historyDisplayScreen-name--small {
+  font-size: clamp(44px, 10vw, 80px);
+}
+
+.historyDisplayScreen-name--medium {
+  font-size: clamp(54px, 12vw, 100px);
+}
+
+.historyDisplayScreen-name--large {
+  font-size: clamp(66px, 14vw, 126px);
+}
+
+.historyDisplayScreen-name--huge {
+  font-size: clamp(72px, 16vw, 148px);
+  line-height: 1.1;
+}
+
+.historyDisplayScreen-state {
+  margin: 0;
+  color: var(--display-secondary);
+  font-size: 14px;
+}
+
+@media (max-width: 480px) {
+  .historyDisplayScreen {
+    padding: 16px;
+  }
+
+  .historyDisplayScreen-top {
+    gap: 12px;
+  }
+
+  .historyDisplayScreen-toolbar {
+    gap: 6px;
+  }
+
+  .historyDisplayScreen-controlsToggle {
+    width: 36px;
+    height: 36px;
+  }
+
+  .historyDisplayScreen-controlsPanel {
+    top: calc(100% + 6px);
+    max-width: calc(100vw - 32px);
+  }
+
+  .historyDisplayScreen-controls {
+    justify-content: flex-start;
+    gap: 4px;
+  }
+
+  .historyDisplayScreen-selectShell {
+    min-width: 132px;
+    min-height: 40px;
+  }
+
+  .historyDisplayScreen-controlLabel {
+    font-size: 9px;
+  }
+
+  .historyDisplayScreen-copy {
+    gap: 0;
+  }
+}
+
+/* Desktop history display screen:
+   give presentation controls more room without changing the centered name layout. */
+@media (min-width: 1024px) {
+  .historyDisplayScreen {
+    padding: 32px 40px;
+  }
+
+  .historyDisplayScreen-controls {
+    gap: 8px;
+  }
+
+  .historyDisplayScreen-selectShell {
+    min-width: 168px;
+  }
+}
