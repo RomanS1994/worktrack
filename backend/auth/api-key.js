@@ -3,6 +3,9 @@ import { sendError } from '../lib/http.js';
 
 export function requireApiKey(request, response) {
   const apiKey = getApiKey();
+  const pathName = request.url?.split('?')[0];
+
+  if (pathName === '/api/health') return true;
 
   if (!apiKey) return true;
 

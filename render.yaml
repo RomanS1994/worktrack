@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: worktrack-backend
+    runtime: node
+    branch: main
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TZ
+        value: Europe/Prague
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_DATABASE_URL
+        sync: false
+      - key: AUTH_TOKEN_SECRET
+        sync: false
+      - key: CLIENT_ORIGIN
+        sync: false
