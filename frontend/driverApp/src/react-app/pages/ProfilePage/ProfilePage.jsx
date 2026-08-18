@@ -1,14 +1,26 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
+import { baseApi } from '@shared/app/api/baseApi.js';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { hasManagerAccess } from '@shared/features/auth/authAccess.js';
 import {
   useChangePasswordMutation,
+  useDeleteMeMutation,
+  useLogoutMutation,
   useUpdateProfileMutation,
 } from '@shared/features/auth/authApi.js';
-import { selectToken, selectUser, setSession } from '@shared/features/auth/authSlice.js';
-import { saveSession } from '@shared/features/auth/authStorage.js';
+import {
+  clearSession as clearAuthSession,
+  selectToken,
+  selectUser,
+  setSession,
+} from '@shared/features/auth/authSlice.js';
+import {
+  clearSession as clearStoredSession,
+  saveSession,
+} from '@shared/features/auth/authStorage.js';
 import './ProfilePage.css';
 
 function getName(user) {
@@ -17,6 +29,7 @@ function getName(user) {
 
 export function ProfilePage() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const user = useSelector(selectUser);
   const token = useSelector(selectToken);
   const roleLabel = hasManagerAccess(user) ? 'MANAGER' : 'EMPLOYEE';
@@ -36,6 +49,11 @@ export function ProfilePage() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
 
+  const [logout, logoutState] = useLogoutMutation();
+  const [deleteMe, deleteState] = useDeleteMeMutation();
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [accountError, setAccountError] = useState('');
+
   useEffect(() => {
     setFirstName(user?.firstName || '');
     setLastName(user?.lastName || '');
@@ -45,6 +63,12 @@ export function ProfilePage() {
   function applyUpdatedUser(updatedUser) {
     saveSession(token, updatedUser);
     dispatch(setSession({ token, user: updatedUser }));
+  }
+
+  function clearClientSession() {
+    clearStoredSession();
+    dispatch(clearAuthSession());
+    dispatch(baseApi.util.resetApiState());
   }
 
   async function handleProfileSubmit(event) {
@@ -97,6 +121,31 @@ export function ProfilePage() {
       setPasswordSuccess('Password updated successfully');
     } catch (error) {
       setPasswordError(getApiErrorMessage(error));
+    }
+  }
+
+  async function handleLogout() {
+    setAccountError('');
+
+    try {
+      await logout().unwrap();
+      clearClientSession();
+      navigate('/sign-in', { replace: true });
+    } catch (error) {
+      setAccountError(getApiErrorMessage(error));
+    }
+  }
+
+  async function handleDeleteAccount() {
+    if (deleteConfirmation.trim() !== 'DELETE') return;
+    setAccountError('');
+
+    try {
+      await deleteMe().unwrap();
+      clearClientSession();
+      navigate('/sign-in', { replace: true });
+    } catch (error) {
+      setAccountError(getApiErrorMessage(error));
     }
   }
 
@@ -187,7 +236,7 @@ export function ProfilePage() {
       <form className="profilePasswordCard screenCard" onSubmit={handlePasswordSubmit}>
         <div className="compactHeader">
           <h2>Change password</h2>
-          <p>Use at least 8 characters.</p>
+          <p>Use at least 8 characters. Other signed-in sessions are revoked after a password change.</p>
         </div>
 
         <label className="profileField">
@@ -232,6 +281,51 @@ export function ProfilePage() {
           {changeState.isLoading ? 'Updating…' : 'Update password'}
         </button>
       </form>
+
+      <section className="profileAccountCard screenCard">
+        <div className="compactHeader">
+          <h2>Account & security</h2>
+          <p>Sign out on this device or permanently remove your WorkTrack account.</p>
+        </div>
+
+        <button
+          className="profileSecondaryButton"
+          type="button"
+          disabled={logoutState.isLoading || deleteState.isLoading}
+          onClick={handleLogout}
+        >
+          {logoutState.isLoading ? 'Signing out…' : 'Sign out'}
+        </button>
+
+        <div className="profileDangerZone">
+          <div>
+            <strong>Delete account</strong>
+            <p>This signs you out everywhere and disables access to your account. This action cannot be undone from the app.</p>
+          </div>
+
+          <label className="profileField">
+            <span>Type DELETE to confirm</span>
+            <input
+              type="text"
+              autoComplete="off"
+              value={deleteConfirmation}
+              onChange={event => setDeleteConfirmation(event.target.value)}
+              disabled={deleteState.isLoading}
+            />
+          </label>
+
+          <button
+            className="profileDangerButton"
+            type="button"
+            disabled={deleteState.isLoading || deleteConfirmation.trim() !== 'DELETE'}
+            onClick={handleDeleteAccount}
+          >
+            {deleteState.isLoading ? 'Deleting…' : 'Delete account'}
+          </button>
+        </div>
+
+        {accountError ? <p className="statusNote is-error">{accountError}</p> : null}
+      </section>
     </section>
   );
 }

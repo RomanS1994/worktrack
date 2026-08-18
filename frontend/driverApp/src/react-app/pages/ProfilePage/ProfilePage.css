@@ -63,7 +63,8 @@
 }
 
 .profileEditCard,
-.profilePasswordCard {
+.profilePasswordCard,
+.profileAccountCard {
   display: grid;
   gap: 14px;
 }
@@ -105,20 +106,63 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
 }
 
-.profilePrimaryButton {
+.profilePrimaryButton,
+.profileSecondaryButton,
+.profileDangerButton {
   min-height: 46px;
-  border: 0;
   border-radius: 14px;
-  background: var(--text);
-  color: white;
   font: inherit;
   font-weight: 800;
   cursor: pointer;
 }
 
-.profilePrimaryButton:disabled {
+.profilePrimaryButton {
+  border: 0;
+  background: var(--text);
+  color: white;
+}
+
+.profileSecondaryButton {
+  border: 1px solid rgba(71, 85, 105, 0.16);
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--text);
+}
+
+.profileDangerZone {
+  display: grid;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(239, 68, 68, 0.14);
+}
+
+.profileDangerZone > div:first-child {
+  display: grid;
+  gap: 5px;
+}
+
+.profileDangerZone strong {
+  color: #991b1b;
+  font-size: 14px;
+}
+
+.profileDangerZone p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.profileDangerButton {
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  background: rgba(254, 242, 242, 0.94);
+  color: #b91c1c;
+}
+
+.profilePrimaryButton:disabled,
+.profileSecondaryButton:disabled,
+.profileDangerButton:disabled {
   cursor: wait;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 @media (max-width: 560px) {
