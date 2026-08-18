@@ -2,6 +2,7 @@ import { requireManager } from '../../auth/context.js';
 import { runStoreRead, runStoreTransaction } from '../../db/store.js';
 import { readJsonBody, sendJson } from '../../lib/http.js';
 import { resetEmployeePassword } from '../../services/employee-password-reset.js';
+import { getManagerPayroll } from '../../services/manager-payroll.js';
 import {
   createManagerEmployee,
   getManagerSubmissionById,
@@ -12,6 +13,21 @@ import {
 } from '../../services/worktrack.js';
 
 export async function handleManagerRoutes(request, response, { pathName, url }) {
+  if (request.method === 'GET' && pathName === '/api/manager/payroll') {
+    const context = await requireManager(request, response);
+    if (!context) return true;
+
+    const payload = await runStoreRead({
+      prisma: client =>
+        getManagerPayroll(client, context, {
+          period: url.searchParams.get('period'),
+          anchor: url.searchParams.get('anchor'),
+        }),
+    });
+    sendJson(response, 200, payload);
+    return true;
+  }
+
   if (request.method === 'GET' && pathName === '/api/manager/employees') {
     const context = await requireManager(request, response);
     if (!context) return true;
