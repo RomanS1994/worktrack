@@ -26,7 +26,7 @@ export const PLACEHOLDER_FRAGMENTS = [
 
 export const RUNTIME_ENV_GROUPS = {
   auth: ['AUTH_TOKEN_SECRET', 'ACCESS_TOKEN_TTL_MINUTES', 'REFRESH_*'],
-  api: ['API_KEY'],
+  api: ['API_KEY', 'CLIENT_ORIGIN'],
   database: ['DATABASE_URL', 'DIRECT_DATABASE_URL'],
   frontend: ['VITE_API_BASE_URL', 'VITE_API_KEY'],
 };

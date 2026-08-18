@@ -13,6 +13,7 @@ jobs:
     timeout-minutes: 15
     env:
       DATABASE_URL: postgresql://127.0.0.1:5432/worktrack?schema=public
+      VITE_API_BASE_URL: http://127.0.0.1:3000/api
 
     steps:
       - name: Checkout
@@ -38,6 +39,9 @@ jobs:
 
       - name: Build frontend
         run: npm run build:driver
+
+      - name: Audit production runtime dependencies
+        run: node tools/audit-production.js
 
       - name: Scan tracked files for secrets
         run: npm run secrets:check
