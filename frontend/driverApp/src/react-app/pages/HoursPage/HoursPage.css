@@ -85,6 +85,25 @@
   gap: 8px;
 }
 
+.hoursRejectionNotice {
+  display: grid;
+  gap: 5px;
+  padding: 14px 16px;
+  border: 1px solid rgba(180, 35, 24, 0.18);
+  border-radius: 18px;
+  background: rgba(254, 226, 226, 0.68);
+}
+
+.hoursRejectionNotice strong {
+  color: #b42318;
+}
+
+.hoursRejectionNotice p {
+  margin: 0;
+  color: #7f1d1d;
+  line-height: 1.45;
+}
+
 .hoursSummaryGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
