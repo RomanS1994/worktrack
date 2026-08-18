@@ -10,7 +10,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
-    "test": "node --test tests/worktrack-foundation.test.js",
+    "test": "node --test tests/*.test.js",
     "postinstall": "node tools/prisma-postinstall.js"
   },
   "dependencies": {

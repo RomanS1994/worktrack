@@ -163,6 +163,13 @@ export const worktrackApi = baseApi.injectEndpoints({
         { type: 'WorkEntries', id: 'SUMMARY' },
       ],
     }),
+    resetManagerEmployeePassword: builder.mutation({
+      query: ({ employeeId, temporaryPassword }) => ({
+        url: `/manager/employees/${employeeId}/reset-password`,
+        method: 'POST',
+        body: { temporaryPassword },
+      }),
+    }),
     getManagerSubmissions: builder.query({
       query: (query = {}) => ({
         url: '/manager/submissions',
@@ -232,6 +239,7 @@ export const {
   useGetManagerEmployeesQuery,
   useCreateManagerEmployeeMutation,
   useUpdateManagerEmployeeMutation,
+  useResetManagerEmployeePasswordMutation,
   useGetManagerSubmissionsQuery,
   useGetManagerSubmissionQuery,
   useApproveSubmissionMutation,
