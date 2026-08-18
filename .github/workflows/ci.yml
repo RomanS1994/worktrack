@@ -39,5 +39,10 @@ jobs:
       - name: Build frontend
         run: npm run build:driver
 
+      - name: Audit production dependencies
+        run: |
+          npm audit --omit=dev --audit-level=high
+          npm --prefix backend audit --omit=dev --audit-level=high
+
       - name: Scan tracked files for secrets
         run: npm run secrets:check
