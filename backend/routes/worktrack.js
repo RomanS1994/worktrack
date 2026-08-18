@@ -1,6 +1,7 @@
 import { getAuthContext, requireEmployee } from '../auth/context.js';
 import { runStoreRead, runStoreTransaction } from '../db/store.js';
 import { readJsonBody, sendJson } from '../lib/http.js';
+import { getManagerDashboard } from '../services/manager-dashboard.js';
 import { notifyManagersAboutSubmission } from '../services/notifications.js';
 import {
   createEmployeeWorkEntry,
@@ -10,7 +11,6 @@ import {
   getCompanySettings,
   getEmployeeDashboardSummary,
   getEmployeeWeek,
-  getManagerDashboardSummary,
   listProjects,
   submitEmployeeWeek,
   updateCompanySettings,
@@ -100,8 +100,7 @@ export async function handleWorkTrackRoutes(request, response, { pathName, url }
     if (!context) return true;
 
     const payload = await runStoreRead({
-      prisma: client =>
-        getEmployeeWeek(client, context, url.searchParams.get('weekStart')),
+      prisma: client => getEmployeeWeek(client, context, url.searchParams.get('weekStart')),
     });
     sendJson(response, 200, payload);
     return true;
@@ -126,8 +125,7 @@ export async function handleWorkTrackRoutes(request, response, { pathName, url }
 
     const body = await readJsonBody(request);
     const entry = await runStoreTransaction({
-      prisma: client =>
-        updateEmployeeWorkEntry(client, context, workEntryMatch[1], body),
+      prisma: client => updateEmployeeWorkEntry(client, context, workEntryMatch[1], body),
     });
     sendJson(response, 200, { entry });
     return true;
@@ -167,7 +165,7 @@ export async function handleWorkTrackRoutes(request, response, { pathName, url }
     const payload = await runStoreRead({
       prisma: client =>
         context.activeMembership?.role === 'MANAGER'
-          ? getManagerDashboardSummary(client, context)
+          ? getManagerDashboard(client, context)
           : getEmployeeDashboardSummary(client, context, url.searchParams.get('weekStart')),
     });
     sendJson(response, 200, payload);

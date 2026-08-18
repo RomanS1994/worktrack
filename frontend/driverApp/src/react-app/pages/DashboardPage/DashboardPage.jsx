@@ -23,60 +23,46 @@ function formatCzk(value) {
 
 function buildManagerMetrics(summary = {}) {
   return [
-    {
-      label: 'Employees',
-      value: String(summary.employeeCount || 0),
-      note: 'Active employees',
-      icon: 'accounts',
-    },
-    {
-      label: 'Projects',
-      value: String(summary.activeProjectCount || 0),
-      note: 'Active worksites',
-      icon: 'location',
-    },
-    {
-      label: 'Pending',
-      value: String(summary.pendingSubmissions || 0),
-      note: 'Weekly submissions',
-      icon: 'check-circle',
-    },
-    {
-      label: 'Payroll',
-      value: formatCzk(summary.confirmedSalaryCzk),
-      note: 'Confirmed amount',
-      icon: 'wallet',
-    },
+    { label: 'Employees', value: String(summary.employeeCount || 0), note: 'Active employees', icon: 'accounts' },
+    { label: 'Projects', value: String(summary.activeProjectCount || 0), note: 'Active worksites', icon: 'location' },
+    { label: 'Pending', value: String(summary.pendingSubmissions || 0), note: 'This week to review', icon: 'check-circle' },
+    { label: 'Payroll', value: formatCzk(summary.confirmedSalaryCzk), note: `${formatCzk(summary.predictedSalaryCzk)} pending`, icon: 'wallet' },
   ];
 }
 
 function buildEmployeeMetrics(summary = {}) {
   return [
-    {
-      label: 'This week',
-      value: `${summary.totalHours || '0.00'} h`,
-      note: 'All saved entries',
-      icon: 'clock',
-    },
-    {
-      label: 'Pending',
-      value: `${summary.pendingHours || '0.00'} h`,
-      note: 'Draft or submitted',
-      icon: 'send',
-    },
-    {
-      label: 'Approved',
-      value: `${summary.approvedHours || '0.00'} h`,
-      note: 'Confirmed hours',
-      icon: 'check-circle',
-    },
-    {
-      label: 'Salary',
-      value: formatCzk(summary.confirmedSalaryCzk),
-      note: `${formatCzk(summary.predictedSalaryCzk)} predicted`,
-      icon: 'wallet',
-    },
+    { label: 'This week', value: `${summary.totalHours || '0.00'} h`, note: 'All saved entries', icon: 'clock' },
+    { label: 'Pending', value: `${summary.pendingHours || '0.00'} h`, note: 'Draft or submitted', icon: 'send' },
+    { label: 'Approved', value: `${summary.approvedHours || '0.00'} h`, note: 'Confirmed hours', icon: 'check-circle' },
+    { label: 'Salary', value: formatCzk(summary.confirmedSalaryCzk), note: `${formatCzk(summary.predictedSalaryCzk)} predicted`, icon: 'wallet' },
   ];
+}
+
+function TeamList({ title, items, emptyText, tone = '' }) {
+  return (
+    <article className={`dashboardTeamCard ${tone}`}>
+      <div className="dashboardTeamCard-header">
+        <h3>{title}</h3>
+        <span>{items.length}</span>
+      </div>
+      {items.length ? (
+        <div className="dashboardTeamList">
+          {items.map(item => (
+            <div className="dashboardTeamItem" key={item.id}>
+              <div>
+                <strong>{item.name}</strong>
+                <span>{item.email}</span>
+              </div>
+              {item.rejectionReason ? <p>{item.rejectionReason}</p> : null}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="dashboardTeamEmpty">{emptyText}</p>
+      )}
+    </article>
+  );
 }
 
 export function DashboardPage() {
@@ -84,10 +70,9 @@ export function DashboardPage() {
   const isManager = hasManagerAccess(user);
   const { data, error, isLoading } = useGetWorkSummaryQuery();
   const summary = data?.summary || {};
+  const team = data?.team || {};
   const companyName = getCompanyName(user, data);
-  const primaryItems = isManager
-    ? buildManagerMetrics(summary)
-    : buildEmployeeMetrics(summary);
+  const primaryItems = isManager ? buildManagerMetrics(summary) : buildEmployeeMetrics(summary);
 
   return (
     <section className="dashboardPage pageStack">
@@ -96,6 +81,7 @@ export function DashboardPage() {
           <p className="sectionEyebrow">{isManager ? 'Manager workspace' : 'Employee workspace'}</p>
           <h1>Dashboard</h1>
           <p>{isManager ? companyName : getDisplayName(user)}</p>
+          {isManager && data?.week ? <small>{data.week.weekStart} — {data.week.weekEnd}</small> : null}
         </div>
       </header>
 
@@ -105,9 +91,7 @@ export function DashboardPage() {
       <section className="dashboardMetrics" aria-label="Workspace summary">
         {primaryItems.map(item => (
           <article className="dashboardMetric" key={item.label}>
-            <span className="dashboardMetric-icon" aria-hidden="true">
-              <SvgIcon name={item.icon} />
-            </span>
+            <span className="dashboardMetric-icon" aria-hidden="true"><SvgIcon name={item.icon} /></span>
             <span className="dashboardMetric-label">{item.label}</span>
             <strong>{item.value}</strong>
             <p>{item.note}</p>
@@ -115,69 +99,40 @@ export function DashboardPage() {
         ))}
       </section>
 
+      {isManager ? (
+        <section className="dashboardPanel screenCard">
+          <div className="compactHeader">
+            <h2>Team this week</h2>
+            <p>{summary.notSubmittedCount || 0} not submitted · {summary.needsChangesCount || 0} need changes</p>
+          </div>
+          <div className="dashboardTeamGrid">
+            <TeamList title="Not submitted" items={team.notSubmitted || []} emptyText="Everyone has submitted." tone="is-warning" />
+            <TeamList title="Needs changes" items={team.needsChanges || []} emptyText="No rejected weeks." tone="is-danger" />
+            <TeamList title="Waiting review" items={team.submitted || []} emptyText="Nothing waiting for review." />
+            <TeamList title="Approved" items={team.approved || []} emptyText="No approved weeks yet." tone="is-success" />
+          </div>
+        </section>
+      ) : null}
+
       <section className="dashboardPanel screenCard">
         <div className="compactHeader">
-          <h2>{isManager ? 'Weekly review' : 'Current week'}</h2>
-          <p>
-            {isManager
-              ? `${summary.pendingSubmissions || 0} submissions waiting for review.`
-              : `${data?.submission?.status || 'DRAFT'} week status.`}
-          </p>
+          <h2>{isManager ? 'Quick actions' : 'Current week'}</h2>
+          <p>{isManager ? `${summary.pendingSubmissions || 0} submissions waiting for review.` : `${data?.submission?.status || 'DRAFT'} week status.`}</p>
         </div>
 
         <div className="dashboardActions">
           {isManager ? (
             <>
-              <Link className="dashboardActionLink" to="/approvals">
-                <span aria-hidden="true">
-                  <SvgIcon name="check-circle" />
-                </span>
-                Approvals
-              </Link>
-
-              <Link className="dashboardActionLink" to="/employees">
-                <span aria-hidden="true">
-                  <SvgIcon name="accounts" />
-                </span>
-                Employees
-              </Link>
-
-              <Link className="dashboardActionLink" to="/projects">
-                <span aria-hidden="true">
-                  <SvgIcon name="location" />
-                </span>
-                Projects
-              </Link>
-
-              <Link className="dashboardActionLink" to="/company-settings">
-                <span aria-hidden="true">
-                  <SvgIcon name="settings" />
-                </span>
-                Company
-              </Link>
-
-              <Link className="dashboardActionLink" to="/payroll-report">
-                <span aria-hidden="true">
-                  <SvgIcon name="wallet" />
-                </span>
-                Payroll report
-              </Link>
+              <Link className="dashboardActionLink" to="/approvals"><span aria-hidden="true"><SvgIcon name="check-circle" /></span>Approvals</Link>
+              <Link className="dashboardActionLink" to="/employees"><span aria-hidden="true"><SvgIcon name="accounts" /></span>Employees</Link>
+              <Link className="dashboardActionLink" to="/projects"><span aria-hidden="true"><SvgIcon name="location" /></span>Projects</Link>
+              <Link className="dashboardActionLink" to="/company-settings"><span aria-hidden="true"><SvgIcon name="settings" /></span>Company</Link>
+              <Link className="dashboardActionLink" to="/payroll-report"><span aria-hidden="true"><SvgIcon name="wallet" /></span>Payroll report</Link>
             </>
           ) : (
             <>
-              <Link className="dashboardActionLink" to="/hours">
-                <span aria-hidden="true">
-                  <SvgIcon name="clock" />
-                </span>
-                Hours
-              </Link>
-
-              <Link className="dashboardActionLink" to="/payroll-report">
-                <span aria-hidden="true">
-                  <SvgIcon name="wallet" />
-                </span>
-                Payroll report
-              </Link>
+              <Link className="dashboardActionLink" to="/hours"><span aria-hidden="true"><SvgIcon name="clock" /></span>Hours</Link>
+              <Link className="dashboardActionLink" to="/payroll-report"><span aria-hidden="true"><SvgIcon name="wallet" /></span>Payroll report</Link>
             </>
           )}
         </div>
