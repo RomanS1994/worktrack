@@ -10,6 +10,7 @@ import { DashboardPage } from './pages/DashboardPage/DashboardPage.jsx';
 import { EmployeesPage } from './pages/EmployeesPage/EmployeesPage.jsx';
 import { HomePage } from './pages/HomePage/HomePage.jsx';
 import { HoursPage } from './pages/HoursPage/HoursPage.jsx';
+import { PayrollReportPage } from './pages/PayrollReportPage/PayrollReportPage.jsx';
 import { ProfilePage } from './pages/ProfilePage/ProfilePage.jsx';
 import { ProjectsPage } from './pages/ProjectsPage/ProjectsPage.jsx';
 import { SignInPage } from './pages/SignInPage/SignInPage.jsx';
@@ -44,6 +45,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute requireEmployee>
             <HoursPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'payroll-report',
+        element: (
+          <ProtectedRoute>
+            <PayrollReportPage />
           </ProtectedRoute>
         ),
       },

@@ -155,14 +155,30 @@ export function DashboardPage() {
                 </span>
                 Company
               </Link>
+
+              <Link className="dashboardActionLink" to="/payroll-report">
+                <span aria-hidden="true">
+                  <SvgIcon name="wallet" />
+                </span>
+                Payroll report
+              </Link>
             </>
           ) : (
-            <Link className="dashboardActionLink" to="/hours">
-              <span aria-hidden="true">
-                <SvgIcon name="clock" />
-              </span>
-              Hours
-            </Link>
+            <>
+              <Link className="dashboardActionLink" to="/hours">
+                <span aria-hidden="true">
+                  <SvgIcon name="clock" />
+                </span>
+                Hours
+              </Link>
+
+              <Link className="dashboardActionLink" to="/payroll-report">
+                <span aria-hidden="true">
+                  <SvgIcon name="wallet" />
+                </span>
+                Payroll report
+              </Link>
+            </>
           )}
         </div>
       </section>
