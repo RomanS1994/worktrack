@@ -11,13 +11,13 @@ function serializeSubmissionStatus(submission) {
   return submission.status || 'NOT_SUBMITTED';
 }
 
-export async function getManagerDashboard(client, context) {
+export async function getManagerDashboard(client, context, now = new Date()) {
   const membership = context?.activeMembership;
   if (!membership || membership.role !== 'MANAGER' || membership.status === 'INACTIVE') {
     throw new Error('Manager access is required');
   }
 
-  const range = getWeekRange(new Date());
+  const range = getWeekRange(now);
   const week = serializeWeek(range);
   const [payroll, activeProjectCount, pendingSubmissions, employees] = await Promise.all([
     getManagerPayroll(client, context, { period: 'week', anchor: week.weekStart }),
