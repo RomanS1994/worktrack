@@ -177,6 +177,40 @@
   font-weight: 800;
 }
 
+.approvalRejectionField {
+  display: grid;
+  gap: 7px;
+}
+
+.approvalRejectionField label {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.approvalRejectionField textarea {
+  width: 100%;
+  min-height: 92px;
+  resize: vertical;
+  padding: 11px 12px;
+  border: 1px solid rgba(71, 85, 105, 0.14);
+  border-radius: 14px;
+  color: var(--text);
+  background: rgba(248, 250, 252, 0.9);
+  font: inherit;
+  line-height: 1.45;
+}
+
+.approvalRejectionField textarea:focus {
+  outline: 2px solid rgba(37, 99, 235, 0.14);
+  border-color: rgba(37, 99, 235, 0.36);
+}
+
+.approvalRejectionField small {
+  color: var(--muted);
+  font-size: 11px;
+  text-align: right;
+}
+
 .approvalActions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
