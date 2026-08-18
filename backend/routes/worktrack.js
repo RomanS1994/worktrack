@@ -1,6 +1,7 @@
 import { getAuthContext, requireEmployee } from '../auth/context.js';
 import { runStoreRead, runStoreTransaction } from '../db/store.js';
 import { readJsonBody, sendJson } from '../lib/http.js';
+import { notifyManagersAboutSubmission } from '../services/notifications.js';
 import {
   createEmployeeWorkEntry,
   createProject,
@@ -149,7 +150,11 @@ export async function handleWorkTrackRoutes(request, response, { pathName, url }
 
     const body = await readJsonBody(request);
     const submission = await runStoreTransaction({
-      prisma: client => submitEmployeeWeek(client, context, body),
+      prisma: async client => {
+        const createdSubmission = await submitEmployeeWeek(client, context, body);
+        await notifyManagersAboutSubmission(client, context, createdSubmission);
+        return createdSubmission;
+      },
     });
     sendJson(response, 201, { submission });
     return true;
