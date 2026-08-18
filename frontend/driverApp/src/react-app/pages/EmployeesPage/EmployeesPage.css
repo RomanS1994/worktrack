@@ -1,268 +1,100 @@
-.employeesPage {
-  gap: 14px;
-}
+.employeesPage { gap: 18px; }
 
 .employeesHeader {
-  border-color: rgba(37, 99, 235, 0.12);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 255, 0.9));
+  padding: 4px 2px 8px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
-.employeesPanel {
-  display: grid;
-  gap: 16px;
-  padding: 16px;
-  border-radius: 20px;
-}
+.employeesHeader .appTitleBlock h1 { font-size: clamp(32px, 4vw, 44px); letter-spacing: -0.04em; }
+.employeesHeader .appTitleBlock p:last-child { max-width: none; font-size: 14px; }
 
 .employeesWorkspace {
   display: grid;
   gap: 16px;
-  grid-template-columns: minmax(280px, 0.82fr) minmax(0, 1.18fr);
+  grid-template-columns: minmax(300px, .76fr) minmax(0, 1.24fr);
+  align-items: start;
 }
 
-.employeesCreate {
+.employeesCreate,
+.employeesPanel {
   display: grid;
-  gap: 14px;
-  align-self: start;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(255,255,255,.86);
+  box-shadow: 0 10px 30px rgba(15,23,42,.045);
 }
 
-.employeesFormGrid {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
+.employeesCreate { position: sticky; top: 24px; }
 
+.employeesFormGrid { display:grid; gap:12px; grid-template-columns:repeat(2,minmax(0,1fr)); }
 .employeesField,
-.employeeRateEditor label {
-  display: grid;
-  gap: 7px;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-}
+.employeeRateEditor label { display:grid; gap:7px; color:var(--muted); font-size:12px; font-weight:700; }
 
 .employeesField input,
-.employeeRateEditor input {
-  width: 100%;
-  min-height: 40px;
-  padding: 0 12px;
-  border: 1px solid rgba(15, 95, 215, 0.12);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--text);
-  font: inherit;
+.employeeRateEditor input,
+.employeePasswordReset input {
+  width:100%; min-height:44px; padding:0 12px;
+  border:1px solid var(--line); border-radius:13px; background:#fff; color:var(--text);
 }
 
-.employeesPrimaryButton,
-.employeeRateEditor button {
-  min-height: 40px;
-  padding: 0 14px;
-  border: 1px solid rgba(15, 95, 215, 0.16);
-  border-radius: 14px;
-  background: linear-gradient(180deg, rgba(31, 111, 255, 0.98), rgba(15, 95, 215, 0.96));
-  color: #fff;
-  font: inherit;
-  font-weight: 800;
-  cursor: pointer;
-}
+.employeesField input:focus,
+.employeeRateEditor input:focus,
+.employeePasswordReset input:focus { outline:2px solid rgba(22,163,74,.12); border-color:rgba(22,163,74,.34); }
 
 .employeesPrimaryButton {
-  justify-self: start;
+  justify-self:start; min-height:44px; padding:0 18px; border-radius:13px;
+  color:#fff; background:linear-gradient(180deg,#16a34a,#15803d);
+  box-shadow:0 9px 20px rgba(22,163,74,.16); font-weight:750;
 }
 
-.employeesEmpty {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 74px;
-  padding: 14px;
-  border: 1px dashed rgba(37, 99, 235, 0.18);
-  border-radius: 18px;
-  color: #1d4ed8;
-  background: rgba(238, 244, 255, 0.58);
-}
+.employeesEmpty { display:flex; align-items:center; gap:12px; min-height:80px; padding:16px; border:1px dashed rgba(22,163,74,.2); border-radius:16px; color:#15803d; background:var(--accent-soft); }
+.employeesEmpty span { display:grid; place-items:center; width:40px; height:40px; border-radius:13px; background:#fff; }
+.employeesEmpty svg { width:22px; height:22px; stroke:currentColor; fill:none; }
 
-.employeesEmpty span {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.78);
-}
-
-.employeesEmpty svg {
-  width: 22px;
-  height: 22px;
-  stroke: currentColor;
-  fill: none;
-}
-
-.employeesList {
-  display: grid;
-  gap: 10px;
-}
-
+.employeesList { display:grid; gap:10px; }
 .employeeCard {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(220px, 0.52fr);
-  gap: 14px;
-  align-items: center;
-  padding: 14px;
-  border: 1px solid rgba(71, 85, 105, 0.1);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.82);
+  display:grid; grid-template-columns:minmax(180px,1fr) auto minmax(220px,.6fr); gap:14px; align-items:center;
+  padding:14px; border:1px solid var(--line); border-radius:17px; background:#fff;
 }
+.employeeCard.is-inactive { opacity:.72; background:#f8fafc; }
+.employeeCard-main { display:flex; min-width:0; align-items:center; gap:12px; }
+.employeeCard-main strong,.employeeCard-main p { margin:0; }
+.employeeCard-main strong { display:block; overflow:hidden; font-size:15px; text-overflow:ellipsis; white-space:nowrap; }
+.employeeCard-main p { overflow:hidden; color:var(--muted); font-size:12px; text-overflow:ellipsis; white-space:nowrap; }
+.employeeCard-avatar { display:grid; flex:0 0 auto; width:44px; height:44px; place-items:center; border-radius:999px; color:#166534; background:#dcfce7; font-weight:800; }
+.employeeCard.is-inactive .employeeCard-avatar { color:#64748b; background:#e2e8f0; }
 
-.employeeCard.is-inactive {
-  border-color: rgba(100, 116, 139, 0.16);
-  background: rgba(248, 250, 252, 0.72);
-}
+.employeeCard-metrics { display:grid; grid-template-columns:repeat(3,minmax(70px,1fr)); gap:8px; }
+.employeeCard-metrics span { display:grid; gap:3px; min-height:56px; align-content:center; padding:8px 10px; border-radius:13px; background:#f8fafc; }
+.employeeCard-metrics strong { overflow:hidden; font-size:13px; line-height:1.1; text-overflow:ellipsis; white-space:nowrap; }
+.employeeCard-metrics em { color:var(--muted); font-size:10px; font-style:normal; font-weight:700; text-transform:uppercase; }
 
-.employeeCard-main {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 12px;
-}
+.employeeRateEditor { display:grid; gap:8px; }
+.employeeCard-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.employeeRateEditor button { min-height:38px; padding:0 10px; border-radius:11px; border:1px solid rgba(22,163,74,.14); background:var(--accent-soft); color:#15803d; box-shadow:none; font-size:11px; font-weight:750; }
+.employeeCard-actions .is-password-reset { grid-column:1/-1; border-color:var(--line); background:#f8fafc; color:#334155; }
+.employeeRateEditor button.is-deactivate { border-color:rgba(185,28,28,.16); background:#fff1f2; color:#b91c1c; }
+.employeeRateEditor button.is-activate { border-color:rgba(22,163,74,.18); background:#f0fdf4; color:#15803d; }
 
-.employeeCard-main strong,
-.employeeCard-main p {
-  margin: 0;
-}
+.employeePasswordReset { display:grid; gap:8px; padding:12px; border:1px solid rgba(22,163,74,.16); border-radius:14px; background:#f7fcf8; }
+.employeePasswordReset p { margin:0; color:var(--muted); font-size:11px; line-height:1.4; }
+.employeePasswordReset > button { width:100%; color:#fff; background:linear-gradient(180deg,#16a34a,#15803d); }
 
-.employeeCard-main strong {
-  display: block;
-  overflow: hidden;
-  font-size: 15px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+.employeeRateEditor button:disabled,.employeesPrimaryButton:disabled { cursor:not-allowed; opacity:.55; }
 
-.employeeCard-main p {
-  overflow: hidden;
-  color: var(--muted);
-  font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.employeeCard-avatar {
-  display: grid;
-  flex: 0 0 auto;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border-radius: 15px;
-  color: #1d4ed8;
-  background: rgba(238, 244, 255, 0.9);
-  font-weight: 800;
-}
-
-.employeeCard.is-inactive .employeeCard-avatar {
-  color: #64748b;
-  background: rgba(226, 232, 240, 0.76);
-}
-
-.employeeCard-metrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(72px, 1fr));
-  gap: 8px;
-}
-
-.employeeCard-metrics span {
-  display: grid;
-  gap: 3px;
-  min-height: 54px;
-  align-content: center;
-  padding: 8px 10px;
-  border-radius: 14px;
-  background: rgba(248, 250, 252, 0.86);
-}
-
-.employeeCard-metrics strong {
-  overflow: hidden;
-  font-size: 13px;
-  line-height: 1.1;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.employeeCard-metrics em {
-  color: var(--muted);
-  font-size: 10px;
-  font-style: normal;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.employeeRateEditor {
-  display: grid;
-  gap: 8px;
-}
-
-.employeeCard-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.employeeCard-actions .is-password-reset {
-  grid-column: 1 / -1;
-  border-color: rgba(71, 85, 105, 0.16);
-  background: rgba(248, 250, 252, 0.96);
-  color: #334155;
-}
-
-.employeePasswordReset {
-  display: grid;
-  gap: 8px;
-  padding: 10px;
-  border: 1px solid rgba(37, 99, 235, 0.14);
-  border-radius: 15px;
-  background: rgba(239, 246, 255, 0.58);
-}
-
-.employeePasswordReset p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1.4;
-}
-
-.employeePasswordReset > button {
-  width: 100%;
-}
-
-.employeeRateEditor button.is-deactivate {
-  border-color: rgba(185, 28, 28, 0.18);
-  background: rgba(254, 242, 242, 0.96);
-  color: #b91c1c;
-}
-
-.employeeRateEditor button.is-activate {
-  border-color: rgba(22, 163, 74, 0.18);
-  background: rgba(240, 253, 244, 0.96);
-  color: #15803d;
-}
-
-.employeeRateEditor button:disabled,
-.employeesPrimaryButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.58;
+@media (max-width: 900px) {
+  .employeesWorkspace { grid-template-columns:1fr; }
+  .employeesCreate { position:static; }
 }
 
 @media (max-width: 640px) {
-  .employeesWorkspace,
-  .employeeCard {
-    grid-template-columns: 1fr;
-  }
-
-  .employeesFormGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .employeeCard-metrics {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+  .employeesPage { gap:14px; }
+  .employeesCreate,.employeesPanel { padding:16px; border-radius:18px; }
+  .employeesFormGrid,.employeeCard { grid-template-columns:1fr; }
+  .employeeCard-metrics { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .employeesPrimaryButton { width:100%; }
 }
