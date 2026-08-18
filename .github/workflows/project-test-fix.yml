@@ -1,0 +1,36 @@
+name: Project Test Fix
+
+on:
+  push:
+    branches:
+      - agent/project-lifecycle
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.event.head_commit.message != 'fix duplicate project test import'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/project-lifecycle
+      - name: Fix duplicate import
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('backend/tests/worktrack-foundation.test.js')
+          text = path.read_text()
+          duplicate = "  updateProject,\n  updateProject,\n"
+          if duplicate not in text:
+              raise SystemExit('duplicate import not found')
+          path.write_text(text.replace(duplicate, "  updateProject,\n", 1))
+          PY
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/tests/worktrack-foundation.test.js
+          git commit -m "fix duplicate project test import"
+          git push origin HEAD:agent/project-lifecycle
