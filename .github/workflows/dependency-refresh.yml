@@ -1,16 +1,16 @@
 name: Dependency Refresh
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/e2e-deployment-hardening
+      - main
 
 permissions:
   contents: write
 
 jobs:
   refresh:
-    if: github.event.head_commit.message != 'refresh dependency locks'
+    if: github.event.pull_request.head.ref == 'agent/e2e-deployment-hardening'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -20,24 +20,37 @@ jobs:
         with:
           ref: agent/e2e-deployment-hardening
 
+      - name: Stop after generated dependency commit
+        id: guard
+        run: |
+          if [ "$(git log -1 --pretty=%s)" = "refresh dependency locks" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup Node
+        if: steps.guard.outputs.skip != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
 
       - name: Refresh root dependency metadata
+        if: steps.guard.outputs.skip != 'true'
         run: |
           npm install --save-exact react-router-dom@7.18.2 --package-lock-only
           npm install --save-dev prisma@^6.19.3 --package-lock-only
           npm audit fix --package-lock-only
 
       - name: Refresh backend dependency metadata
+        if: steps.guard.outputs.skip != 'true'
         run: |
           npm --prefix backend install --save-dev prisma@^6.19.3 --package-lock-only
           npm --prefix backend audit fix --package-lock-only
 
       - name: Commit dependency locks
+        if: steps.guard.outputs.skip != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
