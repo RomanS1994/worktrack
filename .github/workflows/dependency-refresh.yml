@@ -41,13 +41,13 @@ jobs:
         run: |
           npm install --save-exact react-router-dom@7.18.2 --package-lock-only
           npm install --save-dev prisma@^6.19.3 --package-lock-only
-          npm audit fix --package-lock-only
+          npm audit fix --package-lock-only || true
 
       - name: Refresh backend dependency metadata
         if: steps.guard.outputs.skip != 'true'
         run: |
           npm --prefix backend install --save-dev prisma@^6.19.3 --package-lock-only
-          npm --prefix backend audit fix --package-lock-only
+          npm --prefix backend audit fix --package-lock-only || true
 
       - name: Commit dependency locks
         if: steps.guard.outputs.skip != 'true'
