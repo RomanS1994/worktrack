@@ -14,11 +14,21 @@ import {
 import './HoursPage.css';
 
 const LOCKED_STATUSES = new Set(['SUBMITTED', 'APPROVED']);
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 function toDateKey(date) {
   return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
     .toISOString()
     .slice(0, 10);
+}
+
+function parseDateKey(value) {
+  return new Date(`${value}T00:00:00.000Z`);
+}
+
+function shiftWeek(weekStart, amount) {
+  const date = parseDateKey(weekStart);
+  return new Date(date.getTime() + amount * 7 * DAY_MS).toISOString().slice(0, 10);
 }
 
 function getCurrentWeekStart() {
@@ -30,9 +40,27 @@ function getCurrentWeekStart() {
   return toDateKey(monday);
 }
 
+function formatDate(value) {
+  if (!value) return '';
+
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(parseDateKey(value));
+}
+
 function formatPeriod(week) {
-  if (!week?.weekStart || !week?.weekEnd) return 'Current week';
-  return `${week.weekStart} - ${week.weekEnd}`;
+  if (!week?.weekStart || !week?.weekEnd) return 'Selected week';
+  return `${formatDate(week.weekStart)} - ${formatDate(week.weekEnd)}`;
+}
+
+function formatMoney(value) {
+  const amount = Number(value || 0);
+  return `${new Intl.NumberFormat('cs-CZ', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(Number.isFinite(amount) ? amount : 0)} CZK`;
 }
 
 function getEntriesByDate(entries) {
@@ -49,7 +77,8 @@ function getStatusLabel(status) {
 }
 
 export function HoursPage() {
-  const weekStart = useMemo(() => getCurrentWeekStart(), []);
+  const currentWeekStart = useMemo(() => getCurrentWeekStart(), []);
+  const [weekStart, setWeekStart] = useState(currentWeekStart);
   const { data, error, isFetching, isLoading } = useGetWeekEntriesQuery({ weekStart });
   const projectsQuery = useGetProjectsQuery();
   const [createWorkEntry, createState] = useCreateWorkEntryMutation();
@@ -71,6 +100,8 @@ export function HoursPage() {
   const submission = data?.submission || null;
   const submissionStatus = submission?.status || 'DRAFT';
   const isSubmittedOrApproved = LOCKED_STATUSES.has(submissionStatus);
+  const isCurrentWeek = weekStart === currentWeekStart;
+  const canGoForward = weekStart < currentWeekStart;
   const isMutating =
     createState.isLoading ||
     updateState.isLoading ||
@@ -110,6 +141,13 @@ export function HoursPage() {
       }, {})
     );
   }, [defaultProjectId, week]);
+
+  function changeWeek(nextWeekStart) {
+    setActionError('');
+    setEntryDrafts({});
+    setNewDrafts({});
+    setWeekStart(nextWeekStart);
+  }
 
   function updateEntryDraft(entryId, field, value) {
     setEntryDrafts(current => ({
@@ -172,7 +210,7 @@ export function HoursPage() {
     }
   }
 
-  async function submitCurrentWeek() {
+  async function submitSelectedWeek() {
     setActionError('');
 
     try {
@@ -188,13 +226,66 @@ export function HoursPage() {
         <div className="appTitleBlock">
           <p className="sectionEyebrow">Work entries</p>
           <h1>Hours</h1>
-          <p>{summary.totalHours || '0.00'} hours this week</p>
+          <p>{summary.totalHours || '0.00'} hours in selected week</p>
         </div>
 
         <div className={`hoursStatusBadge hoursStatusBadge--${submissionStatus.toLowerCase()}`}>
           {getStatusLabel(submissionStatus)}
         </div>
       </header>
+
+      <section className="hoursWeekNavigator screenCard" aria-label="Week history navigation">
+        <button
+          type="button"
+          disabled={isFetching || isMutating}
+          onClick={() => changeWeek(shiftWeek(weekStart, -1))}
+        >
+          ← Previous
+        </button>
+
+        <div className="hoursWeekNavigator-current">
+          <span>{isCurrentWeek ? 'Current week' : 'Week history'}</span>
+          <strong>{formatPeriod(week)}</strong>
+        </div>
+
+        <div className="hoursWeekNavigator-actions">
+          {!isCurrentWeek ? (
+            <button
+              type="button"
+              disabled={isFetching || isMutating}
+              onClick={() => changeWeek(currentWeekStart)}
+            >
+              Today
+            </button>
+          ) : null}
+          <button
+            type="button"
+            disabled={!canGoForward || isFetching || isMutating}
+            onClick={() => changeWeek(shiftWeek(weekStart, 1))}
+          >
+            Next →
+          </button>
+        </div>
+      </section>
+
+      <section className="hoursSummaryGrid" aria-label="Selected week salary summary">
+        <article className="hoursSummaryCard">
+          <span>Total hours</span>
+          <strong>{summary.totalHours || '0.00'}</strong>
+        </article>
+        <article className="hoursSummaryCard">
+          <span>Approved hours</span>
+          <strong>{summary.approvedHours || '0.00'}</strong>
+        </article>
+        <article className="hoursSummaryCard">
+          <span>Confirmed salary</span>
+          <strong>{formatMoney(summary.confirmedSalaryCzk)}</strong>
+        </article>
+        <article className="hoursSummaryCard">
+          <span>Predicted salary</span>
+          <strong>{formatMoney(summary.predictedSalaryCzk)}</strong>
+        </article>
+      </section>
 
       <section className="hoursWeek screenCard">
         <div className="compactHeader">
@@ -207,7 +298,7 @@ export function HoursPage() {
         {isLoading || projectsQuery.isLoading ? (
           <RequestLoadingState label="Loading hours" />
         ) : (
-          <div className="hoursWeekGrid" aria-label="Current week hours">
+          <div className="hoursWeekGrid" aria-label="Selected week hours">
             {(week?.days || []).map(day => {
               const dayEntries = entriesByDate.get(day.date) || [];
               const newDraft = newDrafts[day.date] || {};
@@ -240,6 +331,9 @@ export function HoursPage() {
                               updateEntryDraft(entry.id, 'projectId', event.target.value)
                             }
                           >
+                            {entry.project && !projects.some(project => project.id === entry.project.id) ? (
+                              <option value={entry.project.id}>{entry.project.name} (inactive)</option>
+                            ) : null}
                             {projects.map(project => (
                               <option key={project.id} value={project.id}>
                                 {project.name}
@@ -334,22 +428,21 @@ export function HoursPage() {
       <section className="hoursSubmitPanel">
         <div>
           <strong>{submission ? getStatusLabel(submission.status) : 'draft'}</strong>
-          <p>Send the completed week to your company manager.</p>
+          <p>
+            {isCurrentWeek
+              ? 'Send the completed week to your company manager.'
+              : 'Review, edit, or resubmit this historical week when it is not locked.'}
+          </p>
         </div>
 
         <button
           className="hoursSubmitButton"
           type="button"
-          disabled={
-            isFetching ||
-            isMutating ||
-            isSubmittedOrApproved ||
-            !entries.length
-          }
-          onClick={submitCurrentWeek}
+          disabled={isFetching || isMutating || isSubmittedOrApproved || !entries.length}
+          onClick={submitSelectedWeek}
         >
           <SvgIcon name="send" />
-          Send week
+          {submissionStatus === 'REJECTED' ? 'Resubmit week' : 'Send week'}
         </button>
       </section>
     </section>
