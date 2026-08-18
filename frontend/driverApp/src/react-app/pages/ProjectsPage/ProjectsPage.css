@@ -61,6 +61,24 @@
   color: #fff !important;
 }
 
+.projectCard-actions button.is-deactivate {
+  border-color: rgba(185, 28, 28, 0.18);
+  background: rgba(254, 242, 242, 0.96);
+  color: #b91c1c;
+}
+
+.projectCard-actions button.is-activate {
+  border-color: rgba(22, 163, 74, 0.18);
+  background: rgba(240, 253, 244, 0.96);
+  color: #15803d;
+}
+
+.projectCard-actions button:disabled,
+.projectsFormActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
 .projectsCards {
   display: grid;
   gap: 10px;
@@ -73,6 +91,11 @@
   border: 1px solid rgba(15, 95, 215, 0.1);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.86);
+}
+
+.projectCard.is-inactive {
+  border-color: rgba(100, 116, 139, 0.16);
+  background: rgba(248, 250, 252, 0.72);
 }
 
 .projectCard-main {
@@ -101,6 +124,11 @@
   border-radius: 14px;
   background: rgba(15, 95, 215, 0.08);
   color: var(--brand);
+}
+
+.projectCard.is-inactive .projectCard-icon {
+  color: #64748b;
+  background: rgba(226, 232, 240, 0.76);
 }
 
 .projectStatus {

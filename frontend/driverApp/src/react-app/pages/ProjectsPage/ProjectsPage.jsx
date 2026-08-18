@@ -5,7 +5,6 @@ import { RequestLoadingState } from '@shared/app/components/RequestLoader/Reques
 import { SvgIcon } from '@shared/app/components/SvgIcon/SvgIcon.jsx';
 import {
   useCreateProjectMutation,
-  useDeactivateProjectMutation,
   useGetProjectsQuery,
   useUpdateProjectMutation,
 } from '../../features/worktrack/worktrackApi.js';
@@ -21,13 +20,12 @@ export function ProjectsPage() {
   const { data, error, isLoading } = useGetProjectsQuery();
   const [createProject, createState] = useCreateProjectMutation();
   const [updateProject, updateState] = useUpdateProjectMutation();
-  const [deactivateProject, deactivateState] = useDeactivateProjectMutation();
   const [form, setForm] = useState(EMPTY_FORM);
   const [editingId, setEditingId] = useState('');
   const [actionError, setActionError] = useState('');
   const projects = Array.isArray(data?.projects) ? data.projects : [];
-  const isMutating =
-    createState.isLoading || updateState.isLoading || deactivateState.isLoading;
+  const activeProjectCount = projects.filter(project => project.isActive).length;
+  const isMutating = createState.isLoading || updateState.isLoading;
 
   function updateForm(field, value) {
     setForm(current => ({
@@ -70,12 +68,16 @@ export function ProjectsPage() {
     }
   }
 
-  async function deactivate(projectId) {
+  async function toggleProjectStatus(project) {
     setActionError('');
 
     try {
-      await deactivateProject(projectId).unwrap();
-      if (editingId === projectId) {
+      await updateProject({
+        projectId: project.id,
+        isActive: !project.isActive,
+      }).unwrap();
+
+      if (editingId === project.id && project.isActive) {
         resetForm();
       }
     } catch (mutationError) {
@@ -89,7 +91,9 @@ export function ProjectsPage() {
         <div className="appTitleBlock">
           <p className="sectionEyebrow">Worksites</p>
           <h1>Projects</h1>
-          <p>{projects.filter(project => project.isActive).length} active projects</p>
+          <p>
+            {activeProjectCount} active · {projects.length} total
+          </p>
         </div>
       </header>
 
@@ -143,7 +147,7 @@ export function ProjectsPage() {
         <section className="projectsList screenCard">
           <div className="compactHeader">
             <h2>Project list</h2>
-            <p>Inactive projects remain available for history.</p>
+            <p>Inactive projects stay available for history and can be reactivated.</p>
           </div>
 
           {isLoading ? <RequestLoadingState label="Loading projects" /> : null}
@@ -161,7 +165,10 @@ export function ProjectsPage() {
           {projects.length ? (
             <div className="projectsCards">
               {projects.map(project => (
-                <article className="projectCard" key={project.id}>
+                <article
+                  className={`projectCard${project.isActive ? '' : ' is-inactive'}`}
+                  key={project.id}
+                >
                   <div className="projectCard-main">
                     <span className="projectCard-icon" aria-hidden="true">
                       <SvgIcon name="location" />
@@ -181,11 +188,12 @@ export function ProjectsPage() {
                       Edit
                     </button>
                     <button
+                      className={project.isActive ? 'is-deactivate' : 'is-activate'}
                       type="button"
-                      disabled={!project.isActive || isMutating}
-                      onClick={() => deactivate(project.id)}
+                      disabled={isMutating}
+                      onClick={() => toggleProjectStatus(project)}
                     >
-                      Deactivate
+                      {project.isActive ? 'Deactivate' : 'Reactivate'}
                     </button>
                   </div>
                 </article>
