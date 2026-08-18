@@ -41,9 +41,7 @@ jobs:
         run: npm run build:driver
 
       - name: Audit production runtime dependencies
-        run: |
-          npm audit --omit=dev --omit=peer --audit-level=high
-          npm --prefix backend audit --omit=dev --omit=peer --audit-level=high
+        run: node tools/audit-production.js
 
       - name: Scan tracked files for secrets
         run: npm run secrets:check
