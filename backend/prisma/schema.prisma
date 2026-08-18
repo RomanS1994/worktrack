@@ -163,7 +163,7 @@ model WorkEntry {
 }
 
 model WeeklySubmission {
-  id                     String                 @id
+  id                     String                  @id
   companyId              String
   employeeMembershipId   String
   reviewedByMembershipId String?
@@ -172,8 +172,9 @@ model WeeklySubmission {
   status                 WeeklySubmissionStatus @default(DRAFT)
   submittedAt            DateTime?
   reviewedAt             DateTime?
-  createdAt              DateTime               @default(now())
-  updatedAt              DateTime               @updatedAt
+  rejectionReason        String?
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
 
   legacyEmployeeId String? @map("employeeId") @ignore
   legacyManagerId  String? @map("managerId") @ignore
