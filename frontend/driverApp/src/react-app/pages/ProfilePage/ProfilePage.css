@@ -62,23 +62,30 @@
   white-space: nowrap;
 }
 
+.profileEditCard,
 .profilePasswordCard {
   display: grid;
   gap: 14px;
 }
 
-.profilePasswordField {
+.profileFieldGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.profileField {
   display: grid;
   gap: 7px;
 }
 
-.profilePasswordField span {
+.profileField span {
   color: var(--muted);
   font-size: 12px;
   font-weight: 700;
 }
 
-.profilePasswordField input {
+.profileField input {
   width: 100%;
   min-height: 46px;
   box-sizing: border-box;
@@ -89,14 +96,16 @@
   color: var(--text);
   font: inherit;
   outline: none;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
 }
 
-.profilePasswordField input:focus {
-  border-color: rgba(15, 23, 42, 0.32);
-  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.06);
+.profileField input:focus {
+  border-color: rgba(37, 99, 235, 0.4);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
 }
 
-.profilePasswordButton {
+.profilePrimaryButton {
   min-height: 46px;
   border: 0;
   border-radius: 14px;
@@ -107,7 +116,13 @@
   cursor: pointer;
 }
 
-.profilePasswordButton:disabled {
+.profilePrimaryButton:disabled {
   cursor: wait;
   opacity: 0.6;
+}
+
+@media (max-width: 560px) {
+  .profileFieldGrid {
+    grid-template-columns: 1fr;
+  }
 }
