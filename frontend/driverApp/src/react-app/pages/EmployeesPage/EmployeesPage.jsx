@@ -30,6 +30,7 @@ export function EmployeesPage() {
   const [rateDrafts, setRateDrafts] = useState({});
   const [actionError, setActionError] = useState('');
   const employees = Array.isArray(data?.employees) ? data.employees : [];
+  const activeEmployeeCount = employees.filter(employee => employee.status === 'ACTIVE').length;
   const isMutating = createState.isLoading || updateState.isLoading;
 
   useEffect(() => {
@@ -73,13 +74,29 @@ export function EmployeesPage() {
     }
   }
 
+  async function toggleEmployeeStatus(employee) {
+    setActionError('');
+    const nextStatus = employee.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+
+    try {
+      await updateManagerEmployee({
+        employeeId: employee.id,
+        status: nextStatus,
+      }).unwrap();
+    } catch (mutationError) {
+      setActionError(getApiErrorMessage(mutationError));
+    }
+  }
+
   return (
     <section className="employeesPage pageStack">
       <header className="employeesHeader appTop">
         <div className="appTitleBlock">
           <p className="sectionEyebrow">Team</p>
           <h1>Employees</h1>
-          <p>{employees.length} active employees</p>
+          <p>
+            {activeEmployeeCount} active · {employees.length} total
+          </p>
         </div>
       </header>
 
@@ -87,7 +104,7 @@ export function EmployeesPage() {
         <form className="employeesCreate screenCard" onSubmit={submitEmployee}>
           <div className="compactHeader">
             <h2>Add employee</h2>
-            <p>Temporary password can be replaced by invitations later.</p>
+            <p>The employee must replace the temporary password after the first sign in.</p>
           </div>
 
           <div className="employeesFormGrid">
@@ -169,60 +186,77 @@ export function EmployeesPage() {
 
           {employees.length ? (
             <div className="employeesList">
-              {employees.map(employee => (
-                <article className="employeeCard" key={employee.id}>
-                  <div className="employeeCard-main">
-                    <span className="employeeCard-avatar" aria-hidden="true">
-                      {getEmployeeName(employee).slice(0, 1).toUpperCase()}
-                    </span>
-                    <div>
-                      <strong>{getEmployeeName(employee)}</strong>
-                      <p>{employee.email}</p>
+              {employees.map(employee => {
+                const isActive = employee.status === 'ACTIVE';
+
+                return (
+                  <article
+                    className={`employeeCard${isActive ? '' : ' is-inactive'}`}
+                    key={employee.id}
+                  >
+                    <div className="employeeCard-main">
+                      <span className="employeeCard-avatar" aria-hidden="true">
+                        {getEmployeeName(employee).slice(0, 1).toUpperCase()}
+                      </span>
+                      <div>
+                        <strong>{getEmployeeName(employee)}</strong>
+                        <p>{employee.email}</p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="employeeCard-metrics">
-                    <span>
-                      <strong>{employee.summary?.totalHours || '0.00'} h</strong>
-                      <em>week</em>
-                    </span>
-                    <span>
-                      <strong>{employee.pendingSubmissions || 0}</strong>
-                      <em>pending</em>
-                    </span>
-                    <span>
-                      <strong>{employee.status || 'ACTIVE'}</strong>
-                      <em>status</em>
-                    </span>
-                  </div>
+                    <div className="employeeCard-metrics">
+                      <span>
+                        <strong>{employee.summary?.totalHours || '0.00'} h</strong>
+                        <em>week</em>
+                      </span>
+                      <span>
+                        <strong>{employee.pendingSubmissions || 0}</strong>
+                        <em>pending</em>
+                      </span>
+                      <span>
+                        <strong>{employee.status || 'ACTIVE'}</strong>
+                        <em>status</em>
+                      </span>
+                    </div>
 
-                  <div className="employeeRateEditor">
-                    <label>
-                      <span>Rate CZK</span>
-                      <input
-                        inputMode="decimal"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={rateDrafts[employee.id] || ''}
-                        onChange={event =>
-                          setRateDrafts(current => ({
-                            ...current,
-                            [employee.id]: event.target.value,
-                          }))
-                        }
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      disabled={isMutating}
-                      onClick={() => saveRate(employee.id)}
-                    >
-                      Save
-                    </button>
-                  </div>
-                </article>
-              ))}
+                    <div className="employeeRateEditor">
+                      <label>
+                        <span>Rate CZK</span>
+                        <input
+                          inputMode="decimal"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={rateDrafts[employee.id] || ''}
+                          onChange={event =>
+                            setRateDrafts(current => ({
+                              ...current,
+                              [employee.id]: event.target.value,
+                            }))
+                          }
+                        />
+                      </label>
+                      <div className="employeeCard-actions">
+                        <button
+                          type="button"
+                          disabled={isMutating}
+                          onClick={() => saveRate(employee.id)}
+                        >
+                          Save rate
+                        </button>
+                        <button
+                          className={isActive ? 'is-deactivate' : 'is-activate'}
+                          type="button"
+                          disabled={isMutating}
+                          onClick={() => toggleEmployeeStatus(employee)}
+                        >
+                          {isActive ? 'Deactivate' : 'Reactivate'}
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           ) : null}
         </section>

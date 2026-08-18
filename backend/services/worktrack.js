@@ -882,7 +882,6 @@ export async function listManagerEmployees(client, context) {
     where: {
       companyId: membership.companyId,
       role: 'EMPLOYEE',
-      status: 'ACTIVE',
       user: {
         is: {
           deletedAt: null,
