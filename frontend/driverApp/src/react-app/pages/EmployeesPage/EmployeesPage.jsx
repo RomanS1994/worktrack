@@ -6,6 +6,7 @@ import { SvgIcon } from '@shared/app/components/SvgIcon/SvgIcon.jsx';
 import {
   useCreateManagerEmployeeMutation,
   useGetManagerEmployeesQuery,
+  useResetManagerEmployeePasswordMutation,
   useUpdateManagerEmployeeMutation,
 } from '../../features/worktrack/worktrackApi.js';
 import './EmployeesPage.css';
@@ -26,12 +27,16 @@ export function EmployeesPage() {
   const { data, error, isLoading } = useGetManagerEmployeesQuery();
   const [createManagerEmployee, createState] = useCreateManagerEmployeeMutation();
   const [updateManagerEmployee, updateState] = useUpdateManagerEmployeeMutation();
+  const [resetManagerEmployeePassword, resetState] = useResetManagerEmployeePasswordMutation();
   const [form, setForm] = useState(EMPTY_EMPLOYEE_FORM);
   const [rateDrafts, setRateDrafts] = useState({});
+  const [resetEmployeeId, setResetEmployeeId] = useState('');
+  const [resetPassword, setResetPassword] = useState('');
   const [actionError, setActionError] = useState('');
+  const [actionSuccess, setActionSuccess] = useState('');
   const employees = Array.isArray(data?.employees) ? data.employees : [];
   const activeEmployeeCount = employees.filter(employee => employee.status === 'ACTIVE').length;
-  const isMutating = createState.isLoading || updateState.isLoading;
+  const isMutating = createState.isLoading || updateState.isLoading || resetState.isLoading;
 
   useEffect(() => {
     setRateDrafts(
@@ -42,6 +47,11 @@ export function EmployeesPage() {
     );
   }, [employees]);
 
+  function clearActionMessages() {
+    setActionError('');
+    setActionSuccess('');
+  }
+
   function updateForm(field, value) {
     setForm(current => ({
       ...current,
@@ -51,31 +61,33 @@ export function EmployeesPage() {
 
   async function submitEmployee(event) {
     event.preventDefault();
-    setActionError('');
+    clearActionMessages();
 
     try {
       await createManagerEmployee(form).unwrap();
       setForm(EMPTY_EMPLOYEE_FORM);
+      setActionSuccess('Employee added. Share the temporary password securely.');
     } catch (mutationError) {
       setActionError(getApiErrorMessage(mutationError));
     }
   }
 
   async function saveRate(employeeId) {
-    setActionError('');
+    clearActionMessages();
 
     try {
       await updateManagerEmployee({
         employeeId,
         hourlyRateCzk: rateDrafts[employeeId],
       }).unwrap();
+      setActionSuccess('Hourly rate updated.');
     } catch (mutationError) {
       setActionError(getApiErrorMessage(mutationError));
     }
   }
 
   async function toggleEmployeeStatus(employee) {
-    setActionError('');
+    clearActionMessages();
     const nextStatus = employee.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
 
     try {
@@ -83,6 +95,42 @@ export function EmployeesPage() {
         employeeId: employee.id,
         status: nextStatus,
       }).unwrap();
+      setActionSuccess(
+        nextStatus === 'ACTIVE' ? 'Employee reactivated.' : 'Employee deactivated.'
+      );
+    } catch (mutationError) {
+      setActionError(getApiErrorMessage(mutationError));
+    }
+  }
+
+  function openPasswordReset(employeeId) {
+    clearActionMessages();
+    setResetPassword('');
+    setResetEmployeeId(employeeId);
+  }
+
+  function closePasswordReset() {
+    setResetPassword('');
+    setResetEmployeeId('');
+  }
+
+  async function submitPasswordReset(employee) {
+    clearActionMessages();
+
+    if (resetPassword.length < 8) {
+      setActionError('Temporary password must be at least 8 characters long.');
+      return;
+    }
+
+    try {
+      await resetManagerEmployeePassword({
+        employeeId: employee.id,
+        temporaryPassword: resetPassword,
+      }).unwrap();
+      closePasswordReset();
+      setActionSuccess(
+        `Password reset for ${getEmployeeName(employee)}. Their existing sessions were signed out.`
+      );
     } catch (mutationError) {
       setActionError(getApiErrorMessage(mutationError));
     }
@@ -141,6 +189,7 @@ export function EmployeesPage() {
               <span>Temporary password</span>
               <input
                 type="password"
+                minLength={8}
                 value={form.temporaryPassword}
                 onChange={event => updateForm('temporaryPassword', event.target.value)}
               />
@@ -159,8 +208,6 @@ export function EmployeesPage() {
             </label>
           </div>
 
-          {actionError ? <p className="statusNote is-error">{actionError}</p> : null}
-
           <button className="employeesPrimaryButton" type="submit" disabled={isMutating}>
             Add employee
           </button>
@@ -172,6 +219,8 @@ export function EmployeesPage() {
             <p>{data?.week ? `${data.week.weekStart} - ${data.week.weekEnd}` : 'Current week'}</p>
           </div>
 
+          {actionError ? <p className="statusNote is-error">{actionError}</p> : null}
+          {actionSuccess ? <p className="statusNote is-success">{actionSuccess}</p> : null}
           {isLoading ? <RequestLoadingState label="Loading employees" /> : null}
           {error ? <p className="statusNote is-error">{getApiErrorMessage(error)}</p> : null}
 
@@ -188,6 +237,7 @@ export function EmployeesPage() {
             <div className="employeesList">
               {employees.map(employee => {
                 const isActive = employee.status === 'ACTIVE';
+                const isResettingPassword = resetEmployeeId === employee.id;
 
                 return (
                   <article
@@ -252,7 +302,45 @@ export function EmployeesPage() {
                         >
                           {isActive ? 'Deactivate' : 'Reactivate'}
                         </button>
+                        <button
+                          className="is-password-reset"
+                          type="button"
+                          disabled={isMutating}
+                          onClick={() =>
+                            isResettingPassword ? closePasswordReset() : openPasswordReset(employee.id)
+                          }
+                        >
+                          {isResettingPassword ? 'Cancel reset' : 'Reset password'}
+                        </button>
                       </div>
+
+                      {isResettingPassword ? (
+                        <div className="employeePasswordReset">
+                          <label>
+                            <span>New temporary password</span>
+                            <input
+                              type="password"
+                              minLength={8}
+                              autoComplete="new-password"
+                              value={resetPassword}
+                              placeholder="At least 8 characters"
+                              disabled={isMutating}
+                              onChange={event => setResetPassword(event.target.value)}
+                            />
+                          </label>
+                          <p>
+                            Existing sessions will be signed out. The employee must change this
+                            password after signing in.
+                          </p>
+                          <button
+                            type="button"
+                            disabled={isMutating || resetPassword.length < 8}
+                            onClick={() => submitPasswordReset(employee)}
+                          >
+                            Set temporary password
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
                   </article>
                 );
