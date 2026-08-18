@@ -16,9 +16,29 @@ function getEmployeeName(submission) {
   return employee?.name || employee?.email || 'Employee';
 }
 
+function formatDate(value) {
+  if (!value) return '';
+  return new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${value}T00:00:00.000Z`));
+}
+
 function formatPeriod(submission) {
   if (!submission?.weekStart || !submission?.weekEnd) return '-';
-  return `${submission.weekStart} - ${submission.weekEnd}`;
+  return `${formatDate(submission.weekStart)} – ${formatDate(submission.weekEnd)}`;
+}
+
+function formatWorkDate(value) {
+  if (!value) return '';
+  return new Intl.DateTimeFormat('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(new Date(`${value}T00:00:00.000Z`));
 }
 
 function sortEntries(entries = []) {
@@ -28,9 +48,7 @@ function sortEntries(entries = []) {
 }
 
 export function ApprovalsPage() {
-  const { data, error, isLoading } = useGetManagerSubmissionsQuery({
-    status: 'SUBMITTED',
-  });
+  const { data, error, isLoading } = useGetManagerSubmissionsQuery({ status: 'SUBMITTED' });
   const submissions = useMemo(
     () => (Array.isArray(data?.submissions) ? data.submissions : []),
     [data],
@@ -39,14 +57,16 @@ export function ApprovalsPage() {
   const [actionError, setActionError] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
   const selectedFromList = submissions.find(submission => submission.id === selectedId);
-  const detailQuery = useGetManagerSubmissionQuery(selectedId, {
-    skip: !selectedId,
-  });
+  const detailQuery = useGetManagerSubmissionQuery(selectedId, { skip: !selectedId });
   const detail = detailQuery.data?.submission || selectedFromList || null;
   const [approveSubmission, approveState] = useApproveSubmissionMutation();
   const [rejectSubmission, rejectState] = useRejectSubmissionMutation();
   const isReviewing = approveState.isLoading || rejectState.isLoading;
   const trimmedRejectionReason = rejectionReason.trim();
+  const pendingHours = submissions.reduce(
+    (total, submission) => total + Number(submission.summary?.totalHours || 0),
+    0,
+  );
 
   useEffect(() => {
     if (!selectedId && submissions[0]?.id) {
@@ -91,34 +111,35 @@ export function ApprovalsPage() {
 
   return (
     <section className="approvalsPage pageStack">
-      <header className="approvalsHeader appTop">
-        <div className="appTitleBlock">
-          <p className="sectionEyebrow">Review</p>
+      <header className="approvalsHeader">
+        <div>
+          <p className="sectionEyebrow">Manager workspace</p>
           <h1>Approvals</h1>
-          <p>{submissions.length} pending submissions</p>
+          <p>Review submitted work weeks and confirm payroll-ready hours.</p>
+        </div>
+        <div className="approvalsHeaderStats" aria-label="Pending approval summary">
+          <div><strong>{submissions.length}</strong><span>Pending weeks</span></div>
+          <div><strong>{pendingHours.toFixed(2)} h</strong><span>Hours waiting</span></div>
         </div>
       </header>
 
-      <section className="approvalsPanel screenCard">
-        <div className="compactHeader">
-          <h2>Weekly submissions</h2>
-          <p>Submitted weeks from your employees.</p>
-        </div>
+      {isLoading ? <RequestLoadingState label="Loading approvals" /> : null}
+      {error ? <p className="statusNote is-error">{getApiErrorMessage(error)}</p> : null}
 
-        {isLoading ? <RequestLoadingState label="Loading approvals" /> : null}
-        {error ? <p className="statusNote is-error">{getApiErrorMessage(error)}</p> : null}
+      {!isLoading && !submissions.length ? (
+        <section className="approvalsEmpty screenCard">
+          <span aria-hidden="true"><SvgIcon name="check-circle" /></span>
+          <div><h2>You're all caught up</h2><p>There are no submitted weeks waiting for review.</p></div>
+        </section>
+      ) : null}
 
-        {!isLoading && !submissions.length ? (
-          <div className="approvalsStatusRow">
-            <span aria-hidden="true">
-              <SvgIcon name="check-circle" />
-            </span>
-            <strong>Review queue is empty</strong>
-          </div>
-        ) : null}
-
-        {submissions.length ? (
-          <div className="approvalsLayout">
+      {submissions.length ? (
+        <section className="approvalsWorkspace">
+          <aside className="approvalsQueue">
+            <div className="approvalsQueueHeader">
+              <div><span>Pending</span><strong>{submissions.length}</strong></div>
+              <p>Select a week to review its entries.</p>
+            </div>
             <div className="approvalsList" aria-label="Pending submissions">
               {submissions.map(submission => (
                 <button
@@ -127,51 +148,75 @@ export function ApprovalsPage() {
                   key={submission.id}
                   onClick={() => setSelectedId(submission.id)}
                 >
-                  <span>
+                  <span className="approvalAvatar" aria-hidden="true">
+                    {getEmployeeName(submission).slice(0, 1).toUpperCase()}
+                  </span>
+                  <span className="approvalItemCopy">
                     <strong>{getEmployeeName(submission)}</strong>
                     <em>{formatPeriod(submission)}</em>
                   </span>
-                  <b>{submission.summary?.totalHours || '0.00'} h</b>
+                  <span className="approvalItemMeta">
+                    <b>{submission.summary?.totalHours || '0.00'} h</b>
+                    <i>Submitted</i>
+                  </span>
                 </button>
               ))}
             </div>
+          </aside>
 
-            <article className="approvalDetail">
-              {detailQuery.isFetching ? <RequestLoadingState label="Loading details" /> : null}
-              {detailQuery.error ? (
-                <p className="statusNote is-error">{getApiErrorMessage(detailQuery.error)}</p>
-              ) : null}
+          <article className="approvalDetail">
+            {detailQuery.isFetching ? <RequestLoadingState label="Loading details" /> : null}
+            {detailQuery.error ? <p className="statusNote is-error">{getApiErrorMessage(detailQuery.error)}</p> : null}
 
-              {detail ? (
-                <>
-                  <div className="approvalDetail-header">
+            {detail ? (
+              <>
+                <div className="approvalDetailHeader">
+                  <div className="approvalDetailIdentity">
+                    <span className="approvalDetailAvatar" aria-hidden="true">
+                      {getEmployeeName(detail).slice(0, 1).toUpperCase()}
+                    </span>
                     <div>
-                      <p className="sectionEyebrow">{detail.status}</p>
+                      <span className="approvalStatus">Submitted</span>
                       <h2>{getEmployeeName(detail)}</h2>
-                      <span>{formatPeriod(detail)}</span>
+                      <p>{formatPeriod(detail)}</p>
                     </div>
+                  </div>
+                  <div className="approvalTotal">
+                    <span>Total hours</span>
                     <strong>{detail.summary?.totalHours || '0.00'} h</strong>
                   </div>
+                </div>
 
+                <section className="approvalEntriesSection">
+                  <div className="approvalSectionHeader">
+                    <h3>Work entries</h3>
+                    <span>{detail.entries?.length || 0} entries</span>
+                  </div>
                   <div className="approvalEntries">
                     {sortEntries(detail.entries).map(entry => (
                       <div className="approvalEntry" key={entry.id}>
-                        <span>{entry.workDate}</span>
-                        <span>{entry.project?.name || 'Project'}</span>
+                        <span className="approvalEntryDate">{formatWorkDate(entry.workDate)}</span>
+                        <span className="approvalEntryProject">{entry.project?.name || 'Project'}</span>
                         <strong>{entry.hours} h</strong>
-                        <em>{entry.status}</em>
+                        <em>{String(entry.status || 'SUBMITTED').toLowerCase()}</em>
                       </div>
                     ))}
                   </div>
+                </section>
 
+                <section className="approvalDecisionPanel">
+                  <div className="approvalDecisionCopy">
+                    <h3>Decision</h3>
+                    <p>Approve the week, or leave a clear note explaining what needs to change.</p>
+                  </div>
                   <div className="approvalRejectionField">
-                    <label htmlFor="rejection-reason">Reason for rejection</label>
+                    <label htmlFor="rejection-reason">Reason for rejection <span>optional until rejecting</span></label>
                     <textarea
                       id="rejection-reason"
                       maxLength={500}
                       value={rejectionReason}
                       disabled={isReviewing}
-                      placeholder="Explain what the employee should correct before resubmitting."
+                      placeholder="Example: Please correct Friday's project and resubmit."
                       onChange={event => setRejectionReason(event.target.value)}
                     />
                     <small>{rejectionReason.length}/500</small>
@@ -186,7 +231,7 @@ export function ApprovalsPage() {
                       disabled={isReviewing || !trimmedRejectionReason}
                       onClick={() => review('reject')}
                     >
-                      Reject
+                      Reject with note
                     </button>
                     <button
                       className="approvalApprove"
@@ -194,15 +239,16 @@ export function ApprovalsPage() {
                       disabled={isReviewing}
                       onClick={() => review('approve')}
                     >
-                      Approve
+                      <SvgIcon name="check-circle" />
+                      Approve week
                     </button>
                   </div>
-                </>
-              ) : null}
-            </article>
-          </div>
-        ) : null}
-      </section>
+                </section>
+              </>
+            ) : null}
+          </article>
+        </section>
+      ) : null}
     </section>
   );
 }
