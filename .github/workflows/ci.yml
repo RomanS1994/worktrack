@@ -11,6 +11,8 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/worktrack?schema=public
 
     steps:
       - name: Checkout
@@ -19,7 +21,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install root dependencies
@@ -27,6 +29,9 @@ jobs:
 
       - name: Install backend dependencies
         run: npm --prefix backend ci
+
+      - name: Generate Prisma client
+        run: npm --prefix backend run db:generate
 
       - name: Run backend tests
         run: npm --prefix backend test
