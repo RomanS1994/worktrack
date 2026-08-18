@@ -12,17 +12,8 @@
   padding: 8px;
   border: 1px solid rgba(255, 255, 255, 0.42);
   border-radius: 28px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.34),
-    rgba(248, 250, 255, 0.18) 52%,
-    rgba(237, 242, 250, 0.12)
-  );
-  box-shadow:
-    0 18px 36px rgba(15, 23, 42, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.56),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.14),
-    0 0 0 1px rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(248, 250, 255, 0.18) 52%, rgba(237, 242, 250, 0.12));
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.56), inset 0 -1px 0 rgba(255, 255, 255, 0.14), 0 0 0 1px rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(34px) saturate(190%);
   -webkit-backdrop-filter: blur(34px) saturate(190%);
   overflow: hidden;
@@ -42,24 +33,11 @@
   box-sizing: border-box;
   position: relative;
   z-index: 1;
-  transition:
-    transform 0.16s ease,
-    background-color 0.16s ease,
-    box-shadow 0.16s ease,
-    color 0.16s ease;
+  transition: transform 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease, color 0.16s ease;
 }
 
-.bottomTab:hover {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.22),
-    rgba(255, 255, 255, 0.08)
-  );
-}
-
-.bottomTab:active {
-  transform: translateY(1px) scale(0.99);
-}
+.bottomTab:hover { background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08)); }
+.bottomTab:active { transform: translateY(1px) scale(0.99); }
 
 .bottomTab-icon {
   display: grid;
@@ -67,6 +45,27 @@
   width: 26px;
   height: 26px;
   color: rgba(60, 60, 67, 0.6);
+}
+
+.bottomTab-notificationIcon { position: relative; }
+.bottomTab-badge {
+  align-items: center;
+  background: #ff3b30;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  border-radius: 999px;
+  color: #fff;
+  display: flex;
+  font-size: 9px;
+  font-weight: 800;
+  height: 17px;
+  justify-content: center;
+  line-height: 1;
+  min-width: 17px;
+  padding: 0 4px;
+  position: absolute;
+  right: -8px;
+  top: -5px;
+  box-sizing: border-box;
 }
 
 .bottomTab-icon svg {
@@ -80,21 +79,12 @@
 }
 
 .bottomTab.is-active {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.34),
-    rgba(246, 249, 255, 0.16)
-  );
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.72),
-    0 10px 20px rgba(15, 23, 42, 0.06),
-    0 0 0 1px rgba(255, 255, 255, 0.16);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(246, 249, 255, 0.16));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 10px 20px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.16);
 }
 
 .bottomTab.is-active .bottomTab-icon,
-.bottomTab.is-active .bottomTab-label {
-  color: var(--accent);
-}
+.bottomTab.is-active .bottomTab-label { color: var(--accent); }
 
 .bottomTab-label {
   font-size: 10px;
@@ -104,62 +94,28 @@
   color: rgba(60, 60, 67, 0.6);
 }
 
-.bottomTab-primary {
-  flex: 1.18 1 0;
-  transform: translateY(-2px);
-}
-
+.bottomTab-primary { flex: 1.18 1 0; transform: translateY(-2px); }
 .bottomTab-primary .bottomTab-icon {
   width: 46px;
   height: 46px;
   margin-bottom: 1px;
   border-radius: 16px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.78),
-    rgba(236, 243, 252, 0.5)
-  );
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(236, 243, 252, 0.5));
   border: 1px solid rgba(255, 255, 255, 0.42);
-  box-shadow:
-    0 10px 18px rgba(0, 122, 255, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  box-shadow: 0 10px 18px rgba(0, 122, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.7);
   color: #8e8e93;
 }
-
-.bottomTab-primary .bottomTab-icon svg {
-  width: 32px;
-  height: 32px;
-}
-
-.bottomTab-primary .bottomTab-label {
-  font-size: 11px;
-  font-weight: 800;
-  color: rgba(60, 60, 67, 0.78);
-}
-
-.bottomTab.is-active .bottomTab-icon svg {
-  stroke-width: 2.1;
-}
-
+.bottomTab-primary .bottomTab-icon svg { width: 32px; height: 32px; }
+.bottomTab-primary .bottomTab-label { font-size: 11px; font-weight: 800; color: rgba(60, 60, 67, 0.78); }
+.bottomTab.is-active .bottomTab-icon svg { stroke-width: 2.1; }
 .bottomTab-primary.is-active .bottomTab-icon {
   color: var(--accent);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.84),
-    rgba(229, 240, 255, 0.6)
-  );
-  box-shadow:
-    0 10px 18px rgba(0, 122, 255, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(229, 240, 255, 0.6));
+  box-shadow: 0 10px 18px rgba(0, 122, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.78);
 }
-
-.bottomTab-primary.is-active .bottomTab-label {
-  color: var(--accent);
-}
+.bottomTab-primary.is-active .bottomTab-label { color: var(--accent); }
 
 @media (min-width: 1024px) {
-  /* Desktop navigation:
-     the same tab component becomes a left-side workspace menu for mouse/keyboard use. */
   .bottomTabs {
     top: 24px;
     bottom: auto;
@@ -175,9 +131,7 @@
     border-radius: 24px;
     overflow: visible;
   }
-
-  .bottomTab,
-  .bottomTab-primary {
+  .bottomTab, .bottomTab-primary {
     flex: 0 0 auto;
     transform: none;
     display: grid;
@@ -190,13 +144,8 @@
     padding: 8px 12px;
     border-radius: 16px;
   }
-
-  .bottomTab:hover {
-    background: rgba(255, 255, 255, 0.48);
-  }
-
-  .bottomTab-icon,
-  .bottomTab-primary .bottomTab-icon {
+  .bottomTab:hover { background: rgba(255, 255, 255, 0.48); }
+  .bottomTab-icon, .bottomTab-primary .bottomTab-icon {
     width: 34px;
     height: 34px;
     margin: 0;
@@ -205,15 +154,8 @@
     border: 1px solid rgba(255, 255, 255, 0.42);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.66);
   }
-
-  .bottomTab-icon svg,
-  .bottomTab-primary .bottomTab-icon svg {
-    width: 22px;
-    height: 22px;
-  }
-
-  .bottomTab-label,
-  .bottomTab-primary .bottomTab-label {
+  .bottomTab-icon svg, .bottomTab-primary .bottomTab-icon svg { width: 22px; height: 22px; }
+  .bottomTab-label, .bottomTab-primary .bottomTab-label {
     min-width: 0;
     font-size: 14px;
     font-weight: 700;
@@ -223,68 +165,24 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-
   .bottomTab.is-active {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(239, 246, 255, 0.54));
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.84),
-      0 10px 20px rgba(15, 23, 42, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.84), 0 10px 20px rgba(15, 23, 42, 0.08);
   }
-
-  .bottomTab.is-active .bottomTab-icon,
-  .bottomTab-primary.is-active .bottomTab-icon {
+  .bottomTab.is-active .bottomTab-icon, .bottomTab-primary.is-active .bottomTab-icon {
     color: var(--accent);
     background: rgba(229, 240, 255, 0.76);
   }
-
-  .bottomTab-primary.is-active .bottomTab-label {
-    color: var(--accent);
-  }
+  .bottomTab-primary.is-active .bottomTab-label { color: var(--accent); }
 }
 
 @media (max-width: 480px) {
-  .bottomTabs {
-    padding: 4px;
-    border-radius: 22px;
-    gap: 2px;
-    bottom: 12px;
-    left: 6px;
-    right: 6px;
-  }
-
-  .bottomTab {
-    min-height: 48px;
-    padding: 4px 1px 3px;
-    border-radius: 16px;
-    gap: 3px;
-  }
-
-  .bottomTab-icon {
-    width: 26px;
-    height: 26px;
-  }
-
-  .bottomTab-icon svg {
-    width: 26px;
-    height: 26px;
-  }
-
-  .bottomTab-label {
-    font-size: 9px;
-  }
-
-  .bottomTab-primary {
-    flex: 1.12 1 0;
-    transform: translateY(-1px);
-  }
-
-  .bottomTab-primary .bottomTab-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 13px;
-  }
-
-  .bottomTab-primary .bottomTab-label {
-    font-size: 10px;
-  }
+  .bottomTabs { padding: 4px; border-radius: 22px; gap: 2px; bottom: 12px; left: 6px; right: 6px; }
+  .bottomTab { min-height: 48px; padding: 4px 1px 3px; border-radius: 16px; gap: 3px; }
+  .bottomTab-icon { width: 26px; height: 26px; }
+  .bottomTab-icon svg { width: 26px; height: 26px; }
+  .bottomTab-label { font-size: 8px; }
+  .bottomTab-primary { flex: 1.12 1 0; transform: translateY(-1px); }
+  .bottomTab-primary .bottomTab-icon { width: 40px; height: 40px; border-radius: 13px; }
+  .bottomTab-primary .bottomTab-label { font-size: 9px; }
 }
