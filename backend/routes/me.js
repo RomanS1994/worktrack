@@ -1,4 +1,5 @@
 import { getAuthContext } from '../auth/context.js';
+import { hashPassword, verifyPassword } from '../auth/tokens.js';
 import { buildSanitizedUser, createAuditLog } from '../db/prisma-helpers.js';
 import { prisma } from '../db/prisma.js';
 import { runStoreTransaction } from '../db/store.js';
@@ -137,6 +138,78 @@ async function handleUpdateMyProfile(request, response) {
   sendJson(response, 200, { user });
 }
 
+async function handleChangeMyPassword(request, response) {
+  const context = await getAuthContext(request, response);
+  if (!context) return;
+
+  const body = await readJsonBody(request);
+  const currentPassword = String(body.currentPassword || '');
+  const newPassword = String(body.newPassword || '');
+
+  if (!currentPassword) {
+    throw new Error('Current password is required');
+  }
+
+  if (newPassword.length < 8) {
+    throw new Error('New password must be at least 8 characters long');
+  }
+
+  if (!verifyPassword(currentPassword, context.user.passwordHash)) {
+    throw new Error('Current password is incorrect');
+  }
+
+  if (currentPassword === newPassword) {
+    throw new Error('New password must be different');
+  }
+
+  const user = await runStoreTransaction({
+    prisma: async tx => {
+      const updatedAt = new Date(nowIso());
+      const updatedUser = await tx.user.update({
+        where: {
+          id: context.user.id,
+        },
+        data: {
+          passwordHash: hashPassword(newPassword),
+          mustChangePassword: false,
+          updatedAt,
+        },
+      });
+
+      await tx.session.deleteMany({
+        where: {
+          userId: context.user.id,
+          id: {
+            not: context.session.id,
+          },
+        },
+      });
+
+      await createAuditLog(tx, {
+        action: 'user.password.changed',
+        actorUserId: context.user.id,
+        targetUserId: context.user.id,
+        entityType: 'user',
+        entityId: context.user.id,
+        before: {
+          mustChangePassword: Boolean(context.user.mustChangePassword),
+        },
+        after: {
+          mustChangePassword: false,
+        },
+      });
+
+      return buildSanitizedUser(tx, updatedUser, {
+        memberships: context.memberships,
+        activeMembership: context.activeMembership,
+        activeCompany: context.activeCompany,
+      });
+    },
+  });
+
+  sendJson(response, 200, { user });
+}
+
 export async function handleMeRoutes(request, response, { pathName }) {
   if (request.method === 'GET' && pathName === '/api/me') {
     const context = await getAuthContext(request, response);
@@ -153,6 +226,11 @@ export async function handleMeRoutes(request, response, { pathName }) {
 
   if (request.method === 'PATCH' && pathName === '/api/me/profile') {
     await handleUpdateMyProfile(request, response);
+    return true;
+  }
+
+  if (request.method === 'PATCH' && pathName === '/api/me/password') {
+    await handleChangeMyPassword(request, response);
     return true;
   }
 
