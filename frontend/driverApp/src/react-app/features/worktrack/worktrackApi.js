@@ -95,7 +95,10 @@ export const worktrackApi = baseApi.injectEndpoints({
       query: ({ entryId, hours, projectId }) => ({
         url: `/work-entries/${entryId}`,
         method: 'PATCH',
-        body: { hours, projectId },
+        body: {
+          hours,
+          ...(projectId ? { projectId } : {}),
+        },
       }),
       invalidatesTags: (_result, _error, { entryId }) => [
         { type: 'WorkEntries', id: 'WEEK' },
@@ -198,11 +201,12 @@ export const worktrackApi = baseApi.injectEndpoints({
       ],
     }),
     rejectSubmission: builder.mutation({
-      query: submissionId => ({
+      query: ({ submissionId, rejectionReason }) => ({
         url: `/manager/submissions/${submissionId}/reject`,
         method: 'POST',
+        body: { rejectionReason },
       }),
-      invalidatesTags: (_result, _error, submissionId) => [
+      invalidatesTags: (_result, _error, { submissionId }) => [
         { type: 'WeeklySubmissions', id: 'LIST' },
         { type: 'WeeklySubmissions', id: submissionId },
         { type: 'WorkEntries', id: 'SUMMARY' },
