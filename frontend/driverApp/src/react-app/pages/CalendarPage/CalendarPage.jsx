@@ -152,6 +152,7 @@ export function CalendarPage() {
   const selectedHours = getDayTotal(selectedEntries);
   const selectedStatus = getDayStatus(selectedEntries);
   const selectedOvertime = Math.max(0, selectedHours - 8);
+  const selectedHoursHref = `/hours?date=${encodeURIComponent(selectedDateKey)}`;
 
   const totals = useMemo(() => {
     const total = monthEntries.reduce((sum, entry) => sum + (Number(entry.hours) || 0), 0);
@@ -291,8 +292,8 @@ export function CalendarPage() {
         </div>
 
         <div className="workCalendarDayActions">
-          <Link className="workCalendarPrimaryAction" to="/hours">+ Add entry</Link>
-          <Link className="workCalendarSecondaryAction" to="/hours">Open My Hours</Link>
+          <Link className="workCalendarPrimaryAction" to={selectedHoursHref}>+ Add entry</Link>
+          <Link className="workCalendarSecondaryAction" to={selectedHoursHref}>Open My Hours</Link>
         </div>
       </section>
     </section>
