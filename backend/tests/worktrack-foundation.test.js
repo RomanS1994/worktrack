@@ -17,6 +17,7 @@ import {
   listProjects,
   reviewWeeklySubmission,
   submitEmployeeWeek,
+  updateEmployeeMembership,
   updateEmployeeWorkEntry,
 } from '../services/worktrack.js';
 
@@ -711,6 +712,32 @@ test('manager company A cannot see company B employees', async () => {
     [seed.companyA.id]
   );
   assert.equal(result.employees.some(employee => employee.userId === seed.sharedEmployee.id), false);
+});
+
+test('manager can see and reactivate an inactive employee membership', async () => {
+  const seed = createSeed();
+  const inactiveMembership = {
+    ...seed.employeeMembershipA,
+    status: 'INACTIVE',
+  };
+  const client = createFakeWorkTrackClient({
+    users: [seed.managerA, seed.employee],
+    companies: [seed.companyA],
+    memberships: [seed.managerMembershipA, inactiveMembership],
+  });
+  const managerContext = context(seed.managerA, seed.managerMembershipA);
+
+  const before = await listManagerEmployees(client, managerContext);
+  assert.equal(before.employees.length, 1);
+  assert.equal(before.employees[0].status, 'INACTIVE');
+
+  await updateEmployeeMembership(client, managerContext, inactiveMembership.id, {
+    status: 'ACTIVE',
+  });
+
+  const after = await listManagerEmployees(client, managerContext);
+  assert.equal(after.employees.length, 1);
+  assert.equal(after.employees[0].status, 'ACTIVE');
 });
 
 test('employee company A sees only active projects from company A', async () => {
