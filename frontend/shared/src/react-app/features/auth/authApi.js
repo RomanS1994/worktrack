@@ -46,6 +46,16 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
       transformResponse: response => response.user || response,
+      invalidatesTags: [{ type: 'Me', id: 'CURRENT' }],
+    }),
+    changePassword: builder.mutation({
+      query: body => ({
+        url: '/me/password',
+        method: 'PATCH',
+        body,
+      }),
+      transformResponse: response => response.user || response,
+      invalidatesTags: [{ type: 'Me', id: 'CURRENT' }],
     }),
     deleteMe: builder.mutation({
       query: () => ({
@@ -64,5 +74,6 @@ export const {
   useLogoutMutation,
   useLazyGetMeQuery,
   useUpdateProfileMutation,
+  useChangePasswordMutation,
   useDeleteMeMutation,
 } = authApi;
