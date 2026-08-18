@@ -82,10 +82,11 @@ model Company {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  memberships      CompanyMembership[]
-  projects         Project[]
-  workEntries      WorkEntry[]
+  memberships       CompanyMembership[]
+  projects          Project[]
+  workEntries       WorkEntry[]
   weeklySubmissions WeeklySubmission[]
+  notifications     Notification[]
 
   @@index([slug])
   @@map("companies")
@@ -107,6 +108,7 @@ model CompanyMembership {
   workEntries               WorkEntry[]        @relation("EmployeeMembershipWorkEntries")
   weeklySubmissions         WeeklySubmission[] @relation("EmployeeMembershipWeeklySubmissions")
   reviewedWeeklySubmissions WeeklySubmission[] @relation("ReviewerMembershipWeeklySubmissions")
+  notifications             Notification[]     @relation("RecipientMembershipNotifications")
 
   @@unique([companyId, userId])
   @@index([userId])
@@ -191,6 +193,26 @@ model WeeklySubmission {
   @@index([status])
   @@index([weekStart])
   @@map("weekly_submissions")
+}
+
+model Notification {
+  id                    String   @id
+  companyId             String
+  recipientMembershipId String
+  type                  String
+  title                 String
+  message               String
+  href                  String?
+  readAt                DateTime?
+  createdAt             DateTime @default(now())
+
+  company             Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  recipientMembership CompanyMembership @relation("RecipientMembershipNotifications", fields: [recipientMembershipId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([recipientMembershipId, createdAt])
+  @@index([recipientMembershipId, readAt])
+  @@map("notifications")
 }
 
 model AuditLog {
