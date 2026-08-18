@@ -2,7 +2,7 @@ import { getDatabaseHealth } from '../db/store.js';
 import { sendJson } from '../lib/http.js';
 import { nowIso } from '../validation/common.js';
 
-function getDeploymentMetadata() {
+export function getDeploymentMetadata() {
   return {
     provider: process.env.RENDER === 'true' ? 'render' : 'local',
     branch: process.env.RENDER_GIT_BRANCH || '',
