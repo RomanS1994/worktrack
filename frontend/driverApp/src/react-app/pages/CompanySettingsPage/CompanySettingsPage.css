@@ -13,22 +13,36 @@
 }
 
 .companySettingsField input {
-  min-height: 42px;
-  padding: 0 12px;
-  border: 1px solid rgba(15, 95, 215, 0.12);
+  min-height: 46px;
+  padding: 0 13px;
+  border: 1px solid rgba(71, 85, 105, 0.16);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.96);
   color: var(--text);
   font: inherit;
+  outline: none;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.companySettingsField input:focus {
+  border-color: rgba(37, 99, 235, 0.4);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+.companySettingsMetaCard {
+  display: grid;
+  gap: 8px;
+  padding: 13px 14px;
+  border: 1px solid rgba(71, 85, 105, 0.1);
+  border-radius: 16px;
+  background: rgba(248, 250, 252, 0.76);
 }
 
 .companySettingsMeta {
   display: flex;
   justify-content: space-between;
   gap: 14px;
-  padding: 12px 0;
-  border-top: 1px solid rgba(15, 95, 215, 0.08);
-  border-bottom: 1px solid rgba(15, 95, 215, 0.08);
+  align-items: center;
 }
 
 .companySettingsMeta span {
@@ -38,12 +52,24 @@
 }
 
 .companySettingsMeta strong {
+  min-width: 0;
+  overflow: hidden;
   color: var(--text);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.companySettingsMetaCard p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .companySettingsButton {
   justify-self: start;
-  min-height: 42px;
+  min-height: 44px;
   padding: 0 16px;
   border: 1px solid rgba(15, 95, 215, 0.16);
   border-radius: 14px;
@@ -52,4 +78,9 @@
   font: inherit;
   font-weight: 800;
   cursor: pointer;
+}
+
+.companySettingsButton:disabled {
+  cursor: default;
+  opacity: 0.55;
 }
