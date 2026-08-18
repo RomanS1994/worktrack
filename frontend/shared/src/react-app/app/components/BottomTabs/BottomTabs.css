@@ -22,10 +22,12 @@
 .bottomTab-primary .bottomTab-label { font-size:9px; font-weight:700; color:#7b8794; }
 .bottomTab-primary.is-active .bottomTab-icon { color:var(--accent); background:transparent; box-shadow:none; }
 .bottomTab-primary.is-active .bottomTab-label { color:var(--accent); }
+.bottomTab-desktopOnly { display:none; }
 
 @media (min-width:1024px) {
   .bottomTabs { top:20px; bottom:auto; left:20px; right:auto; width:236px; flex-direction:column; align-items:stretch; justify-content:flex-start; gap:4px; padding:14px 10px; border-radius:22px; background:rgba(255,255,255,.94); box-shadow:0 10px 34px rgba(15,23,42,.055); }
   .bottomTab,.bottomTab-primary { flex:0 0 auto; transform:none; display:grid; grid-template-columns:32px minmax(0,1fr); justify-items:start; align-items:center; gap:11px; min-height:46px; padding:7px 10px; border-radius:13px; }
+  .bottomTab-desktopOnly { display:grid; }
   .bottomTab-icon,.bottomTab-primary .bottomTab-icon { width:32px; height:32px; margin:0; border-radius:10px; background:transparent; border:0; box-shadow:none; }
   .bottomTab-icon svg,.bottomTab-primary .bottomTab-icon svg { width:20px; height:20px; }
   .bottomTab-label,.bottomTab-primary .bottomTab-label { min-width:0; font-size:13px; font-weight:700; line-height:1.15; color:#64748b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
