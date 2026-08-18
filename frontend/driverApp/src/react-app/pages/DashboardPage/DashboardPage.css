@@ -1,48 +1,137 @@
 .dashboardPage {
-  gap: 14px;
+  gap: 18px;
 }
 
 .dashboardHero {
   display: grid;
-  gap: 16px;
-  padding: 22px;
-  border: 1px solid rgba(37, 99, 235, 0.12);
-  border-radius: 24px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(241, 245, 249, 0.92));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.96), 0 14px 32px rgba(15, 23, 42, 0.07);
+  gap: 12px;
+  padding: 4px 0 8px;
 }
 
-.dashboardHero small {
+.dashboardHero-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.dashboardHero h1 {
+  margin: 0;
+  max-width: 760px;
+  font-size: clamp(34px, 5.2vw, 52px);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  font-weight: 780;
+}
+
+.dashboardHero-copy > p:last-child {
+  margin: 0;
   color: var(--muted);
+  font-size: 16px;
+}
+
+.dashboardAttentionCard {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid rgba(22, 163, 74, 0.14);
+  border-radius: 22px;
+  background: linear-gradient(135deg, #ffffff 0%, #f2fbf5 100%);
+  box-shadow: 0 16px 36px rgba(20, 70, 36, 0.07);
+}
+
+.dashboardAttentionIcon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.dashboardAttentionIcon svg {
+  width: 28px;
+  height: 28px;
+  stroke: currentColor;
+  fill: none;
+}
+
+.dashboardAttentionCopy {
+  display: grid;
+  gap: 5px;
+}
+
+.dashboardAttentionCopy > span {
+  color: var(--accent-strong);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.dashboardAttentionCopy h2 {
+  margin: 0;
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.dashboardAttentionCopy p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.dashboardPrimaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(180deg, #22b455, #15963f);
+  box-shadow: 0 10px 22px rgba(22, 163, 74, 0.2);
+  font-weight: 750;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.dashboardPrimaryAction:hover {
+  background: linear-gradient(180deg, #20a94f, #12853a);
 }
 
 .dashboardMetrics {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .dashboardMetric {
   display: grid;
-  gap: 6px;
-  min-height: 126px;
-  padding: 14px;
-  border: 1px solid rgba(71, 85, 105, 0.1);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.84);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.96), 0 10px 24px rgba(15, 23, 42, 0.05);
+  gap: 8px;
+  min-height: 148px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+}
+
+.dashboardMetric.is-warning .dashboardMetric-icon {
+  color: #d97706;
+  background: #fff7ed;
 }
 
 .dashboardMetric-icon {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  color: #2563eb;
-  background: #eef4ff;
+  width: 38px;
+  height: 38px;
+  border-radius: 13px;
+  color: var(--accent);
+  background: var(--accent-soft);
 }
 
 .dashboardMetric-icon svg {
@@ -54,17 +143,17 @@
 
 .dashboardMetric-label {
   color: var(--muted);
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 650;
 }
 
 .dashboardMetric strong {
   min-width: 0;
   overflow: hidden;
   color: var(--text);
-  font-size: 22px;
+  font-size: 28px;
   line-height: 1;
+  letter-spacing: -0.03em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -73,45 +162,106 @@
 .dashboardTeamEmpty {
   margin: 0;
   color: var(--muted);
-  font-size: 12px;
-  line-height: 1.35;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .dashboardPanel {
-  gap: 16px;
-  padding: 16px;
-  border-radius: 20px;
+  gap: 18px;
+}
+
+.dashboardActions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.dashboardActionLink {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "icon title"
+    "icon note";
+  align-items: center;
+  gap: 2px 10px;
+  min-height: 86px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  color: var(--text);
+  background: #fff;
+  text-decoration: none;
+  transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease;
+}
+
+.dashboardActionLink:hover {
+  transform: translateY(-1px);
+  border-color: rgba(22, 163, 74, 0.22);
+}
+
+.dashboardActionLink > span {
+  grid-area: icon;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.dashboardActionLink strong {
+  grid-area: title;
+  font-size: 14px;
+}
+
+.dashboardActionLink small {
+  grid-area: note;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.dashboardActionLink svg {
+  width: 19px;
+  height: 19px;
+  stroke: currentColor;
+  fill: none;
+}
+
+.dashboardActionLink--primary {
+  border-color: rgba(22, 163, 74, 0.24);
+  background: var(--accent-softer);
 }
 
 .dashboardTeamGrid {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .dashboardTeamCard {
   min-width: 0;
-  padding: 14px;
-  border: 1px solid rgba(71, 85, 105, 0.1);
-  border-radius: 18px;
-  background: rgba(248, 250, 252, 0.82);
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fafafa;
 }
 
-.dashboardTeamCard.is-warning { background: rgba(255, 247, 237, 0.8); }
-.dashboardTeamCard.is-danger { background: rgba(254, 242, 242, 0.82); }
-.dashboardTeamCard.is-success { background: rgba(240, 253, 244, 0.82); }
+.dashboardTeamCard.is-warning { background: #fffaf3; }
+.dashboardTeamCard.is-danger { background: #fff6f5; }
+.dashboardTeamCard.is-success { background: #f4fbf6; }
 
 .dashboardTeamCard-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .dashboardTeamCard-header h3 {
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .dashboardTeamCard-header span {
@@ -121,21 +271,22 @@
   height: 28px;
   padding: 0 8px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
+  background: #fff;
+  border: 1px solid var(--line);
   font-size: 12px;
   font-weight: 800;
 }
 
 .dashboardTeamList {
   display: grid;
-  gap: 8px;
+  gap: 9px;
 }
 
 .dashboardTeamItem {
   display: grid;
   gap: 5px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(71, 85, 105, 0.08);
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
 }
 
 .dashboardTeamItem:first-child {
@@ -156,41 +307,24 @@
 .dashboardTeamItem p {
   margin: 0;
   color: var(--muted);
-  font-size: 11px;
-  line-height: 1.35;
-}
-
-.dashboardActions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 10px;
-}
-
-.dashboardActionLink {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 46px;
-  padding: 0 12px;
-  border: 1px solid rgba(37, 99, 235, 0.14);
-  border-radius: 16px;
-  color: #1d4ed8;
-  background: rgba(238, 244, 255, 0.74);
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.dashboardActionLink svg {
-  width: 18px;
-  height: 18px;
-  stroke: currentColor;
-  fill: none;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 @media (min-width: 760px) {
   .dashboardMetrics {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .dashboardAttentionCard {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .dashboardPrimaryAction {
+    grid-column: 1 / -1;
+    width: 100%;
   }
 }
 
@@ -201,22 +335,67 @@
 }
 
 @media (max-width: 480px) {
+  .dashboardPage {
+    gap: 14px;
+  }
+
   .dashboardHero {
-    padding: 14px;
+    padding: 2px 0 4px;
+  }
+
+  .dashboardHero h1 {
+    font-size: 30px;
+    line-height: 1.06;
+  }
+
+  .dashboardHero-copy > p:last-child {
+    font-size: 14px;
+  }
+
+  .dashboardAttentionCard {
+    gap: 14px;
+    padding: 16px;
     border-radius: 18px;
   }
 
+  .dashboardAttentionIcon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+  }
+
+  .dashboardAttentionIcon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .dashboardAttentionCopy h2 {
+    font-size: 21px;
+  }
+
+  .dashboardAttentionCopy p {
+    font-size: 13px;
+  }
+
   .dashboardMetrics {
-    gap: 8px;
+    gap: 10px;
   }
 
   .dashboardMetric {
-    min-height: 106px;
-    padding: 10px;
+    min-height: 128px;
+    padding: 14px;
     border-radius: 16px;
   }
 
   .dashboardMetric strong {
-    font-size: 18px;
+    font-size: 22px;
+  }
+
+  .dashboardMetric-label {
+    font-size: 11px;
+  }
+
+  .dashboardActions {
+    grid-template-columns: 1fr;
   }
 }
