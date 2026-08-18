@@ -5,6 +5,7 @@ import { App } from '@shared/app/App.jsx';
 import { ProtectedRoute } from '@shared/app/components/ProtectedRoute/ProtectedRoute.jsx';
 import { RouterError } from '@shared/app/components/RouterError/RouterError.jsx';
 import { ApprovalsPage } from './pages/ApprovalsPage/ApprovalsPage.jsx';
+import { CalendarPage } from './pages/CalendarPage/CalendarPage.jsx';
 import { CompanySettingsPage } from './pages/CompanySettingsPage/CompanySettingsPage.jsx';
 import { DashboardPage } from './pages/DashboardPage/DashboardPage.jsx';
 import { EmployeesPage } from './pages/EmployeesPage/EmployeesPage.jsx';
@@ -31,6 +32,10 @@ export const router = createBrowserRouter([
       {
         path: 'hours',
         element: <ProtectedRoute requireEmployee><HoursPage /></ProtectedRoute>,
+      },
+      {
+        path: 'calendar',
+        element: <ProtectedRoute requireEmployee><CalendarPage /></ProtectedRoute>,
       },
       {
         path: 'notifications',
