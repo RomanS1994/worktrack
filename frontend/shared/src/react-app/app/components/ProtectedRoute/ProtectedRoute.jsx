@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 import {
@@ -20,6 +20,7 @@ export function ProtectedRoute({
   const initialized = useSelector(selectSessionInitialized);
   const token = useSelector(selectToken);
   const user = useSelector(selectUser);
+  const location = useLocation();
 
   if (!initialized) {
     return null;
@@ -27,6 +28,10 @@ export function ProtectedRoute({
 
   if (!token || !user) {
     return <Navigate to="/sign-in" replace />;
+  }
+
+  if (user.mustChangePassword && location.pathname !== '/profile') {
+    return <Navigate to="/profile" replace />;
   }
 
   if (requireManager && !hasManagerAccess(user)) {
