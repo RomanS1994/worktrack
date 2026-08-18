@@ -97,11 +97,7 @@ export function DashboardPage() {
         <div className="dashboardHero-copy">
           <p className="sectionEyebrow">{isManager ? companyName : 'My workspace'}</p>
           <h1>{getGreeting()}, {getFirstName(user)} <span aria-hidden="true">👋</span></h1>
-          <p>
-            {isManager
-              ? "Here’s what’s happening at WorkTrack today."
-              : 'Your hours, approvals and salary in one place.'}
-          </p>
+          <p>{isManager ? "Here’s what’s happening at WorkTrack today." : 'Your hours, approvals and salary in one place.'}</p>
         </div>
       </header>
 
@@ -157,7 +153,7 @@ export function DashboardPage() {
           ) : (
             <>
               <Link className="dashboardActionLink dashboardActionLink--primary" to="/hours"><span aria-hidden="true"><SvgIcon name="clock" /></span><strong>My hours</strong><small>Add or edit entries</small></Link>
-              <Link className="dashboardActionLink" to="/calendar"><span aria-hidden="true"><SvgIcon name="calendar" /></span><strong>Calendar</strong><small>Monthly hours overview</small></Link>
+              <Link className="dashboardActionLink" to="/calendar"><span aria-hidden="true"><SvgIcon name="clock" /></span><strong>Calendar</strong><small>Monthly hours overview</small></Link>
               <Link className="dashboardActionLink" to="/payroll-report"><span aria-hidden="true"><SvgIcon name="wallet" /></span><strong>Payroll report</strong><small>Salary overview</small></Link>
             </>
           )}
