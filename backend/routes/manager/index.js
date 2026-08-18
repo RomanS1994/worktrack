@@ -1,6 +1,7 @@
 import { requireManager } from '../../auth/context.js';
 import { runStoreRead, runStoreTransaction } from '../../db/store.js';
 import { readJsonBody, sendJson } from '../../lib/http.js';
+import { resetEmployeePassword } from '../../services/employee-password-reset.js';
 import {
   createManagerEmployee,
   getManagerSubmissionById,
@@ -31,6 +32,22 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
       prisma: client => createManagerEmployee(client, context, body),
     });
     sendJson(response, 201, { employee });
+    return true;
+  }
+
+  const passwordResetMatch = pathName.match(
+    /^\/api\/manager\/employees\/([^/]+)\/reset-password$/
+  );
+  if (request.method === 'POST' && passwordResetMatch) {
+    const context = await requireManager(request, response);
+    if (!context) return true;
+
+    const body = await readJsonBody(request);
+    const result = await runStoreTransaction({
+      prisma: client =>
+        resetEmployeePassword(client, context, passwordResetMatch[1], body),
+    });
+    sendJson(response, 200, result);
     return true;
   }
 
