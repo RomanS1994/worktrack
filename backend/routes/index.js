@@ -1,6 +1,7 @@
 import { handleAuthRoutes } from './auth/index.js';
 import { handleManagerRoutes } from './manager/index.js';
 import { handleMeRoutes } from './me.js';
+import { handleNotificationRoutes } from './notifications.js';
 import { handlePublicRoutes } from './public.js';
 import { handleWorkTrackRoutes } from './worktrack.js';
 
@@ -8,6 +9,7 @@ const routeHandlers = [
   handlePublicRoutes,
   handleAuthRoutes,
   handleMeRoutes,
+  handleNotificationRoutes,
   handleWorkTrackRoutes,
   handleManagerRoutes,
 ];
