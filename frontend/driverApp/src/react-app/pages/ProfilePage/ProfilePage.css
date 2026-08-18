@@ -7,6 +7,24 @@
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.94));
 }
 
+.profilePasswordNotice {
+  display: grid;
+  gap: 6px;
+  border-color: rgba(245, 158, 11, 0.25);
+  background: rgba(255, 251, 235, 0.96);
+}
+
+.profilePasswordNotice strong {
+  font-size: 14px;
+}
+
+.profilePasswordNotice p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .profileDetails {
   gap: 0;
   overflow: hidden;
@@ -42,4 +60,54 @@
   text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.profilePasswordCard {
+  display: grid;
+  gap: 14px;
+}
+
+.profilePasswordField {
+  display: grid;
+  gap: 7px;
+}
+
+.profilePasswordField span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profilePasswordField input {
+  width: 100%;
+  min-height: 46px;
+  box-sizing: border-box;
+  padding: 0 13px;
+  border: 1px solid rgba(71, 85, 105, 0.16);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text);
+  font: inherit;
+  outline: none;
+}
+
+.profilePasswordField input:focus {
+  border-color: rgba(15, 23, 42, 0.32);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.06);
+}
+
+.profilePasswordButton {
+  min-height: 46px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--text);
+  color: white;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.profilePasswordButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
 }
