@@ -9,6 +9,8 @@ export function validateRuntimeEnv() {
     apiKey,
     databaseUrl,
     directDatabaseUrl,
+    clientOrigin,
+    productionEnvironment,
   } = getRuntimeEnvSnapshot();
 
   if (!authTokenSecret) {
@@ -40,6 +42,10 @@ export function validateRuntimeEnv() {
 
   if (directDatabaseUrl && isPlaceholderDatabaseUrl(directDatabaseUrl)) {
     errors.push('DIRECT_DATABASE_URL must not use example placeholder credentials.');
+  }
+
+  if (productionEnvironment && !clientOrigin) {
+    errors.push('CLIENT_ORIGIN is required in production.');
   }
 
   return {
