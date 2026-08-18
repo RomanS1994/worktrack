@@ -5,24 +5,24 @@
 
 .pageContainer {
   width: 100%;
-  max-width: 404px;
+  max-width: 428px;
   margin: 0 auto;
-  padding: 0 10px 24px;
+  padding: 0 16px 28px;
 }
 
 .appLayout--workspace .pageContainer {
-  max-width: 404px;
+  max-width: 428px;
 }
 
 .appLayout--dashboard {
-  background: #f5f7fb;
+  background: linear-gradient(180deg, #fbfdfb 0%, #f3f7f4 100%);
 }
 
 .appLayout-body {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
-  gap: 16px;
-  padding: 16px;
+  gap: 20px;
+  padding: 20px;
 }
 
 .appLayout--workspace {
@@ -36,7 +36,7 @@
 }
 
 .appLayout-workspaceBody {
-  padding: 12px 0 calc(92px + env(safe-area-inset-bottom));
+  padding: 16px 0 calc(96px + env(safe-area-inset-bottom));
 }
 
 .appLayout--home .appLayout-workspaceBody {
@@ -59,19 +59,17 @@
   min-width: 0;
 }
 
-/* Desktop workspace:
-   authenticated screens get room for the left navigation while mobile keeps the phone layout. */
 @media (min-width: 1024px) {
   .appLayout--workspace {
     min-height: 100dvh;
   }
 
   .appLayout--withNav .appLayout-workspaceBody {
-    padding: 24px 32px 40px 292px;
+    padding: 32px 40px 48px 296px;
   }
 
   .appLayout--withNav .pageContainer {
-    max-width: min(1120px, calc(100vw - 340px));
+    max-width: min(1180px, calc(100vw - 352px));
     padding: 0;
   }
 
@@ -98,29 +96,29 @@
 
 @media (min-width: 761px) {
   .pageContainer {
-    padding: 0 12px 24px;
+    padding: 0 20px 32px;
   }
 
   .appLayout--workspace:not(.appLayout--withNav) .pageContainer {
-    max-width: 404px;
+    max-width: 428px;
   }
 }
 
 @media (min-width: 1280px) {
   .appLayout--workspace:not(.appLayout--withNav) .pageContainer {
-    max-width: 428px;
-    padding: 0 14px 32px;
+    max-width: 448px;
+    padding: 0 20px 36px;
   }
 }
 
 @media (max-width: 480px) {
   .appLayout-workspaceBody {
-    padding: 8px 0 calc(88px + env(safe-area-inset-bottom));
+    padding: 12px 0 calc(92px + env(safe-area-inset-bottom));
   }
 
   .appLayout--workspace .pageContainer {
     max-width: none;
-    padding: 0 4px 12px;
+    padding: 0 16px 20px;
   }
 
   .appLayout--home .pageContainer {

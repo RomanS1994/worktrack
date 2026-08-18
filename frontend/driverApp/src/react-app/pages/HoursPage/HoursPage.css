@@ -1,12 +1,13 @@
 .hoursPage {
-  gap: 14px;
+  gap: 18px;
 }
 
 .hoursHeader {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
-  border-color: rgba(37, 99, 235, 0.12);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(240, 253, 250, 0.88));
+  padding: 20px;
+  border-color: rgba(22, 163, 74, 0.16);
+  background: linear-gradient(145deg, #f3fbf5, #ffffff);
 }
 
 .hoursStatusBadge {
@@ -15,31 +16,30 @@
   align-items: center;
   justify-content: center;
   padding: 0 12px;
-  border: 1px solid rgba(37, 99, 235, 0.14);
+  border: 1px solid rgba(148, 163, 184, 0.24);
   border-radius: 999px;
-  color: #1d4ed8;
-  background: rgba(238, 244, 255, 0.86);
+  color: #475569;
+  background: #f8fafc;
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0;
-  text-transform: uppercase;
+  text-transform: capitalize;
 }
 
 .hoursStatusBadge--submitted {
   color: #b45309;
-  background: rgba(254, 243, 199, 0.86);
+  background: #fff7ed;
   border-color: rgba(245, 158, 11, 0.22);
 }
 
 .hoursStatusBadge--approved {
-  color: #166534;
-  background: rgba(220, 252, 231, 0.86);
-  border-color: rgba(22, 101, 52, 0.18);
+  color: #15803d;
+  background: #f0fdf4;
+  border-color: rgba(22, 163, 74, 0.2);
 }
 
 .hoursStatusBadge--rejected {
   color: #b42318;
-  background: rgba(254, 226, 226, 0.86);
+  background: #fef2f2;
   border-color: rgba(180, 35, 24, 0.18);
 }
 
@@ -49,34 +49,37 @@
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  border-radius: 20px;
+  border-radius: 18px;
+  box-shadow: none;
 }
 
 .hoursWeekNavigator > button,
 .hoursWeekNavigator-actions button {
   min-height: 40px;
   padding: 0 14px;
-  border-radius: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: none;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 750;
 }
 
 .hoursWeekNavigator-current {
   display: grid;
   justify-items: center;
-  gap: 2px;
+  gap: 3px;
   text-align: center;
 }
 
 .hoursWeekNavigator-current span {
   color: var(--muted);
   font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
+  font-weight: 750;
 }
 
 .hoursWeekNavigator-current strong {
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .hoursWeekNavigator-actions {
@@ -90,8 +93,8 @@
   gap: 5px;
   padding: 14px 16px;
   border: 1px solid rgba(180, 35, 24, 0.18);
-  border-radius: 18px;
-  background: rgba(254, 226, 226, 0.68);
+  border-radius: 16px;
+  background: #fef2f2;
 }
 
 .hoursRejectionNotice strong {
@@ -107,50 +110,57 @@
 .hoursSummaryGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .hoursSummaryCard {
   display: grid;
-  gap: 5px;
-  padding: 14px;
-  border: 1px solid rgba(71, 85, 105, 0.1);
+  gap: 8px;
+  min-height: 96px;
+  padding: 16px;
+  border: 1px solid var(--line);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.76);
+  background: #fff;
+}
+
+.hoursSummaryCard:first-child {
+  border-color: rgba(22, 163, 74, 0.22);
+  background: linear-gradient(145deg, #f4fbf6, #fff);
 }
 
 .hoursSummaryCard span {
   color: var(--muted);
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .hoursSummaryCard strong {
-  font-size: clamp(17px, 2vw, 22px);
-  letter-spacing: -0.02em;
+  font-size: clamp(19px, 2vw, 25px);
+  letter-spacing: -0.025em;
 }
 
 .hoursWeek {
-  gap: 16px;
-  padding: 16px;
-  border-radius: 20px;
+  gap: 18px;
+  padding: 18px;
+  border-radius: 22px;
+  box-shadow: none;
 }
 
 .hoursWeekGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .hoursDay {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  gap: 10px;
+  gap: 12px;
   min-height: 236px;
-  padding: 12px;
-  border: 1px solid rgba(71, 85, 105, 0.1);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.82);
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
 }
 
 .hoursDay-top {
@@ -158,12 +168,14 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--line);
 }
 
 .hoursDay-top span {
   color: var(--muted);
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 750;
 }
 
 .hoursDay-top strong {
@@ -175,42 +187,57 @@
 .hoursEntries {
   display: grid;
   align-content: start;
-  gap: 8px;
+  gap: 10px;
 }
 
 .hoursEntryRow {
   display: grid;
-  gap: 7px;
+  gap: 8px;
 }
 
 .hoursEntryRow select,
 .hoursEntryRow input {
   width: 100%;
   min-height: 44px;
-  padding: 0 10px;
-  border: 1px solid rgba(71, 85, 105, 0.14);
-  border-radius: 14px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
   color: var(--text);
-  background: rgba(248, 250, 252, 0.9);
-  font-weight: 700;
+  background: #f8fafc;
+  font-weight: 650;
+}
+
+.hoursEntryRow select:focus,
+.hoursEntryRow input:focus {
+  outline: 2px solid rgba(22, 163, 74, 0.14);
+  border-color: rgba(22, 163, 74, 0.35);
 }
 
 .hoursEntryRow select:disabled,
 .hoursEntryRow input:disabled {
   color: var(--muted);
-  background: rgba(226, 232, 240, 0.42);
+  background: #f1f5f9;
 }
 
 .hoursEntryRow--new {
-  padding-top: 10px;
-  border-top: 1px solid rgba(71, 85, 105, 0.1);
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
 }
 
-.hoursEntryRow--new button {
+.hoursEntryRow--new button,
+.hoursDay-actions button {
   min-height: 40px;
-  border-radius: 14px;
+  border-radius: 12px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 750;
+  box-shadow: none;
+}
+
+.hoursEntryRow--new button:not(:disabled),
+.hoursDay-actions button:first-child:not(:disabled) {
+  color: #166534;
+  border: 1px solid rgba(22, 163, 74, 0.18);
+  background: #f0fdf4;
 }
 
 .hoursDay-status {
@@ -221,25 +248,25 @@
   padding: 0 8px;
   border-radius: 999px;
   color: #475569;
-  background: rgba(241, 245, 249, 0.92);
+  background: #f1f5f9;
   font-size: 10px;
   font-weight: 800;
-  text-transform: uppercase;
+  text-transform: capitalize;
 }
 
 .hoursDay-status--submitted {
   color: #b45309;
-  background: rgba(254, 243, 199, 0.86);
+  background: #fff7ed;
 }
 
 .hoursDay-status--approved {
-  color: #166534;
-  background: rgba(220, 252, 231, 0.86);
+  color: #15803d;
+  background: #f0fdf4;
 }
 
 .hoursDay-status--rejected {
   color: #b42318;
-  background: rgba(254, 226, 226, 0.86);
+  background: #fef2f2;
 }
 
 .hoursDay-actions {
@@ -249,18 +276,13 @@
   align-items: center;
 }
 
-.hoursDay-actions button {
-  min-height: 40px;
-  border-radius: 14px;
-  font-size: 12px;
-  font-weight: 800;
-}
-
 .hoursDay-delete {
   display: grid;
   place-items: center;
   padding: 0;
   color: #b42318;
+  background: #fff;
+  border: 1px solid rgba(180, 35, 24, 0.14);
 }
 
 .hoursDay-delete svg,
@@ -275,11 +297,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 16px;
-  border: 1px solid rgba(37, 99, 235, 0.12);
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid rgba(22, 163, 74, 0.18);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.72);
+  background: linear-gradient(145deg, #f4fbf6, #fff);
 }
 
 .hoursSubmitPanel strong,
@@ -289,13 +311,14 @@
 
 .hoursSubmitPanel strong {
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
   font-size: 15px;
-  text-transform: uppercase;
+  text-transform: capitalize;
 }
 
 .hoursSubmitPanel p {
   color: var(--muted);
+  font-size: 13px;
 }
 
 .hoursSubmitButton {
@@ -304,9 +327,11 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-width: 136px;
-  color: #ffffff;
-  background: linear-gradient(180deg, #2563eb, #1d4ed8);
+  min-width: 148px;
+  min-height: 46px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  box-shadow: 0 10px 22px rgba(22, 163, 74, 0.16);
 }
 
 @media (max-width: 900px) {
@@ -320,6 +345,14 @@
 }
 
 @media (max-width: 640px) {
+  .hoursPage {
+    gap: 16px;
+  }
+
+  .hoursHeader {
+    padding: 16px;
+  }
+
   .hoursWeekNavigator {
     grid-template-columns: 1fr;
   }
@@ -341,8 +374,16 @@
     grid-column: 1 / -1;
   }
 
+  .hoursWeek {
+    padding: 14px;
+  }
+
   .hoursWeekGrid {
     grid-template-columns: 1fr;
+  }
+
+  .hoursDay {
+    min-height: 0;
   }
 
   .hoursSubmitPanel {
@@ -361,6 +402,16 @@
   }
 
   .hoursSummaryGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .hoursSummaryCard {
+    min-height: 84px;
+    padding: 12px;
+  }
+
+  .hoursSummaryCard strong {
+    font-size: 18px;
   }
 }

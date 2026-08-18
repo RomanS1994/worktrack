@@ -41,10 +41,16 @@ export function BottomTabs() {
       </NavLink>
 
       {!isManager ? (
-        <NavLink className={linkProps => getTabClassName(linkProps)} to="/hours">
-          <span className="bottomTab-icon" aria-hidden="true"><SvgIcon name="clock" /></span>
-          <span className="bottomTab-label">{t('app.hours')}</span>
-        </NavLink>
+        <>
+          <NavLink className={linkProps => getTabClassName(linkProps)} to="/hours">
+            <span className="bottomTab-icon" aria-hidden="true"><SvgIcon name="clock" /></span>
+            <span className="bottomTab-label">{t('app.hours')}</span>
+          </NavLink>
+          <NavLink className={linkProps => getTabClassName(linkProps, ' bottomTab-primary')} to="/calendar">
+            <span className="bottomTab-icon" aria-hidden="true"><SvgIcon name="calendar" /></span>
+            <span className="bottomTab-label">Calendar</span>
+          </NavLink>
+        </>
       ) : null}
 
       {isManager ? (
@@ -53,7 +59,7 @@ export function BottomTabs() {
             <span className="bottomTab-icon" aria-hidden="true"><SvgIcon name="accounts" /></span>
             <span className="bottomTab-label">{t('app.employees')}</span>
           </NavLink>
-          <NavLink className={linkProps => getTabClassName(linkProps)} to="/projects">
+          <NavLink className={linkProps => getTabClassName(linkProps, ' bottomTab-desktopOnly')} to="/projects">
             <span className="bottomTab-icon" aria-hidden="true"><SvgIcon name="location" /></span>
             <span className="bottomTab-label">Projects</span>
           </NavLink>
