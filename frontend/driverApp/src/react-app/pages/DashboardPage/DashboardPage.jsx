@@ -110,33 +110,23 @@ export function DashboardPage() {
 
       {isManager ? (
         <section className="dashboardAttentionCard" aria-label="Approvals requiring attention">
-          <div className="dashboardAttentionIcon" aria-hidden="true">
-            <SvgIcon name="check-circle" />
-          </div>
+          <div className="dashboardAttentionIcon" aria-hidden="true"><SvgIcon name="check-circle" /></div>
           <div className="dashboardAttentionCopy">
             <span>Needs your attention</span>
             <h2>{pendingCount} {pendingCount === 1 ? 'week needs' : 'weeks need'} approval</h2>
             <p>Review submitted hours before they become confirmed payroll.</p>
           </div>
-          <Link className="dashboardPrimaryAction" to="/approvals">
-            Review approvals
-            <span aria-hidden="true">→</span>
-          </Link>
+          <Link className="dashboardPrimaryAction" to="/approvals">Review approvals <span aria-hidden="true">→</span></Link>
         </section>
       ) : (
         <section className="dashboardAttentionCard dashboardAttentionCard--salary" aria-label="Salary summary">
-          <div className="dashboardAttentionIcon" aria-hidden="true">
-            <SvgIcon name="wallet" />
-          </div>
+          <div className="dashboardAttentionIcon" aria-hidden="true"><SvgIcon name="wallet" /></div>
           <div className="dashboardAttentionCopy">
             <span>Confirmed salary</span>
             <h2>{formatCzk(summary.confirmedSalaryCzk)}</h2>
             <p>{formatCzk(summary.predictedSalaryCzk)} predicted from pending hours.</p>
           </div>
-          <Link className="dashboardPrimaryAction" to="/payroll-report">
-            View payroll
-            <span aria-hidden="true">→</span>
-          </Link>
+          <Link className="dashboardPrimaryAction" to="/payroll-report">View payroll <span aria-hidden="true">→</span></Link>
         </section>
       )}
 
@@ -154,9 +144,8 @@ export function DashboardPage() {
       <section className="dashboardPanel screenCard">
         <div className="compactHeader">
           <h2>Quick actions</h2>
-          <p>{isManager ? 'Jump to the areas you use most.' : 'Manage your current work week.'}</p>
+          <p>{isManager ? 'Jump to the areas you use most.' : 'Manage and review your work time.'}</p>
         </div>
-
         <div className="dashboardActions">
           {isManager ? (
             <>
@@ -168,6 +157,7 @@ export function DashboardPage() {
           ) : (
             <>
               <Link className="dashboardActionLink dashboardActionLink--primary" to="/hours"><span aria-hidden="true"><SvgIcon name="clock" /></span><strong>My hours</strong><small>Add or edit entries</small></Link>
+              <Link className="dashboardActionLink" to="/calendar"><span aria-hidden="true"><SvgIcon name="calendar" /></span><strong>Calendar</strong><small>Monthly hours overview</small></Link>
               <Link className="dashboardActionLink" to="/payroll-report"><span aria-hidden="true"><SvgIcon name="wallet" /></span><strong>Payroll report</strong><small>Salary overview</small></Link>
             </>
           )}
