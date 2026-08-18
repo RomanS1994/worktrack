@@ -37,6 +37,7 @@ export function ApprovalsPage() {
   );
   const [selectedId, setSelectedId] = useState('');
   const [actionError, setActionError] = useState('');
+  const [rejectionReason, setRejectionReason] = useState('');
   const selectedFromList = submissions.find(submission => submission.id === selectedId);
   const detailQuery = useGetManagerSubmissionQuery(selectedId, {
     skip: !selectedId,
@@ -45,6 +46,7 @@ export function ApprovalsPage() {
   const [approveSubmission, approveState] = useApproveSubmissionMutation();
   const [rejectSubmission, rejectState] = useRejectSubmissionMutation();
   const isReviewing = approveState.isLoading || rejectState.isLoading;
+  const trimmedRejectionReason = rejectionReason.trim();
 
   useEffect(() => {
     if (!selectedId && submissions[0]?.id) {
@@ -57,16 +59,30 @@ export function ApprovalsPage() {
     }
   }, [selectedId, submissions]);
 
+  useEffect(() => {
+    setActionError('');
+    setRejectionReason('');
+  }, [selectedId]);
+
   async function review(decision) {
     if (!detail?.id) return;
     setActionError('');
+
+    if (decision === 'reject' && !trimmedRejectionReason) {
+      setActionError('Add a reason before rejecting this week.');
+      return;
+    }
 
     try {
       if (decision === 'approve') {
         await approveSubmission(detail.id).unwrap();
       } else {
-        await rejectSubmission(detail.id).unwrap();
+        await rejectSubmission({
+          submissionId: detail.id,
+          rejectionReason: trimmedRejectionReason,
+        }).unwrap();
       }
+      setRejectionReason('');
       setSelectedId('');
     } catch (mutationError) {
       setActionError(getApiErrorMessage(mutationError));
@@ -148,13 +164,26 @@ export function ApprovalsPage() {
                     ))}
                   </div>
 
+                  <div className="approvalRejectionField">
+                    <label htmlFor="rejection-reason">Reason for rejection</label>
+                    <textarea
+                      id="rejection-reason"
+                      maxLength={500}
+                      value={rejectionReason}
+                      disabled={isReviewing}
+                      placeholder="Explain what the employee should correct before resubmitting."
+                      onChange={event => setRejectionReason(event.target.value)}
+                    />
+                    <small>{rejectionReason.length}/500</small>
+                  </div>
+
                   {actionError ? <p className="statusNote is-error">{actionError}</p> : null}
 
                   <div className="approvalActions">
                     <button
                       className="approvalReject"
                       type="button"
-                      disabled={isReviewing}
+                      disabled={isReviewing || !trimmedRejectionReason}
                       onClick={() => review('reject')}
                     >
                       Reject
