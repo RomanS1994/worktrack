@@ -31,6 +31,15 @@ function shiftWeek(weekStart, amount) {
   return new Date(date.getTime() + amount * 7 * DAY_MS).toISOString().slice(0, 10);
 }
 
+function getWeekStartForDate(dateKey) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(dateKey || ''))) return '';
+  const date = parseDateKey(dateKey);
+  if (Number.isNaN(date.getTime())) return '';
+  const day = date.getUTCDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  return new Date(date.getTime() + mondayOffset * DAY_MS).toISOString().slice(0, 10);
+}
+
 function getCurrentWeekStart() {
   const now = new Date();
   const day = now.getDay();
@@ -38,6 +47,11 @@ function getCurrentWeekStart() {
   const monday = new Date(now);
   monday.setDate(now.getDate() + mondayOffset);
   return toDateKey(monday);
+}
+
+function getInitialWeekStart(currentWeekStart) {
+  const selectedDate = new URLSearchParams(window.location.search).get('date');
+  return getWeekStartForDate(selectedDate) || currentWeekStart;
 }
 
 function formatDate(value) {
@@ -78,7 +92,7 @@ function getStatusLabel(status) {
 
 export function HoursPage() {
   const currentWeekStart = useMemo(() => getCurrentWeekStart(), []);
-  const [weekStart, setWeekStart] = useState(currentWeekStart);
+  const [weekStart, setWeekStart] = useState(() => getInitialWeekStart(currentWeekStart));
   const { data, error, isFetching, isLoading } = useGetWeekEntriesQuery({ weekStart });
   const projectsQuery = useGetProjectsQuery();
   const [createWorkEntry, createState] = useCreateWorkEntryMutation();
