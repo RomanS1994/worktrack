@@ -43,6 +43,74 @@
   border-color: rgba(180, 35, 24, 0.18);
 }
 
+.hoursWeekNavigator {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 20px;
+}
+
+.hoursWeekNavigator > button,
+.hoursWeekNavigator-actions button {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.hoursWeekNavigator-current {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.hoursWeekNavigator-current span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.hoursWeekNavigator-current strong {
+  font-size: 15px;
+}
+
+.hoursWeekNavigator-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.hoursSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.hoursSummaryCard {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border: 1px solid rgba(71, 85, 105, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.hoursSummaryCard span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.hoursSummaryCard strong {
+  font-size: clamp(17px, 2vw, 22px);
+  letter-spacing: -0.02em;
+}
+
 .hoursWeek {
   gap: 16px;
   padding: 16px;
@@ -223,12 +291,37 @@
 }
 
 @media (max-width: 900px) {
+  .hoursSummaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .hoursWeekGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 640px) {
+  .hoursWeekNavigator {
+    grid-template-columns: 1fr;
+  }
+
+  .hoursWeekNavigator-current {
+    grid-row: 1;
+  }
+
+  .hoursWeekNavigator > button {
+    width: 100%;
+  }
+
+  .hoursWeekNavigator-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hoursWeekNavigator-actions button:only-child {
+    grid-column: 1 / -1;
+  }
+
   .hoursWeekGrid {
     grid-template-columns: 1fr;
   }
@@ -245,6 +338,10 @@
 
 @media (max-width: 420px) {
   .hoursHeader {
+    grid-template-columns: 1fr;
+  }
+
+  .hoursSummaryGrid {
     grid-template-columns: 1fr;
   }
 }
