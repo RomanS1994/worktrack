@@ -29,12 +29,10 @@ function resolveBaseUrl() {
 let refreshWarningShownSinceSuccess = false;
 let refreshRequestPromise = null;
 
-// Дає коротку паузу перед повторною спробою refresh-запиту.
 function sleep(ms) {
   return new Promise(resolve => window.setTimeout(resolve, ms));
 }
 
-// Відрізняє мережеві refresh-помилки від server-side відповіді.
 function isNetworkRefreshError(error) {
   return (
     error?.status === 'FETCH_ERROR' ||
@@ -55,12 +53,10 @@ function resetRefreshWarningState() {
   refreshWarningShownSinceSuccess = false;
 }
 
-// Показує попередження тільки для явних user-actions, а не для фонових query/refetch.
 function shouldSurfaceOfflineForRequest(api) {
   return api?.type === 'mutation';
 }
 
-// Виконує refresh у режимі single-flight, щоб паралельні 401 не ротили сесію одночасно.
 function getSharedRefreshRequest(runRefreshFlow) {
   if (!refreshRequestPromise) {
     refreshRequestPromise = runRefreshFlow().finally(() => {
@@ -71,7 +67,6 @@ function getSharedRefreshRequest(runRefreshFlow) {
   return refreshRequestPromise;
 }
 
-// Оновлює локальну сесію після вдалого refresh.
 function applySuccessfulRefresh(api, refreshResult) {
   const nextToken = refreshResult?.data?.token || '';
   const nextUser = refreshResult?.data?.user || null;
@@ -90,7 +85,6 @@ function applySuccessfulRefresh(api, refreshResult) {
   return true;
 }
 
-// Справжній 401 на refresh означає, що refresh-cookie вже недійсний.
 function expireSessionAfterRefreshRejected(api, t) {
   clearStoredSession();
   api.dispatch(clearAuthSession());
@@ -157,9 +151,7 @@ export const baseApi = createApi({
       return getMessage(readStoredLanguage(), key);
     }
 
-    // Пробує оновити сесію й повертає структурований результат для поточного запиту.
     async function refreshSession() {
-      // Виконує один refresh-запит без побічних ефектів.
       async function runRefreshRequest() {
         return baseQuery(
           {
@@ -241,6 +233,7 @@ export const baseApi = createApi({
     'Company',
     'WorkEntries',
     'WeeklySubmissions',
+    'Notifications',
     'AuditLogs',
   ],
   endpoints: () => ({}),

@@ -3,6 +3,7 @@ import { runStoreRead, runStoreTransaction } from '../../db/store.js';
 import { readJsonBody, sendJson } from '../../lib/http.js';
 import { resetEmployeePassword } from '../../services/employee-password-reset.js';
 import { getManagerPayroll } from '../../services/manager-payroll.js';
+import { notifyEmployeeAboutReview } from '../../services/notifications.js';
 import {
   createManagerEmployee,
   getManagerSubmissionById,
@@ -126,10 +127,17 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
     }
 
     const submission = await runStoreTransaction({
-      prisma: client =>
-        reviewWeeklySubmission(client, context, approvalMatch[1], decision, {
-          rejectionReason,
-        }),
+      prisma: async client => {
+        const reviewedSubmission = await reviewWeeklySubmission(
+          client,
+          context,
+          approvalMatch[1],
+          decision,
+          { rejectionReason }
+        );
+        await notifyEmployeeAboutReview(client, context, reviewedSubmission);
+        return reviewedSubmission;
+      },
     });
     sendJson(response, 200, { submission });
     return true;

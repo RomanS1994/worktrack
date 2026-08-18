@@ -1,0 +1,112 @@
+.notificationsPage {
+  width: 100%;
+}
+
+.notificationsHeader {
+  align-items: flex-end;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.notificationsMarkAll {
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 11px 15px;
+}
+
+.notificationsMarkAll:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.notificationsPanel {
+  overflow: hidden;
+  padding: 0;
+}
+
+.notificationsList {
+  display: grid;
+}
+
+.notificationItem {
+  align-items: flex-start;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(127, 127, 127, 0.18);
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  gap: 12px;
+  padding: 18px 20px;
+  text-align: left;
+  text-decoration: none;
+  width: 100%;
+}
+
+.notificationItem:last-child {
+  border-bottom: 0;
+}
+
+.notificationItem:hover {
+  background: rgba(127, 127, 127, 0.06);
+}
+
+.notificationItem.is-unread {
+  background: rgba(52, 199, 89, 0.08);
+}
+
+.notificationDot {
+  border-radius: 999px;
+  flex: 0 0 8px;
+  height: 8px;
+  margin-top: 7px;
+  width: 8px;
+}
+
+.notificationItem.is-unread .notificationDot {
+  background: #34c759;
+}
+
+.notificationBody {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.notificationBody strong {
+  font-size: 15px;
+}
+
+.notificationBody > span {
+  opacity: 0.78;
+}
+
+.notificationBody time {
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+.notificationsEmpty {
+  padding: 34px 22px;
+  text-align: center;
+}
+
+.notificationsEmpty p {
+  margin-bottom: 0;
+  opacity: 0.65;
+}
+
+@media (max-width: 640px) {
+  .notificationsHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .notificationsMarkAll {
+    align-self: flex-start;
+  }
+}

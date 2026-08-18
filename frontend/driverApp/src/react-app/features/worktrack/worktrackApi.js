@@ -3,24 +3,32 @@ import { baseApi } from '@shared/app/api/baseApi.js';
 export const worktrackApi = baseApi.injectEndpoints({
   endpoints: builder => ({
     getWorkSummary: builder.query({
-      query: (query = {}) => ({
-        url: '/work-summary',
-        params: query,
-      }),
+      query: (query = {}) => ({ url: '/work-summary', params: query }),
       providesTags: [{ type: 'WorkEntries', id: 'SUMMARY' }],
     }),
     getManagerPayroll: builder.query({
-      query: (query = {}) => ({
-        url: '/manager/payroll',
-        params: query,
-      }),
+      query: (query = {}) => ({ url: '/manager/payroll', params: query }),
       providesTags: [{ type: 'WorkEntries', id: 'PAYROLL' }],
+    }),
+    getNotifications: builder.query({
+      query: () => '/notifications',
+      providesTags: [{ type: 'Notifications', id: 'LIST' }],
+    }),
+    markNotificationRead: builder.mutation({
+      query: notificationId => ({
+        url: `/notifications/${notificationId}/read`,
+        method: 'POST',
+      }),
+      invalidatesTags: [{ type: 'Notifications', id: 'LIST' }],
+    }),
+    markAllNotificationsRead: builder.mutation({
+      query: () => ({ url: '/notifications/read-all', method: 'POST' }),
+      invalidatesTags: [{ type: 'Notifications', id: 'LIST' }],
     }),
     getProjects: builder.query({
       query: () => '/projects',
       providesTags: result => {
         const projects = Array.isArray(result?.projects) ? result.projects : [];
-
         return [
           { type: 'Projects', id: 'LIST' },
           ...projects.map(project => ({ type: 'Projects', id: project.id })),
@@ -28,22 +36,14 @@ export const worktrackApi = baseApi.injectEndpoints({
       },
     }),
     createProject: builder.mutation({
-      query: body => ({
-        url: '/projects',
-        method: 'POST',
-        body,
-      }),
+      query: body => ({ url: '/projects', method: 'POST', body }),
       invalidatesTags: [
         { type: 'Projects', id: 'LIST' },
         { type: 'WorkEntries', id: 'SUMMARY' },
       ],
     }),
     updateProject: builder.mutation({
-      query: ({ projectId, ...body }) => ({
-        url: `/projects/${projectId}`,
-        method: 'PATCH',
-        body,
-      }),
+      query: ({ projectId, ...body }) => ({ url: `/projects/${projectId}`, method: 'PATCH', body }),
       invalidatesTags: (_result, _error, { projectId }) => [
         { type: 'Projects', id: 'LIST' },
         { type: 'Projects', id: projectId },
@@ -51,10 +51,7 @@ export const worktrackApi = baseApi.injectEndpoints({
       ],
     }),
     deactivateProject: builder.mutation({
-      query: projectId => ({
-        url: `/projects/${projectId}/deactivate`,
-        method: 'POST',
-      }),
+      query: projectId => ({ url: `/projects/${projectId}/deactivate`, method: 'POST' }),
       invalidatesTags: (_result, _error, projectId) => [
         { type: 'Projects', id: 'LIST' },
         { type: 'Projects', id: projectId },
@@ -66,21 +63,13 @@ export const worktrackApi = baseApi.injectEndpoints({
       providesTags: [{ type: 'Company', id: 'SETTINGS' }],
     }),
     updateCompanySettings: builder.mutation({
-      query: body => ({
-        url: '/company-settings',
-        method: 'PATCH',
-        body,
-      }),
+      query: body => ({ url: '/company-settings', method: 'PATCH', body }),
       invalidatesTags: [{ type: 'Company', id: 'SETTINGS' }],
     }),
     getWeekEntries: builder.query({
-      query: (query = {}) => ({
-        url: '/work-entries',
-        params: query,
-      }),
+      query: (query = {}) => ({ url: '/work-entries', params: query }),
       providesTags: result => {
         const entries = Array.isArray(result?.entries) ? result.entries : [];
-
         return [
           { type: 'WorkEntries', id: 'WEEK' },
           ...entries.map(entry => ({ type: 'WorkEntries', id: entry.id })),
@@ -88,11 +77,7 @@ export const worktrackApi = baseApi.injectEndpoints({
       },
     }),
     createWorkEntry: builder.mutation({
-      query: payload => ({
-        url: '/work-entries',
-        method: 'POST',
-        body: payload,
-      }),
+      query: payload => ({ url: '/work-entries', method: 'POST', body: payload }),
       invalidatesTags: [
         { type: 'WorkEntries', id: 'WEEK' },
         { type: 'WorkEntries', id: 'SUMMARY' },
@@ -103,10 +88,7 @@ export const worktrackApi = baseApi.injectEndpoints({
       query: ({ entryId, hours, projectId }) => ({
         url: `/work-entries/${entryId}`,
         method: 'PATCH',
-        body: {
-          hours,
-          ...(projectId ? { projectId } : {}),
-        },
+        body: { hours, ...(projectId ? { projectId } : {}) },
       }),
       invalidatesTags: (_result, _error, { entryId }) => [
         { type: 'WorkEntries', id: 'WEEK' },
@@ -116,10 +98,7 @@ export const worktrackApi = baseApi.injectEndpoints({
       ],
     }),
     deleteWorkEntry: builder.mutation({
-      query: entryId => ({
-        url: `/work-entries/${entryId}`,
-        method: 'DELETE',
-      }),
+      query: entryId => ({ url: `/work-entries/${entryId}`, method: 'DELETE' }),
       invalidatesTags: (_result, _error, entryId) => [
         { type: 'WorkEntries', id: 'WEEK' },
         { type: 'WorkEntries', id: 'SUMMARY' },
@@ -128,23 +107,19 @@ export const worktrackApi = baseApi.injectEndpoints({
       ],
     }),
     submitWeek: builder.mutation({
-      query: payload => ({
-        url: '/weekly-submissions',
-        method: 'POST',
-        body: payload,
-      }),
+      query: payload => ({ url: '/weekly-submissions', method: 'POST', body: payload }),
       invalidatesTags: [
         { type: 'WorkEntries', id: 'WEEK' },
         { type: 'WorkEntries', id: 'SUMMARY' },
         { type: 'WorkEntries', id: 'PAYROLL' },
         { type: 'WeeklySubmissions', id: 'LIST' },
+        { type: 'Notifications', id: 'LIST' },
       ],
     }),
     getManagerEmployees: builder.query({
       query: () => '/manager/employees',
       providesTags: result => {
         const employees = Array.isArray(result?.employees) ? result.employees : [];
-
         return [
           { type: 'Employees', id: 'LIST' },
           ...employees.map(employee => ({ type: 'Employees', id: employee.id })),
@@ -152,11 +127,7 @@ export const worktrackApi = baseApi.injectEndpoints({
       },
     }),
     createManagerEmployee: builder.mutation({
-      query: body => ({
-        url: '/manager/employees',
-        method: 'POST',
-        body,
-      }),
+      query: body => ({ url: '/manager/employees', method: 'POST', body }),
       invalidatesTags: [
         { type: 'Employees', id: 'LIST' },
         { type: 'WorkEntries', id: 'SUMMARY' },
@@ -164,11 +135,7 @@ export const worktrackApi = baseApi.injectEndpoints({
       ],
     }),
     updateManagerEmployee: builder.mutation({
-      query: ({ employeeId, ...body }) => ({
-        url: `/manager/employees/${employeeId}`,
-        method: 'PATCH',
-        body,
-      }),
+      query: ({ employeeId, ...body }) => ({ url: `/manager/employees/${employeeId}`, method: 'PATCH', body }),
       invalidatesTags: (_result, _error, { employeeId }) => [
         { type: 'Employees', id: 'LIST' },
         { type: 'Employees', id: employeeId },
@@ -184,21 +151,12 @@ export const worktrackApi = baseApi.injectEndpoints({
       }),
     }),
     getManagerSubmissions: builder.query({
-      query: (query = {}) => ({
-        url: '/manager/submissions',
-        params: query,
-      }),
+      query: (query = {}) => ({ url: '/manager/submissions', params: query }),
       providesTags: result => {
-        const submissions = Array.isArray(result?.submissions)
-          ? result.submissions
-          : [];
-
+        const submissions = Array.isArray(result?.submissions) ? result.submissions : [];
         return [
           { type: 'WeeklySubmissions', id: 'LIST' },
-          ...submissions.map(submission => ({
-            type: 'WeeklySubmissions',
-            id: submission.id,
-          })),
+          ...submissions.map(submission => ({ type: 'WeeklySubmissions', id: submission.id })),
         ];
       },
     }),
@@ -209,16 +167,14 @@ export const worktrackApi = baseApi.injectEndpoints({
       ],
     }),
     approveSubmission: builder.mutation({
-      query: submissionId => ({
-        url: `/manager/submissions/${submissionId}/approve`,
-        method: 'POST',
-      }),
+      query: submissionId => ({ url: `/manager/submissions/${submissionId}/approve`, method: 'POST' }),
       invalidatesTags: (_result, _error, submissionId) => [
         { type: 'WeeklySubmissions', id: 'LIST' },
         { type: 'WeeklySubmissions', id: submissionId },
         { type: 'WorkEntries', id: 'SUMMARY' },
         { type: 'WorkEntries', id: 'PAYROLL' },
         { type: 'Employees', id: 'LIST' },
+        { type: 'Notifications', id: 'LIST' },
       ],
     }),
     rejectSubmission: builder.mutation({
@@ -233,6 +189,7 @@ export const worktrackApi = baseApi.injectEndpoints({
         { type: 'WorkEntries', id: 'SUMMARY' },
         { type: 'WorkEntries', id: 'PAYROLL' },
         { type: 'Employees', id: 'LIST' },
+        { type: 'Notifications', id: 'LIST' },
       ],
     }),
   }),
@@ -241,6 +198,9 @@ export const worktrackApi = baseApi.injectEndpoints({
 export const {
   useGetWorkSummaryQuery,
   useGetManagerPayrollQuery,
+  useGetNotificationsQuery,
+  useMarkNotificationReadMutation,
+  useMarkAllNotificationsReadMutation,
   useGetProjectsQuery,
   useCreateProjectMutation,
   useUpdateProjectMutation,
