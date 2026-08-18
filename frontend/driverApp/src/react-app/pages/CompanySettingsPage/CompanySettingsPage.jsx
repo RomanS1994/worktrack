@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { RequestLoadingState } from '@shared/app/components/RequestLoader/RequestLoader.jsx';
@@ -15,6 +15,11 @@ export function CompanySettingsPage() {
   const [message, setMessage] = useState('');
   const [actionError, setActionError] = useState('');
   const company = data?.company || null;
+  const normalizedName = name.trim();
+  const hasChanges = useMemo(
+    () => Boolean(company && normalizedName && normalizedName !== String(company.name || '').trim()),
+    [company, normalizedName],
+  );
 
   useEffect(() => {
     if (company?.name) {
@@ -27,8 +32,14 @@ export function CompanySettingsPage() {
     setMessage('');
     setActionError('');
 
+    if (!normalizedName) {
+      setActionError('Company name is required.');
+      return;
+    }
+
     try {
-      await updateCompanySettings({ name }).unwrap();
+      await updateCompanySettings({ name: normalizedName }).unwrap();
+      setName(normalizedName);
       setMessage('Company name saved.');
     } catch (mutationError) {
       setActionError(getApiErrorMessage(mutationError));
@@ -47,8 +58,8 @@ export function CompanySettingsPage() {
 
       <form className="companySettingsPanel screenCard" onSubmit={submitCompany}>
         <div className="compactHeader">
-          <h2>Company profile</h2>
-          <p>Company-level billing and subscription settings will live here later.</p>
+          <h2>Workspace identity</h2>
+          <p>This name is shown to managers and employees across WorkTrack.</p>
         </div>
 
         {isLoading ? <RequestLoadingState label="Loading company" /> : null}
@@ -58,25 +69,35 @@ export function CompanySettingsPage() {
           <span>Company name</span>
           <input
             type="text"
+            autoComplete="organization"
+            maxLength={120}
             value={name}
-            onChange={event => setName(event.target.value)}
+            onChange={event => {
+              setName(event.target.value);
+              setMessage('');
+              setActionError('');
+            }}
+            required
           />
         </label>
 
-        <div className="companySettingsMeta">
-          <span>Slug</span>
-          <strong>{company?.slug || '-'}</strong>
+        <div className="companySettingsMetaCard">
+          <div className="companySettingsMeta">
+            <span>Workspace slug</span>
+            <strong>{company?.slug || '-'}</strong>
+          </div>
+          <p>The workspace slug is a stable internal identifier and is not changed when you rename the company.</p>
         </div>
 
-        {message ? <p className="statusNote">{message}</p> : null}
+        {message ? <p className="statusNote is-success">{message}</p> : null}
         {actionError ? <p className="statusNote is-error">{actionError}</p> : null}
 
         <button
           className="companySettingsButton"
           type="submit"
-          disabled={updateState.isLoading}
+          disabled={isLoading || updateState.isLoading || !hasChanges}
         >
-          Save company
+          {updateState.isLoading ? 'Saving…' : hasChanges ? 'Save changes' : 'Saved'}
         </button>
       </form>
     </section>
