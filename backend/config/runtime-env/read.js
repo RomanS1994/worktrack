@@ -29,6 +29,10 @@ export function getDirectDatabaseUrl() {
   return normalizeEnvValue(process.env.DIRECT_DATABASE_URL);
 }
 
+export function getClientOrigin() {
+  return normalizeEnvValue(process.env.CLIENT_ORIGIN);
+}
+
 export function getAccessTokenTtlMinutes() {
   return Number(process.env.ACCESS_TOKEN_TTL_MINUTES || DEFAULT_ACCESS_TOKEN_TTL_MINUTES);
 }
@@ -39,6 +43,7 @@ export function getRuntimeEnvSnapshot() {
     apiKey: getApiKey(),
     databaseUrl: getDatabaseUrl(),
     directDatabaseUrl: getDirectDatabaseUrl(),
+    clientOrigin: getClientOrigin(),
     productionEnvironment: isProductionEnvironment(),
   };
 }
