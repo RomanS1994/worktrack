@@ -9,6 +9,13 @@ export const worktrackApi = baseApi.injectEndpoints({
       }),
       providesTags: [{ type: 'WorkEntries', id: 'SUMMARY' }],
     }),
+    getManagerPayroll: builder.query({
+      query: (query = {}) => ({
+        url: '/manager/payroll',
+        params: query,
+      }),
+      providesTags: [{ type: 'WorkEntries', id: 'PAYROLL' }],
+    }),
     getProjects: builder.query({
       query: () => '/projects',
       providesTags: result => {
@@ -89,6 +96,7 @@ export const worktrackApi = baseApi.injectEndpoints({
       invalidatesTags: [
         { type: 'WorkEntries', id: 'WEEK' },
         { type: 'WorkEntries', id: 'SUMMARY' },
+        { type: 'WorkEntries', id: 'PAYROLL' },
       ],
     }),
     updateWorkEntry: builder.mutation({
@@ -103,6 +111,7 @@ export const worktrackApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { entryId }) => [
         { type: 'WorkEntries', id: 'WEEK' },
         { type: 'WorkEntries', id: 'SUMMARY' },
+        { type: 'WorkEntries', id: 'PAYROLL' },
         { type: 'WorkEntries', id: entryId },
       ],
     }),
@@ -114,6 +123,7 @@ export const worktrackApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, entryId) => [
         { type: 'WorkEntries', id: 'WEEK' },
         { type: 'WorkEntries', id: 'SUMMARY' },
+        { type: 'WorkEntries', id: 'PAYROLL' },
         { type: 'WorkEntries', id: entryId },
       ],
     }),
@@ -126,6 +136,7 @@ export const worktrackApi = baseApi.injectEndpoints({
       invalidatesTags: [
         { type: 'WorkEntries', id: 'WEEK' },
         { type: 'WorkEntries', id: 'SUMMARY' },
+        { type: 'WorkEntries', id: 'PAYROLL' },
         { type: 'WeeklySubmissions', id: 'LIST' },
       ],
     }),
@@ -149,6 +160,7 @@ export const worktrackApi = baseApi.injectEndpoints({
       invalidatesTags: [
         { type: 'Employees', id: 'LIST' },
         { type: 'WorkEntries', id: 'SUMMARY' },
+        { type: 'WorkEntries', id: 'PAYROLL' },
       ],
     }),
     updateManagerEmployee: builder.mutation({
@@ -161,6 +173,7 @@ export const worktrackApi = baseApi.injectEndpoints({
         { type: 'Employees', id: 'LIST' },
         { type: 'Employees', id: employeeId },
         { type: 'WorkEntries', id: 'SUMMARY' },
+        { type: 'WorkEntries', id: 'PAYROLL' },
       ],
     }),
     resetManagerEmployeePassword: builder.mutation({
@@ -204,6 +217,7 @@ export const worktrackApi = baseApi.injectEndpoints({
         { type: 'WeeklySubmissions', id: 'LIST' },
         { type: 'WeeklySubmissions', id: submissionId },
         { type: 'WorkEntries', id: 'SUMMARY' },
+        { type: 'WorkEntries', id: 'PAYROLL' },
         { type: 'Employees', id: 'LIST' },
       ],
     }),
@@ -217,6 +231,7 @@ export const worktrackApi = baseApi.injectEndpoints({
         { type: 'WeeklySubmissions', id: 'LIST' },
         { type: 'WeeklySubmissions', id: submissionId },
         { type: 'WorkEntries', id: 'SUMMARY' },
+        { type: 'WorkEntries', id: 'PAYROLL' },
         { type: 'Employees', id: 'LIST' },
       ],
     }),
@@ -225,6 +240,7 @@ export const worktrackApi = baseApi.injectEndpoints({
 
 export const {
   useGetWorkSummaryQuery,
+  useGetManagerPayrollQuery,
   useGetProjectsQuery,
   useCreateProjectMutation,
   useUpdateProjectMutation,
