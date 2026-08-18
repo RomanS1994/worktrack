@@ -19,6 +19,7 @@ import {
   submitEmployeeWeek,
   updateEmployeeMembership,
   updateEmployeeWorkEntry,
+  updateProject,
 } from '../services/worktrack.js';
 
 const BASE_DATE = new Date('2026-08-16T08:00:00.000Z');
@@ -760,6 +761,29 @@ test('employee company A sees only active projects from company A', async () => 
     result.projects.map(project => project.id),
     [seed.projectA.id]
   );
+});
+
+test('manager can reactivate an inactive project', async () => {
+  const seed = createSeed();
+  const inactiveProject = { ...seed.projectA, isActive: false };
+  const client = createFakeWorkTrackClient({
+    users: [seed.managerA],
+    companies: [seed.companyA],
+    memberships: [seed.managerMembershipA],
+    projects: [inactiveProject],
+  });
+  const managerContext = context(seed.managerA, seed.managerMembershipA);
+
+  const before = await listProjects(client, managerContext);
+  assert.equal(before.projects[0].isActive, false);
+
+  const updated = await updateProject(client, managerContext, inactiveProject.id, {
+    isActive: true,
+  });
+  assert.equal(updated.isActive, true);
+
+  const after = await listProjects(client, managerContext);
+  assert.equal(after.projects[0].isActive, true);
 });
 
 test('employee cannot create WorkEntry for another company project', async () => {
