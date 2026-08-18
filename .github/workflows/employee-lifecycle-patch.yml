@@ -1,0 +1,54 @@
+name: Employee Lifecycle Patch
+
+on:
+  push:
+    branches:
+      - agent/employee-lifecycle
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.event.head_commit.message != 'fix employee lifecycle backend'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/employee-lifecycle
+
+      - name: Patch backend and tests
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          service = Path('backend/services/worktrack.js')
+          text = service.read_text()
+          old = """    where: {\n      companyId: membership.companyId,\n      role: 'EMPLOYEE',\n      status: 'ACTIVE',\n      user: {\n"""
+          new = """    where: {\n      companyId: membership.companyId,\n      role: 'EMPLOYEE',\n      user: {\n"""
+          if old not in text:
+              raise SystemExit('manager employee status filter anchor not found')
+          service.write_text(text.replace(old, new, 1))
+
+          tests = Path('backend/tests/worktrack-foundation.test.js')
+          text = tests.read_text()
+          import_old = """  submitEmployeeWeek,\n  updateEmployeeWorkEntry,\n"""
+          import_new = """  submitEmployeeWeek,\n  updateEmployeeMembership,\n  updateEmployeeWorkEntry,\n"""
+          if import_old not in text:
+              raise SystemExit('test import anchor not found')
+          text = text.replace(import_old, import_new, 1)
+
+          anchor = """test('employee company A sees only active projects from company A', async () => {\n"""
+          test_case = """test('manager can see and reactivate an inactive employee membership', async () => {\n  const seed = createSeed();\n  const inactiveMembership = {\n    ...seed.employeeMembershipA,\n    status: 'INACTIVE',\n  };\n  const client = createFakeWorkTrackClient({\n    users: [seed.managerA, seed.employee],\n    companies: [seed.companyA],\n    memberships: [seed.managerMembershipA, inactiveMembership],\n  });\n  const managerContext = context(seed.managerA, seed.managerMembershipA);\n\n  const before = await listManagerEmployees(client, managerContext);\n  assert.equal(before.employees.length, 1);\n  assert.equal(before.employees[0].status, 'INACTIVE');\n\n  await updateEmployeeMembership(client, managerContext, inactiveMembership.id, {\n    status: 'ACTIVE',\n  });\n\n  const after = await listManagerEmployees(client, managerContext);\n  assert.equal(after.employees.length, 1);\n  assert.equal(after.employees[0].status, 'ACTIVE');\n});\n\n"""
+          if anchor not in text:
+              raise SystemExit('test insertion anchor not found')
+          tests.write_text(text.replace(anchor, test_case + anchor, 1))
+          PY
+
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/services/worktrack.js backend/tests/worktrack-foundation.test.js
+          git commit -m "fix employee lifecycle backend"
+          git push origin HEAD:agent/employee-lifecycle
