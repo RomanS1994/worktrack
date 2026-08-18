@@ -1,12 +1,13 @@
 .notificationsPage { width:100%; }
 .notificationsHeader { align-items:flex-end; display:flex; gap:16px; justify-content:space-between; }
 .notificationsMarkAll { min-height:42px; padding:0 15px; border:1px solid var(--line); border-radius:14px; background:#fff; color:var(--text); font-weight:750; }
+.notificationsMarkAll:hover:not(:disabled) { border-color:rgba(22,163,74,.18); background:var(--accent-softer); }
 .notificationsMarkAll:disabled { cursor:default; opacity:.45; }
 .notificationsPanel { overflow:hidden; padding:0; }
 .notificationsList { display:grid; }
 .notificationItem { align-items:flex-start; background:transparent; border:0; border-bottom:1px solid var(--line); color:inherit; display:flex; gap:12px; padding:17px 18px; text-align:left; text-decoration:none; width:100%; box-shadow:none; border-radius:0; }
 .notificationItem:last-child { border-bottom:0; }
-.notificationItem:hover { background:var(--surface-soft); transform:none; box-shadow:none; }
+.notificationItem:hover { background:var(--accent-softer); transform:none; box-shadow:none; }
 .notificationItem.is-unread { background:rgba(22,163,74,.055); }
 .notificationDot { border-radius:999px; flex:0 0 8px; height:8px; margin-top:7px; width:8px; background:#d1d5db; }
 .notificationItem.is-unread .notificationDot { background:var(--accent); box-shadow:0 0 0 4px rgba(22,163,74,.08); }
