@@ -172,13 +172,17 @@ export function HoursPage() {
   async function saveEntry(entry) {
     setActionError('');
     const draft = entryDrafts[entry.id] || {};
+    const payload = {
+      entryId: entry.id,
+      hours: draft.hours,
+    };
+
+    if (draft.projectId && draft.projectId !== entry.projectId) {
+      payload.projectId = draft.projectId;
+    }
 
     try {
-      await updateWorkEntry({
-        entryId: entry.id,
-        hours: draft.hours,
-        projectId: draft.projectId,
-      }).unwrap();
+      await updateWorkEntry(payload).unwrap();
     } catch (mutationError) {
       setActionError(getApiErrorMessage(mutationError));
     }
@@ -267,6 +271,13 @@ export function HoursPage() {
           </button>
         </div>
       </section>
+
+      {submissionStatus === 'REJECTED' && submission?.rejectionReason ? (
+        <section className="hoursRejectionNotice" role="status">
+          <strong>Manager requested changes</strong>
+          <p>{submission.rejectionReason}</p>
+        </section>
+      ) : null}
 
       <section className="hoursSummaryGrid" aria-label="Selected week salary summary">
         <article className="hoursSummaryCard">

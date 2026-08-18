@@ -48,12 +48,25 @@ function ensureBackendDependencies() {
   });
 }
 
+function hasDatabaseConfiguration() {
+  return Boolean(process.env.DATABASE_URL || process.env.DIRECT_DATABASE_URL);
+}
+
 function generatePrismaClient() {
-  if (!process.env.DATABASE_URL && !process.env.DIRECT_DATABASE_URL) {
+  if (!hasDatabaseConfiguration()) {
     return;
   }
 
   runChecked(npmCommand, ['--prefix', 'backend', 'run', 'db:generate']);
+}
+
+function deployPrismaMigrations() {
+  if (!hasDatabaseConfiguration()) {
+    return;
+  }
+
+  console.log('Applying pending Prisma migrations...');
+  runChecked(npmCommand, ['run', 'db:migrate:deploy']);
 }
 
 if (isRenderBuildPhase) {
@@ -66,6 +79,7 @@ if (isRenderBuildPhase) {
 
 ensureBackendDependencies();
 generatePrismaClient();
+deployPrismaMigrations();
 
 const server = spawn(process.execPath, [backendServerPath], {
   cwd: rootDir,

@@ -306,6 +306,7 @@ export function serializeWeeklySubmission(submission) {
     status: submission.status,
     submittedAt: toIsoTimestamp(submission.submittedAt),
     reviewedAt: toIsoTimestamp(submission.reviewedAt),
+    rejectionReason: normalizeText(submission.rejectionReason),
     createdAt: toIsoTimestamp(submission.createdAt),
     updatedAt: toIsoTimestamp(submission.updatedAt),
     employee: serializeEmployeeMembership(employeeMembership),
@@ -818,6 +819,7 @@ export async function submitEmployeeWeek(client, context, payload = {}) {
           submittedAt: timestamp,
           reviewedAt: null,
           reviewedByMembershipId: null,
+          rejectionReason: null,
           weekEnd: range.weekEnd,
           updatedAt: timestamp,
         },
@@ -833,6 +835,7 @@ export async function submitEmployeeWeek(client, context, payload = {}) {
           status: 'SUBMITTED',
           submittedAt: timestamp,
           reviewedAt: null,
+          rejectionReason: null,
           createdAt: timestamp,
           updatedAt: timestamp,
         },
@@ -1134,9 +1137,17 @@ export async function getManagerSubmissionById(
   return getSubmissionByCompany(client, membership.companyId, submissionId, notFoundMessage);
 }
 
-export async function reviewWeeklySubmission(client, context, submissionId, decision) {
+export async function reviewWeeklySubmission(
+  client,
+  context,
+  submissionId,
+  decision,
+  payload = {}
+) {
   const managerMembership = ensureManagerContext(context);
   const nextStatus = decision === 'approve' ? 'APPROVED' : 'REJECTED';
+  const rejectionReason =
+    nextStatus === 'REJECTED' ? normalizeText(payload.rejectionReason).slice(0, 500) : '';
   const submission = await client.weeklySubmission.findFirst({
     where: {
       id: submissionId,
@@ -1195,6 +1206,7 @@ export async function reviewWeeklySubmission(client, context, submissionId, deci
       status: nextStatus,
       reviewedByMembershipId: managerMembership.id,
       reviewedAt: timestamp,
+      rejectionReason: nextStatus === 'REJECTED' ? rejectionReason || null : null,
       updatedAt: timestamp,
     },
   });
@@ -1214,6 +1226,7 @@ export async function reviewWeeklySubmission(client, context, submissionId, deci
     after: {
       status: nextStatus,
       reviewedByMembershipId: managerMembership.id,
+      rejectionReason: nextStatus === 'REJECTED' ? rejectionReason : '',
     },
   });
 

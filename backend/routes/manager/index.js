@@ -80,9 +80,23 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
     const context = await requireManager(request, response);
     if (!context) return true;
 
+    const decision = approvalMatch[2];
+    const body = decision === 'reject' ? await readJsonBody(request) : {};
+    const rejectionReason = String(body?.rejectionReason || '').trim();
+
+    if (decision === 'reject' && !rejectionReason) {
+      throw new Error('Rejection reason is required');
+    }
+
+    if (rejectionReason.length > 500) {
+      throw new Error('Rejection reason must be 500 characters or fewer');
+    }
+
     const submission = await runStoreTransaction({
       prisma: client =>
-        reviewWeeklySubmission(client, context, approvalMatch[1], approvalMatch[2]),
+        reviewWeeklySubmission(client, context, approvalMatch[1], decision, {
+          rejectionReason,
+        }),
     });
     sendJson(response, 200, { submission });
     return true;
