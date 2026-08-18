@@ -20,7 +20,6 @@ import {
   updateEmployeeMembership,
   updateEmployeeWorkEntry,
   updateProject,
-  updateProject,
 } from '../services/worktrack.js';
 
 const BASE_DATE = new Date('2026-08-16T08:00:00.000Z');
