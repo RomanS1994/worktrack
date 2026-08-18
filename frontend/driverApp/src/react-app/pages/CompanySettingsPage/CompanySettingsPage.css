@@ -7,6 +7,6 @@
 .companySettingsMeta span { color:var(--muted); font-size:12px; font-weight:700; }
 .companySettingsMeta strong { min-width:0; overflow:hidden; color:var(--text); font-size:13px; text-overflow:ellipsis; white-space:nowrap; }
 .companySettingsMetaCard p { margin:0; color:var(--muted); font-size:12px; line-height:1.45; }
-.companySettingsButton { justify-self:start; min-height:46px; padding:0 18px; border:0; border-radius:14px; background:linear-gradient(180deg,var(--accent),#15803d); color:#fff; font-weight:800; }
+.companySettingsButton { justify-self:start; min-height:46px; padding:0 18px; border:0; border-radius:14px; background:linear-gradient(180deg,var(--accent),var(--accent-strong)); color:#fff; font-weight:800; }
 .companySettingsButton:disabled { cursor:default; opacity:.55; }
 @media(max-width:520px){ .companySettingsButton{width:100%;} .companySettingsMeta{align-items:flex-start;flex-direction:column;gap:4px;} }
