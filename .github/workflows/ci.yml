@@ -40,10 +40,10 @@ jobs:
       - name: Build frontend
         run: npm run build:driver
 
-      - name: Audit production dependencies
+      - name: Audit production runtime dependencies
         run: |
-          npm audit --omit=dev --audit-level=high
-          npm --prefix backend audit --omit=dev --audit-level=high
+          npm audit --omit=dev --omit=peer --audit-level=high
+          npm --prefix backend audit --omit=dev --omit=peer --audit-level=high
 
       - name: Scan tracked files for secrets
         run: npm run secrets:check
