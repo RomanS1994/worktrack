@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { baseApi } from '@shared/app/api/baseApi.js';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
+import { useI18n } from '@shared/app/i18n/useI18n.js';
 import { hasManagerAccess } from '@shared/features/auth/authAccess.js';
 import {
   useChangePasswordMutation,
@@ -27,12 +28,19 @@ function getName(user) {
   return user?.name || user?.email || '-';
 }
 
+const LANGUAGES = [
+  { code: 'cs', flag: '🇨🇿' },
+  { code: 'uk', flag: '🇺🇦' },
+  { code: 'en', flag: '🇬🇧' },
+];
+
 export function ProfilePage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector(selectUser);
   const token = useSelector(selectToken);
-  const roleLabel = hasManagerAccess(user) ? 'MANAGER' : 'EMPLOYEE';
+  const { language, setLanguage, t } = useI18n();
+  const roleLabel = hasManagerAccess(user) ? t('profile.manager') : t('profile.employee');
   const rate = user?.activeMembership?.hourlyRateCzk || user?.hourlyRateCzk || '';
 
   const [updateProfile, profileState] = useUpdateProfileMutation();
@@ -79,7 +87,7 @@ export function ProfilePage() {
     const normalizedFirstName = firstName.trim();
     const normalizedLastName = lastName.trim();
     if (!normalizedFirstName) {
-      setProfileError('First name is required');
+      setProfileError(t('profile.firstNameRequired'));
       return;
     }
 
@@ -92,7 +100,7 @@ export function ProfilePage() {
       }).unwrap();
 
       applyUpdatedUser(updatedUser);
-      setProfileSuccess('Profile updated successfully');
+      setProfileSuccess(t('profile.profileUpdated'));
     } catch (error) {
       setProfileError(getApiErrorMessage(error));
     }
@@ -104,7 +112,7 @@ export function ProfilePage() {
     setPasswordSuccess('');
 
     if (newPassword !== confirmPassword) {
-      setPasswordError('New passwords do not match');
+      setPasswordError(t('profile.passwordsDoNotMatch'));
       return;
     }
 
@@ -118,7 +126,7 @@ export function ProfilePage() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      setPasswordSuccess('Password updated successfully');
+      setPasswordSuccess(t('profile.passwordUpdated'));
     } catch (error) {
       setPasswordError(getApiErrorMessage(error));
     }
@@ -153,7 +161,7 @@ export function ProfilePage() {
     <section className="profilePage pageStack">
       <header className="profileHeader appTop">
         <div className="appTitleBlock">
-          <p className="sectionEyebrow">Profile</p>
+          <p className="sectionEyebrow">{t('profile.title')}</p>
           <h1>{getName(user)}</h1>
           <p>{user?.activeCompany?.name || roleLabel}</p>
         </div>
@@ -161,166 +169,136 @@ export function ProfilePage() {
 
       {user?.mustChangePassword ? (
         <section className="profilePasswordNotice screenCard" role="status">
-          <strong>Change your temporary password</strong>
-          <p>Your manager created this account with a temporary password. Set your own password now.</p>
+          <strong>{t('profile.changeTemporaryPassword')}</strong>
+          <p>{t('profile.temporaryPasswordCopy')}</p>
         </section>
       ) : null}
 
+      <section className="profileLanguageCard screenCard">
+        <div className="compactHeader">
+          <h2>{t('settings.languageCard.title')}</h2>
+          <p>{t('settings.languageCard.description')}</p>
+        </div>
+
+        <div className="languagePicker" role="group" aria-label={t('settings.languageCard.label')}>
+          {LANGUAGES.map(item => (
+            <button
+              key={item.code}
+              className={`languageOption${language === item.code ? ' is-active' : ''}`}
+              type="button"
+              aria-pressed={language === item.code}
+              onClick={() => setLanguage(item.code)}
+            >
+              <span className="languageFlag" aria-hidden="true">{item.flag}</span>
+              <span>{t(`settings.languageCard.${item.code}`)}</span>
+              <span className="languageCheck" aria-hidden="true">{language === item.code ? '✓' : ''}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
       <section className="profileDetails screenCard">
         <div className="profileRow">
-          <span>Email</span>
+          <span>{t('profile.email')}</span>
           <strong>{user?.email || '-'}</strong>
         </div>
         <div className="profileRow">
-          <span>Role</span>
+          <span>{t('profile.role')}</span>
           <strong>{roleLabel}</strong>
         </div>
         <div className="profileRow">
-          <span>Company</span>
+          <span>{t('profile.company')}</span>
           <strong>{user?.activeCompany?.name || '-'}</strong>
         </div>
         <div className="profileRow">
-          <span>Hourly rate</span>
+          <span>{t('profile.hourlyRate')}</span>
           <strong>{rate ? `${rate} CZK` : '-'}</strong>
         </div>
       </section>
 
       <form className="profileEditCard screenCard" onSubmit={handleProfileSubmit}>
         <div className="compactHeader">
-          <h2>Personal details</h2>
-          <p>Keep your contact information up to date.</p>
+          <h2>{t('profile.personalDetails')}</h2>
+          <p>{t('profile.personalDetailsCopy')}</p>
         </div>
 
         <div className="profileFieldGrid">
           <label className="profileField">
-            <span>First name</span>
-            <input
-              type="text"
-              autoComplete="given-name"
-              value={firstName}
-              onChange={event => setFirstName(event.target.value)}
-              required
-            />
+            <span>{t('profile.firstName')}</span>
+            <input type="text" autoComplete="given-name" value={firstName} onChange={event => setFirstName(event.target.value)} required />
           </label>
 
           <label className="profileField">
-            <span>Last name</span>
-            <input
-              type="text"
-              autoComplete="family-name"
-              value={lastName}
-              onChange={event => setLastName(event.target.value)}
-            />
+            <span>{t('profile.lastName')}</span>
+            <input type="text" autoComplete="family-name" value={lastName} onChange={event => setLastName(event.target.value)} />
           </label>
         </div>
 
         <label className="profileField">
-          <span>Phone</span>
-          <input
-            type="tel"
-            autoComplete="tel"
-            placeholder="+420 777 123 456"
-            value={phone}
-            onChange={event => setPhone(event.target.value)}
-          />
+          <span>{t('profile.phone')}</span>
+          <input type="tel" autoComplete="tel" placeholder="+420 777 123 456" value={phone} onChange={event => setPhone(event.target.value)} />
         </label>
 
         {profileError ? <p className="statusNote is-error">{profileError}</p> : null}
         {profileSuccess ? <p className="statusNote is-success">{profileSuccess}</p> : null}
 
         <button className="profilePrimaryButton" type="submit" disabled={profileState.isLoading}>
-          {profileState.isLoading ? 'Saving…' : 'Save profile'}
+          {profileState.isLoading ? t('profile.saving') : t('profile.saveProfile')}
         </button>
       </form>
 
       <form className="profilePasswordCard screenCard" onSubmit={handlePasswordSubmit}>
         <div className="compactHeader">
-          <h2>Change password</h2>
-          <p>Use at least 8 characters. Other signed-in sessions are revoked after a password change.</p>
+          <h2>{t('profile.changePassword')}</h2>
+          <p>{t('profile.passwordCopy')}</p>
         </div>
 
         <label className="profileField">
-          <span>Current password</span>
-          <input
-            type="password"
-            autoComplete="current-password"
-            value={currentPassword}
-            onChange={event => setCurrentPassword(event.target.value)}
-            required
-          />
+          <span>{t('profile.currentPassword')}</span>
+          <input type="password" autoComplete="current-password" value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} required />
         </label>
 
         <label className="profileField">
-          <span>New password</span>
-          <input
-            type="password"
-            autoComplete="new-password"
-            minLength={8}
-            value={newPassword}
-            onChange={event => setNewPassword(event.target.value)}
-            required
-          />
+          <span>{t('profile.newPassword')}</span>
+          <input type="password" autoComplete="new-password" minLength={8} value={newPassword} onChange={event => setNewPassword(event.target.value)} required />
         </label>
 
         <label className="profileField">
-          <span>Confirm new password</span>
-          <input
-            type="password"
-            autoComplete="new-password"
-            minLength={8}
-            value={confirmPassword}
-            onChange={event => setConfirmPassword(event.target.value)}
-            required
-          />
+          <span>{t('profile.confirmPassword')}</span>
+          <input type="password" autoComplete="new-password" minLength={8} value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} required />
         </label>
 
         {passwordError ? <p className="statusNote is-error">{passwordError}</p> : null}
         {passwordSuccess ? <p className="statusNote is-success">{passwordSuccess}</p> : null}
 
         <button className="profilePrimaryButton" type="submit" disabled={changeState.isLoading}>
-          {changeState.isLoading ? 'Updating…' : 'Update password'}
+          {changeState.isLoading ? t('profile.updating') : t('profile.updatePassword')}
         </button>
       </form>
 
       <section className="profileAccountCard screenCard">
         <div className="compactHeader">
-          <h2>Account & security</h2>
-          <p>Sign out on this device or permanently remove your WorkTrack account.</p>
+          <h2>{t('profile.accountSecurity')}</h2>
+          <p>{t('profile.accountSecurityCopy')}</p>
         </div>
 
-        <button
-          className="profileSecondaryButton"
-          type="button"
-          disabled={logoutState.isLoading || deleteState.isLoading}
-          onClick={handleLogout}
-        >
-          {logoutState.isLoading ? 'Signing out…' : 'Sign out'}
+        <button className="profileSecondaryButton" type="button" disabled={logoutState.isLoading || deleteState.isLoading} onClick={handleLogout}>
+          {logoutState.isLoading ? t('profile.signingOut') : t('profile.signOut')}
         </button>
 
         <div className="profileDangerZone">
           <div>
-            <strong>Delete account</strong>
-            <p>This signs you out everywhere and disables access to your account. This action cannot be undone from the app.</p>
+            <strong>{t('profile.deleteAccount')}</strong>
+            <p>{t('profile.deleteAccountCopy')}</p>
           </div>
 
           <label className="profileField">
-            <span>Type DELETE to confirm</span>
-            <input
-              type="text"
-              autoComplete="off"
-              value={deleteConfirmation}
-              onChange={event => setDeleteConfirmation(event.target.value)}
-              disabled={deleteState.isLoading}
-            />
+            <span>{t('profile.typeDelete')}</span>
+            <input type="text" autoComplete="off" value={deleteConfirmation} onChange={event => setDeleteConfirmation(event.target.value)} disabled={deleteState.isLoading} />
           </label>
 
-          <button
-            className="profileDangerButton"
-            type="button"
-            disabled={deleteState.isLoading || deleteConfirmation.trim() !== 'DELETE'}
-            onClick={handleDeleteAccount}
-          >
-            {deleteState.isLoading ? 'Deleting…' : 'Delete account'}
+          <button className="profileDangerButton" type="button" disabled={deleteState.isLoading || deleteConfirmation.trim() !== 'DELETE'} onClick={handleDeleteAccount}>
+            {deleteState.isLoading ? t('profile.deleting') : t('profile.deleteAccount')}
           </button>
         </div>
 
