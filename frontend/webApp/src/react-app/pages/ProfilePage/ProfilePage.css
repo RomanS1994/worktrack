@@ -3,12 +3,18 @@
 .profilePasswordNotice { display:grid; gap:6px; border-color:rgba(245,158,11,.22); background:#fffaf0; }
 .profilePasswordNotice strong { font-size:14px; }
 .profilePasswordNotice p { margin:0; color:var(--muted); font-size:13px; line-height:1.45; }
+.profileLanguageCard,.profileEditCard,.profilePasswordCard,.profileAccountCard { display:grid; gap:16px; }
+.languagePicker { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.languageOption { display:grid; grid-template-columns:auto 1fr auto; gap:9px; align-items:center; min-height:48px; padding:0 12px; border:1px solid var(--line); border-radius:14px; background:#fff; color:var(--text); font-weight:750; text-align:left; transition:border-color .16s ease, background .16s ease, box-shadow .16s ease, transform .16s ease; }
+.languageOption:hover { transform:translateY(-1px); border-color:rgba(22,163,74,.28); }
+.languageOption.is-active { border-color:rgba(22,163,74,.42); background:rgba(22,163,74,.07); box-shadow:0 0 0 3px rgba(22,163,74,.06); }
+.languageFlag { font-size:18px; line-height:1; }
+.languageCheck { color:var(--accent); font-size:15px; font-weight:900; }
 .profileDetails { gap:0; overflow:hidden; padding:0; border-radius:18px; }
 .profileRow { display:grid; grid-template-columns:minmax(0,.7fr) minmax(0,1fr); gap:12px; align-items:center; min-height:60px; padding:14px 16px; border-bottom:1px solid var(--line); }
 .profileRow:last-child { border-bottom:0; }
 .profileRow span { color:var(--muted); font-size:13px; font-weight:650; }
 .profileRow strong { min-width:0; overflow:hidden; color:var(--text); font-size:14px; text-align:right; text-overflow:ellipsis; white-space:nowrap; }
-.profileEditCard,.profilePasswordCard,.profileAccountCard { display:grid; gap:16px; }
 .profileFieldGrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
 .profileField { display:grid; gap:7px; }
 .profileField span { color:var(--muted); font-size:12px; font-weight:700; }
@@ -23,4 +29,5 @@
 .profileDangerZone p { margin:0; color:var(--muted); font-size:12px; line-height:1.45; }
 .profileDangerButton { border:1px solid rgba(220,38,38,.2); background:#fff5f5; color:#b91c1c; }
 .profilePrimaryButton:disabled,.profileSecondaryButton:disabled,.profileDangerButton:disabled { cursor:wait; opacity:.55; }
+@media (max-width:700px){ .languagePicker{grid-template-columns:1fr;} }
 @media (max-width:560px){ .profileFieldGrid{grid-template-columns:1fr;} .profileRow{grid-template-columns:1fr;gap:4px;} .profileRow strong{text-align:left;} }
