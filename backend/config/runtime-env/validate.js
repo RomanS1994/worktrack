@@ -65,11 +65,12 @@ export function assertRuntimeEnv() {
     'Invalid backend environment configuration.',
     ...validation.errors.map(error => `- ${error}`),
     '',
-    'Environment groups:',
+    'Backend environment reference:',
     `- auth: ${validation.groups.auth.join(', ')}`,
     `- api: ${validation.groups.api.join(', ')}`,
     `- database: ${validation.groups.database.join(', ')}`,
-    `- frontend: ${validation.groups.frontend.join(', ')} (root .env only, not backend/.env)`,
+    '',
+    'Frontend VITE_* variables belong on Netlify and are not required by the Render API service.',
   ].join('\n');
 
   throw new Error(message);
