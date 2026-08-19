@@ -38,12 +38,15 @@ function runChecked(command, args, options = {}) {
 }
 
 function ensureBackendDependencies() {
-  if (canResolvePackage('@prisma/client')) {
+  const hasPrismaClient = canResolvePackage('@prisma/client');
+  const hasPrismaCli = canResolvePackage('prisma');
+
+  if (hasPrismaClient && hasPrismaCli) {
     return;
   }
 
-  console.log('Installing backend production dependencies...');
-  runChecked(npmCommand, ['install', '--omit=dev'], {
+  console.log('Installing backend dependencies required for Prisma runtime tasks...');
+  runChecked(npmCommand, ['install'], {
     cwd: backendDir,
   });
 }
@@ -66,7 +69,7 @@ function deployPrismaMigrations() {
   }
 
   console.log('Applying pending Prisma migrations...');
-  runChecked(npmCommand, ['run', 'db:migrate:deploy']);
+  runChecked(npmCommand, ['--prefix', 'backend', 'run', 'db:migrate:deploy']);
 }
 
 if (isRenderBuildPhase) {
