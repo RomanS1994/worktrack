@@ -28,10 +28,7 @@ export function ProjectsPage() {
   const isMutating = createState.isLoading || updateState.isLoading;
 
   function updateForm(field, value) {
-    setForm(current => ({
-      ...current,
-      [field]: value,
-    }));
+    setForm(current => ({ ...current, [field]: value }));
   }
 
   function startEdit(project) {
@@ -52,13 +49,9 @@ export function ProjectsPage() {
   async function submitProject(event) {
     event.preventDefault();
     setActionError('');
-
     try {
       if (editingId) {
-        await updateProject({
-          projectId: editingId,
-          ...form,
-        }).unwrap();
+        await updateProject({ projectId: editingId, ...form }).unwrap();
       } else {
         await createProject(form).unwrap();
       }
@@ -70,16 +63,9 @@ export function ProjectsPage() {
 
   async function toggleProjectStatus(project) {
     setActionError('');
-
     try {
-      await updateProject({
-        projectId: project.id,
-        isActive: !project.isActive,
-      }).unwrap();
-
-      if (editingId === project.id && project.isActive) {
-        resetForm();
-      }
+      await updateProject({ projectId: project.id, isActive: !project.isActive }).unwrap();
+      if (editingId === project.id && project.isActive) resetForm();
     } catch (mutationError) {
       setActionError(getApiErrorMessage(mutationError));
     }
@@ -91,9 +77,7 @@ export function ProjectsPage() {
         <div className="appTitleBlock">
           <p className="sectionEyebrow">Worksites</p>
           <h1>Projects</h1>
-          <p>
-            {activeProjectCount} active · {projects.length} total
-          </p>
+          <p>{error ? 'Unable to load projects' : `${activeProjectCount} active · ${projects.length} total`}</p>
         </div>
       </header>
 
@@ -106,38 +90,21 @@ export function ProjectsPage() {
 
           <label className="projectsField">
             <span>Name</span>
-            <input
-              type="text"
-              value={form.name}
-              onChange={event => updateForm('name', event.target.value)}
-            />
+            <input type="text" value={form.name} onChange={event => updateForm('name', event.target.value)} />
           </label>
-
           <label className="projectsField">
             <span>Address</span>
-            <input
-              type="text"
-              value={form.address}
-              onChange={event => updateForm('address', event.target.value)}
-            />
+            <input type="text" value={form.address} onChange={event => updateForm('address', event.target.value)} />
           </label>
-
           <label className="projectsField">
             <span>Description</span>
-            <textarea
-              value={form.description}
-              onChange={event => updateForm('description', event.target.value)}
-            />
+            <textarea value={form.description} onChange={event => updateForm('description', event.target.value)} />
           </label>
 
           {actionError ? <p className="statusNote is-error">{actionError}</p> : null}
 
           <div className="projectsFormActions">
-            {editingId ? (
-              <button type="button" onClick={resetForm}>
-                Cancel
-              </button>
-            ) : null}
+            {editingId ? <button type="button" onClick={resetForm}>Cancel</button> : null}
             <button className="projectsPrimaryButton" type="submit" disabled={isMutating}>
               {editingId ? 'Save project' : 'Create project'}
             </button>
@@ -153,11 +120,9 @@ export function ProjectsPage() {
           {isLoading ? <RequestLoadingState label="Loading projects" /> : null}
           {error ? <p className="statusNote is-error">{getApiErrorMessage(error)}</p> : null}
 
-          {!isLoading && !projects.length ? (
+          {!isLoading && !error && !projects.length ? (
             <div className="projectsEmpty">
-              <span aria-hidden="true">
-                <SvgIcon name="location" />
-              </span>
+              <span aria-hidden="true"><SvgIcon name="location" /></span>
               <strong>No projects yet</strong>
             </div>
           ) : null}
@@ -165,28 +130,19 @@ export function ProjectsPage() {
           {projects.length ? (
             <div className="projectsCards">
               {projects.map(project => (
-                <article
-                  className={`projectCard${project.isActive ? '' : ' is-inactive'}`}
-                  key={project.id}
-                >
+                <article className={`projectCard${project.isActive ? '' : ' is-inactive'}`} key={project.id}>
                   <div className="projectCard-main">
-                    <span className="projectCard-icon" aria-hidden="true">
-                      <SvgIcon name="location" />
-                    </span>
+                    <span className="projectCard-icon" aria-hidden="true"><SvgIcon name="location" /></span>
                     <div>
                       <strong>{project.name}</strong>
                       <p>{project.address || project.description || 'No details'}</p>
                     </div>
                   </div>
-
                   <span className={`projectStatus ${project.isActive ? 'is-active' : ''}`}>
                     {project.isActive ? 'Active' : 'Inactive'}
                   </span>
-
                   <div className="projectCard-actions">
-                    <button type="button" onClick={() => startEdit(project)}>
-                      Edit
-                    </button>
+                    <button type="button" onClick={() => startEdit(project)}>Edit</button>
                     <button
                       className={project.isActive ? 'is-deactivate' : 'is-activate'}
                       type="button"
