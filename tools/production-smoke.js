@@ -38,8 +38,11 @@ async function checkBackend() {
     throw new Error('Backend responded, but database.connected is not true');
   }
 
-  const deployedCommit = String(payload?.deployment?.commit || '');
-  if (expectedCommit && deployedCommit && deployedCommit !== expectedCommit) {
+  const deployedCommit = String(payload?.deployment?.commit || '').trim();
+  if (expectedCommit && !deployedCommit) {
+    throw new Error('EXPECTED_COMMIT was provided, but backend health did not report deployment.commit');
+  }
+  if (expectedCommit && deployedCommit !== expectedCommit) {
     throw new Error(`Deploy commit mismatch: expected ${expectedCommit}, got ${deployedCommit}`);
   }
 
@@ -54,26 +57,31 @@ async function checkBackend() {
   }
 }
 
+async function checkFrontendPage(url, label) {
+  const response = await request(url, {
+    headers: { Accept: 'text/html' },
+  });
+  const body = await response.text();
+
+  if (!response.ok) {
+    throw new Error(`${label} check failed (${response.status})`);
+  }
+
+  if (!/<html[\s>]/i.test(body) || !/worktrack/i.test(body)) {
+    throw new Error(`${label} response does not look like the WorkTrack HTML app`);
+  }
+
+  console.log(`${label}: OK (${response.url})`);
+}
+
 async function checkFrontend() {
   if (!frontendUrl) {
     console.log('Frontend check: skipped (FRONTEND_URL not set)');
     return;
   }
 
-  const response = await request(frontendUrl, {
-    headers: { Accept: 'text/html' },
-  });
-  const body = await response.text();
-
-  if (!response.ok) {
-    throw new Error(`Frontend check failed (${response.status})`);
-  }
-
-  if (!/<html[\s>]/i.test(body) || !/worktrack/i.test(body)) {
-    throw new Error('Frontend response does not look like the WorkTrack HTML app');
-  }
-
-  console.log(`Frontend: OK (${response.url})`);
+  await checkFrontendPage(frontendUrl, 'Frontend root');
+  await checkFrontendPage(`${frontendUrl}/sign-in`, 'Frontend SPA route');
 }
 
 try {
