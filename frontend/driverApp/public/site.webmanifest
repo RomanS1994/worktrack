@@ -6,19 +6,13 @@
   "scope": "/",
   "icons": [
     {
-      "src": "/shared/assets/worktrack-icon.png",
-      "sizes": "1254x1254",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/shared/assets/worktrack-icon.png",
-      "sizes": "180x180",
-      "type": "image/png",
+      "src": "/shared/assets/worktrack-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ],
-  "theme_color": "#2563eb",
-  "background_color": "#ffffff",
+  "theme_color": "#16a34a",
+  "background_color": "#f7faf8",
   "display": "standalone"
 }
