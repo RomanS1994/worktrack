@@ -37,7 +37,7 @@ export function AuthSessionErrorModal() {
         <div className="authSessionErrorModal-copy">
           <p className="authSessionErrorModal-eyebrow">{t('auth.sessionState')}</p>
           <h2 id="authSessionErrorTitle">{t('auth.sessionExpired')}</h2>
-          <p>{sessionError}</p>
+          <p>{t('auth.sessionExpiredSignIn')}</p>
         </div>
 
         <button
