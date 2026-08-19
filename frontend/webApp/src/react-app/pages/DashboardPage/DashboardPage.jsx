@@ -84,6 +84,7 @@ export function DashboardPage() {
   const companyName = getCompanyName(user, data, t);
   const primaryItems = isManager ? buildManagerMetrics(summary, t) : buildEmployeeMetrics(summary, t);
   const pendingCount = Number(summary.pendingSubmissions || 0);
+  const hasSummary = Boolean(data && !error && !isLoading);
 
   return (
     <section className="dashboardPage pageStack">
@@ -98,38 +99,42 @@ export function DashboardPage() {
       {isLoading ? <RequestLoadingState label={t('dashboard.loading')} /> : null}
       {error ? <p className="statusNote is-error">{getApiErrorMessage(error)}</p> : null}
 
-      {isManager ? (
-        <section className="dashboardAttentionCard" aria-label={t('dashboard.pendingApprovals')}>
-          <div className="dashboardAttentionIcon" aria-hidden="true"><SvgIcon name="check-circle" /></div>
-          <div className="dashboardAttentionCopy">
-            <span>{t('dashboard.needsAttention')}</span>
-            <h2>{t(pendingCount === 1 ? 'dashboard.weekNeedsApproval' : 'dashboard.weeksNeedApproval', { count: pendingCount })}</h2>
-            <p>{t('dashboard.reviewSubmittedHours')}</p>
-          </div>
-          <Link className="dashboardPrimaryAction" to="/approvals">{t('dashboard.reviewApprovals')} <span aria-hidden="true">→</span></Link>
-        </section>
-      ) : (
-        <section className="dashboardAttentionCard dashboardAttentionCard--salary" aria-label={t('dashboard.confirmedSalary')}>
-          <div className="dashboardAttentionIcon" aria-hidden="true"><SvgIcon name="wallet" /></div>
-          <div className="dashboardAttentionCopy">
-            <span>{t('dashboard.confirmedSalary')}</span>
-            <h2>{formatCzk(summary.confirmedSalaryCzk)}</h2>
-            <p>{t('dashboard.predictedFromPending', { amount: formatCzk(summary.predictedSalaryCzk) })}</p>
-          </div>
-          <Link className="dashboardPrimaryAction" to="/payroll-report">{t('dashboard.viewPayroll')} <span aria-hidden="true">→</span></Link>
-        </section>
-      )}
+      {hasSummary ? (
+        <>
+          {isManager ? (
+            <section className="dashboardAttentionCard" aria-label={t('dashboard.pendingApprovals')}>
+              <div className="dashboardAttentionIcon" aria-hidden="true"><SvgIcon name="check-circle" /></div>
+              <div className="dashboardAttentionCopy">
+                <span>{t('dashboard.needsAttention')}</span>
+                <h2>{t(pendingCount === 1 ? 'dashboard.weekNeedsApproval' : 'dashboard.weeksNeedApproval', { count: pendingCount })}</h2>
+                <p>{t('dashboard.reviewSubmittedHours')}</p>
+              </div>
+              <Link className="dashboardPrimaryAction" to="/approvals">{t('dashboard.reviewApprovals')} <span aria-hidden="true">→</span></Link>
+            </section>
+          ) : (
+            <section className="dashboardAttentionCard dashboardAttentionCard--salary" aria-label={t('dashboard.confirmedSalary')}>
+              <div className="dashboardAttentionIcon" aria-hidden="true"><SvgIcon name="wallet" /></div>
+              <div className="dashboardAttentionCopy">
+                <span>{t('dashboard.confirmedSalary')}</span>
+                <h2>{formatCzk(summary.confirmedSalaryCzk)}</h2>
+                <p>{t('dashboard.predictedFromPending', { amount: formatCzk(summary.predictedSalaryCzk) })}</p>
+              </div>
+              <Link className="dashboardPrimaryAction" to="/payroll-report">{t('dashboard.viewPayroll')} <span aria-hidden="true">→</span></Link>
+            </section>
+          )}
 
-      <section className="dashboardMetrics" aria-label={t('dashboard.workspaceSummary')}>
-        {primaryItems.map(item => (
-          <article className={`dashboardMetric ${item.tone ? `is-${item.tone}` : ''}`} key={item.label}>
-            <span className="dashboardMetric-icon" aria-hidden="true"><SvgIcon name={item.icon} /></span>
-            <span className="dashboardMetric-label">{item.label}</span>
-            <strong>{item.value}</strong>
-            <p>{item.note}</p>
-          </article>
-        ))}
-      </section>
+          <section className="dashboardMetrics" aria-label={t('dashboard.workspaceSummary')}>
+            {primaryItems.map(item => (
+              <article className={`dashboardMetric ${item.tone ? `is-${item.tone}` : ''}`} key={item.label}>
+                <span className="dashboardMetric-icon" aria-hidden="true"><SvgIcon name={item.icon} /></span>
+                <span className="dashboardMetric-label">{item.label}</span>
+                <strong>{item.value}</strong>
+                <p>{item.note}</p>
+              </article>
+            ))}
+          </section>
+        </>
+      ) : null}
 
       <section className="dashboardPanel screenCard">
         <div className="compactHeader">
@@ -139,7 +144,7 @@ export function DashboardPage() {
         <div className="dashboardActions">
           {isManager ? (
             <>
-              <Link className="dashboardActionLink dashboardActionLink--primary" to="/approvals"><span aria-hidden="true"><SvgIcon name="check-circle" /></span><strong>{t('dashboard.reviewApprovals')}</strong><small>{t('dashboard.pendingCount', { count: pendingCount })}</small></Link>
+              <Link className="dashboardActionLink dashboardActionLink--primary" to="/approvals"><span aria-hidden="true"><SvgIcon name="check-circle" /></span><strong>{t('dashboard.reviewApprovals')}</strong>{hasSummary ? <small>{t('dashboard.pendingCount', { count: pendingCount })}</small> : null}</Link>
               <Link className="dashboardActionLink" to="/employees"><span aria-hidden="true"><SvgIcon name="accounts" /></span><strong>{t('dashboard.employees')}</strong><small>{t('dashboard.manageTeam')}</small></Link>
               <Link className="dashboardActionLink" to="/projects"><span aria-hidden="true"><SvgIcon name="location" /></span><strong>{t('dashboard.projects')}</strong><small>{t('dashboard.viewWorksites')}</small></Link>
               <Link className="dashboardActionLink" to="/payroll-report"><span aria-hidden="true"><SvgIcon name="wallet" /></span><strong>{t('dashboard.payrollReport')}</strong><small>{t('dashboard.salaryOverview')}</small></Link>
@@ -154,7 +159,7 @@ export function DashboardPage() {
         </div>
       </section>
 
-      {isManager ? (
+      {isManager && hasSummary ? (
         <section className="dashboardPanel screenCard">
           <div className="compactHeader">
             <h2>{t('dashboard.teamThisWeek')}</h2>
