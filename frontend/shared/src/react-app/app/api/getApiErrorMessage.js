@@ -17,37 +17,22 @@ const TRANSLATED_BACKEND_ERRORS = {
 };
 
 function readErrorText(error) {
-  if (!error) {
-    return '';
-  }
-
-  if (typeof error === 'string') {
-    return error;
-  }
+  if (!error) return '';
+  if (typeof error === 'string') return error;
 
   if (typeof error === 'object') {
     const data = error.data;
-    if (typeof data === 'string') {
-      return data;
-    }
+    if (typeof data === 'string') return data;
 
     if (data && typeof data === 'object') {
-      if (typeof data.error === 'string') {
-        return data.error;
-      }
-
-      if (typeof data.message === 'string') {
-        return data.message;
-      }
-
+      if (typeof data.error === 'string') return data.error;
+      if (typeof data.message === 'string') return data.message;
       if (Array.isArray(data.details) && data.details.length) {
         return data.details.filter(Boolean).join(', ');
       }
     }
 
-    if (typeof error.error === 'string') {
-      return error.error;
-    }
+    if (typeof error.error === 'string') return error.error;
   }
 
   return '';
@@ -60,21 +45,17 @@ export function getApiErrorMessage(error, fallbackKey = 'common.failedToLoad') {
 
   if (detail) {
     const translatedKey = TRANSLATED_BACKEND_ERRORS[detail];
-    return translatedKey ? getMessage(language, translatedKey) : detail;
+    if (translatedKey) return getMessage(language, translatedKey);
+
+    // Backend messages are currently authored in English. Keep the useful raw
+    // detail for English users, but avoid leaking English into localized UI.
+    return language === 'en' ? detail : fallback;
   }
 
   if (error && typeof error === 'object') {
-    if (error.status === 'FETCH_ERROR') {
-      return getMessage(language, 'common.failedToConnect');
-    }
-
-    if (error.status === 'TIMEOUT_ERROR') {
-      return getMessage(language, 'common.requestTimedOut');
-    }
-
-    if (error.status === 'PARSING_ERROR') {
-      return getMessage(language, 'common.invalidServerResponse');
-    }
+    if (error.status === 'FETCH_ERROR') return getMessage(language, 'common.failedToConnect');
+    if (error.status === 'TIMEOUT_ERROR') return getMessage(language, 'common.requestTimedOut');
+    if (error.status === 'PARSING_ERROR') return getMessage(language, 'common.invalidServerResponse');
   }
 
   return fallback;
