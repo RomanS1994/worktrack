@@ -1,15 +1,14 @@
 # Frontend
 
-This directory now holds the client-side apps.
+This directory contains the WorkTrack web client and shared frontend modules.
 
-- `driverApp/` - current production app for drivers
-- `adminApp/` - future admin UI
-- `dispatcherApp/` - future dispatcher UI, deployed under `/dispatcher/`
+- `webApp/` — production WorkTrack React/Vite application
+- `shared/` — reusable auth, layout, API and UI modules used by the web app
 
 ## Status
 
 | App | Status | Entry point |
 | --- | --- | --- |
-| `driverApp` | Active | `frontend/driverApp/index.html` |
-| `adminApp` | Back-office admin app | `frontend/adminApp/index.html` |
-| `dispatcherApp` | Scaffolded | `frontend/dispatcherApp/index.html` |
+| `webApp` | Active production app | `frontend/webApp/index.html` |
+
+The production build is created from the repository root with `npm run build` and published from `dist/`.

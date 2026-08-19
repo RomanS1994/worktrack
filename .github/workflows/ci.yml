@@ -38,7 +38,7 @@ jobs:
         run: npm --prefix backend test
 
       - name: Build frontend
-        run: npm run build:driver
+        run: npm run build:web
 
       - name: Audit production runtime dependencies
         run: node tools/audit-production.js
