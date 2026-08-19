@@ -38,14 +38,22 @@ function readErrorText(error) {
   return '';
 }
 
+function getSafeMessage(language, key, fallbackKey = 'common.failed') {
+  const translated = getMessage(language, key);
+  if (translated && translated !== key) return translated;
+
+  const fallback = getMessage(language, fallbackKey);
+  return fallback && fallback !== fallbackKey ? fallback : 'Request failed.';
+}
+
 export function getApiErrorMessage(error, fallbackKey = 'common.failedToLoad') {
   const language = readStoredLanguage();
-  const fallback = getMessage(language, fallbackKey);
+  const fallback = getSafeMessage(language, fallbackKey);
   const detail = readErrorText(error);
 
   if (detail) {
     const translatedKey = TRANSLATED_BACKEND_ERRORS[detail];
-    if (translatedKey) return getMessage(language, translatedKey);
+    if (translatedKey) return getSafeMessage(language, translatedKey);
 
     // Backend messages are currently authored in English. Keep the useful raw
     // detail for English users, but avoid leaking English into localized UI.
@@ -53,9 +61,9 @@ export function getApiErrorMessage(error, fallbackKey = 'common.failedToLoad') {
   }
 
   if (error && typeof error === 'object') {
-    if (error.status === 'FETCH_ERROR') return getMessage(language, 'common.failedToConnect');
-    if (error.status === 'TIMEOUT_ERROR') return getMessage(language, 'common.requestTimedOut');
-    if (error.status === 'PARSING_ERROR') return getMessage(language, 'common.invalidServerResponse');
+    if (error.status === 'FETCH_ERROR') return getSafeMessage(language, 'common.failedToConnect');
+    if (error.status === 'TIMEOUT_ERROR') return getSafeMessage(language, 'common.requestTimedOut');
+    if (error.status === 'PARSING_ERROR') return getSafeMessage(language, 'common.invalidServerResponse');
   }
 
   return fallback;
