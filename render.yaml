@@ -3,7 +3,7 @@ services:
     name: worktrack-backend
     runtime: node
     branch: main
-    buildCommand: npm run build
+    buildCommand: npm run db:generate
     startCommand: npm start
     healthCheckPath: /api/health
     autoDeployTrigger: commit
