@@ -38,19 +38,33 @@ export function NotificationsPage() {
     }
   }
 
+  async function markEverythingRead() {
+    try {
+      await markAllRead().unwrap();
+    } catch {
+      // RTK Query exposes the mutation error below.
+    }
+  }
+
+  const headerStatus = error
+    ? 'Unable to load notifications'
+    : unreadCount
+      ? `${unreadCount} unread`
+      : 'You are all caught up';
+
   return (
     <section className="notificationsPage pageStack">
       <header className="notificationsHeader appTop">
         <div className="appTitleBlock">
           <p className="sectionEyebrow">Inbox</p>
           <h1>Notifications</h1>
-          <p>{unreadCount ? `${unreadCount} unread` : 'You are all caught up'}</p>
+          <p>{headerStatus}</p>
         </div>
         <button
           className="notificationsMarkAll"
           type="button"
-          disabled={!unreadCount || markAllState.isLoading}
-          onClick={() => markAllRead()}
+          disabled={Boolean(error) || !unreadCount || markAllState.isLoading}
+          onClick={markEverythingRead}
         >
           Mark all read
         </button>
@@ -59,8 +73,11 @@ export function NotificationsPage() {
       <section className="screenCard notificationsPanel">
         {isLoading ? <RequestLoadingState label="Loading notifications" /> : null}
         {error ? <p className="statusNote is-error">{getApiErrorMessage(error)}</p> : null}
+        {markAllState.error ? (
+          <p className="statusNote is-error">{getApiErrorMessage(markAllState.error)}</p>
+        ) : null}
 
-        {!isLoading && !notifications.length ? (
+        {!isLoading && !error && !notifications.length ? (
           <div className="notificationsEmpty">
             <strong>No notifications yet</strong>
             <p>Updates about submitted and reviewed weeks will appear here.</p>
