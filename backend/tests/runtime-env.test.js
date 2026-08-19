@@ -44,7 +44,7 @@ test('production environment requires only backend deployment variables', () => 
     {
       NODE_ENV: 'production',
       AUTH_TOKEN_SECRET: 'a-secure-auth-token-secret-that-is-long-enough',
-      DATABASE_URL: 'postgresql://runtime_user:runtime_password@db.internal:5432/worktrack',
+      DATABASE_URL: 'postgresql://db.internal:5432/worktrack',
       CLIENT_ORIGIN: 'https://worktrackings.netlify.app',
     },
     () => {
