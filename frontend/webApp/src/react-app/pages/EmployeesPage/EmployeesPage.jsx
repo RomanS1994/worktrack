@@ -45,6 +45,7 @@ export function EmployeesPage() {
   const employees = Array.isArray(data?.employees) ? data.employees : [];
   const activeEmployeeCount = employees.filter(employee => employee.status === 'ACTIVE').length;
   const isMutating = createState.isLoading || updateState.isLoading || resetState.isLoading;
+  const hasEmployeeList = !isLoading && !error;
 
   useEffect(() => {
     setRateDrafts(employees.reduce((next, employee) => {
@@ -67,6 +68,7 @@ export function EmployeesPage() {
   }
 
   async function saveRate(employeeId) {
+    if (!hasEmployeeList) return;
     clearActionMessages();
     try {
       await updateManagerEmployee({ employeeId, hourlyRateCzk: rateDrafts[employeeId] }).unwrap();
@@ -75,6 +77,7 @@ export function EmployeesPage() {
   }
 
   async function toggleEmployeeStatus(employee) {
+    if (!hasEmployeeList) return;
     clearActionMessages();
     const nextStatus = employee.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     try {
@@ -87,6 +90,7 @@ export function EmployeesPage() {
   function closePasswordReset() { setResetPassword(''); setResetEmployeeId(''); }
 
   async function submitPasswordReset(employee) {
+    if (!hasEmployeeList) return;
     clearActionMessages();
     if (resetPassword.length < 8) { setActionError(copy.passwordMin); return; }
     try {
@@ -102,7 +106,7 @@ export function EmployeesPage() {
         <div className="appTitleBlock">
           <p className="sectionEyebrow">{copy.team}</p>
           <h1>{copy.title}</h1>
-          <p>{activeEmployeeCount} {copy.active} · {employees.length} {copy.total}</p>
+          {hasEmployeeList ? <p>{activeEmployeeCount} {copy.active} · {employees.length} {copy.total}</p> : null}
         </div>
       </header>
 
@@ -122,14 +126,14 @@ export function EmployeesPage() {
         </form>
 
         <section className="employeesPanel screenCard">
-          <div className="compactHeader"><h2>{copy.list}</h2><p>{data?.week ? `${data.week.weekStart} - ${data.week.weekEnd}` : copy.currentWeek}</p></div>
+          <div className="compactHeader"><h2>{copy.list}</h2>{hasEmployeeList ? <p>{data?.week ? `${data.week.weekStart} - ${data.week.weekEnd}` : copy.currentWeek}</p> : null}</div>
           {actionError ? <p className="statusNote is-error">{actionError}</p> : null}
           {actionSuccess ? <p className="statusNote is-success">{actionSuccess}</p> : null}
           {isLoading ? <RequestLoadingState label={copy.loading} /> : null}
           {error ? <p className="statusNote is-error">{getApiErrorMessage(error)}</p> : null}
-          {!isLoading && !employees.length ? <div className="employeesEmpty"><span aria-hidden="true"><SvgIcon name="accounts" /></span><strong>{copy.none}</strong></div> : null}
+          {hasEmployeeList && !employees.length ? <div className="employeesEmpty"><span aria-hidden="true"><SvgIcon name="accounts" /></span><strong>{copy.none}</strong></div> : null}
 
-          {employees.length ? (
+          {hasEmployeeList && employees.length ? (
             <div className="employeesList">
               {employees.map(employee => {
                 const isActive = employee.status === 'ACTIVE';

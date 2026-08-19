@@ -58,13 +58,14 @@ export function ApprovalsPage() {
   const [actionError, setActionError] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
   const selectedFromList = submissions.find(submission => submission.id === selectedId);
-  const detailQuery = useGetManagerSubmissionQuery(selectedId, { skip: !selectedId });
+  const detailQuery = useGetManagerSubmissionQuery(selectedId, { skip: !selectedId || Boolean(error) });
   const detail = detailQuery.data?.submission || selectedFromList || null;
   const [approveSubmission, approveState] = useApproveSubmissionMutation();
   const [rejectSubmission, rejectState] = useRejectSubmissionMutation();
   const isReviewing = approveState.isLoading || rejectState.isLoading;
   const trimmedRejectionReason = rejectionReason.trim();
   const pendingHours = submissions.reduce((total, submission) => total + Number(submission.summary?.totalHours || 0), 0);
+  const hasQueue = !isLoading && !error;
 
   useEffect(() => {
     if (!selectedId && submissions[0]?.id) {
@@ -82,7 +83,7 @@ export function ApprovalsPage() {
   }, [selectedId]);
 
   async function review(decision) {
-    if (!detail?.id) return;
+    if (!hasQueue || !detail?.id) return;
     setActionError('');
     if (decision === 'reject' && !trimmedRejectionReason) {
       setActionError(t('approvals.reasonRequired'));
@@ -111,23 +112,25 @@ export function ApprovalsPage() {
           <h1>{t('approvals.title')}</h1>
           <p>{t('approvals.intro')}</p>
         </div>
-        <div className="approvalsHeaderStats" aria-label={t('approvals.pendingSummary')}>
-          <div><strong>{submissions.length}</strong><span>{t('approvals.pendingWeeks')}</span></div>
-          <div><strong>{pendingHours.toFixed(2)} h</strong><span>{t('approvals.hoursWaiting')}</span></div>
-        </div>
+        {hasQueue ? (
+          <div className="approvalsHeaderStats" aria-label={t('approvals.pendingSummary')}>
+            <div><strong>{submissions.length}</strong><span>{t('approvals.pendingWeeks')}</span></div>
+            <div><strong>{pendingHours.toFixed(2)} h</strong><span>{t('approvals.hoursWaiting')}</span></div>
+          </div>
+        ) : null}
       </header>
 
       {isLoading ? <RequestLoadingState label={t('approvals.loading')} /> : null}
       {error ? <p className="statusNote is-error">{getApiErrorMessage(error)}</p> : null}
 
-      {!isLoading && !submissions.length ? (
+      {hasQueue && !submissions.length ? (
         <section className="approvalsEmpty screenCard">
           <span aria-hidden="true"><SvgIcon name="check-circle" /></span>
           <div><h2>{t('approvals.allCaughtUp')}</h2><p>{t('approvals.noPending')}</p></div>
         </section>
       ) : null}
 
-      {submissions.length ? (
+      {hasQueue && submissions.length ? (
         <section className="approvalsWorkspace">
           <aside className="approvalsQueue">
             <div className="approvalsQueueHeader">
@@ -160,7 +163,7 @@ export function ApprovalsPage() {
             {detailQuery.isFetching ? <RequestLoadingState label={t('approvals.loadingDetails')} /> : null}
             {detailQuery.error ? <p className="statusNote is-error">{getApiErrorMessage(detailQuery.error)}</p> : null}
 
-            {detail ? (
+            {detail && !detailQuery.error ? (
               <>
                 <div className="approvalDetailHeader">
                   <div className="approvalDetailIdentity">
