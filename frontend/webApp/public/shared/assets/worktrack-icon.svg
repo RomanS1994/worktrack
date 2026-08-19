@@ -1,18 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
   <title id="title">WorkTrack</title>
-  <desc id="desc">Green WorkTrack icon with a white clock and check mark.</desc>
+  <desc id="desc">Green WorkTrack icon with a bold white W.</desc>
   <defs>
-    <linearGradient id="bg" x1="160" y1="96" x2="864" y2="928" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#22C55E"/>
-      <stop offset="1" stop-color="#15803D"/>
+    <linearGradient id="bg" x1="190" y1="110" x2="820" y2="930" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5EE24A"/>
+      <stop offset="0.52" stop-color="#19B94B"/>
+      <stop offset="1" stop-color="#008B45"/>
     </linearGradient>
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="22" stdDeviation="28" flood-color="#0B5B2B" flood-opacity=".24"/>
+      <feDropShadow dx="0" dy="22" stdDeviation="24" flood-color="#056A35" flood-opacity="0.22"/>
     </filter>
   </defs>
-  <rect x="64" y="64" width="896" height="896" rx="224" fill="url(#bg)"/>
-  <circle cx="512" cy="512" r="286" fill="#FFFFFF" fill-opacity=".12"/>
-  <circle cx="512" cy="512" r="230" fill="none" stroke="#FFFFFF" stroke-width="64" stroke-linecap="round" filter="url(#shadow)"/>
-  <path d="M512 338v184l116 68" fill="none" stroke="#FFFFFF" stroke-width="64" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M350 570l105 105 222-250" fill="none" stroke="#FFFFFF" stroke-width="70" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="48" y="48" width="928" height="928" rx="230" fill="url(#bg)"/>
+  <path d="M225 304 L365 720 Q380 764 423 764 Q464 764 479 722 L512 625 L546 722 Q560 764 603 764 Q645 764 660 720 L800 304 Q813 265 774 252 Q737 239 724 278 L603 642 L561 516 Q548 477 512 477 Q476 477 463 516 L421 642 L300 278 Q287 239 250 252 Q212 265 225 304 Z" fill="#FFFFFF" filter="url(#shadow)"/>
 </svg>
