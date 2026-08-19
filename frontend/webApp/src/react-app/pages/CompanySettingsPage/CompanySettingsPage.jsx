@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { RequestLoadingState } from '@shared/app/components/RequestLoader/RequestLoader.jsx';
+import { useI18n } from '@shared/app/i18n/useI18n.js';
+import { getWorktrackMessage } from '@shared/app/i18n/worktrackMessages.js';
 import {
   useGetCompanySettingsQuery,
   useUpdateCompanySettingsMutation,
@@ -9,6 +11,8 @@ import {
 import './CompanySettingsPage.css';
 
 export function CompanySettingsPage() {
+  const { language } = useI18n();
+  const t = key => getWorktrackMessage(language, key);
   const { data, error, isLoading } = useGetCompanySettingsQuery();
   const [updateCompanySettings, updateState] = useUpdateCompanySettingsMutation();
   const [name, setName] = useState('');
@@ -29,16 +33,14 @@ export function CompanySettingsPage() {
     event.preventDefault();
     setMessage('');
     setActionError('');
-
     if (!normalizedName) {
-      setActionError('Company name is required.');
+      setActionError(t('company.nameRequired'));
       return;
     }
-
     try {
       await updateCompanySettings({ name: normalizedName }).unwrap();
       setName(normalizedName);
-      setMessage('Company name saved.');
+      setMessage(t('company.savedMessage'));
     } catch (mutationError) {
       setActionError(getApiErrorMessage(mutationError));
     }
@@ -48,56 +50,38 @@ export function CompanySettingsPage() {
     <section className="companySettingsPage pageStack">
       <header className="companySettingsHeader appTop">
         <div className="appTitleBlock">
-          <p className="sectionEyebrow">Company</p>
-          <h1>Settings</h1>
-          <p>{error ? 'Unable to load company' : company?.name || 'Current company'}</p>
+          <p className="sectionEyebrow">{t('company.eyebrow')}</p>
+          <h1>{t('company.title')}</h1>
+          <p>{error ? t('company.loadError') : company?.name || t('company.current')}</p>
         </div>
       </header>
 
       <form className="companySettingsPanel screenCard" onSubmit={submitCompany}>
         <div className="compactHeader">
-          <h2>Workspace identity</h2>
-          <p>This name is shown to managers and employees across WorkTrack.</p>
+          <h2>{t('company.identity')}</h2>
+          <p>{t('company.copy')}</p>
         </div>
 
-        {isLoading ? <RequestLoadingState label="Loading company" /> : null}
+        {isLoading ? <RequestLoadingState label={t('company.loading')} /> : null}
         {error ? <p className="statusNote is-error">{getApiErrorMessage(error)}</p> : null}
 
         {!isLoading && !error && company ? (
           <>
             <label className="companySettingsField">
-              <span>Company name</span>
-              <input
-                type="text"
-                autoComplete="organization"
-                maxLength={120}
-                value={name}
-                onChange={event => {
-                  setName(event.target.value);
-                  setMessage('');
-                  setActionError('');
-                }}
-                required
-              />
+              <span>{t('company.name')}</span>
+              <input type="text" autoComplete="organization" maxLength={120} value={name} onChange={event => { setName(event.target.value); setMessage(''); setActionError(''); }} required />
             </label>
 
             <div className="companySettingsMetaCard">
-              <div className="companySettingsMeta">
-                <span>Workspace slug</span>
-                <strong>{company.slug || '-'}</strong>
-              </div>
-              <p>The workspace slug is a stable internal identifier and is not changed when you rename the company.</p>
+              <div className="companySettingsMeta"><span>{t('company.slug')}</span><strong>{company.slug || '-'}</strong></div>
+              <p>{t('company.slugCopy')}</p>
             </div>
 
             {message ? <p className="statusNote is-success">{message}</p> : null}
             {actionError ? <p className="statusNote is-error">{actionError}</p> : null}
 
-            <button
-              className="companySettingsButton"
-              type="submit"
-              disabled={updateState.isLoading || !hasChanges}
-            >
-              {updateState.isLoading ? 'Saving…' : hasChanges ? 'Save changes' : 'Saved'}
+            <button className="companySettingsButton" type="submit" disabled={updateState.isLoading || !hasChanges}>
+              {updateState.isLoading ? t('company.saving') : hasChanges ? t('company.saveChanges') : t('company.saved')}
             </button>
           </>
         ) : null}
