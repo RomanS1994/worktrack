@@ -164,6 +164,7 @@ export function CalendarPage() {
 
   const isLoading = weekResults.some(result => result.isLoading || result.isFetching);
   const firstError = weekResults.find(result => result.error)?.error;
+  const hasCompleteCalendar = !isLoading && !firstError && weekResults.every(result => result.data);
   const statusLabel = status => t(`common.${String(status || 'draft').toLowerCase()}`);
 
   function changeMonth(amount) {
@@ -196,85 +197,89 @@ export function CalendarPage() {
         <button className="workCalendarToday" type="button" onClick={goToday}>{t('common.today')}</button>
       </section>
 
-      <section className="workCalendarStats" aria-label={t('calendar.monthSummary')}>
-        <MonthStat label={t('common.totalHours')} value={formatHours(totals.total)} />
-        <MonthStat label={t('common.overtime')} value={formatHours(totals.overtime)} tone="overtime" />
-        <MonthStat label={t('common.approved')} value={formatHours(totals.approved)} tone="approved" />
-        <MonthStat label={t('common.submitted')} value={formatHours(totals.submitted)} tone="submitted" />
-      </section>
-
       {isLoading ? <RequestLoadingState label={t('calendar.loading')} /> : null}
       {firstError ? <p className="statusNote is-error">{getApiErrorMessage(firstError)}</p> : null}
 
-      <section className="workCalendarCard">
-        <div className="workCalendarWeekdays" aria-hidden="true">
-          {weekdays.map((day, index) => <span key={`${day}-${index}`}>{day}</span>)}
-        </div>
+      {hasCompleteCalendar ? (
+        <>
+          <section className="workCalendarStats" aria-label={t('calendar.monthSummary')}>
+            <MonthStat label={t('common.totalHours')} value={formatHours(totals.total)} />
+            <MonthStat label={t('common.overtime')} value={formatHours(totals.overtime)} tone="overtime" />
+            <MonthStat label={t('common.approved')} value={formatHours(totals.approved)} tone="approved" />
+            <MonthStat label={t('common.submitted')} value={formatHours(totals.submitted)} tone="submitted" />
+          </section>
 
-        <div className="workCalendarGrid" role="grid" aria-label={formatMonth(monthDate, locale)}>
-          {calendarDays.map(day => {
-            const dayEntries = entriesByDate.get(day.dateKey) || [];
-            const hours = getDayTotal(dayEntries);
-            const status = getDayStatus(dayEntries);
-            const overtime = Math.max(0, hours - 8);
-            const isSelected = day.dateKey === selectedDateKey;
-            const isToday = day.dateKey === todayKey;
-            return (
-              <button
-                className={['workCalendarDay', day.inMonth ? '' : 'is-outside', isSelected ? 'is-selected' : '', isToday ? 'is-today' : ''].filter(Boolean).join(' ')}
-                type="button"
-                role="gridcell"
-                key={day.dateKey}
-                onClick={() => setSelectedDateKey(day.dateKey)}
-              >
-                <span className="workCalendarDay-number">{day.date.getUTCDate()}</span>
-                {hours > 0 ? <strong>{formatHours(hours)}</strong> : <span className="workCalendarDay-empty">0h</span>}
-                <span className="workCalendarDay-indicators">
-                  {status ? <i className={`status-${status.toLowerCase()}`} title={statusLabel(status)} /> : null}
-                  {overtime > 0 ? <i className="status-overtime" title={t('common.overtime')} /> : null}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+          <section className="workCalendarCard">
+            <div className="workCalendarWeekdays" aria-hidden="true">
+              {weekdays.map((day, index) => <span key={`${day}-${index}`}>{day}</span>)}
+            </div>
 
-        <div className="workCalendarLegend" aria-label={t('calendar.statusLegend')}>
-          <span><i className="status-approved" />{t('common.approved')}</span>
-          <span><i className="status-submitted" />{t('common.submitted')}</span>
-          <span><i className="status-draft" />{t('common.draft')}</span>
-          <span><i className="status-rejected" />{t('common.rejected')}</span>
-          <span><i className="status-overtime" />{t('common.overtime')}</span>
-        </div>
-      </section>
+            <div className="workCalendarGrid" role="grid" aria-label={formatMonth(monthDate, locale)}>
+              {calendarDays.map(day => {
+                const dayEntries = entriesByDate.get(day.dateKey) || [];
+                const hours = getDayTotal(dayEntries);
+                const status = getDayStatus(dayEntries);
+                const overtime = Math.max(0, hours - 8);
+                const isSelected = day.dateKey === selectedDateKey;
+                const isToday = day.dateKey === todayKey;
+                return (
+                  <button
+                    className={['workCalendarDay', day.inMonth ? '' : 'is-outside', isSelected ? 'is-selected' : '', isToday ? 'is-today' : ''].filter(Boolean).join(' ')}
+                    type="button"
+                    role="gridcell"
+                    key={day.dateKey}
+                    onClick={() => setSelectedDateKey(day.dateKey)}
+                  >
+                    <span className="workCalendarDay-number">{day.date.getUTCDate()}</span>
+                    {hours > 0 ? <strong>{formatHours(hours)}</strong> : <span className="workCalendarDay-empty">0h</span>}
+                    <span className="workCalendarDay-indicators">
+                      {status ? <i className={`status-${status.toLowerCase()}`} title={statusLabel(status)} /> : null}
+                      {overtime > 0 ? <i className="status-overtime" title={t('common.overtime')} /> : null}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
 
-      <section className="workCalendarDayPanel">
-        <div className="workCalendarDayPanel-heading">
-          <div>
-            <span>{formatLongDate(selectedDateKey, locale)}</span>
-            <h2>{formatHours(selectedHours)}</h2>
-            {selectedOvertime > 0 ? <p>+{formatHours(selectedOvertime)} {t('calendar.overtimeSuffix')}</p> : null}
-          </div>
-          {selectedStatus ? <span className={`workCalendarStatus status-${selectedStatus.toLowerCase()}`}>{statusLabel(selectedStatus)}</span> : null}
-        </div>
+            <div className="workCalendarLegend" aria-label={t('calendar.statusLegend')}>
+              <span><i className="status-approved" />{t('common.approved')}</span>
+              <span><i className="status-submitted" />{t('common.submitted')}</span>
+              <span><i className="status-draft" />{t('common.draft')}</span>
+              <span><i className="status-rejected" />{t('common.rejected')}</span>
+              <span><i className="status-overtime" />{t('common.overtime')}</span>
+            </div>
+          </section>
 
-        <div className="workCalendarEntries">
-          {selectedEntries.length ? selectedEntries.map(entry => (
-            <article className="workCalendarEntry" key={entry.id}>
-              <span className={`workCalendarEntry-dot status-${entry.status.toLowerCase()}`} />
+          <section className="workCalendarDayPanel">
+            <div className="workCalendarDayPanel-heading">
               <div>
-                <strong>{entry.project?.name || t('calendar.workEntry')}</strong>
-                <small>{statusLabel(entry.status)}</small>
+                <span>{formatLongDate(selectedDateKey, locale)}</span>
+                <h2>{formatHours(selectedHours)}</h2>
+                {selectedOvertime > 0 ? <p>+{formatHours(selectedOvertime)} {t('calendar.overtimeSuffix')}</p> : null}
               </div>
-              <b>{formatHours(entry.hours)}</b>
-            </article>
-          )) : <p className="workCalendarEmpty">{t('calendar.noHours')}</p>}
-        </div>
+              {selectedStatus ? <span className={`workCalendarStatus status-${selectedStatus.toLowerCase()}`}>{statusLabel(selectedStatus)}</span> : null}
+            </div>
 
-        <div className="workCalendarDayActions">
-          <Link className="workCalendarPrimaryAction" to={selectedHoursHref}>{t('calendar.addEntry')}</Link>
-          <Link className="workCalendarSecondaryAction" to={selectedHoursHref}>{t('calendar.openHours')}</Link>
-        </div>
-      </section>
+            <div className="workCalendarEntries">
+              {selectedEntries.length ? selectedEntries.map(entry => (
+                <article className="workCalendarEntry" key={entry.id}>
+                  <span className={`workCalendarEntry-dot status-${entry.status.toLowerCase()}`} />
+                  <div>
+                    <strong>{entry.project?.name || t('calendar.workEntry')}</strong>
+                    <small>{statusLabel(entry.status)}</small>
+                  </div>
+                  <b>{formatHours(entry.hours)}</b>
+                </article>
+              )) : <p className="workCalendarEmpty">{t('calendar.noHours')}</p>}
+            </div>
+
+            <div className="workCalendarDayActions">
+              <Link className="workCalendarPrimaryAction" to={selectedHoursHref}>{t('calendar.addEntry')}</Link>
+              <Link className="workCalendarSecondaryAction" to={selectedHoursHref}>{t('calendar.openHours')}</Link>
+            </div>
+          </section>
+        </>
+      ) : null}
     </section>
   );
 }
