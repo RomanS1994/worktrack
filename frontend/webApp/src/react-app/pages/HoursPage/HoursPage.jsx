@@ -125,6 +125,9 @@ export function HoursPage() {
   const isCurrentWeek = weekStart === currentWeekStart;
   const canGoForward = weekStart < currentWeekStart;
   const isMutating = createState.isLoading || updateState.isLoading || deleteState.isLoading || submitState.isLoading;
+  const hasWeekData = Boolean(data?.week) && !isLoading && !isFetching && !error;
+  const hasProjectsData = Boolean(projectsQuery.data) && !projectsQuery.isLoading && !projectsQuery.isFetching && !projectsQuery.error;
+  const canEditWeek = hasWeekData && hasProjectsData;
 
   useEffect(() => {
     setEntryDrafts(entries.reduce((next, entry) => {
@@ -158,6 +161,7 @@ export function HoursPage() {
   }
 
   async function saveEntry(entry) {
+    if (!canEditWeek) return;
     setActionError('');
     const draft = entryDrafts[entry.id] || {};
     const payload = { entryId: entry.id, hours: draft.hours };
@@ -166,6 +170,7 @@ export function HoursPage() {
   }
 
   async function addEntry(day) {
+    if (!canEditWeek) return;
     setActionError('');
     const draft = newDrafts[day.date] || {};
     try {
@@ -175,11 +180,13 @@ export function HoursPage() {
   }
 
   async function deleteEntry(entry) {
+    if (!canEditWeek) return;
     setActionError('');
     try { await deleteWorkEntry(entry.id).unwrap(); } catch (mutationError) { setActionError(getApiErrorMessage(mutationError)); }
   }
 
   async function submitSelectedWeek() {
+    if (!hasWeekData) return;
     setActionError('');
     try { await submitWeek({ weekStart }).unwrap(); } catch (mutationError) { setActionError(getApiErrorMessage(mutationError)); }
   }
@@ -190,16 +197,16 @@ export function HoursPage() {
         <div className="appTitleBlock">
           <p className="sectionEyebrow">{copy.eyebrow}</p>
           <h1>{copy.title}</h1>
-          <p>{summary.totalHours || '0.00'} {copy.hoursSelected}</p>
+          {hasWeekData ? <p>{summary.totalHours || '0.00'} {copy.hoursSelected}</p> : null}
         </div>
-        <div className={`hoursStatusBadge hoursStatusBadge--${submissionStatus.toLowerCase()}`}>{statusLabel(submissionStatus)}</div>
+        {hasWeekData ? <div className={`hoursStatusBadge hoursStatusBadge--${submissionStatus.toLowerCase()}`}>{statusLabel(submissionStatus)}</div> : null}
       </header>
 
       <section className="hoursWeekNavigator screenCard" aria-label={copy.weekNavigation}>
         <button type="button" disabled={isFetching || isMutating} onClick={() => changeWeek(shiftWeek(weekStart, -1))}>← {copy.previous}</button>
         <div className="hoursWeekNavigator-current">
           <span>{isCurrentWeek ? copy.currentWeek : copy.weekHistory}</span>
-          <strong>{formatPeriod(week, locale, copy.selectedWeek)}</strong>
+          <strong>{hasWeekData ? formatPeriod(week, locale, copy.selectedWeek) : copy.selectedWeek}</strong>
         </div>
         <div className="hoursWeekNavigator-actions">
           {!isCurrentWeek ? <button type="button" disabled={isFetching || isMutating} onClick={() => changeWeek(currentWeekStart)}>{copy.today}</button> : null}
@@ -207,24 +214,30 @@ export function HoursPage() {
         </div>
       </section>
 
-      {submissionStatus === 'REJECTED' && submission?.rejectionReason ? (
+      {hasWeekData && submissionStatus === 'REJECTED' && submission?.rejectionReason ? (
         <section className="hoursRejectionNotice" role="status"><strong>{copy.managerChanges}</strong><p>{submission.rejectionReason}</p></section>
       ) : null}
 
-      <section className="hoursSummaryGrid" aria-label={copy.salarySummary}>
-        <article className="hoursSummaryCard"><span>{copy.totalHours}</span><strong>{summary.totalHours || '0.00'}</strong></article>
-        <article className="hoursSummaryCard"><span>{copy.approvedHours}</span><strong>{summary.approvedHours || '0.00'}</strong></article>
-        <article className="hoursSummaryCard"><span>{copy.confirmedSalary}</span><strong>{formatMoney(summary.confirmedSalaryCzk)}</strong></article>
-        <article className="hoursSummaryCard"><span>{copy.predictedSalary}</span><strong>{formatMoney(summary.predictedSalaryCzk)}</strong></article>
-      </section>
+      {hasWeekData ? (
+        <section className="hoursSummaryGrid" aria-label={copy.salarySummary}>
+          <article className="hoursSummaryCard"><span>{copy.totalHours}</span><strong>{summary.totalHours || '0.00'}</strong></article>
+          <article className="hoursSummaryCard"><span>{copy.approvedHours}</span><strong>{summary.approvedHours || '0.00'}</strong></article>
+          <article className="hoursSummaryCard"><span>{copy.confirmedSalary}</span><strong>{formatMoney(summary.confirmedSalaryCzk)}</strong></article>
+          <article className="hoursSummaryCard"><span>{copy.predictedSalary}</span><strong>{formatMoney(summary.predictedSalaryCzk)}</strong></article>
+        </section>
+      ) : null}
 
       <section className="hoursWeek screenCard">
-        <div className="compactHeader">
-          <h2>{formatPeriod(week, locale, copy.selectedWeek)}</h2>
-          <p>{summary.pendingHours || '0.00'} {copy.pending} · {summary.approvedHours || '0.00'} {copy.approved}</p>
-        </div>
+        {hasWeekData ? (
+          <div className="compactHeader">
+            <h2>{formatPeriod(week, locale, copy.selectedWeek)}</h2>
+            <p>{summary.pendingHours || '0.00'} {copy.pending} · {summary.approvedHours || '0.00'} {copy.approved}</p>
+          </div>
+        ) : null}
 
-        {isLoading || projectsQuery.isLoading ? <RequestLoadingState label={copy.loading} /> : (
+        {isLoading || isFetching || projectsQuery.isLoading || projectsQuery.isFetching ? <RequestLoadingState label={copy.loading} /> : null}
+
+        {canEditWeek ? (
           <div className="hoursWeekGrid" aria-label={copy.selectedWeekHours}>
             {(week?.days || []).map(day => {
               const dayEntries = entriesByDate.get(day.date) || [];
@@ -265,23 +278,25 @@ export function HoursPage() {
               );
             })}
           </div>
-        )}
+        ) : null}
 
         {error ? <p className="statusNote is-error">{getApiErrorMessage(error)}</p> : null}
         {projectsQuery.error ? <p className="statusNote is-error">{getApiErrorMessage(projectsQuery.error)}</p> : null}
         {actionError ? <p className="statusNote is-error">{actionError}</p> : null}
       </section>
 
-      <section className="hoursSubmitPanel">
-        <div>
-          <strong>{statusLabel(submission?.status || 'DRAFT')}</strong>
-          <p>{isCurrentWeek ? copy.sendCurrent : copy.sendHistory}</p>
-        </div>
-        <button className="hoursSubmitButton" type="button" disabled={isFetching || isMutating || isSubmittedOrApproved || !entries.length} onClick={submitSelectedWeek}>
-          <SvgIcon name="send" />
-          {submissionStatus === 'REJECTED' ? copy.resubmit : copy.sendWeek}
-        </button>
-      </section>
+      {hasWeekData ? (
+        <section className="hoursSubmitPanel">
+          <div>
+            <strong>{statusLabel(submission?.status || 'DRAFT')}</strong>
+            <p>{isCurrentWeek ? copy.sendCurrent : copy.sendHistory}</p>
+          </div>
+          <button className="hoursSubmitButton" type="button" disabled={isFetching || isMutating || isSubmittedOrApproved || !entries.length} onClick={submitSelectedWeek}>
+            <SvgIcon name="send" />
+            {submissionStatus === 'REJECTED' ? copy.resubmit : copy.sendWeek}
+          </button>
+        </section>
+      ) : null}
     </section>
   );
 }
