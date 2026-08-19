@@ -32,14 +32,16 @@ export function SessionNotice() {
     return () => window.clearTimeout(timer);
   }, [dispatch, sessionError, sessionErrorType]);
 
-  if (!visible) {
-    return null;
-  }
+  if (!visible) return null;
+
+  const message = sessionErrorType === 'offline'
+    ? t('auth.connectionLostKeepSession')
+    : t('auth.sessionCheckFailedKeepSession');
 
   return (
     <div className="sessionNotice" role="status" aria-live="polite">
       <strong className="sessionNotice-title">{t('common.failed')}</strong>
-      <p className="sessionNotice-text">{sessionError}</p>
+      <p className="sessionNotice-text">{message}</p>
     </div>
   );
 }
