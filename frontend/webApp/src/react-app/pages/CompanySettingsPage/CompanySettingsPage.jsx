@@ -22,9 +22,7 @@ export function CompanySettingsPage() {
   );
 
   useEffect(() => {
-    if (company?.name) {
-      setName(company.name);
-    }
+    if (company?.name) setName(company.name);
   }, [company?.name]);
 
   async function submitCompany(event) {
@@ -52,7 +50,7 @@ export function CompanySettingsPage() {
         <div className="appTitleBlock">
           <p className="sectionEyebrow">Company</p>
           <h1>Settings</h1>
-          <p>{company?.name || 'Current company'}</p>
+          <p>{error ? 'Unable to load company' : company?.name || 'Current company'}</p>
         </div>
       </header>
 
@@ -65,40 +63,44 @@ export function CompanySettingsPage() {
         {isLoading ? <RequestLoadingState label="Loading company" /> : null}
         {error ? <p className="statusNote is-error">{getApiErrorMessage(error)}</p> : null}
 
-        <label className="companySettingsField">
-          <span>Company name</span>
-          <input
-            type="text"
-            autoComplete="organization"
-            maxLength={120}
-            value={name}
-            onChange={event => {
-              setName(event.target.value);
-              setMessage('');
-              setActionError('');
-            }}
-            required
-          />
-        </label>
+        {!isLoading && !error && company ? (
+          <>
+            <label className="companySettingsField">
+              <span>Company name</span>
+              <input
+                type="text"
+                autoComplete="organization"
+                maxLength={120}
+                value={name}
+                onChange={event => {
+                  setName(event.target.value);
+                  setMessage('');
+                  setActionError('');
+                }}
+                required
+              />
+            </label>
 
-        <div className="companySettingsMetaCard">
-          <div className="companySettingsMeta">
-            <span>Workspace slug</span>
-            <strong>{company?.slug || '-'}</strong>
-          </div>
-          <p>The workspace slug is a stable internal identifier and is not changed when you rename the company.</p>
-        </div>
+            <div className="companySettingsMetaCard">
+              <div className="companySettingsMeta">
+                <span>Workspace slug</span>
+                <strong>{company.slug || '-'}</strong>
+              </div>
+              <p>The workspace slug is a stable internal identifier and is not changed when you rename the company.</p>
+            </div>
 
-        {message ? <p className="statusNote is-success">{message}</p> : null}
-        {actionError ? <p className="statusNote is-error">{actionError}</p> : null}
+            {message ? <p className="statusNote is-success">{message}</p> : null}
+            {actionError ? <p className="statusNote is-error">{actionError}</p> : null}
 
-        <button
-          className="companySettingsButton"
-          type="submit"
-          disabled={isLoading || updateState.isLoading || !hasChanges}
-        >
-          {updateState.isLoading ? 'Saving…' : hasChanges ? 'Save changes' : 'Saved'}
-        </button>
+            <button
+              className="companySettingsButton"
+              type="submit"
+              disabled={updateState.isLoading || !hasChanges}
+            >
+              {updateState.isLoading ? 'Saving…' : hasChanges ? 'Save changes' : 'Saved'}
+            </button>
+          </>
+        ) : null}
       </form>
     </section>
   );
