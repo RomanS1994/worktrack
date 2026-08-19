@@ -55,7 +55,7 @@ BACKEND_PORT=3000
 CLIENT_ORIGIN="http://localhost:5173,http://127.0.0.1:5173"
 ```
 
-Create `frontend/driverApp/.env` locally:
+Create `frontend/webApp/.env` locally:
 
 ```bash
 VITE_API_BASE_URL="http://localhost:3000/api"

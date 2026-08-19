@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const frontendEnvDir = path.resolve(__dirname, 'frontend/driverApp');
+const frontendEnvDir = path.resolve(__dirname, 'frontend/webApp');
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, frontendEnvDir, 'VITE_');
@@ -20,12 +20,12 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     base: '/',
     envDir: frontendEnvDir,
-    root: path.resolve(__dirname, 'frontend/driverApp'),
+    root: path.resolve(__dirname, 'frontend/webApp'),
     publicDir: 'public',
     appType: 'spa',
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, 'frontend/driverApp/src'),
+        '@': path.resolve(__dirname, 'frontend/webApp/src'),
         '@shared': path.resolve(__dirname, 'frontend/shared/src/react-app'),
       },
     },
