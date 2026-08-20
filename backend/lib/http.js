@@ -81,7 +81,7 @@ export function setCorsHeaders(response) {
     'Content-Type, Authorization, X-API-KEY'
   );
   response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
-  response.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
+  response.setHeader('Access-Control-Expose-Headers', 'Content-Disposition, X-Request-ID');
 
   if (origin !== '*') {
     response.setHeader('Access-Control-Allow-Credentials', 'true');

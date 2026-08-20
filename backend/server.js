@@ -7,6 +7,7 @@ import { loadEnvFile } from './config/load-env.js';
 import { assertRuntimeEnv } from './config/runtime-env.js';
 import { bindRequestContext, handleCors } from './lib/http.js';
 import { sendHttpError } from './lib/errors.js';
+import { attachRequestDiagnostics } from './lib/request-diagnostics.js';
 import { routeRequest } from './routes/index.js';
 
 const serverDir = path.dirname(fileURLToPath(import.meta.url));
@@ -27,6 +28,7 @@ const { prisma } = await import('./db/prisma.js');
 const server = http.createServer(async (request, response) => {
   try {
     bindRequestContext(response, request);
+    attachRequestDiagnostics(request, response);
     if (handleCors(request, response)) return;
     if (!requireApiKey(request, response)) return;
 
