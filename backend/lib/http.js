@@ -8,6 +8,11 @@ function parseOrigin(value) {
   }
 }
 
+function normalizeOrigin(value) {
+  const parsed = parseOrigin(String(value || '').trim());
+  return parsed?.origin || '';
+}
+
 function isLocalhostOrigin(value) {
   const parsed = parseOrigin(value);
   if (!parsed) return false;
@@ -16,36 +21,37 @@ function isLocalhostOrigin(value) {
 }
 
 function resolveAllowedOrigin(requestOrigin, configuredOrigin) {
-  if (!requestOrigin) {
-    return configuredOrigin || '*';
-  }
-
-  if (!configuredOrigin) {
-    return requestOrigin;
-  }
-
-  const configuredOrigins = configuredOrigin
+  const normalizedRequestOrigin = normalizeOrigin(requestOrigin);
+  const configuredOrigins = String(configuredOrigin || '')
     .split(',')
-    .map(item => item.trim())
+    .map(item => normalizeOrigin(item))
     .filter(Boolean);
 
-  if (configuredOrigins.includes(requestOrigin)) {
-    return requestOrigin;
+  if (!normalizedRequestOrigin) {
+    return configuredOrigins[0] || '*';
+  }
+
+  if (configuredOrigins.length === 0) {
+    return normalizedRequestOrigin;
+  }
+
+  if (configuredOrigins.includes(normalizedRequestOrigin)) {
+    return normalizedRequestOrigin;
   }
 
   if (configuredOrigins.length === 1) {
     const allowedOrigin = configuredOrigins[0];
     const allowedParsed = parseOrigin(allowedOrigin);
-    const requestParsed = parseOrigin(requestOrigin);
+    const requestParsed = parseOrigin(normalizedRequestOrigin);
 
     if (allowedParsed && requestParsed && allowedParsed.hostname === requestParsed.hostname) {
-      if (isLocalhostOrigin(allowedOrigin) && isLocalhostOrigin(requestOrigin)) {
-        return requestOrigin;
+      if (isLocalhostOrigin(allowedOrigin) && isLocalhostOrigin(normalizedRequestOrigin)) {
+        return normalizedRequestOrigin;
       }
     }
   }
 
-  return configuredOrigins[0] || requestOrigin;
+  return configuredOrigins[0] || normalizedRequestOrigin;
 }
 
 function appendVaryHeader(response, value) {
@@ -126,7 +132,7 @@ export function sendBuffer(
   setCorsHeaders(response);
   response.writeHead(statusCode, {
     'Content-Type': contentType,
-    'Content-Disposition': `attachment; filename="${fileName}"`,
+    'Content-Disposition': `attachment; filename=\"${fileName}\"`,
     'Content-Length': buffer.length,
   });
   response.end(buffer);
