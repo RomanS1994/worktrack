@@ -28,6 +28,7 @@ function resolveBaseUrl() {
 
 let refreshWarningShownSinceSuccess = false;
 let refreshRequestPromise = null;
+let accessSyncRequestPromise = null;
 
 function sleep(ms) {
   return new Promise(resolve => window.setTimeout(resolve, ms));
@@ -39,6 +40,20 @@ function isNetworkRefreshError(error) {
     error?.status === 'TIMEOUT_ERROR' ||
     !error?.status
   );
+}
+
+function getBackendErrorMessage(error) {
+  if (!error?.data || typeof error.data !== 'object') return '';
+  return typeof error.data.error === 'string' ? error.data.error : '';
+}
+
+function isCompanyAccessError(error) {
+  if (error?.status !== 403) return false;
+  return new Set([
+    'Company access is required',
+    'Manager access is required',
+    'Employee access is required',
+  ]).has(getBackendErrorMessage(error));
 }
 
 function shouldShowRefreshWarning() {
@@ -67,6 +82,16 @@ function getSharedRefreshRequest(runRefreshFlow) {
   return refreshRequestPromise;
 }
 
+function getSharedAccessSyncRequest(runSyncFlow) {
+  if (!accessSyncRequestPromise) {
+    accessSyncRequestPromise = runSyncFlow().finally(() => {
+      accessSyncRequestPromise = null;
+    });
+  }
+
+  return accessSyncRequestPromise;
+}
+
 function applySuccessfulRefresh(api, refreshResult) {
   const nextToken = refreshResult?.data?.token || '';
   const nextUser = refreshResult?.data?.user || null;
@@ -82,6 +107,19 @@ function applySuccessfulRefresh(api, refreshResult) {
   resetRefreshWarningState();
   api.dispatch(setSession({ token: nextToken, user: nextUser }));
   api.dispatch(clearSessionError());
+  return true;
+}
+
+function applySyncedUser(api, syncResult) {
+  const nextUser = syncResult?.data?.user || null;
+  const currentToken = api.getState?.()?.auth?.token || getToken();
+
+  if (!currentToken || !nextUser) {
+    return false;
+  }
+
+  saveSession(currentToken, nextUser);
+  api.dispatch(setSession({ token: currentToken, user: nextUser }));
   return true;
 }
 
@@ -202,6 +240,13 @@ export const baseApi = createApi({
       });
     }
 
+    async function syncCurrentUser() {
+      return getSharedAccessSyncRequest(async () => {
+        const syncResult = await baseQuery('/me', api, extraOptions);
+        return applySyncedUser(api, syncResult);
+      });
+    }
+
     let result = await baseQuery(args, api, extraOptions);
 
     if (!result.error) {
@@ -221,6 +266,11 @@ export const baseApi = createApi({
         warnAboutRefreshFailure(api, t, 'offline');
       } else if (refreshed?.reason === 'server') {
         warnAboutRefreshFailure(api, t, 'server');
+      }
+    } else if (isCompanyAccessError(result.error) && getRequestUrl(args) !== '/me') {
+      const synced = await syncCurrentUser();
+      if (synced) {
+        result = await baseQuery(args, api, extraOptions);
       }
     }
 

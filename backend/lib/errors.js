@@ -15,6 +15,7 @@ const STATUS_BY_MESSAGE = new Map([
   ['Company name is required', 400],
   ['Company not found', 404],
   ['Company access is required', 403],
+  ['Business identifiers are already used', 409],
   ['Name is required for a new manager', 400],
   ['Email is required', 400],
   ['Email and password are required', 400],
@@ -50,6 +51,11 @@ const STATUS_BY_MESSAGE = new Map([
   ['Weekly submission is not pending review', 409],
   ['Employee is not assigned to a manager', 409],
   ['No work entries to submit', 400],
+  ['Notification not found', 404],
+  ['Invalid payroll anchor date', 400],
+  ['Invalid payroll period', 400],
+  ['Rejection reason is required', 400],
+  ['Rejection reason must be 500 characters or fewer', 400],
 ]);
 
 export function resolveErrorStatus(error) {
