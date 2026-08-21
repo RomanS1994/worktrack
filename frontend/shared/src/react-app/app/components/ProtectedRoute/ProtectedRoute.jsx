@@ -2,6 +2,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 import {
+  hasActiveCompanyAccess,
   hasEmployeeAccess,
   hasManagerAccess,
 } from '../../../features/auth/authAccess.js';
@@ -31,6 +32,10 @@ export function ProtectedRoute({
   }
 
   if (user.mustChangePassword && location.pathname !== '/profile') {
+    return <Navigate to="/profile" replace />;
+  }
+
+  if (!hasActiveCompanyAccess(user) && location.pathname !== '/profile') {
     return <Navigate to="/profile" replace />;
   }
 

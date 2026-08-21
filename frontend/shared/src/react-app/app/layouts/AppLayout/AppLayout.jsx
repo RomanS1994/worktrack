@@ -5,12 +5,13 @@ import { BottomTabs } from '../../components/BottomTabs/BottomTabs.jsx';
 import { GlobalRequestLoader } from '../../components/RequestLoader/RequestLoader.jsx';
 import { SessionNotice } from '../../components/SessionNotice/SessionNotice.jsx';
 import { selectToken, selectUser } from '../../../features/auth/authSlice.js';
+import { hasActiveCompanyAccess } from '../../../features/auth/authAccess.js';
 import './AppLayout.css';
 
 export function AppLayout({ children }) {
   const token = useSelector(selectToken);
   const user = useSelector(selectUser);
-  const showBottomTabs = Boolean(token && user);
+  const showBottomTabs = Boolean(token && user && hasActiveCompanyAccess(user));
   const layoutClassName = [
     'appLayout',
     'appLayout--workspace',
