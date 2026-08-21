@@ -1,9 +1,24 @@
+function getActiveMembership(user) {
+  if (!user || typeof user === 'string') return null;
+
+  const membership = user.activeMembership || null;
+  if (!membership || membership.status !== 'ACTIVE' || !membership.companyId) {
+    return null;
+  }
+
+  return membership;
+}
+
+export function hasActiveCompanyAccess(user) {
+  return Boolean(getActiveMembership(user));
+}
+
 export function hasManagerAccess(user) {
-  const role = typeof user === 'string' ? user : user?.activeMembership?.role || user?.role;
-  return role === 'MANAGER';
+  if (typeof user === 'string') return user === 'MANAGER';
+  return getActiveMembership(user)?.role === 'MANAGER';
 }
 
 export function hasEmployeeAccess(user) {
-  const role = typeof user === 'string' ? user : user?.activeMembership?.role || user?.role;
-  return role === 'EMPLOYEE';
+  if (typeof user === 'string') return user === 'EMPLOYEE';
+  return getActiveMembership(user)?.role === 'EMPLOYEE';
 }
