@@ -51,11 +51,11 @@ jobs:
       - name: Generate Prisma client
         run: npm --prefix backend run db:generate
 
-      - name: Run backend tests
-        run: npm --prefix backend test
-
       - name: Apply integration database migrations
         run: npm --prefix backend run db:migrate:deploy
+
+      - name: Run backend tests
+        run: npm --prefix backend test
 
       - name: Start integration backend
         run: |
