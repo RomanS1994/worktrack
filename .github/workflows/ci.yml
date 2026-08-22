@@ -10,7 +10,7 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       DATABASE_URL: postgresql://127.0.0.1:5432/worktrack?schema=public
       VITE_API_BASE_URL: http://127.0.0.1:3000/api
@@ -39,6 +39,15 @@ jobs:
 
       - name: Build frontend
         run: npm run build:web
+
+      - name: Install Playwright smoke runner
+        run: npm install --no-save --no-package-lock @playwright/test@1.55.0
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser smoke tests
+        run: npx playwright test
 
       - name: Audit production runtime dependencies
         run: node tools/audit-production.js
