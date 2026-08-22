@@ -2,222 +2,76 @@ import { baseApi } from '@shared/app/api/baseApi.js';
 
 export const worktrackApi = baseApi.injectEndpoints({
   endpoints: builder => ({
-    getWorkSummary: builder.query({
-      query: (query = {}) => ({ url: '/work-summary', params: query }),
-      providesTags: [{ type: 'WorkEntries', id: 'SUMMARY' }],
-    }),
-    getManagerPayroll: builder.query({
-      query: (query = {}) => ({ url: '/manager/payroll', params: query }),
-      providesTags: [{ type: 'WorkEntries', id: 'PAYROLL' }],
-    }),
-    getNotifications: builder.query({
-      query: () => '/notifications',
-      providesTags: [{ type: 'Notifications', id: 'LIST' }],
-    }),
-    markNotificationRead: builder.mutation({
-      query: notificationId => ({
-        url: `/notifications/${notificationId}/read`,
-        method: 'POST',
-      }),
-      invalidatesTags: [{ type: 'Notifications', id: 'LIST' }],
-    }),
-    markAllNotificationsRead: builder.mutation({
-      query: () => ({ url: '/notifications/read-all', method: 'POST' }),
-      invalidatesTags: [{ type: 'Notifications', id: 'LIST' }],
-    }),
+    getWorkSummary: builder.query({ query: (query = {}) => ({ url: '/work-summary', params: query }), providesTags: [{ type: 'WorkEntries', id: 'SUMMARY' }] }),
+    getManagerPayroll: builder.query({ query: (query = {}) => ({ url: '/manager/payroll', params: query }), providesTags: [{ type: 'WorkEntries', id: 'PAYROLL' }] }),
+    getNotifications: builder.query({ query: () => '/notifications', providesTags: [{ type: 'Notifications', id: 'LIST' }] }),
+    markNotificationRead: builder.mutation({ query: notificationId => ({ url: `/notifications/${notificationId}/read`, method: 'POST' }), invalidatesTags: [{ type: 'Notifications', id: 'LIST' }] }),
+    markAllNotificationsRead: builder.mutation({ query: () => ({ url: '/notifications/read-all', method: 'POST' }), invalidatesTags: [{ type: 'Notifications', id: 'LIST' }] }),
     getProjects: builder.query({
       query: () => '/projects',
-      providesTags: result => {
-        const projects = Array.isArray(result?.projects) ? result.projects : [];
-        return [
-          { type: 'Projects', id: 'LIST' },
-          ...projects.map(project => ({ type: 'Projects', id: project.id })),
-        ];
-      },
+      providesTags: result => [{ type: 'Projects', id: 'LIST' }, ...(Array.isArray(result?.projects) ? result.projects : []).map(project => ({ type: 'Projects', id: project.id }))],
     }),
-    createProject: builder.mutation({
-      query: body => ({ url: '/projects', method: 'POST', body }),
-      invalidatesTags: [
-        { type: 'Projects', id: 'LIST' },
-        { type: 'WorkEntries', id: 'SUMMARY' },
-      ],
-    }),
+    createProject: builder.mutation({ query: body => ({ url: '/projects', method: 'POST', body }), invalidatesTags: [{ type: 'Projects', id: 'LIST' }, { type: 'WorkEntries', id: 'SUMMARY' }] }),
     updateProject: builder.mutation({
       query: ({ projectId, ...body }) => ({ url: `/projects/${projectId}`, method: 'PATCH', body }),
-      invalidatesTags: (_result, _error, { projectId }) => [
-        { type: 'Projects', id: 'LIST' },
-        { type: 'Projects', id: projectId },
-        { type: 'WorkEntries', id: 'SUMMARY' },
-      ],
+      invalidatesTags: (_result, _error, { projectId }) => [{ type: 'Projects', id: 'LIST' }, { type: 'Projects', id: projectId }, { type: 'WorkEntries', id: 'SUMMARY' }],
     }),
     deactivateProject: builder.mutation({
       query: projectId => ({ url: `/projects/${projectId}/deactivate`, method: 'POST' }),
-      invalidatesTags: (_result, _error, projectId) => [
-        { type: 'Projects', id: 'LIST' },
-        { type: 'Projects', id: projectId },
-        { type: 'WorkEntries', id: 'SUMMARY' },
-      ],
+      invalidatesTags: (_result, _error, projectId) => [{ type: 'Projects', id: 'LIST' }, { type: 'Projects', id: projectId }, { type: 'WorkEntries', id: 'SUMMARY' }],
     }),
-    getCompanySettings: builder.query({
-      query: () => '/company-settings',
-      providesTags: [{ type: 'Company', id: 'SETTINGS' }],
-    }),
-    updateCompanySettings: builder.mutation({
-      query: body => ({ url: '/company-settings', method: 'PATCH', body }),
-      invalidatesTags: [{ type: 'Company', id: 'SETTINGS' }],
-    }),
+    getCompanySettings: builder.query({ query: () => '/company-settings', providesTags: [{ type: 'Company', id: 'SETTINGS' }] }),
+    updateCompanySettings: builder.mutation({ query: body => ({ url: '/company-settings', method: 'PATCH', body }), invalidatesTags: [{ type: 'Company', id: 'SETTINGS' }] }),
     getWeekEntries: builder.query({
       query: (query = {}) => ({ url: '/work-entries', params: query }),
-      providesTags: result => {
-        const entries = Array.isArray(result?.entries) ? result.entries : [];
-        return [
-          { type: 'WorkEntries', id: 'WEEK' },
-          ...entries.map(entry => ({ type: 'WorkEntries', id: entry.id })),
-        ];
-      },
+      providesTags: result => [{ type: 'WorkEntries', id: 'WEEK' }, ...(Array.isArray(result?.entries) ? result.entries : []).map(entry => ({ type: 'WorkEntries', id: entry.id }))],
     }),
     createWorkEntry: builder.mutation({
       query: payload => ({ url: '/work-entries', method: 'POST', body: payload }),
-      invalidatesTags: [
-        { type: 'WorkEntries', id: 'WEEK' },
-        { type: 'WorkEntries', id: 'SUMMARY' },
-        { type: 'WorkEntries', id: 'PAYROLL' },
-      ],
+      invalidatesTags: [{ type: 'WorkEntries', id: 'WEEK' }, { type: 'WorkEntries', id: 'SUMMARY' }, { type: 'WorkEntries', id: 'PAYROLL' }],
     }),
     updateWorkEntry: builder.mutation({
-      query: ({ entryId, hours, projectId }) => ({
-        url: `/work-entries/${entryId}`,
-        method: 'PATCH',
-        body: { hours, ...(projectId ? { projectId } : {}) },
-      }),
-      invalidatesTags: (_result, _error, { entryId }) => [
-        { type: 'WorkEntries', id: 'WEEK' },
-        { type: 'WorkEntries', id: 'SUMMARY' },
-        { type: 'WorkEntries', id: 'PAYROLL' },
-        { type: 'WorkEntries', id: entryId },
-      ],
+      query: ({ entryId, ...body }) => ({ url: `/work-entries/${entryId}`, method: 'PATCH', body }),
+      invalidatesTags: (_result, _error, { entryId }) => [{ type: 'WorkEntries', id: 'WEEK' }, { type: 'WorkEntries', id: 'SUMMARY' }, { type: 'WorkEntries', id: 'PAYROLL' }, { type: 'WorkEntries', id: entryId }],
     }),
     deleteWorkEntry: builder.mutation({
       query: entryId => ({ url: `/work-entries/${entryId}`, method: 'DELETE' }),
-      invalidatesTags: (_result, _error, entryId) => [
-        { type: 'WorkEntries', id: 'WEEK' },
-        { type: 'WorkEntries', id: 'SUMMARY' },
-        { type: 'WorkEntries', id: 'PAYROLL' },
-        { type: 'WorkEntries', id: entryId },
-      ],
+      invalidatesTags: (_result, _error, entryId) => [{ type: 'WorkEntries', id: 'WEEK' }, { type: 'WorkEntries', id: 'SUMMARY' }, { type: 'WorkEntries', id: 'PAYROLL' }, { type: 'WorkEntries', id: entryId }],
     }),
     submitWeek: builder.mutation({
       query: payload => ({ url: '/weekly-submissions', method: 'POST', body: payload }),
-      invalidatesTags: [
-        { type: 'WorkEntries', id: 'WEEK' },
-        { type: 'WorkEntries', id: 'SUMMARY' },
-        { type: 'WorkEntries', id: 'PAYROLL' },
-        { type: 'WeeklySubmissions', id: 'LIST' },
-        { type: 'Notifications', id: 'LIST' },
-      ],
+      invalidatesTags: [{ type: 'WorkEntries', id: 'WEEK' }, { type: 'WorkEntries', id: 'SUMMARY' }, { type: 'WorkEntries', id: 'PAYROLL' }, { type: 'WeeklySubmissions', id: 'LIST' }, { type: 'Notifications', id: 'LIST' }],
     }),
     getManagerEmployees: builder.query({
       query: () => '/manager/employees',
-      providesTags: result => {
-        const employees = Array.isArray(result?.employees) ? result.employees : [];
-        return [
-          { type: 'Employees', id: 'LIST' },
-          ...employees.map(employee => ({ type: 'Employees', id: employee.id })),
-        ];
-      },
+      providesTags: result => [{ type: 'Employees', id: 'LIST' }, ...(Array.isArray(result?.employees) ? result.employees : []).map(employee => ({ type: 'Employees', id: employee.id }))],
     }),
-    createManagerEmployee: builder.mutation({
-      query: body => ({ url: '/manager/employees', method: 'POST', body }),
-      invalidatesTags: [
-        { type: 'Employees', id: 'LIST' },
-        { type: 'WorkEntries', id: 'SUMMARY' },
-        { type: 'WorkEntries', id: 'PAYROLL' },
-      ],
-    }),
+    createManagerEmployee: builder.mutation({ query: body => ({ url: '/manager/employees', method: 'POST', body }), invalidatesTags: [{ type: 'Employees', id: 'LIST' }, { type: 'WorkEntries', id: 'SUMMARY' }, { type: 'WorkEntries', id: 'PAYROLL' }] }),
     updateManagerEmployee: builder.mutation({
       query: ({ employeeId, ...body }) => ({ url: `/manager/employees/${employeeId}`, method: 'PATCH', body }),
-      invalidatesTags: (_result, _error, { employeeId }) => [
-        { type: 'Employees', id: 'LIST' },
-        { type: 'Employees', id: employeeId },
-        { type: 'WorkEntries', id: 'SUMMARY' },
-        { type: 'WorkEntries', id: 'PAYROLL' },
-      ],
+      invalidatesTags: (_result, _error, { employeeId }) => [{ type: 'Employees', id: 'LIST' }, { type: 'Employees', id: employeeId }, { type: 'WorkEntries', id: 'SUMMARY' }, { type: 'WorkEntries', id: 'PAYROLL' }],
     }),
-    resetManagerEmployeePassword: builder.mutation({
-      query: ({ employeeId, temporaryPassword }) => ({
-        url: `/manager/employees/${employeeId}/reset-password`,
-        method: 'POST',
-        body: { temporaryPassword },
-      }),
-    }),
+    resetManagerEmployeePassword: builder.mutation({ query: ({ employeeId, temporaryPassword }) => ({ url: `/manager/employees/${employeeId}/reset-password`, method: 'POST', body: { temporaryPassword } }) }),
     getManagerSubmissions: builder.query({
       query: (query = {}) => ({ url: '/manager/submissions', params: query }),
-      providesTags: result => {
-        const submissions = Array.isArray(result?.submissions) ? result.submissions : [];
-        return [
-          { type: 'WeeklySubmissions', id: 'LIST' },
-          ...submissions.map(submission => ({ type: 'WeeklySubmissions', id: submission.id })),
-        ];
-      },
+      providesTags: result => [{ type: 'WeeklySubmissions', id: 'LIST' }, ...(Array.isArray(result?.submissions) ? result.submissions : []).map(submission => ({ type: 'WeeklySubmissions', id: submission.id }))],
     }),
-    getManagerSubmission: builder.query({
-      query: submissionId => `/manager/submissions/${submissionId}`,
-      providesTags: (_result, _error, submissionId) => [
-        { type: 'WeeklySubmissions', id: submissionId },
-      ],
-    }),
+    getManagerSubmission: builder.query({ query: submissionId => `/manager/submissions/${submissionId}`, providesTags: (_result, _error, submissionId) => [{ type: 'WeeklySubmissions', id: submissionId }] }),
     approveSubmission: builder.mutation({
       query: submissionId => ({ url: `/manager/submissions/${submissionId}/approve`, method: 'POST' }),
-      invalidatesTags: (_result, _error, submissionId) => [
-        { type: 'WeeklySubmissions', id: 'LIST' },
-        { type: 'WeeklySubmissions', id: submissionId },
-        { type: 'WorkEntries', id: 'SUMMARY' },
-        { type: 'WorkEntries', id: 'PAYROLL' },
-        { type: 'Employees', id: 'LIST' },
-        { type: 'Notifications', id: 'LIST' },
-      ],
+      invalidatesTags: (_result, _error, submissionId) => [{ type: 'WeeklySubmissions', id: 'LIST' }, { type: 'WeeklySubmissions', id: submissionId }, { type: 'WorkEntries', id: 'SUMMARY' }, { type: 'WorkEntries', id: 'PAYROLL' }, { type: 'Employees', id: 'LIST' }, { type: 'Notifications', id: 'LIST' }],
     }),
     rejectSubmission: builder.mutation({
-      query: ({ submissionId, rejectionReason }) => ({
-        url: `/manager/submissions/${submissionId}/reject`,
-        method: 'POST',
-        body: { rejectionReason },
-      }),
-      invalidatesTags: (_result, _error, { submissionId }) => [
-        { type: 'WeeklySubmissions', id: 'LIST' },
-        { type: 'WeeklySubmissions', id: submissionId },
-        { type: 'WorkEntries', id: 'SUMMARY' },
-        { type: 'WorkEntries', id: 'PAYROLL' },
-        { type: 'Employees', id: 'LIST' },
-        { type: 'Notifications', id: 'LIST' },
-      ],
+      query: ({ submissionId, rejectionReason }) => ({ url: `/manager/submissions/${submissionId}/reject`, method: 'POST', body: { rejectionReason } }),
+      invalidatesTags: (_result, _error, { submissionId }) => [{ type: 'WeeklySubmissions', id: 'LIST' }, { type: 'WeeklySubmissions', id: submissionId }, { type: 'WorkEntries', id: 'SUMMARY' }, { type: 'WorkEntries', id: 'PAYROLL' }, { type: 'Employees', id: 'LIST' }, { type: 'Notifications', id: 'LIST' }],
     }),
   }),
 });
 
 export const {
-  useGetWorkSummaryQuery,
-  useGetManagerPayrollQuery,
-  useGetNotificationsQuery,
-  useMarkNotificationReadMutation,
-  useMarkAllNotificationsReadMutation,
-  useGetProjectsQuery,
-  useCreateProjectMutation,
-  useUpdateProjectMutation,
-  useDeactivateProjectMutation,
-  useGetCompanySettingsQuery,
-  useUpdateCompanySettingsMutation,
-  useGetWeekEntriesQuery,
-  useCreateWorkEntryMutation,
-  useUpdateWorkEntryMutation,
-  useDeleteWorkEntryMutation,
-  useSubmitWeekMutation,
-  useGetManagerEmployeesQuery,
-  useCreateManagerEmployeeMutation,
-  useUpdateManagerEmployeeMutation,
-  useResetManagerEmployeePasswordMutation,
-  useGetManagerSubmissionsQuery,
-  useGetManagerSubmissionQuery,
-  useApproveSubmissionMutation,
-  useRejectSubmissionMutation,
+  useGetWorkSummaryQuery, useGetManagerPayrollQuery, useGetNotificationsQuery, useMarkNotificationReadMutation, useMarkAllNotificationsReadMutation,
+  useGetProjectsQuery, useCreateProjectMutation, useUpdateProjectMutation, useDeactivateProjectMutation, useGetCompanySettingsQuery, useUpdateCompanySettingsMutation,
+  useGetWeekEntriesQuery, useCreateWorkEntryMutation, useUpdateWorkEntryMutation, useDeleteWorkEntryMutation, useSubmitWeekMutation,
+  useGetManagerEmployeesQuery, useCreateManagerEmployeeMutation, useUpdateManagerEmployeeMutation, useResetManagerEmployeePasswordMutation,
+  useGetManagerSubmissionsQuery, useGetManagerSubmissionQuery, useApproveSubmissionMutation, useRejectSubmissionMutation,
 } = worktrackApi;
