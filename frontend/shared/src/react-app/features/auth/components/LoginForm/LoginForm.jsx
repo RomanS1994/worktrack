@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
+import { baseApi } from '../../../../app/api/baseApi.js';
 import { RequestLoader } from '../../../../app/components/RequestLoader/RequestLoader.jsx';
 import { useI18n } from '../../../../app/i18n/useI18n.js';
 import { useLoginMutation } from '../../authApi.js';
@@ -25,6 +26,7 @@ export function LoginForm() {
 
     try {
       const data = await login({ email, password }).unwrap();
+      dispatch(baseApi.util.resetApiState());
       saveSession(data.token, data.user, {
         accessTokenExpiresAt: data.accessTokenExpiresAt || '',
         lastVerifiedAt: new Date().toISOString(),
