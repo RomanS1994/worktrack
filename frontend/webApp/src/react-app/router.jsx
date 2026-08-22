@@ -12,6 +12,7 @@ import { EmployeesPage } from './pages/EmployeesPage/EmployeesPage.jsx';
 import { FastHoursPage } from './pages/FastHoursPage/FastHoursPage.jsx';
 import { HomePage } from './pages/HomePage/HomePage.jsx';
 import { HoursPage } from './pages/HoursPage/HoursPage.jsx';
+import { HoursTablePage } from './pages/HoursTablePage/HoursTablePage.jsx';
 import { NotificationsPage } from './pages/NotificationsPage/NotificationsPage.jsx';
 import { PayrollReportPage } from './pages/PayrollReportPage/PayrollReportPage.jsx';
 import { ProfilePage } from './pages/ProfilePage/ProfilePage.jsx';
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
       { path: 'dashboard', element: <ProtectedRoute><DashboardPage /></ProtectedRoute> },
       { path: 'hours', element: <ProtectedRoute requireEmployee><FastHoursPage /></ProtectedRoute> },
       { path: 'hours-advanced', element: <ProtectedRoute requireEmployee><HoursPage /></ProtectedRoute> },
+      { path: 'hours-table', element: <ProtectedRoute requireEmployee><HoursTablePage /></ProtectedRoute> },
       { path: 'calendar', element: <ProtectedRoute requireEmployee><CalendarPage /></ProtectedRoute> },
       { path: 'notifications', element: <ProtectedRoute><NotificationsPage /></ProtectedRoute> },
       { path: 'payroll-report', element: <ProtectedRoute><PayrollReportPage /></ProtectedRoute> },
