@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { RequestLoadingState } from '@shared/app/components/RequestLoader/RequestLoader.jsx';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
 import { getWorktrackMessage } from '@shared/app/i18n/worktrackMessages.js';
+import { selectToken, selectUser, setSession } from '@shared/features/auth/authSlice.js';
+import { saveSession } from '@shared/features/auth/authStorage.js';
 import {
   useGetCompanySettingsQuery,
   useUpdateCompanySettingsMutation,
@@ -11,6 +14,9 @@ import {
 import './CompanySettingsPage.css';
 
 export function CompanySettingsPage() {
+  const dispatch = useDispatch();
+  const user = useSelector(selectUser);
+  const token = useSelector(selectToken);
   const { language } = useI18n();
   const t = key => getWorktrackMessage(language, key);
   const { data, error, isLoading } = useGetCompanySettingsQuery();
@@ -29,6 +35,43 @@ export function CompanySettingsPage() {
     if (company?.name) setName(company.name);
   }, [company?.name]);
 
+  function syncCompanyIntoSession(updatedCompany) {
+    if (!user || !token || !updatedCompany?.id) return;
+
+    const nextUser = {
+      ...user,
+      activeCompany: {
+        ...(user.activeCompany || {}),
+        ...updatedCompany,
+      },
+      activeMembership: user.activeMembership
+        ? {
+            ...user.activeMembership,
+            company: {
+              ...(user.activeMembership.company || {}),
+              ...updatedCompany,
+            },
+          }
+        : user.activeMembership,
+      memberships: Array.isArray(user.memberships)
+        ? user.memberships.map(membership =>
+            membership.companyId === updatedCompany.id || membership.company?.id === updatedCompany.id
+              ? {
+                  ...membership,
+                  company: {
+                    ...(membership.company || {}),
+                    ...updatedCompany,
+                  },
+                }
+              : membership,
+          )
+        : user.memberships,
+    };
+
+    saveSession(token, nextUser);
+    dispatch(setSession({ token, user: nextUser }));
+  }
+
   async function submitCompany(event) {
     event.preventDefault();
     setMessage('');
@@ -38,8 +81,10 @@ export function CompanySettingsPage() {
       return;
     }
     try {
-      await updateCompanySettings({ name: normalizedName }).unwrap();
-      setName(normalizedName);
+      const result = await updateCompanySettings({ name: normalizedName }).unwrap();
+      const updatedCompany = result?.company || null;
+      if (updatedCompany) syncCompanyIntoSession(updatedCompany);
+      setName(updatedCompany?.name || normalizedName);
       setMessage(t('company.savedMessage'));
     } catch (mutationError) {
       setActionError(getApiErrorMessage(mutationError));
