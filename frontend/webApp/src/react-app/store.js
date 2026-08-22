@@ -1,4 +1,5 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
+import { setupListeners } from '@reduxjs/toolkit/query';
 
 import { baseApi } from '@shared/app/api/baseApi.js';
 import i18nReducer from '@shared/app/i18n/i18nSlice.js';
@@ -15,3 +16,5 @@ export const store = configureStore({
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware().concat(baseApi.middleware),
 });
+
+setupListeners(store.dispatch);
