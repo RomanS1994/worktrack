@@ -13,6 +13,7 @@ import {
 import './EmployeesPage.css';
 
 const EMPTY_EMPLOYEE_FORM = { firstName: '', lastName: '', email: '', temporaryPassword: '', hourlyRateCzk: '' };
+const EMPTY_EMPLOYEES = [];
 const TEXT = {
   uk: {
     employee: 'Працівник', team: 'Команда', title: 'Працівники', active: 'активних', total: 'всього', addEmployee: 'Додати працівника', addCopy: 'Працівник повинен змінити тимчасовий пароль після першого входу.', firstName: 'Ім’я', lastName: 'Прізвище', email: 'E-mail', temporaryPassword: 'Тимчасовий пароль', hourlyRate: 'Погодинна ставка CZK', employeeAdded: 'Працівника додано. Передайте тимчасовий пароль безпечним способом.', rateUpdated: 'Погодинну ставку оновлено.', reactivated: 'Працівника знову активовано.', deactivated: 'Працівника деактивовано.', passwordMin: 'Тимчасовий пароль має містити щонайменше 8 символів.', passwordReset: 'Пароль скинуто для {name}. Усі активні сесії завершено.', list: 'Список працівників', currentWeek: 'Поточний тиждень', loading: 'Завантаження працівників', none: 'Працівників ще немає', week: 'тиждень', pending: 'очікує', status: 'статус', rate: 'Ставка CZK', saveRate: 'Зберегти ставку', deactivate: 'Деактивувати', reactivate: 'Активувати', cancelReset: 'Скасувати скидання', resetPassword: 'Скинути пароль', newTemporaryPassword: 'Новий тимчасовий пароль', minPlaceholder: 'Щонайменше 8 символів', resetCopy: 'Активні сесії буде завершено. Працівник повинен змінити цей пароль після входу.', setTemporaryPassword: 'Встановити тимчасовий пароль', activeStatus: 'Активний', inactiveStatus: 'Неактивний'
@@ -29,6 +30,20 @@ function getEmployeeName(employee, fallback) {
   return employee?.name || employee?.email || fallback;
 }
 
+function ratesMatch(left, right) {
+  const leftText = String(left ?? '').trim();
+  const rightText = String(right ?? '').trim();
+  if (!leftText || !rightText) return leftText === rightText;
+
+  const leftNumber = Number(leftText);
+  const rightNumber = Number(rightText);
+  if (Number.isFinite(leftNumber) && Number.isFinite(rightNumber)) {
+    return leftNumber === rightNumber;
+  }
+
+  return leftText === rightText;
+}
+
 export function EmployeesPage() {
   const { language } = useI18n();
   const copy = TEXT[language] || TEXT.uk;
@@ -43,7 +58,7 @@ export function EmployeesPage() {
   const [resetPassword, setResetPassword] = useState('');
   const [actionError, setActionError] = useState('');
   const [actionSuccess, setActionSuccess] = useState('');
-  const employees = Array.isArray(data?.employees) ? data.employees : [];
+  const employees = Array.isArray(data?.employees) ? data.employees : EMPTY_EMPLOYEES;
   const activeEmployeeCount = employees.filter(employee => employee.status === 'ACTIVE').length;
   const isMutating = createState.isLoading || updateState.isLoading || resetState.isLoading;
   const hasEmployeeList = !isLoading && !error;
@@ -63,7 +78,7 @@ export function EmployeesPage() {
         const currentDraft = current[employeeId];
         const hasUnsavedDraft = currentDraft !== undefined
           && previousServerRate !== undefined
-          && currentDraft !== previousServerRate;
+          && !ratesMatch(currentDraft, previousServerRate);
 
         next[employeeId] = hasUnsavedDraft ? currentDraft : serverRate;
         return next;
