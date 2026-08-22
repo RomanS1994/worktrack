@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { baseApi } from '@shared/app/api/baseApi.js';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
-import { hasManagerAccess } from '@shared/features/auth/authAccess.js';
 import {
   useChangePasswordMutation,
   useDeleteMeMutation,
@@ -40,8 +39,14 @@ export function ProfilePage() {
   const user = useSelector(selectUser);
   const token = useSelector(selectToken);
   const { language, setLanguage, t } = useI18n();
-  const roleLabel = hasManagerAccess(user) ? t('profile.manager') : t('profile.employee');
-  const rate = user?.activeMembership?.hourlyRateCzk || user?.hourlyRateCzk || '';
+  const membership = user?.activeMembership || null;
+  const roleLabel =
+    membership?.role === 'MANAGER'
+      ? t('profile.manager')
+      : membership?.role === 'EMPLOYEE'
+        ? t('profile.employee')
+        : '-';
+  const rate = membership?.hourlyRateCzk || '';
 
   const [updateProfile, profileState] = useUpdateProfileMutation();
   const [firstName, setFirstName] = useState(user?.firstName || '');
@@ -260,49 +265,48 @@ export function ProfilePage() {
 
         <label className="profileField">
           <span>{t('profile.newPassword')}</span>
-          <input type="password" autoComplete="new-password" minLength={8} value={newPassword} onChange={event => setNewPassword(event.target.value)} required />
+          <input type="password" autoComplete="new-password" value={newPassword} onChange={event => setNewPassword(event.target.value)} required />
         </label>
 
         <label className="profileField">
           <span>{t('profile.confirmPassword')}</span>
-          <input type="password" autoComplete="new-password" minLength={8} value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} required />
+          <input type="password" autoComplete="new-password" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} required />
         </label>
 
         {passwordError ? <p className="statusNote is-error">{passwordError}</p> : null}
         {passwordSuccess ? <p className="statusNote is-success">{passwordSuccess}</p> : null}
 
         <button className="profilePrimaryButton" type="submit" disabled={changeState.isLoading}>
-          {changeState.isLoading ? t('profile.updating') : t('profile.updatePassword')}
+          {changeState.isLoading ? t('profile.saving') : t('profile.updatePassword')}
         </button>
       </form>
 
-      <section className="profileAccountCard screenCard">
+      <section className="profileDangerCard screenCard">
         <div className="compactHeader">
-          <h2>{t('profile.accountSecurity')}</h2>
-          <p>{t('profile.accountSecurityCopy')}</p>
-        </div>
-
-        <button className="profileSecondaryButton" type="button" disabled={logoutState.isLoading || deleteState.isLoading} onClick={handleLogout}>
-          {logoutState.isLoading ? t('profile.signingOut') : t('profile.signOut')}
-        </button>
-
-        <div className="profileDangerZone">
-          <div>
-            <strong>{t('profile.deleteAccount')}</strong>
-            <p>{t('profile.deleteAccountCopy')}</p>
-          </div>
-
-          <label className="profileField">
-            <span>{t('profile.typeDelete')}</span>
-            <input type="text" autoComplete="off" value={deleteConfirmation} onChange={event => setDeleteConfirmation(event.target.value)} disabled={deleteState.isLoading} />
-          </label>
-
-          <button className="profileDangerButton" type="button" disabled={deleteState.isLoading || deleteConfirmation.trim() !== 'DELETE'} onClick={handleDeleteAccount}>
-            {deleteState.isLoading ? t('profile.deleting') : t('profile.deleteAccount')}
-          </button>
+          <h2>{t('profile.account')}</h2>
+          <p>{t('profile.accountCopy')}</p>
         </div>
 
         {accountError ? <p className="statusNote is-error">{accountError}</p> : null}
+
+        <button className="profileSecondaryButton" type="button" disabled={logoutState.isLoading} onClick={handleLogout}>
+          {logoutState.isLoading ? t('profile.signingOut') : t('profile.signOut')}
+        </button>
+
+        <div className="profileDeleteBlock">
+          <label className="profileField">
+            <span>{t('profile.deleteConfirmation')}</span>
+            <input value={deleteConfirmation} onChange={event => setDeleteConfirmation(event.target.value)} placeholder="DELETE" />
+          </label>
+          <button
+            className="profileDangerButton"
+            type="button"
+            disabled={deleteState.isLoading || deleteConfirmation.trim() !== 'DELETE'}
+            onClick={handleDeleteAccount}
+          >
+            {deleteState.isLoading ? t('profile.deleting') : t('profile.deleteAccount')}
+          </button>
+        </div>
       </section>
     </section>
   );
