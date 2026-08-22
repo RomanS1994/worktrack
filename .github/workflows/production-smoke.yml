@@ -1,0 +1,38 @@
+name: Production Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_commit:
+        description: Optional Render commit SHA to require
+        required: false
+        type: string
+  schedule:
+    - cron: '17 */6 * * *'
+
+concurrency:
+  group: production-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    env:
+      BACKEND_URL: https://worktrack-api-jc5m.onrender.com
+      FRONTEND_URL: https://worktrackings.netlify.app
+      EXPECTED_COMMIT: ${{ github.event.inputs.expected_commit || '' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Run read-only production smoke
+        run: node tools/production-smoke.js
