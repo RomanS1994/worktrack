@@ -16,6 +16,7 @@ import { PayrollReportPage } from './pages/PayrollReportPage/PayrollReportPage.j
 import { ProfilePage } from './pages/ProfilePage/ProfilePage.jsx';
 import { ProjectsPage } from './pages/ProjectsPage/ProjectsPage.jsx';
 import { SignInPage } from './pages/SignInPage/SignInPage.jsx';
+import { TaxInformationPage } from './pages/TaxInformationPage/TaxInformationPage.jsx';
 
 export const router = createBrowserRouter([
   {
@@ -25,46 +26,17 @@ export const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: 'sign-in', element: <SignInPage /> },
       { path: 'register', element: <SignInPage defaultMode="register" /> },
-      {
-        path: 'dashboard',
-        element: <ProtectedRoute><DashboardPage /></ProtectedRoute>,
-      },
-      {
-        path: 'hours',
-        element: <ProtectedRoute requireEmployee><HoursPage /></ProtectedRoute>,
-      },
-      {
-        path: 'calendar',
-        element: <ProtectedRoute requireEmployee><CalendarPage /></ProtectedRoute>,
-      },
-      {
-        path: 'notifications',
-        element: <ProtectedRoute><NotificationsPage /></ProtectedRoute>,
-      },
-      {
-        path: 'payroll-report',
-        element: <ProtectedRoute><PayrollReportPage /></ProtectedRoute>,
-      },
-      {
-        path: 'projects',
-        element: <ProtectedRoute requireManager><ProjectsPage /></ProtectedRoute>,
-      },
-      {
-        path: 'company-settings',
-        element: <ProtectedRoute requireManager><CompanySettingsPage /></ProtectedRoute>,
-      },
-      {
-        path: 'employees',
-        element: <ProtectedRoute requireManager><EmployeesPage /></ProtectedRoute>,
-      },
-      {
-        path: 'approvals',
-        element: <ProtectedRoute requireManager><ApprovalsPage /></ProtectedRoute>,
-      },
-      {
-        path: 'profile',
-        element: <ProtectedRoute><ProfilePage /></ProtectedRoute>,
-      },
+      { path: 'dashboard', element: <ProtectedRoute><DashboardPage /></ProtectedRoute> },
+      { path: 'hours', element: <ProtectedRoute requireEmployee><HoursPage /></ProtectedRoute> },
+      { path: 'calendar', element: <ProtectedRoute requireEmployee><CalendarPage /></ProtectedRoute> },
+      { path: 'notifications', element: <ProtectedRoute><NotificationsPage /></ProtectedRoute> },
+      { path: 'payroll-report', element: <ProtectedRoute><PayrollReportPage /></ProtectedRoute> },
+      { path: 'projects', element: <ProtectedRoute requireManager><ProjectsPage /></ProtectedRoute> },
+      { path: 'company-settings', element: <ProtectedRoute requireManager><CompanySettingsPage /></ProtectedRoute> },
+      { path: 'employees', element: <ProtectedRoute requireManager><EmployeesPage /></ProtectedRoute> },
+      { path: 'approvals', element: <ProtectedRoute requireManager><ApprovalsPage /></ProtectedRoute> },
+      { path: 'profile', element: <ProtectedRoute><ProfilePage /></ProtectedRoute> },
+      { path: 'tax-information', element: <ProtectedRoute requireEmployee><TaxInformationPage /></ProtectedRoute> },
       { path: '*', element: <Navigate to='/' replace /> },
     ],
   },
