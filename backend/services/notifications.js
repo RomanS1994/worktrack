@@ -79,7 +79,7 @@ export async function notifyEmployeeAboutReview(client, context, submission) {
     message: isRejected
       ? submission.rejectionReason || 'Your manager rejected this week. Open it to make corrections.'
       : `Your work for ${submission.weekStart} - ${submission.weekEnd} was approved.`,
-    href: `/hours?weekStart=${submission.weekStart}`,
+    href: `/hours?date=${submission.weekStart}`,
   });
 }
 

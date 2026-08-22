@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   listNotifications,
   markNotificationRead,
+  notifyEmployeeAboutReview,
   notifyManagersAboutSubmission,
 } from '../services/notifications.js';
 
@@ -84,6 +85,34 @@ test('employee submission notifies only active managers in the same company', as
   assert.deepEqual(created.map(item => item.recipientMembershipId), ['manager-1', 'manager-2']);
   assert.ok(created.every(item => item.companyId === 'company-1'));
   assert.ok(created.every(item => item.href === '/approvals'));
+});
+
+test('manager review notification opens the reviewed week in Hours', async () => {
+  let created = null;
+  const client = {
+    notification: {
+      create: async query => {
+        created = query.data;
+        return query.data;
+      },
+    },
+  };
+
+  await notifyEmployeeAboutReview(
+    client,
+    context({ id: 'manager-membership-1', role: 'MANAGER' }),
+    {
+      employeeMembershipId: 'employee-membership-1',
+      status: 'REJECTED',
+      rejectionReason: 'Please correct Friday.',
+      weekStart: '2026-08-17',
+      weekEnd: '2026-08-23',
+    },
+  );
+
+  assert.equal(created.companyId, 'company-1');
+  assert.equal(created.recipientMembershipId, 'employee-membership-1');
+  assert.equal(created.href, '/hours?date=2026-08-17');
 });
 
 test('mark read cannot target a notification outside the active membership', async () => {
