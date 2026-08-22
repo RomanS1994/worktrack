@@ -143,6 +143,9 @@ model WorkEntry {
   weeklySubmissionId   String?
   workDate             DateTime
   hours                Decimal         @db.Decimal(5, 2)
+  startTime            String?
+  endTime              String?
+  note                 String?
   status               WorkEntryStatus @default(DRAFT)
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
