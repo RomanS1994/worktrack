@@ -16,6 +16,24 @@ const TRANSLATED_BACKEND_ERRORS = {
   'Team driver limit exceeded': 'settings.team.failed',
 };
 
+const LOCALIZED_BACKEND_ERRORS = {
+  'Company access is required': {
+    uk: 'Доступ до компанії неактивний або відсутній.',
+    en: 'Company access is inactive or unavailable.',
+    cs: 'Přístup ke společnosti není aktivní nebo není k dispozici.',
+  },
+  'Manager access is required': {
+    uk: 'Для цієї дії потрібен активний доступ менеджера.',
+    en: 'Active manager access is required for this action.',
+    cs: 'Pro tuto akci je vyžadován aktivní přístup manažera.',
+  },
+  'Employee access is required': {
+    uk: 'Для цієї дії потрібен активний доступ працівника.',
+    en: 'Active employee access is required for this action.',
+    cs: 'Pro tuto akci je vyžadován aktivní přístup zaměstnance.',
+  },
+};
+
 function readErrorText(error) {
   if (!error) return '';
   if (typeof error === 'string') return error;
@@ -52,6 +70,9 @@ export function getApiErrorMessage(error, fallbackKey = 'common.failedToLoad') {
   const detail = readErrorText(error);
 
   if (detail) {
+    const localized = LOCALIZED_BACKEND_ERRORS[detail];
+    if (localized) return localized[language] || localized.en;
+
     const translatedKey = TRANSLATED_BACKEND_ERRORS[detail];
     if (translatedKey) return getSafeMessage(language, translatedKey);
 
