@@ -66,7 +66,7 @@ export function PayrollReportPage() {
   const companyName = data?.company?.name || user?.activeCompany?.name || 'WorkTrack';
   const week = data?.week || null;
   const submission = data?.submission || null;
-  const hourlyRate = data?.hourlyRateCzk || user?.activeMembership?.hourlyRateCzk || user?.hourlyRateCzk || '0.00';
+  const hourlyRate = data?.hourlyRateCzk || user?.activeMembership?.hourlyRateCzk || '0.00';
   const managerEmployees = Array.isArray(data?.employees) ? data.employees : [];
   const managerPeriodLabel = useMemo(() => {
     if (!data?.period?.start || !data?.period?.end) return '-';
