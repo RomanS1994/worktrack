@@ -13,6 +13,8 @@ import { FastHoursPage } from './pages/FastHoursPage/FastHoursPage.jsx';
 import { HomePage } from './pages/HomePage/HomePage.jsx';
 import { HoursPage } from './pages/HoursPage/HoursPage.jsx';
 import { HoursTablePage } from './pages/HoursTablePage/HoursTablePage.jsx';
+import { InvoicesPage } from './pages/InvoicesPage/InvoicesPage.jsx';
+import { ManagerInvoicesPage } from './pages/ManagerInvoicesPage/ManagerInvoicesPage.jsx';
 import { NotificationsPage } from './pages/NotificationsPage/NotificationsPage.jsx';
 import { PayrollReportPage } from './pages/PayrollReportPage/PayrollReportPage.jsx';
 import { ProfilePage } from './pages/ProfilePage/ProfilePage.jsx';
@@ -32,6 +34,7 @@ export const router = createBrowserRouter([
       { path: 'hours', element: <ProtectedRoute requireEmployee><FastHoursPage /></ProtectedRoute> },
       { path: 'hours-advanced', element: <ProtectedRoute requireEmployee><HoursPage /></ProtectedRoute> },
       { path: 'hours-table', element: <ProtectedRoute requireEmployee><HoursTablePage /></ProtectedRoute> },
+      { path: 'invoices', element: <ProtectedRoute requireEmployee><InvoicesPage /></ProtectedRoute> },
       { path: 'calendar', element: <ProtectedRoute requireEmployee><CalendarPage /></ProtectedRoute> },
       { path: 'notifications', element: <ProtectedRoute><NotificationsPage /></ProtectedRoute> },
       { path: 'payroll-report', element: <ProtectedRoute><PayrollReportPage /></ProtectedRoute> },
@@ -39,6 +42,7 @@ export const router = createBrowserRouter([
       { path: 'company-settings', element: <ProtectedRoute requireManager><CompanySettingsPage /></ProtectedRoute> },
       { path: 'employees', element: <ProtectedRoute requireManager><EmployeesPage /></ProtectedRoute> },
       { path: 'approvals', element: <ProtectedRoute requireManager><ApprovalsPage /></ProtectedRoute> },
+      { path: 'manager/invoices', element: <ProtectedRoute requireManager><ManagerInvoicesPage /></ProtectedRoute> },
       { path: 'profile', element: <ProtectedRoute><ProfilePage /></ProtectedRoute> },
       { path: 'tax-information', element: <ProtectedRoute requireEmployee><TaxInformationPage /></ProtectedRoute> },
       { path: '*', element: <Navigate to='/' replace /> },
