@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
+import { baseApi } from '../../../../app/api/baseApi.js';
 import { getApiErrorMessage } from '../../../../app/api/getApiErrorMessage.js';
 import { RequestLoader } from '../../../../app/components/RequestLoader/RequestLoader.jsx';
 import { useI18n } from '../../../../app/i18n/useI18n.js';
@@ -41,6 +42,7 @@ export function RegisterForm() {
         password,
         companyName,
       }).unwrap();
+      dispatch(baseApi.util.resetApiState());
       saveSession(data.token, data.user, {
         accessTokenExpiresAt: data.accessTokenExpiresAt || '',
         lastVerifiedAt: new Date().toISOString(),
