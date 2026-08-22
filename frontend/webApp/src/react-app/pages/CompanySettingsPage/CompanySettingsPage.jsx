@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { baseApi } from '@shared/app/api/baseApi.js';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { RequestLoadingState } from '@shared/app/components/RequestLoader/RequestLoader.jsx';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
@@ -70,6 +71,11 @@ export function CompanySettingsPage() {
 
     saveSession(token, nextUser);
     dispatch(setSession({ token, user: nextUser }));
+    dispatch(baseApi.util.invalidateTags([
+      { type: 'Me', id: 'CURRENT' },
+      { type: 'WorkEntries', id: 'SUMMARY' },
+      { type: 'WorkEntries', id: 'PAYROLL' },
+    ]));
   }
 
   async function submitCompany(event) {
