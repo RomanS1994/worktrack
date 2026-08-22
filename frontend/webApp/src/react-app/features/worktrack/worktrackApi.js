@@ -64,7 +64,12 @@ export const worktrackApi = baseApi.injectEndpoints({
     }),
     updateCompanySettings: builder.mutation({
       query: body => ({ url: '/company-settings', method: 'PATCH', body }),
-      invalidatesTags: [{ type: 'Company', id: 'SETTINGS' }],
+      invalidatesTags: [
+        { type: 'Company', id: 'SETTINGS' },
+        { type: 'Me', id: 'CURRENT' },
+        { type: 'WorkEntries', id: 'SUMMARY' },
+        { type: 'WorkEntries', id: 'PAYROLL' },
+      ],
     }),
     getWeekEntries: builder.query({
       query: (query = {}) => ({ url: '/work-entries', params: query }),
