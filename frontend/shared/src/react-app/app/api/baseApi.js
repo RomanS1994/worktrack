@@ -153,6 +153,8 @@ function warnAboutRefreshFailure(api, t, type) {
 
 export const baseApi = createApi({
   reducerPath: 'baseApi',
+  refetchOnFocus: true,
+  refetchOnReconnect: true,
   baseQuery: async (args, api, extraOptions) => {
     const baseQuery = fetchBaseQuery({
       baseUrl: resolveBaseUrl(),
