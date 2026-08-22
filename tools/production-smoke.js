@@ -49,7 +49,7 @@ async function checkBackend() {
     throw new Error('EXPECTED_COMMIT was provided, but backend health did not report deployment.commit');
   }
   if (expectedCommit && deployedCommit !== expectedCommit) {
-    throw new Error(`Deploy commit mismatch: expected ${expectedCommit}, got ${deployedCommit}`);
+    throw new Error(`Backend deploy commit mismatch: expected ${expectedCommit}, got ${deployedCommit}`);
   }
 
   console.log('Backend health: OK');
@@ -59,7 +59,7 @@ async function checkBackend() {
     console.log(`Render URL: ${payload.deployment.externalUrl}`);
   }
   if (deployedCommit) {
-    console.log(`Deploy commit: ${deployedCommit}`);
+    console.log(`Backend deploy commit: ${deployedCommit}`);
   }
 }
 
@@ -80,6 +80,27 @@ async function checkFrontendPage(url, label) {
   console.log(`${label}: OK (${response.url})`);
 }
 
+async function checkFrontendBuild() {
+  const response = await request(`${frontendUrl}/build-info.json`, {
+    headers: { Accept: 'application/json' },
+  });
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok || !payload || typeof payload !== 'object') {
+    throw new Error(`Frontend build-info failed (${response.status}): ${JSON.stringify(payload)}`);
+  }
+
+  const deployedCommit = String(payload.commit || '').trim();
+  if (expectedCommit && !deployedCommit) {
+    throw new Error('EXPECTED_COMMIT was provided, but frontend build-info did not report commit');
+  }
+  if (expectedCommit && deployedCommit !== expectedCommit) {
+    throw new Error(`Frontend deploy commit mismatch: expected ${expectedCommit}, got ${deployedCommit}`);
+  }
+
+  console.log(`Frontend deploy commit: ${deployedCommit || 'unknown'}`);
+}
+
 async function checkFrontend() {
   if (!frontendUrl) {
     console.log('Frontend check: skipped (FRONTEND_URL not set)');
@@ -88,6 +109,7 @@ async function checkFrontend() {
 
   await checkFrontendPage(frontendUrl, 'Frontend root');
   await checkFrontendPage(`${frontendUrl}/sign-in`, 'Frontend SPA route');
+  await checkFrontendBuild();
 }
 
 async function runSmoke() {
