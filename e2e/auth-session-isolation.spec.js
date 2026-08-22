@@ -176,7 +176,10 @@ test('switching accounts clears protected RTK Query cache', async ({ page }) => 
   await expect(page.locator('h1').first()).toBeVisible();
   await expect(page.locator('.statusNote.is-error')).toHaveCount(0);
 
-  await page.goto('/employees');
+  await page.evaluate(() => {
+    window.history.pushState({}, '', '/employees');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  });
   await expect(page).toHaveURL(/\/dashboard$/);
   expect(unexpected).toEqual([]);
 });
