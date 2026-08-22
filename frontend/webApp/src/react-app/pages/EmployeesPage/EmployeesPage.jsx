@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { RequestLoadingState } from '@shared/app/components/RequestLoader/RequestLoader.jsx';
@@ -38,6 +38,7 @@ export function EmployeesPage() {
   const [resetManagerEmployeePassword, resetState] = useResetManagerEmployeePasswordMutation();
   const [form, setForm] = useState(EMPTY_EMPLOYEE_FORM);
   const [rateDrafts, setRateDrafts] = useState({});
+  const serverRateSnapshotRef = useRef({});
   const [resetEmployeeId, setResetEmployeeId] = useState('');
   const [resetPassword, setResetPassword] = useState('');
   const [actionError, setActionError] = useState('');
@@ -48,10 +49,28 @@ export function EmployeesPage() {
   const hasEmployeeList = !isLoading && !error;
 
   useEffect(() => {
-    setRateDrafts(employees.reduce((next, employee) => {
+    const nextServerRates = employees.reduce((next, employee) => {
       next[employee.id] = employee.hourlyRateCzk || '0.00';
       return next;
-    }, {}));
+    }, {});
+
+    setRateDrafts(current => {
+      const previousServerRates = serverRateSnapshotRef.current;
+      return employees.reduce((next, employee) => {
+        const employeeId = employee.id;
+        const serverRate = nextServerRates[employeeId];
+        const previousServerRate = previousServerRates[employeeId];
+        const currentDraft = current[employeeId];
+        const hasUnsavedDraft = currentDraft !== undefined
+          && previousServerRate !== undefined
+          && currentDraft !== previousServerRate;
+
+        next[employeeId] = hasUnsavedDraft ? currentDraft : serverRate;
+        return next;
+      }, {});
+    });
+
+    serverRateSnapshotRef.current = nextServerRates;
   }, [employees]);
 
   function clearActionMessages() { setActionError(''); setActionSuccess(''); }
