@@ -28,9 +28,7 @@ export function BottomTabs() {
   const { t } = useI18n();
   const user = useSelector(selectUser);
   const isManager = hasManagerAccess(user);
-  const { data: notificationsData } = useGetNotificationNavSummaryQuery(undefined, {
-    pollingInterval: 60000,
-  });
+  const { data: notificationsData } = useGetNotificationNavSummaryQuery(undefined, { pollingInterval: 60000 });
   const unreadCount = Number(notificationsData?.unreadCount || 0);
 
   return (
@@ -66,6 +64,10 @@ export function BottomTabs() {
           <NavLink className={linkProps => getTabClassName(linkProps)} to="/approvals">
             <span className="bottomTab-icon" aria-hidden="true"><SvgIcon name="check-circle" /></span>
             <span className="bottomTab-label">{t('app.approvals')}</span>
+          </NavLink>
+          <NavLink className={linkProps => getTabClassName(linkProps, ' bottomTab-desktopOnly')} to="/manager/invoices">
+            <span className="bottomTab-icon" aria-hidden="true"><SvgIcon name="document" /></span>
+            <span className="bottomTab-label">Invoices</span>
           </NavLink>
         </>
       ) : null}
