@@ -1,10 +1,16 @@
 const backendUrl = String(process.env.BACKEND_URL || '').trim().replace(/\/$/, '');
 const frontendUrl = String(process.env.FRONTEND_URL || '').trim().replace(/\/$/, '');
 const expectedCommit = String(process.env.EXPECTED_COMMIT || '').trim();
+const maxAttempts = Math.max(1, Number.parseInt(process.env.SMOKE_ATTEMPTS || '1', 10) || 1);
+const retryDelayMs = Math.max(0, Number.parseInt(process.env.SMOKE_DELAY_MS || '30000', 10) || 0);
 
 if (!backendUrl) {
   console.error('BACKEND_URL is required, for example https://worktrack-backend.onrender.com');
   process.exit(1);
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function request(url, options = {}) {
@@ -84,11 +90,27 @@ async function checkFrontend() {
   await checkFrontendPage(`${frontendUrl}/sign-in`, 'Frontend SPA route');
 }
 
-try {
+async function runSmoke() {
   await checkBackend();
   await checkFrontend();
-  console.log('Production smoke: PASS');
-} catch (error) {
-  console.error(`Production smoke: FAIL — ${error?.message || error}`);
-  process.exit(1);
 }
+
+let lastError = null;
+for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+  try {
+    console.log(`Production smoke attempt ${attempt}/${maxAttempts}`);
+    await runSmoke();
+    console.log('Production smoke: PASS');
+    process.exit(0);
+  } catch (error) {
+    lastError = error;
+    console.error(`Attempt ${attempt} failed — ${error?.message || error}`);
+    if (attempt < maxAttempts) {
+      console.log(`Retrying in ${Math.round(retryDelayMs / 1000)}s...`);
+      await sleep(retryDelayMs);
+    }
+  }
+}
+
+console.error(`Production smoke: FAIL — ${lastError?.message || lastError}`);
+process.exit(1);
