@@ -1,6 +1,9 @@
 name: Production Smoke
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       expected_commit:
@@ -17,13 +20,15 @@ concurrency:
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 12
     permissions:
       contents: read
     env:
       BACKEND_URL: https://worktrack-api-jc5m.onrender.com
       FRONTEND_URL: https://worktrackings.netlify.app
-      EXPECTED_COMMIT: ${{ github.event.inputs.expected_commit || '' }}
+      EXPECTED_COMMIT: ${{ github.event_name == 'push' && github.sha || inputs.expected_commit || '' }}
+      SMOKE_ATTEMPTS: ${{ github.event_name == 'push' && '20' || '4' }}
+      SMOKE_DELAY_MS: '30000'
 
     steps:
       - name: Checkout
@@ -34,5 +39,5 @@ jobs:
         with:
           node-version-file: .node-version
 
-      - name: Run read-only production smoke
+      - name: Run deploy-aware read-only production smoke
         run: node tools/production-smoke.js
