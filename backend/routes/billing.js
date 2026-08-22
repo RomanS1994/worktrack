@@ -1,6 +1,7 @@
 import { requireEmployee } from '../auth/context.js';
 import { runStoreRead, runStoreTransaction } from '../db/store.js';
 import { readJsonBody, sendJson } from '../lib/http.js';
+import { getEmployeeMonthlyHours } from '../services/monthly-hours.js';
 
 const ALLOWED_CURRENCIES = new Set(['CZK', 'EUR']);
 
@@ -28,7 +29,7 @@ function readTaxInformation(user) {
   return normalizeTaxInformation(profile.taxInformation || {});
 }
 
-export async function handleBillingRoutes(request, response, { pathName }) {
+export async function handleBillingRoutes(request, response, { pathName, url }) {
   if (request.method === 'GET' && pathName === '/api/tax-information') {
     const context = await requireEmployee(request, response);
     if (!context) return true;
@@ -53,6 +54,16 @@ export async function handleBillingRoutes(request, response, { pathName }) {
       },
     });
     sendJson(response, 200, { taxInformation, updatedAt: updatedUser.updatedAt });
+    return true;
+  }
+
+  if (request.method === 'GET' && pathName === '/api/monthly-hours') {
+    const context = await requireEmployee(request, response);
+    if (!context) return true;
+    const payload = await runStoreRead({
+      prisma: client => getEmployeeMonthlyHours(client, context, url.searchParams.get('month')),
+    });
+    sendJson(response, 200, payload);
     return true;
   }
 
