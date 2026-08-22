@@ -6,6 +6,28 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const frontendEnvDir = path.resolve(__dirname, 'frontend/webApp');
 
+function buildInfoPlugin() {
+  const commit = String(process.env.COMMIT_REF || process.env.GITHUB_SHA || '').trim();
+  const branch = String(process.env.BRANCH || process.env.GITHUB_REF_NAME || '').trim();
+  const context = String(process.env.CONTEXT || '').trim();
+
+  return {
+    name: 'worktrack-build-info',
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'build-info.json',
+        source: JSON.stringify({
+          commit,
+          branch,
+          context,
+          generatedAt: new Date().toISOString(),
+        }),
+      });
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, frontendEnvDir, 'VITE_');
   const apiBaseUrl = String(env.VITE_API_BASE_URL || '').trim();
@@ -17,7 +39,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    plugins: [react()],
+    plugins: [react(), buildInfoPlugin()],
     base: '/',
     envDir: frontendEnvDir,
     root: path.resolve(__dirname, 'frontend/webApp'),
