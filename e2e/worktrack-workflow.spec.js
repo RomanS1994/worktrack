@@ -97,12 +97,25 @@ async function mockApi(page, state, role, unexpected) {
     if (method === 'POST' && path === '/work-entries') {
       const body = request.postDataJSON();
       const entry = {
-        id: 'entry-1', companyId: 'company-1', employeeMembershipId: 'employee-membership-1', employeeId: 'employee-user-1',
+        id: `entry-${state.entries.length + 1}`, companyId: 'company-1', employeeMembershipId: 'employee-membership-1', employeeId: 'employee-user-1',
         projectId: body.projectId, project: { id: 'project-1', name: 'Test Project', isActive: true }, weeklySubmissionId: '',
         workDate: body.workDate, hours: Number(body.hours).toFixed(2), status: 'DRAFT', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
       };
-      state.entries = [entry];
+      state.entries = [...state.entries.filter(item => !(item.workDate === entry.workDate && item.projectId === entry.projectId)), entry];
       return reply(route, { entry }, 201);
+    }
+
+    if (method === 'PATCH' && path.startsWith('/work-entries/')) {
+      const entryId = path.split('/').pop();
+      const body = request.postDataJSON();
+      state.entries = state.entries.map(entry => entry.id === entryId ? { ...entry, hours: Number(body.hours).toFixed(2), projectId: body.projectId || entry.projectId } : entry);
+      return reply(route, { entry: state.entries.find(entry => entry.id === entryId) });
+    }
+
+    if (method === 'DELETE' && path.startsWith('/work-entries/')) {
+      const entryId = path.split('/').pop();
+      state.entries = state.entries.filter(entry => entry.id !== entryId);
+      return reply(route, { deleted: true });
     }
 
     if (method === 'POST' && path === '/weekly-submissions') {
@@ -158,12 +171,11 @@ test('employee submit -> manager approve -> employee sees approved', async ({ br
   await seedSession(employeePage, 'EMPLOYEE');
   await mockApi(employeePage, state, 'EMPLOYEE', unexpected);
   await employeePage.goto('/hours');
-  const newRow = employeePage.locator('.hoursEntryRow--new').first();
-  await newRow.locator('input[type="number"]').fill('8');
-  await newRow.getByRole('button', { name: 'Додати' }).click();
-  await expect(employeePage.locator('.hoursEntryRow:not(.hoursEntryRow--new)')).toHaveCount(1);
-  await employeePage.locator('.hoursSubmitButton').click();
-  await expect(employeePage.locator('.hoursStatusBadge')).toContainText('Відправлено');
+  await employeePage.locator('.fastDay input[type="number"]').first().fill('8');
+  await employeePage.getByRole('button', { name: 'Зберегти тиждень' }).click();
+  await expect(employeePage.locator('.fastTotal')).toContainText('8.00 h');
+  await employeePage.getByRole('button', { name: /Відправити менеджеру/ }).click();
+  await expect(employeePage.locator('.fastHoursStatus')).toContainText('Відправлено');
   await employee.close();
 
   const manager = await browser.newContext();
@@ -181,8 +193,8 @@ test('employee submit -> manager approve -> employee sees approved', async ({ br
   await seedSession(approvedPage, 'EMPLOYEE');
   await mockApi(approvedPage, state, 'EMPLOYEE', unexpected);
   await approvedPage.goto(`/hours?date=${state.weekStart}`);
-  await expect(approvedPage.locator('.hoursStatusBadge')).toContainText('Погоджено');
-  await expect(approvedPage.locator('.hoursEntryRow:not(.hoursEntryRow--new) input[type="number"]')).toHaveValue(/^8(?:\.0+)?$/);
+  await expect(approvedPage.locator('.fastHoursStatus')).toContainText('Погоджено');
+  await expect(approvedPage.locator('.fastDay input[type="number"]').first()).toHaveValue(/^8(?:\.0+)?$/);
   await approved.close();
 
   expect(unexpected).toEqual([]);

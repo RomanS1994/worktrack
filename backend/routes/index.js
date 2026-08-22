@@ -1,4 +1,5 @@
 import { handleAuthRoutes } from './auth/index.js';
+import { handleBillingRoutes } from './billing.js';
 import { handleManagerRoutes } from './manager/index.js';
 import { handleMeRoutes } from './me.js';
 import { handleNotificationRoutes } from './notifications.js';
@@ -10,21 +11,17 @@ const routeHandlers = [
   handleAuthRoutes,
   handleMeRoutes,
   handleNotificationRoutes,
+  handleBillingRoutes,
   handleWorkTrackRoutes,
   handleManagerRoutes,
 ];
 
 export async function routeRequest(request, response) {
   const url = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
-  const context = {
-    url,
-    pathName: url.pathname,
-  };
+  const context = { url, pathName: url.pathname };
 
   for (const handleRoute of routeHandlers) {
-    if (await handleRoute(request, response, context)) {
-      return;
-    }
+    if (await handleRoute(request, response, context)) return;
   }
 
   throw new Error('Route not found');

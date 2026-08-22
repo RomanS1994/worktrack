@@ -5,309 +5,36 @@ import { useNavigate } from 'react-router-dom';
 import { baseApi } from '@shared/app/api/baseApi.js';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
-import {
-  useChangePasswordMutation,
-  useDeleteMeMutation,
-  useLogoutMutation,
-  useUpdateProfileMutation,
-} from '@shared/features/auth/authApi.js';
-import {
-  clearSession as clearAuthSession,
-  selectToken,
-  selectUser,
-  setSession,
-} from '@shared/features/auth/authSlice.js';
-import {
-  clearSession as clearStoredSession,
-  saveSession,
-} from '@shared/features/auth/authStorage.js';
+import { useChangePasswordMutation, useDeleteMeMutation, useLogoutMutation, useUpdateProfileMutation } from '@shared/features/auth/authApi.js';
+import { clearSession as clearAuthSession, selectToken, selectUser, setSession } from '@shared/features/auth/authSlice.js';
+import { clearSession as clearStoredSession, saveSession } from '@shared/features/auth/authStorage.js';
 import './ProfilePage.css';
 
-function getName(user) {
-  return user?.name || user?.email || '-';
-}
-
-const LANGUAGES = [
-  { code: 'cs', flag: '🇨🇿' },
-  { code: 'uk', flag: '🇺🇦' },
-  { code: 'en', flag: '🇬🇧' },
-];
+function getName(user) { return user?.name || user?.email || '-'; }
+const LANGUAGES = [{ code: 'cs', flag: '🇨🇿' },{ code: 'uk', flag: '🇺🇦' },{ code: 'en', flag: '🇬🇧' }];
+const TAX_LABEL={uk:{title:'Податкова інформація',copy:'Реквізити OSVČ, банківський рахунок та фактури.',action:'Відкрити'},cs:{title:'Daňové údaje',copy:'Údaje OSVČ, bankovní účet a faktury.',action:'Otevřít'},en:{title:'Tax information',copy:'Self-employed billing details, bank account and invoices.',action:'Open'}};
 
 export function ProfilePage() {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const user = useSelector(selectUser);
-  const token = useSelector(selectToken);
-  const { language, setLanguage, t } = useI18n();
-  const membership = user?.activeMembership || null;
-  const roleLabel =
-    membership?.role === 'MANAGER'
-      ? t('profile.manager')
-      : membership?.role === 'EMPLOYEE'
-        ? t('profile.employee')
-        : '-';
-  const rate = membership?.hourlyRateCzk || '';
-
-  const [updateProfile, profileState] = useUpdateProfileMutation();
-  const [firstName, setFirstName] = useState(user?.firstName || '');
-  const [lastName, setLastName] = useState(user?.lastName || '');
-  const [phone, setPhone] = useState(user?.phone || '');
-  const [profileError, setProfileError] = useState('');
-  const [profileSuccess, setProfileSuccess] = useState('');
-
-  const [changePassword, changeState] = useChangePasswordMutation();
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [passwordSuccess, setPasswordSuccess] = useState('');
-
-  const [logout, logoutState] = useLogoutMutation();
-  const [deleteMe, deleteState] = useDeleteMeMutation();
-  const [deleteConfirmation, setDeleteConfirmation] = useState('');
-  const [accountError, setAccountError] = useState('');
-
-  useEffect(() => {
-    setFirstName(user?.firstName || '');
-    setLastName(user?.lastName || '');
-    setPhone(user?.phone || '');
-  }, [user?.firstName, user?.lastName, user?.phone]);
-
-  function applyUpdatedUser(updatedUser) {
-    saveSession(token, updatedUser);
-    dispatch(setSession({ token, user: updatedUser }));
-  }
-
-  function clearClientSession() {
-    clearStoredSession();
-    dispatch(clearAuthSession());
-    dispatch(baseApi.util.resetApiState());
-  }
-
-  async function handleProfileSubmit(event) {
-    event.preventDefault();
-    setProfileError('');
-    setProfileSuccess('');
-
-    const normalizedFirstName = firstName.trim();
-    const normalizedLastName = lastName.trim();
-    if (!normalizedFirstName) {
-      setProfileError(t('profile.firstNameRequired'));
-      return;
-    }
-
-    try {
-      const updatedUser = await updateProfile({
-        firstName: normalizedFirstName,
-        lastName: normalizedLastName,
-        name: [normalizedFirstName, normalizedLastName].filter(Boolean).join(' '),
-        phone: phone.trim(),
-      }).unwrap();
-
-      applyUpdatedUser(updatedUser);
-      setProfileSuccess(t('profile.profileUpdated'));
-    } catch (error) {
-      setProfileError(getApiErrorMessage(error));
-    }
-  }
-
-  async function handlePasswordSubmit(event) {
-    event.preventDefault();
-    setPasswordError('');
-    setPasswordSuccess('');
-
-    if (newPassword !== confirmPassword) {
-      setPasswordError(t('profile.passwordsDoNotMatch'));
-      return;
-    }
-
-    try {
-      const updatedUser = await changePassword({
-        currentPassword,
-        newPassword,
-      }).unwrap();
-
-      applyUpdatedUser(updatedUser);
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      setPasswordSuccess(t('profile.passwordUpdated'));
-    } catch (error) {
-      setPasswordError(getApiErrorMessage(error));
-    }
-  }
-
-  async function handleLogout() {
-    setAccountError('');
-
-    try {
-      await logout().unwrap();
-      clearClientSession();
-      navigate('/sign-in', { replace: true });
-    } catch (error) {
-      setAccountError(getApiErrorMessage(error));
-    }
-  }
-
-  async function handleDeleteAccount() {
-    if (deleteConfirmation.trim() !== 'DELETE') return;
-    setAccountError('');
-
-    try {
-      await deleteMe().unwrap();
-      clearClientSession();
-      navigate('/sign-in', { replace: true });
-    } catch (error) {
-      setAccountError(getApiErrorMessage(error));
-    }
-  }
-
-  return (
-    <section className="profilePage pageStack">
-      <header className="profileHeader appTop">
-        <div className="appTitleBlock">
-          <p className="sectionEyebrow">{t('profile.title')}</p>
-          <h1>{getName(user)}</h1>
-          <p>{user?.activeCompany?.name || roleLabel}</p>
-        </div>
-      </header>
-
-      {user?.mustChangePassword ? (
-        <section className="profilePasswordNotice screenCard" role="status">
-          <strong>{t('profile.changeTemporaryPassword')}</strong>
-          <p>{t('profile.temporaryPasswordCopy')}</p>
-        </section>
-      ) : null}
-
-      <section className="profileLanguageCard screenCard">
-        <div className="compactHeader">
-          <h2>{t('settings.languageCard.title')}</h2>
-          <p>{t('settings.languageCard.description')}</p>
-        </div>
-
-        <div className="languagePicker" role="group" aria-label={t('settings.languageCard.label')}>
-          {LANGUAGES.map(item => (
-            <button
-              key={item.code}
-              className={`languageOption${language === item.code ? ' is-active' : ''}`}
-              type="button"
-              aria-pressed={language === item.code}
-              onClick={() => setLanguage(item.code)}
-            >
-              <span className="languageFlag" aria-hidden="true">{item.flag}</span>
-              <span>{t(`settings.languageCard.${item.code}`)}</span>
-              <span className="languageCheck" aria-hidden="true">{language === item.code ? '✓' : ''}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="profileDetails screenCard">
-        <div className="profileRow">
-          <span>{t('profile.email')}</span>
-          <strong>{user?.email || '-'}</strong>
-        </div>
-        <div className="profileRow">
-          <span>{t('profile.role')}</span>
-          <strong>{roleLabel}</strong>
-        </div>
-        <div className="profileRow">
-          <span>{t('profile.company')}</span>
-          <strong>{user?.activeCompany?.name || '-'}</strong>
-        </div>
-        <div className="profileRow">
-          <span>{t('profile.hourlyRate')}</span>
-          <strong>{rate ? `${rate} CZK` : '-'}</strong>
-        </div>
-      </section>
-
-      <form className="profileEditCard screenCard" onSubmit={handleProfileSubmit}>
-        <div className="compactHeader">
-          <h2>{t('profile.personalDetails')}</h2>
-          <p>{t('profile.personalDetailsCopy')}</p>
-        </div>
-
-        <div className="profileFieldGrid">
-          <label className="profileField">
-            <span>{t('profile.firstName')}</span>
-            <input type="text" autoComplete="given-name" value={firstName} onChange={event => setFirstName(event.target.value)} required />
-          </label>
-
-          <label className="profileField">
-            <span>{t('profile.lastName')}</span>
-            <input type="text" autoComplete="family-name" value={lastName} onChange={event => setLastName(event.target.value)} />
-          </label>
-        </div>
-
-        <label className="profileField">
-          <span>{t('profile.phone')}</span>
-          <input type="tel" autoComplete="tel" placeholder="+420 777 123 456" value={phone} onChange={event => setPhone(event.target.value)} />
-        </label>
-
-        {profileError ? <p className="statusNote is-error">{profileError}</p> : null}
-        {profileSuccess ? <p className="statusNote is-success">{profileSuccess}</p> : null}
-
-        <button className="profilePrimaryButton" type="submit" disabled={profileState.isLoading}>
-          {profileState.isLoading ? t('profile.saving') : t('profile.saveProfile')}
-        </button>
-      </form>
-
-      <form className="profilePasswordCard screenCard" onSubmit={handlePasswordSubmit}>
-        <div className="compactHeader">
-          <h2>{t('profile.changePassword')}</h2>
-          <p>{t('profile.passwordCopy')}</p>
-        </div>
-
-        <label className="profileField">
-          <span>{t('profile.currentPassword')}</span>
-          <input type="password" autoComplete="current-password" value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} required />
-        </label>
-
-        <label className="profileField">
-          <span>{t('profile.newPassword')}</span>
-          <input type="password" autoComplete="new-password" value={newPassword} onChange={event => setNewPassword(event.target.value)} required />
-        </label>
-
-        <label className="profileField">
-          <span>{t('profile.confirmPassword')}</span>
-          <input type="password" autoComplete="new-password" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} required />
-        </label>
-
-        {passwordError ? <p className="statusNote is-error">{passwordError}</p> : null}
-        {passwordSuccess ? <p className="statusNote is-success">{passwordSuccess}</p> : null}
-
-        <button className="profilePrimaryButton" type="submit" disabled={changeState.isLoading}>
-          {changeState.isLoading ? t('profile.saving') : t('profile.updatePassword')}
-        </button>
-      </form>
-
-      <section className="profileDangerCard screenCard">
-        <div className="compactHeader">
-          <h2>{t('profile.account')}</h2>
-          <p>{t('profile.accountCopy')}</p>
-        </div>
-
-        {accountError ? <p className="statusNote is-error">{accountError}</p> : null}
-
-        <button className="profileSecondaryButton" type="button" disabled={logoutState.isLoading} onClick={handleLogout}>
-          {logoutState.isLoading ? t('profile.signingOut') : t('profile.signOut')}
-        </button>
-
-        <div className="profileDeleteBlock">
-          <label className="profileField">
-            <span>{t('profile.deleteConfirmation')}</span>
-            <input value={deleteConfirmation} onChange={event => setDeleteConfirmation(event.target.value)} placeholder="DELETE" />
-          </label>
-          <button
-            className="profileDangerButton"
-            type="button"
-            disabled={deleteState.isLoading || deleteConfirmation.trim() !== 'DELETE'}
-            onClick={handleDeleteAccount}
-          >
-            {deleteState.isLoading ? t('profile.deleting') : t('profile.deleteAccount')}
-          </button>
-        </div>
-      </section>
-    </section>
-  );
+  const dispatch=useDispatch(); const navigate=useNavigate(); const user=useSelector(selectUser); const token=useSelector(selectToken); const {language,setLanguage,t}=useI18n();
+  const membership=user?.activeMembership||null; const isEmployee=membership?.role==='EMPLOYEE'; const roleLabel=membership?.role==='MANAGER'?t('profile.manager'):isEmployee?t('profile.employee'):'-'; const rate=membership?.hourlyRateCzk||''; const tax=TAX_LABEL[language]||TAX_LABEL.uk;
+  const [updateProfile,profileState]=useUpdateProfileMutation(); const [firstName,setFirstName]=useState(user?.firstName||''); const [lastName,setLastName]=useState(user?.lastName||''); const [phone,setPhone]=useState(user?.phone||''); const [profileError,setProfileError]=useState(''); const [profileSuccess,setProfileSuccess]=useState('');
+  const [changePassword,changeState]=useChangePasswordMutation(); const [currentPassword,setCurrentPassword]=useState(''); const [newPassword,setNewPassword]=useState(''); const [confirmPassword,setConfirmPassword]=useState(''); const [passwordError,setPasswordError]=useState(''); const [passwordSuccess,setPasswordSuccess]=useState('');
+  const [logout,logoutState]=useLogoutMutation(); const [deleteMe,deleteState]=useDeleteMeMutation(); const [deleteConfirmation,setDeleteConfirmation]=useState(''); const [accountError,setAccountError]=useState('');
+  useEffect(()=>{setFirstName(user?.firstName||'');setLastName(user?.lastName||'');setPhone(user?.phone||'')},[user?.firstName,user?.lastName,user?.phone]);
+  function applyUpdatedUser(updatedUser){saveSession(token,updatedUser);dispatch(setSession({token,user:updatedUser}))}
+  function clearClientSession(){clearStoredSession();dispatch(clearAuthSession());dispatch(baseApi.util.resetApiState())}
+  async function handleProfileSubmit(event){event.preventDefault();setProfileError('');setProfileSuccess('');const normalizedFirstName=firstName.trim();if(!normalizedFirstName){setProfileError(t('profile.firstNameRequired'));return}try{const updatedUser=await updateProfile({firstName:normalizedFirstName,lastName:lastName.trim(),name:[normalizedFirstName,lastName.trim()].filter(Boolean).join(' '),phone:phone.trim()}).unwrap();applyUpdatedUser(updatedUser);setProfileSuccess(t('profile.profileUpdated'))}catch(error){setProfileError(getApiErrorMessage(error))}}
+  async function handlePasswordSubmit(event){event.preventDefault();setPasswordError('');setPasswordSuccess('');if(newPassword!==confirmPassword){setPasswordError(t('profile.passwordsDoNotMatch'));return}try{const updatedUser=await changePassword({currentPassword,newPassword}).unwrap();applyUpdatedUser(updatedUser);setCurrentPassword('');setNewPassword('');setConfirmPassword('');setPasswordSuccess(t('profile.passwordUpdated'))}catch(error){setPasswordError(getApiErrorMessage(error))}}
+  async function handleLogout(){setAccountError('');try{await logout().unwrap();clearClientSession();navigate('/sign-in',{replace:true})}catch(error){setAccountError(getApiErrorMessage(error))}}
+  async function handleDeleteAccount(){if(deleteConfirmation.trim()!=='DELETE')return;setAccountError('');try{await deleteMe().unwrap();clearClientSession();navigate('/sign-in',{replace:true})}catch(error){setAccountError(getApiErrorMessage(error))}}
+  return <section className="profilePage pageStack">
+   <header className="profileHeader appTop"><div className="appTitleBlock"><p className="sectionEyebrow">{t('profile.title')}</p><h1>{getName(user)}</h1><p>{user?.activeCompany?.name||roleLabel}</p></div></header>
+   {user?.mustChangePassword?<section className="profilePasswordNotice screenCard" role="status"><strong>{t('profile.changeTemporaryPassword')}</strong><p>{t('profile.temporaryPasswordCopy')}</p></section>:null}
+   <section className="profileLanguageCard screenCard"><div className="compactHeader"><h2>{t('settings.languageCard.title')}</h2><p>{t('settings.languageCard.description')}</p></div><div className="languagePicker" role="group" aria-label={t('settings.languageCard.label')}>{LANGUAGES.map(item=><button key={item.code} className={`languageOption${language===item.code?' is-active':''}`} type="button" aria-pressed={language===item.code} onClick={()=>setLanguage(item.code)}><span className="languageFlag" aria-hidden="true">{item.flag}</span><span>{t(`settings.languageCard.${item.code}`)}</span><span className="languageCheck" aria-hidden="true">{language===item.code?'✓':''}</span></button>)}</div></section>
+   {isEmployee?<section className="profileDetails screenCard"><div className="compactHeader"><h2>{tax.title}</h2><p>{tax.copy}</p></div><button className="profilePrimaryButton" type="button" onClick={()=>navigate('/tax-information')}>{tax.action}</button></section>:null}
+   <section className="profileDetails screenCard"><div className="profileRow"><span>{t('profile.email')}</span><strong>{user?.email||'-'}</strong></div><div className="profileRow"><span>{t('profile.role')}</span><strong>{roleLabel}</strong></div><div className="profileRow"><span>{t('profile.company')}</span><strong>{user?.activeCompany?.name||'-'}</strong></div><div className="profileRow"><span>{t('profile.hourlyRate')}</span><strong>{rate?`${rate} CZK`:'-'}</strong></div></section>
+   <form className="profileEditCard screenCard" onSubmit={handleProfileSubmit}><div className="compactHeader"><h2>{t('profile.personalDetails')}</h2><p>{t('profile.personalDetailsCopy')}</p></div><div className="profileFieldGrid"><label className="profileField"><span>{t('profile.firstName')}</span><input type="text" autoComplete="given-name" value={firstName} onChange={e=>setFirstName(e.target.value)} required/></label><label className="profileField"><span>{t('profile.lastName')}</span><input type="text" autoComplete="family-name" value={lastName} onChange={e=>setLastName(e.target.value)}/></label></div><label className="profileField"><span>{t('profile.phone')}</span><input type="tel" autoComplete="tel" placeholder="+420 777 123 456" value={phone} onChange={e=>setPhone(e.target.value)}/></label>{profileError?<p className="statusNote is-error">{profileError}</p>:null}{profileSuccess?<p className="statusNote is-success">{profileSuccess}</p>:null}<button className="profilePrimaryButton" type="submit" disabled={profileState.isLoading}>{profileState.isLoading?t('profile.saving'):t('profile.saveProfile')}</button></form>
+   <form className="profilePasswordCard screenCard" onSubmit={handlePasswordSubmit}><div className="compactHeader"><h2>{t('profile.changePassword')}</h2><p>{t('profile.passwordCopy')}</p></div><label className="profileField"><span>{t('profile.currentPassword')}</span><input type="password" autoComplete="current-password" value={currentPassword} onChange={e=>setCurrentPassword(e.target.value)} required/></label><label className="profileField"><span>{t('profile.newPassword')}</span><input type="password" autoComplete="new-password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} required/></label><label className="profileField"><span>{t('profile.confirmPassword')}</span><input type="password" autoComplete="new-password" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} required/></label>{passwordError?<p className="statusNote is-error">{passwordError}</p>:null}{passwordSuccess?<p className="statusNote is-success">{passwordSuccess}</p>:null}<button className="profilePrimaryButton" type="submit" disabled={changeState.isLoading}>{changeState.isLoading?t('profile.saving'):t('profile.updatePassword')}</button></form>
+   <section className="profileDangerCard screenCard"><div className="compactHeader"><h2>{t('profile.account')}</h2><p>{t('profile.accountCopy')}</p></div>{accountError?<p className="statusNote is-error">{accountError}</p>:null}<button className="profileSecondaryButton" type="button" disabled={logoutState.isLoading} onClick={handleLogout}>{logoutState.isLoading?t('profile.signingOut'):t('profile.signOut')}</button><div className="profileDeleteBlock"><label className="profileField"><span>{t('profile.deleteConfirmation')}</span><input value={deleteConfirmation} onChange={e=>setDeleteConfirmation(e.target.value)} placeholder="DELETE"/></label><button className="profileDangerButton" type="button" disabled={deleteState.isLoading||deleteConfirmation.trim()!=='DELETE'} onClick={handleDeleteAccount}>{deleteState.isLoading?t('profile.deleting'):t('profile.deleteAccount')}</button></div></section>
+  </section>;
 }
