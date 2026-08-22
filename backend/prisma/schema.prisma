@@ -7,229 +7,133 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserRole {
-  MANAGER
-  EMPLOYEE
-}
-
-enum MembershipRole {
-  MANAGER
-  EMPLOYEE
-}
-
-enum MembershipStatus {
-  ACTIVE
-  INACTIVE
-}
-
-enum WorkEntryStatus {
-  DRAFT
-  SUBMITTED
-  APPROVED
-  REJECTED
-}
-
-enum WeeklySubmissionStatus {
-  DRAFT
-  SUBMITTED
-  APPROVED
-  REJECTED
-}
+enum UserRole { MANAGER EMPLOYEE }
+enum MembershipRole { MANAGER EMPLOYEE }
+enum MembershipStatus { ACTIVE INACTIVE }
+enum WorkEntryStatus { DRAFT SUBMITTED APPROVED REJECTED }
+enum WeeklySubmissionStatus { DRAFT SUBMITTED APPROVED REJECTED }
+enum InvoiceStatus { DRAFT SENT VIEWED PAID CANCELLED }
 
 model User {
-  id                 String    @id
-  email              String    @unique
-  passwordHash       String
-  firstName          String    @default("")
-  lastName           String    @default("")
-  name               String
-  phone              String?   @unique
-  profile            Json
-  mustChangePassword Boolean   @default(false)
-  deletedAt          DateTime?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-
-  legacyRole          UserRole @default(EMPLOYEE) @map("role") @ignore
-  legacyManagerId     String?  @map("managerId") @ignore
-  legacyHourlyRateCzk Decimal  @default(0) @map("hourlyRateCzk") @db.Decimal(10, 2) @ignore
-
-  sessions    Session[]
+  id String @id
+  email String @unique
+  passwordHash String
+  firstName String @default("")
+  lastName String @default("")
+  name String
+  phone String? @unique
+  profile Json
+  mustChangePassword Boolean @default(false)
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  legacyRole UserRole @default(EMPLOYEE) @map("role") @ignore
+  legacyManagerId String? @map("managerId") @ignore
+  legacyHourlyRateCzk Decimal @default(0) @map("hourlyRateCzk") @db.Decimal(10, 2) @ignore
+  sessions Session[]
   memberships CompanyMembership[]
-
   @@index([deletedAt])
   @@map("users")
 }
-
-model Session {
-  id        String   @id
-  userId    String
-  tokenHash String   @unique
-  createdAt DateTime @default(now())
-  expiresAt DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([expiresAt])
-  @@map("sessions")
-}
-
+model Session { id String @id userId String tokenHash String @unique createdAt DateTime @default(now()) expiresAt DateTime user User @relation(fields:[userId],references:[id],onDelete:Cascade) @@index([userId]) @@index([expiresAt]) @@map("sessions") }
 model Company {
-  id        String   @id
-  name      String
-  slug      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  memberships       CompanyMembership[]
-  projects          Project[]
-  workEntries       WorkEntry[]
-  weeklySubmissions WeeklySubmission[]
-  notifications     Notification[]
-
-  @@index([slug])
-  @@map("companies")
+ id String @id name String slug String @unique createdAt DateTime @default(now()) updatedAt DateTime @updatedAt
+ memberships CompanyMembership[]
+ projects Project[]
+ workEntries WorkEntry[]
+ weeklySubmissions WeeklySubmission[]
+ notifications Notification[]
+ invoices Invoice[]
+ @@index([slug]) @@map("companies")
 }
-
 model CompanyMembership {
-  id                 String           @id
-  companyId          String
-  userId             String
-  role               MembershipRole
-  hourlyRateCzk      Decimal?         @db.Decimal(10, 2)
-  status             MembershipStatus @default(ACTIVE)
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  workEntries               WorkEntry[]        @relation("EmployeeMembershipWorkEntries")
-  weeklySubmissions         WeeklySubmission[] @relation("EmployeeMembershipWeeklySubmissions")
-  reviewedWeeklySubmissions WeeklySubmission[] @relation("ReviewerMembershipWeeklySubmissions")
-  notifications             Notification[]     @relation("RecipientMembershipNotifications")
-
-  @@unique([companyId, userId])
-  @@index([userId])
-  @@index([companyId, role])
-  @@index([companyId, status])
-  @@map("company_memberships")
+ id String @id companyId String userId String role MembershipRole hourlyRateCzk Decimal? @db.Decimal(10,2) status MembershipStatus @default(ACTIVE) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt
+ company Company @relation(fields:[companyId],references:[id],onDelete:Cascade)
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ workEntries WorkEntry[] @relation("EmployeeMembershipWorkEntries")
+ weeklySubmissions WeeklySubmission[] @relation("EmployeeMembershipWeeklySubmissions")
+ reviewedWeeklySubmissions WeeklySubmission[] @relation("ReviewerMembershipWeeklySubmissions")
+ notifications Notification[] @relation("RecipientMembershipNotifications")
+ invoices Invoice[] @relation("EmployeeMembershipInvoices")
+ @@unique([companyId,userId]) @@index([userId]) @@index([companyId,role]) @@index([companyId,status]) @@map("company_memberships")
 }
-
 model Project {
-  id          String   @id
-  companyId   String
-  name        String
-  address     String?
-  description String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  company     Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  workEntries WorkEntry[]
-
-  @@index([companyId])
-  @@index([companyId, isActive])
-  @@map("projects")
+ id String @id companyId String name String address String? description String? isActive Boolean @default(true) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt
+ company Company @relation(fields:[companyId],references:[id],onDelete:Cascade)
+ workEntries WorkEntry[]
+ @@index([companyId]) @@index([companyId,isActive]) @@map("projects")
 }
-
 model WorkEntry {
-  id                   String          @id
-  companyId            String
-  employeeMembershipId String
-  projectId            String
-  weeklySubmissionId   String?
-  workDate             DateTime
-  hours                Decimal         @db.Decimal(5, 2)
-  status               WorkEntryStatus @default(DRAFT)
-  createdAt            DateTime        @default(now())
-  updatedAt            DateTime        @updatedAt
-
-  legacyEmployeeId String? @map("employeeId") @ignore
-
-  company            Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  employeeMembership CompanyMembership  @relation("EmployeeMembershipWorkEntries", fields: [employeeMembershipId], references: [id], onDelete: Cascade)
-  project            Project            @relation(fields: [projectId], references: [id], onDelete: Restrict)
-  weeklySubmission   WeeklySubmission?  @relation(fields: [weeklySubmissionId], references: [id], onDelete: SetNull)
-
-  @@unique([employeeMembershipId, projectId, workDate])
-  @@index([companyId])
-  @@index([employeeMembershipId])
-  @@index([employeeMembershipId, workDate])
-  @@index([projectId])
-  @@index([weeklySubmissionId])
-  @@index([status])
-  @@map("work_entries")
+ id String @id companyId String employeeMembershipId String projectId String weeklySubmissionId String? workDate DateTime hours Decimal @db.Decimal(5,2) status WorkEntryStatus @default(DRAFT) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt
+ legacyEmployeeId String? @map("employeeId") @ignore
+ company Company @relation(fields:[companyId],references:[id],onDelete:Cascade)
+ employeeMembership CompanyMembership @relation("EmployeeMembershipWorkEntries",fields:[employeeMembershipId],references:[id],onDelete:Cascade)
+ project Project @relation(fields:[projectId],references:[id],onDelete:Restrict)
+ weeklySubmission WeeklySubmission? @relation(fields:[weeklySubmissionId],references:[id],onDelete:SetNull)
+ invoiceItems InvoiceItem[]
+ @@unique([employeeMembershipId,projectId,workDate]) @@index([companyId]) @@index([employeeMembershipId]) @@index([employeeMembershipId,workDate]) @@index([projectId]) @@index([weeklySubmissionId]) @@index([status]) @@map("work_entries")
 }
-
 model WeeklySubmission {
-  id                     String                  @id
-  companyId              String
-  employeeMembershipId   String
-  reviewedByMembershipId String?
-  weekStart              DateTime
-  weekEnd                DateTime
-  status                 WeeklySubmissionStatus @default(DRAFT)
-  submittedAt            DateTime?
-  reviewedAt             DateTime?
-  rejectionReason        String?
-  createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @updatedAt
-
-  legacyEmployeeId String? @map("employeeId") @ignore
-  legacyManagerId  String? @map("managerId") @ignore
-
-  company              Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  employeeMembership   CompanyMembership @relation("EmployeeMembershipWeeklySubmissions", fields: [employeeMembershipId], references: [id], onDelete: Cascade)
-  reviewedByMembership CompanyMembership? @relation("ReviewerMembershipWeeklySubmissions", fields: [reviewedByMembershipId], references: [id], onDelete: SetNull)
-  workEntries          WorkEntry[]
-
-  @@unique([employeeMembershipId, weekStart])
-  @@index([companyId])
-  @@index([employeeMembershipId])
-  @@index([reviewedByMembershipId])
-  @@index([status])
-  @@index([weekStart])
-  @@map("weekly_submissions")
+ id String @id companyId String employeeMembershipId String reviewedByMembershipId String? weekStart DateTime weekEnd DateTime status WeeklySubmissionStatus @default(DRAFT) submittedAt DateTime? reviewedAt DateTime? rejectionReason String? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt
+ legacyEmployeeId String? @map("employeeId") @ignore legacyManagerId String? @map("managerId") @ignore
+ company Company @relation(fields:[companyId],references:[id],onDelete:Cascade)
+ employeeMembership CompanyMembership @relation("EmployeeMembershipWeeklySubmissions",fields:[employeeMembershipId],references:[id],onDelete:Cascade)
+ reviewedByMembership CompanyMembership? @relation("ReviewerMembershipWeeklySubmissions",fields:[reviewedByMembershipId],references:[id],onDelete:SetNull)
+ workEntries WorkEntry[]
+ @@unique([employeeMembershipId,weekStart]) @@index([companyId]) @@index([employeeMembershipId]) @@index([reviewedByMembershipId]) @@index([status]) @@index([weekStart]) @@map("weekly_submissions")
 }
-
+model Invoice {
+ id String @id
+ companyId String
+ employeeMembershipId String
+ invoiceNumber String
+ periodStart DateTime
+ periodEnd DateTime
+ issueDate DateTime
+ dueDate DateTime
+ currency String @default("CZK")
+ hourlyRate Decimal @db.Decimal(10,2)
+ totalHours Decimal @db.Decimal(8,2)
+ subtotal Decimal @db.Decimal(12,2)
+ status InvoiceStatus @default(DRAFT)
+ sellerSnapshot Json
+ buyerSnapshot Json
+ sentAt DateTime?
+ viewedAt DateTime?
+ paidAt DateTime?
+ cancelledAt DateTime?
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ company Company @relation(fields:[companyId],references:[id],onDelete:Cascade)
+ employeeMembership CompanyMembership @relation("EmployeeMembershipInvoices",fields:[employeeMembershipId],references:[id],onDelete:Cascade)
+ items InvoiceItem[]
+ @@unique([companyId,invoiceNumber])
+ @@index([companyId,status])
+ @@index([employeeMembershipId,periodStart])
+ @@map("invoices")
+}
+model InvoiceItem {
+ id String @id
+ invoiceId String
+ workEntryId String
+ description String
+ workDate DateTime
+ hours Decimal @db.Decimal(5,2)
+ hourlyRate Decimal @db.Decimal(10,2)
+ amount Decimal @db.Decimal(12,2)
+ invoice Invoice @relation(fields:[invoiceId],references:[id],onDelete:Cascade)
+ workEntry WorkEntry @relation(fields:[workEntryId],references:[id],onDelete:Restrict)
+ @@unique([invoiceId,workEntryId])
+ @@index([workEntryId])
+ @@map("invoice_items")
+}
 model Notification {
-  id                    String   @id
-  companyId             String
-  recipientMembershipId String
-  type                  String
-  title                 String
-  message               String
-  href                  String?
-  readAt                DateTime?
-  createdAt             DateTime @default(now())
-
-  company             Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  recipientMembership CompanyMembership @relation("RecipientMembershipNotifications", fields: [recipientMembershipId], references: [id], onDelete: Cascade)
-
-  @@index([companyId])
-  @@index([recipientMembershipId, createdAt])
-  @@index([recipientMembershipId, readAt])
-  @@map("notifications")
+ id String @id companyId String recipientMembershipId String type String title String message String href String? readAt DateTime? createdAt DateTime @default(now())
+ company Company @relation(fields:[companyId],references:[id],onDelete:Cascade)
+ recipientMembership CompanyMembership @relation("RecipientMembershipNotifications",fields:[recipientMembershipId],references:[id],onDelete:Cascade)
+ @@index([companyId]) @@index([recipientMembershipId,createdAt]) @@index([recipientMembershipId,readAt]) @@map("notifications")
 }
-
 model AuditLog {
-  id           String   @id
-  action       String
-  actorUserId  String?
-  targetUserId String?
-  entityType   String
-  entityId     String?
-  before       Json?
-  after        Json?
-  meta         Json?
-  createdAt    DateTime @default(now())
-
-  @@index([actorUserId])
-  @@index([targetUserId])
-  @@index([entityType, entityId])
-  @@index([createdAt])
-  @@map("audit_logs")
+ id String @id action String actorUserId String? targetUserId String? entityType String entityId String? before Json? after Json? meta Json? createdAt DateTime @default(now())
+ @@index([actorUserId]) @@index([targetUserId]) @@index([entityType,entityId]) @@index([createdAt]) @@map("audit_logs")
 }
