@@ -168,7 +168,16 @@ export async function handleWorkTrackRoutes(request, response, { pathName, url }
           ? getManagerDashboard(client, context)
           : getEmployeeDashboardSummary(client, context, url.searchParams.get('weekStart')),
     });
-    sendJson(response, 200, payload);
+    const responsePayload = context.activeMembership?.role === 'EMPLOYEE'
+      ? {
+          ...payload,
+          hourlyRateCzk:
+            context.activeMembership.hourlyRateCzk == null
+              ? '0.00'
+              : String(context.activeMembership.hourlyRateCzk),
+        }
+      : payload;
+    sendJson(response, 200, responsePayload);
     return true;
   }
 
