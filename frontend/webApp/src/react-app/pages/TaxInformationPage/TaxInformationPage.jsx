@@ -12,6 +12,8 @@ const COPY = {
 };
 
 const empty={businessName:'',ico:'',dic:'',address:'',iban:'',currency:'CZK',dueDays:'14',prefix:'WT'};
+function localeFor(language){return language==='cs'?'cs-CZ':language==='en'?'en-GB':'uk-UA'}
+function currentMonthLabel(language){return new Intl.DateTimeFormat(localeFor(language),{month:'long',year:'numeric'}).format(new Date())}
 
 export function TaxInformationPage(){
  const navigate=useNavigate(); const {language}=useI18n(); const c=COPY[language]||COPY.uk;
@@ -40,7 +42,7 @@ export function TaxInformationPage(){
    {saved?<p className="statusNote is-success">{c.saved}</p>:null}{actionError?<p className="statusNote is-error">{actionError}</p>:null}<button className="taxPrimary" type="submit" disabled={isLoading||Boolean(error)||updateState.isLoading}>{updateState.isLoading?c.saving:c.save}</button>
   </form>
   <section className="taxCard screenCard"><div className="compactHeader"><h2>{c.invoicing}</h2><p>{c.invoiceCopy}</p></div>
-   <div className="invoicePreview"><div><span>{c.month}</span><strong>August 2026</strong></div><div><span>{c.approved}</span><strong>—</strong></div><div><span>{c.amount}</span><strong>— {form.currency}</strong></div><span className="invoiceBadge">{c.draft}</span></div>
+   <div className="invoicePreview"><div><span>{c.month}</span><strong>{currentMonthLabel(language)}</strong></div><div><span>{c.approved}</span><strong>—</strong></div><div><span>{c.amount}</span><strong>— {form.currency}</strong></div><span className="invoiceBadge">{c.draft}</span></div>
    <button className="taxPrimary" type="button" disabled>{c.create}</button><p className="taxNote">{c.note}</p>
   </section>
  </section>;
