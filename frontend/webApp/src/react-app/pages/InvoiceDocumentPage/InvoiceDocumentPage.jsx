@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
-import { useGetInvoicesQuery } from '../../features/worktrack/billingApi.js';
+import { useGetInvoicesQuery, useGetManagerInvoicesQuery } from '../../features/worktrack/billingApi.js';
 import './InvoiceDocumentPage.css';
 
 const COPY={
@@ -11,15 +11,18 @@ const COPY={
 };
 function money(value,currency){return `${Number(value||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} ${currency||''}`}
 
-export function InvoiceDocumentPage(){
+export function InvoiceDocumentPage({managerMode=false}){
  const {invoiceId}=useParams();const navigate=useNavigate();const {language}=useI18n();const c=COPY[language]||COPY.uk;
- const {data,error,isLoading}=useGetInvoicesQuery();const invoice=(data?.invoices||[]).find(item=>item.id===invoiceId);
- if(isLoading)return <section className="invoiceDocState screenCard">{c.loading}</section>;
- if(error)return <section className="invoiceDocState screenCard statusNote is-error">{getApiErrorMessage(error)}</section>;
+ const employeeQuery=useGetInvoicesQuery(undefined,{skip:managerMode});
+ const managerQuery=useGetManagerInvoicesQuery(undefined,{skip:!managerMode});
+ const activeQuery=managerMode?managerQuery:employeeQuery;
+ const invoice=(activeQuery.data?.invoices||[]).find(item=>item.id===invoiceId);
+ if(activeQuery.isLoading)return <section className="invoiceDocState screenCard">{c.loading}</section>;
+ if(activeQuery.error)return <section className="invoiceDocState screenCard statusNote is-error">{getApiErrorMessage(activeQuery.error)}</section>;
  if(!invoice)return <section className="invoiceDocState screenCard">{c.missing}</section>;
  const seller=invoice.seller||{};const buyer=invoice.buyer||{};
  return <section className="invoiceDocumentPage">
-  <div className="invoiceDocumentActions noPrint"><button type="button" onClick={()=>navigate('/invoices')}>← {c.back}</button><button className="invoiceDocumentPrint" type="button" onClick={()=>window.print()}>{c.print}</button></div>
+  <div className="invoiceDocumentActions noPrint"><button type="button" onClick={()=>navigate(managerMode?'/manager/invoices':'/invoices')}>← {c.back}</button><button className="invoiceDocumentPrint" type="button" onClick={()=>window.print()}>{c.print}</button></div>
   <article className="invoicePaper">
    <header className="invoicePaperHeader"><div><p>WorkTrack</p><h1>{c.invoice}</h1></div><div className="invoiceNumber"><span>{invoice.invoiceNumber}</span><strong>{invoice.status}</strong></div></header>
    <section className="invoiceParties"><div><h2>{c.supplier}</h2><strong>{seller.businessName||'—'}</strong><p>{seller.address||'—'}</p><p>{c.ico}: {seller.ico||'—'}{seller.dic?` · ${c.dic}: ${seller.dic}`:''}</p><p>{seller.email||''}</p><p>{c.account}: {seller.iban||'—'}</p></div><div><h2>{c.customer}</h2><strong>{buyer.name||'—'}</strong><p>{buyer.address||'—'}</p><p>{c.ico}: {buyer.ico||'—'}{buyer.dic?` · ${c.dic}: ${buyer.dic}`:''}</p><p>{buyer.email||''}</p></div></section>
