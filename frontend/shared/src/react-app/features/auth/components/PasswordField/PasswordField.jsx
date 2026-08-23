@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { SvgIcon } from '@shared/app/components/SvgIcon/SvgIcon.jsx';
+import { useI18n } from '@shared/app/i18n/useI18n.js';
 import './PasswordField.css';
 
 function EyeIcon() {
@@ -18,11 +19,14 @@ export function PasswordField({
   onInput,
   autoComplete = 'current-password',
   name = 'password',
-  showPasswordLabel = 'Show password',
-  hidePasswordLabel = 'Hide password',
+  showPasswordLabel,
+  hidePasswordLabel,
 }) {
+  const { t } = useI18n();
   const [isVisible, setIsVisible] = useState(false);
   const hasValue = String(value || '').trim().length > 0;
+  const showLabel = showPasswordLabel || t('auth.showPassword');
+  const hideLabel = hidePasswordLabel || t('auth.hidePassword');
 
   useEffect(() => {
     if (!hasValue && isVisible) {
@@ -47,7 +51,7 @@ export function PasswordField({
           <button
             className="passwordField-toggle"
             type="button"
-            aria-label={isVisible ? hidePasswordLabel : showPasswordLabel}
+            aria-label={isVisible ? hideLabel : showLabel}
             aria-pressed={isVisible}
             onClick={() => setIsVisible(next => !next)}
           >
