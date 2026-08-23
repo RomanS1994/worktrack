@@ -8,6 +8,7 @@ import {
   useDeleteWorkEntryMutation,
   useGetProjectsQuery,
   useGetWeekEntriesQuery,
+  useGetWorkRulesQuery,
   useUpdateWorkEntryMutation,
 } from '../../features/worktrack/worktrackApi.js';
 import './CalendarPage.css';
@@ -16,9 +17,9 @@ const DAY_MS = 86400000;
 const STATUS_PRIORITY = ['REJECTED', 'SUBMITTED', 'DRAFT', 'APPROVED'];
 const LOCALES = { uk: 'uk-UA', en: 'en-GB', cs: 'cs-CZ' };
 const COPY = {
-  uk: { editDay:'Робочий запис', object:'Об’єкт', from:'Від', to:'До', note:'Нотатка', notePlaceholder:'Наприклад: монтаж, сервіс, додаткові роботи…', total:'Разом', add:'Додати запис', update:'Зберегти зміни', existing:'Записи цього дня', noProjects:'Немає активних об’єктів', close:'Закрити', delete:'Видалити', locked:'Цей тиждень уже відправлено або погоджено. Редагування заблоковано.', tapHint:'Натисніть на дату, щоб додати робочий час.', saved:'Запис збережено', invalidTime:'Перевірте час початку та завершення.' },
-  cs: { editDay:'Pracovní záznam', object:'Objekt', from:'Od', to:'Do', note:'Poznámka', notePlaceholder:'Např. montáž, servis, vícepráce…', total:'Celkem', add:'Přidat záznam', update:'Uložit změny', existing:'Záznamy tohoto dne', noProjects:'Žádné aktivní objekty', close:'Zavřít', delete:'Smazat', locked:'Tento týden již byl odeslán nebo schválen. Úpravy jsou uzamčeny.', tapHint:'Klikněte na datum pro přidání pracovní doby.', saved:'Záznam byl uložen', invalidTime:'Zkontrolujte čas začátku a konce.' },
-  en: { editDay:'Work entry', object:'Project / site', from:'From', to:'To', note:'Note', notePlaceholder:'For example: installation, service, extra work…', total:'Total', add:'Add entry', update:'Save changes', existing:'Entries for this day', noProjects:'No active projects', close:'Close', delete:'Delete', locked:'This week has already been submitted or approved. Editing is locked.', tapHint:'Tap a date to add working time.', saved:'Entry saved', invalidTime:'Check the start and end time.' },
+  uk: { editDay:'Робочий запис', object:'Об’єкт', from:'Від', to:'До', note:'Нотатка', notePlaceholder:'Наприклад: монтаж, сервіс, додаткові роботи…', total:'Чистими', gross:'Фактично', break:'Обід', add:'Додати запис', update:'Зберегти зміни', existing:'Записи цього дня', noProjects:'Немає активних об’єктів', close:'Закрити', delete:'Видалити', locked:'Цей тиждень уже відправлено або погоджено. Редагування заблоковано.', tapHint:'Натисніть на дату, щоб додати робочий час.', saved:'Запис збережено', invalidTime:'Перевірте час початку та завершення.' },
+  cs: { editDay:'Pracovní záznam', object:'Objekt', from:'Od', to:'Do', note:'Poznámka', notePlaceholder:'Např. montáž, servis, vícepráce…', total:'Čisté', gross:'Skutečně', break:'Oběd', add:'Přidat záznam', update:'Uložit změny', existing:'Záznamy tohoto dne', noProjects:'Žádné aktivní objekty', close:'Zavřít', delete:'Smazat', locked:'Tento týden již byl odeslán nebo schválen. Úpravy jsou uzamčeny.', tapHint:'Klikněte na datum pro přidání pracovní doby.', saved:'Záznam byl uložen', invalidTime:'Zkontrolujte čas začátku a konce.' },
+  en: { editDay:'Work entry', object:'Project / site', from:'From', to:'To', note:'Note', notePlaceholder:'For example: installation, service, extra work…', total:'Net', gross:'Gross', break:'Lunch', add:'Add entry', update:'Save changes', existing:'Entries for this day', noProjects:'No active projects', close:'Close', delete:'Delete', locked:'This week has already been submitted or approved. Editing is locked.', tapHint:'Tap a date to add working time.', saved:'Entry saved', invalidTime:'Check the start and end time.' },
 };
 
 function toDateKey(date) { return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())).toISOString().slice(0, 10); }
@@ -58,10 +59,13 @@ export function CalendarPage() {
   const [actionMessage, setActionMessage] = useState('');
 
   const projectsQuery = useGetProjectsQuery();
+  const { data:rulesData } = useGetWorkRulesQuery();
   const projects = (projectsQuery.data?.projects || []).filter(project => project.isActive);
   const [createEntry, createState] = useCreateWorkEntryMutation();
   const [updateEntry, updateState] = useUpdateWorkEntryMutation();
   const [deleteEntry, deleteState] = useDeleteWorkEntryMutation();
+  const standardDailyHours = Number(rulesData?.workRules?.standardDailyHours || 8);
+  const configuredBreakMinutes = Number(rulesData?.workRules?.breakMinutes || 0);
 
   const gridStart = useMemo(() => getMonthGridStart(monthDate), [monthDate]);
   const weekStarts = useMemo(() => Array.from({ length:6 }, (_, index) => toDateKey(addDays(gridStart, index * 7))), [gridStart]);
@@ -75,15 +79,17 @@ export function CalendarPage() {
   const selectedEntries = entriesByDate.get(selectedDateKey) || [];
   const selectedHours = getDayTotal(selectedEntries);
   const selectedStatus = getDayStatus(selectedEntries);
-  const selectedOvertime = Math.max(0, selectedHours - 8);
+  const selectedOvertime = Math.max(0, selectedHours - standardDailyHours);
   const selectedWeek = weekStartKey(selectedDateKey);
   const selectedWeekResult = weekResults.find((_, index) => weekStarts[index] === selectedWeek);
   const submissionStatus = selectedWeekResult?.data?.submission?.status || '';
   const locked = submissionStatus === 'SUBMITTED' || submissionStatus === 'APPROVED';
   const busy = createState.isLoading || updateState.isLoading || deleteState.isLoading;
-  const calculatedHours = calculateHours(startTime, endTime);
+  const calculatedGrossHours = calculateHours(startTime, endTime);
+  const calculatedBreakMinutes = calculatedGrossHours > configuredBreakMinutes / 60 ? configuredBreakMinutes : 0;
+  const calculatedNetHours = Math.max(0, calculatedGrossHours - calculatedBreakMinutes / 60);
 
-  const totals = useMemo(() => { const total = monthEntries.reduce((sum, entry) => sum + (Number(entry.hours) || 0), 0); const approved = monthEntries.filter(entry => entry.status === 'APPROVED').reduce((sum, entry) => sum + (Number(entry.hours) || 0), 0); const submitted = monthEntries.filter(entry => entry.status === 'SUBMITTED').reduce((sum, entry) => sum + (Number(entry.hours) || 0), 0); const daily = new Map(); monthEntries.forEach(entry => daily.set(entry.workDate, (daily.get(entry.workDate) || 0) + (Number(entry.hours) || 0))); const overtime = Array.from(daily.values()).reduce((sum, hours) => sum + Math.max(0, hours - 8), 0); return { total, approved, submitted, overtime }; }, [monthEntries]);
+  const totals = useMemo(() => { const total = monthEntries.reduce((sum, entry) => sum + (Number(entry.hours) || 0), 0); const approved = monthEntries.filter(entry => entry.status === 'APPROVED').reduce((sum, entry) => sum + (Number(entry.hours) || 0), 0); const submitted = monthEntries.filter(entry => entry.status === 'SUBMITTED').reduce((sum, entry) => sum + (Number(entry.hours) || 0), 0); const daily = new Map(); monthEntries.forEach(entry => daily.set(entry.workDate, (daily.get(entry.workDate) || 0) + (Number(entry.hours) || 0))); const overtime = Array.from(daily.values()).reduce((sum, hours) => sum + Math.max(0, hours - standardDailyHours), 0); return { total, approved, submitted, overtime }; }, [monthEntries, standardDailyHours]);
   const isLoading = weekResults.some(result => result.isLoading || result.isFetching);
   const firstError = weekResults.find(result => result.error)?.error;
   const hasCompleteCalendar = !isLoading && !firstError && weekResults.every(result => result.data);
@@ -97,9 +103,9 @@ export function CalendarPage() {
 
   async function saveEntry(event) {
     event.preventDefault();
-    if (locked || !projectId || calculatedHours <= 0) { setActionError(c.invalidTime); return; }
+    if (locked || !projectId || calculatedGrossHours <= 0) { setActionError(c.invalidTime); return; }
     setActionError(''); setActionMessage('');
-    const payload = { projectId, startTime, endTime, note, hours:String(calculatedHours) };
+    const payload = { projectId, startTime, endTime, note };
     try {
       if (editingId) await updateEntry({ entryId:editingId, ...payload }).unwrap();
       else await createEntry({ workDate:selectedDateKey, ...payload }).unwrap();
@@ -116,19 +122,20 @@ export function CalendarPage() {
     {isLoading ? <RequestLoadingState label={t('calendar.loading')} /> : null}{firstError ? <p className="statusNote is-error">{getApiErrorMessage(firstError)}</p> : null}
     {hasCompleteCalendar ? <>
       <section className="workCalendarStats"><MonthStat label={t('common.totalHours')} value={formatHours(totals.total)} /><MonthStat label={t('common.overtime')} value={formatHours(totals.overtime)} tone="overtime" /><MonthStat label={t('common.approved')} value={formatHours(totals.approved)} tone="approved" /><MonthStat label={t('common.submitted')} value={formatHours(totals.submitted)} tone="submitted" /></section>
-      <section className="workCalendarCard"><div className="workCalendarWeekdays">{weekdays.map((day,index) => <span key={`${day}-${index}`}>{day}</span>)}</div><div className="workCalendarGrid">{calendarDays.map(day => { const dayEntries = entriesByDate.get(day.dateKey) || []; const dayHours = getDayTotal(dayEntries); const status = getDayStatus(dayEntries); const overtime = Math.max(0, dayHours - 8); return <button className={['workCalendarDay', day.inMonth ? '' : 'is-outside', day.dateKey === selectedDateKey ? 'is-selected' : '', day.dateKey === todayKey ? 'is-today' : ''].filter(Boolean).join(' ')} type="button" key={day.dateKey} onClick={() => openDay(day.dateKey)}><span className="workCalendarDay-number">{day.date.getUTCDate()}</span>{dayHours > 0 ? <strong>{formatHours(dayHours)}</strong> : <span className="workCalendarDay-empty">+</span>}<span className="workCalendarDay-indicators">{status ? <i className={`status-${status.toLowerCase()}`} /> : null}{overtime > 0 ? <i className="status-overtime" /> : null}</span></button>; })}</div></section>
-      <section className="workCalendarDayPanel"><div className="workCalendarDayPanel-heading"><div><span>{formatLongDate(selectedDateKey, locale)}</span><h2>{formatHours(selectedHours)}</h2>{selectedOvertime > 0 ? <p>+{formatHours(selectedOvertime)} {t('calendar.overtimeSuffix')}</p> : null}</div>{selectedStatus ? <span className={`workCalendarStatus status-${selectedStatus.toLowerCase()}`}>{statusLabel(selectedStatus)}</span> : null}</div><div className="workCalendarEntries">{selectedEntries.length ? selectedEntries.map(entry => <article className="workCalendarEntry" key={entry.id}><span className={`workCalendarEntry-dot status-${entry.status.toLowerCase()}`} /><div><strong>{entry.project?.name || t('calendar.workEntry')}</strong><small>{entry.startTime && entry.endTime ? `${entry.startTime}–${entry.endTime}` : statusLabel(entry.status)}{entry.note ? ` · ${entry.note}` : ''}</small></div><b>{formatHours(entry.hours)}</b></article>) : <p className="workCalendarEmpty">{t('calendar.noHours')}</p>}</div><button className="workCalendarPrimaryAction" type="button" onClick={() => openDay(selectedDateKey)}>{t('calendar.addEntry')}</button></section>
+      <section className="workCalendarCard"><div className="workCalendarWeekdays">{weekdays.map((day,index) => <span key={`${day}-${index}`}>{day}</span>)}</div><div className="workCalendarGrid">{calendarDays.map(day => { const dayEntries = entriesByDate.get(day.dateKey) || []; const dayHours = getDayTotal(dayEntries); const status = getDayStatus(dayEntries); const overtime = Math.max(0, dayHours - standardDailyHours); return <button className={['workCalendarDay', day.inMonth ? '' : 'is-outside', day.dateKey === selectedDateKey ? 'is-selected' : '', day.dateKey === todayKey ? 'is-today' : ''].filter(Boolean).join(' ')} type="button" key={day.dateKey} onClick={() => openDay(day.dateKey)}><span className="workCalendarDay-number">{day.date.getUTCDate()}</span>{dayHours > 0 ? <strong>{formatHours(dayHours)}</strong> : <span className="workCalendarDay-empty">+</span>}<span className="workCalendarDay-indicators">{status ? <i className={`status-${status.toLowerCase()}`} /> : null}{overtime > 0 ? <i className="status-overtime" /> : null}</span></button>; })}</div></section>
+      <section className="workCalendarDayPanel"><div className="workCalendarDayPanel-heading"><div><span>{formatLongDate(selectedDateKey, locale)}</span><h2>{formatHours(selectedHours)}</h2>{selectedOvertime > 0 ? <p>+{formatHours(selectedOvertime)} {t('calendar.overtimeSuffix')}</p> : null}</div>{selectedStatus ? <span className={`workCalendarStatus status-${selectedStatus.toLowerCase()}`}>{statusLabel(selectedStatus)}</span> : null}</div><div className="workCalendarEntries">{selectedEntries.length ? selectedEntries.map(entry => <article className="workCalendarEntry" key={entry.id}><span className={`workCalendarEntry-dot status-${entry.status.toLowerCase()}`} /><div><strong>{entry.project?.name || t('calendar.workEntry')}</strong><small>{entry.startTime && entry.endTime ? `${entry.startTime}–${entry.endTime}` : statusLabel(entry.status)}{Number(entry.breakMinutes)>0 ? ` · −${entry.breakMinutes}m ${c.break}` : ''}{entry.note ? ` · ${entry.note}` : ''}</small></div><b>{formatHours(entry.hours)}</b></article>) : <p className="workCalendarEmpty">{t('calendar.noHours')}</p>}</div><button className="workCalendarPrimaryAction" type="button" onClick={() => openDay(selectedDateKey)}>{t('calendar.addEntry')}</button></section>
     </> : null}
 
     {editorOpen ? <div className="workHoursModalBackdrop" onMouseDown={event => { if (event.target === event.currentTarget) setEditorOpen(false); }}><section className="workHoursModal" role="dialog" aria-modal="true"><header><div><span>{formatLongDate(selectedDateKey, locale)}</span><h2>{c.editDay}</h2></div><button type="button" aria-label={c.close} onClick={() => setEditorOpen(false)}>×</button></header><div className="workHoursModalBody">
-      {selectedEntries.length ? <section className="workHoursExisting"><h3>{c.existing}</h3>{selectedEntries.map(entry => <article key={entry.id}><button className="workHoursExistingMain" type="button" disabled={locked} onClick={() => editExisting(entry)}><span><strong>{entry.project?.name || t('calendar.workEntry')}</strong><small>{entry.startTime && entry.endTime ? `${entry.startTime}–${entry.endTime}` : formatHours(entry.hours)}{entry.note ? ` · ${entry.note}` : ''}</small></span><b>{formatHours(entry.hours)}</b></button>{!locked ? <button className="workHoursDelete" type="button" disabled={busy} onClick={() => removeEntry(entry.id)}>{c.delete}</button> : null}</article>)}</section> : null}
+      {selectedEntries.length ? <section className="workHoursExisting"><h3>{c.existing}</h3>{selectedEntries.map(entry => <article key={entry.id}><button className="workHoursExistingMain" type="button" disabled={locked} onClick={() => editExisting(entry)}><span><strong>{entry.project?.name || t('calendar.workEntry')}</strong><small>{entry.startTime && entry.endTime ? `${entry.startTime}–${entry.endTime}` : formatHours(entry.hours)}{Number(entry.breakMinutes)>0 ? ` · −${entry.breakMinutes}m ${c.break}` : ''}{entry.note ? ` · ${entry.note}` : ''}</small></span><b>{formatHours(entry.hours)}</b></button>{!locked ? <button className="workHoursDelete" type="button" disabled={busy} onClick={() => removeEntry(entry.id)}>{c.delete}</button> : null}</article>)}</section> : null}
       {locked ? <p className="statusNote">{c.locked}</p> : <form className="workHoursForm" onSubmit={saveEntry}>
         <label><span>{c.object}</span><select value={projectId || projects[0]?.id || ''} disabled={busy || !projects.length} onChange={event => setProjectId(event.target.value)}>{!projects.length ? <option value="">{c.noProjects}</option> : null}{projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
         <div className="workHoursTimeGrid"><label><span>{c.from}</span><input type="time" value={startTime} onChange={event => setStartTime(event.target.value)} /></label><label><span>{c.to}</span><input type="time" value={endTime} onChange={event => setEndTime(event.target.value)} /></label></div>
-        <div className="workHoursCalculated"><span>{c.total}</span><strong>{calculatedHours > 0 ? formatHours(calculatedHours) : '—'}</strong></div>
+        <div className="workHoursCalculated"><span>{c.total}</span><strong>{calculatedNetHours > 0 ? formatHours(calculatedNetHours) : '—'}</strong></div>
+        {calculatedGrossHours > 0 ? <p className="statusNote">{c.gross}: {formatHours(calculatedGrossHours)}{calculatedBreakMinutes > 0 ? ` · −${calculatedBreakMinutes}m ${c.break}` : ''}</p> : null}
         <label><span>{c.note}</span><textarea rows="3" maxLength="1200" value={note} placeholder={c.notePlaceholder} onChange={event => setNote(event.target.value)} /></label>
         {actionError ? <p className="statusNote is-error">{actionError}</p> : null}{actionMessage ? <p className="statusNote is-success">{actionMessage}</p> : null}
-        <button className="workHoursSave" type="submit" disabled={busy || !projects.length || calculatedHours <= 0}>{editingId ? c.update : c.add}</button>
+        <button className="workHoursSave" type="submit" disabled={busy || !projects.length || calculatedGrossHours <= 0}>{editingId ? c.update : c.add}</button>
         {editingId ? <button className="workHoursCancelEdit" type="button" onClick={resetEditor}>{c.add}</button> : null}
       </form>}
     </div></section></div> : null}
