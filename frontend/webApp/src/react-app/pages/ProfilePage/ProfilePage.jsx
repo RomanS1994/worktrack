@@ -23,6 +23,14 @@ const COPY = {
 function getName(user) { return user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email || '-'; }
 function initials(user) { return [user?.firstName, user?.lastName].filter(Boolean).map(v => v[0]).join('').slice(0, 2).toUpperCase() || getName(user).slice(0, 1).toUpperCase(); }
 
+function CameraIcon() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.2 5.5 9.4 3.8h5.2l1.2 1.7H19a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.5a2 2 0 0 1 2-2h3.2Z"/><circle cx="12" cy="12.5" r="3.4"/></svg>;
+}
+
+function CloseIcon() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6 18 18M18 6 6 18"/></svg>;
+}
+
 function resizeProfilePhoto(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -36,7 +44,6 @@ function resizeProfilePhoto(file) {
         canvas.height = AVATAR_SIZE;
         const context = canvas.getContext('2d');
         if (!context) { reject(new Error('Canvas is unavailable')); return; }
-
         const sourceSize = Math.min(image.naturalWidth, image.naturalHeight);
         const sourceX = Math.max(0, (image.naturalWidth - sourceSize) / 2);
         const sourceY = Math.max(0, (image.naturalHeight - sourceSize) / 2);
@@ -78,13 +85,7 @@ export function ProfilePage() {
     const normalizedFirstName = firstName.trim();
     if (!normalizedFirstName) { setProfileError(t('profile.firstNameRequired')); return; }
     try {
-      const updatedUser = await updateProfile({
-        firstName: normalizedFirstName,
-        lastName: lastName.trim(),
-        name: [normalizedFirstName, lastName.trim()].filter(Boolean).join(' '),
-        phone: phone.trim(),
-        profile: { ...(user?.profile || {}), avatarDataUrl: avatarDraft || '' },
-      }).unwrap();
+      const updatedUser = await updateProfile({ firstName: normalizedFirstName, lastName: lastName.trim(), name: [normalizedFirstName, lastName.trim()].filter(Boolean).join(' '), phone: phone.trim(), profile: { ...(user?.profile || {}), avatarDataUrl: avatarDraft || '' } }).unwrap();
       applyUpdatedUser(updatedUser); setModal('');
     } catch (error) { setProfileError(getApiErrorMessage(error)); }
   }
@@ -115,10 +116,10 @@ export function ProfilePage() {
     <button className="profileSignOut" type="button" disabled={logoutState.isLoading} onClick={handleLogout}>{logoutState.isLoading ? t('profile.signingOut') : c.signOut}</button>
     <button className="profileAccountLink" type="button" onClick={() => setModal('account')}>{c.danger}</button>
 
-    {modal ? <div className="profileModalBackdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setModal(''); }}><section className="profileModal" role="dialog" aria-modal="true"><header><h2>{modal === 'personal' ? c.editPersonal : modal === 'work' ? c.work : modal === 'language' ? c.language : modal === 'password' ? c.changePassword : c.danger}</h2><button className="profileModalClose" type="button" aria-label={c.close} onClick={() => setModal('')}><span aria-hidden="true">✕</span></button></header>
+    {modal ? <div className="profileModalBackdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setModal(''); }}><section className="profileModal" role="dialog" aria-modal="true"><header><h2>{modal === 'personal' ? c.editPersonal : modal === 'work' ? c.work : modal === 'language' ? c.language : modal === 'password' ? c.changePassword : c.danger}</h2><button className="profileModalClose" type="button" aria-label={c.close} onClick={() => setModal('')}><CloseIcon /></button></header>
       {modal === 'personal' ? <form onSubmit={handleProfileSubmit} className="profileModalBody">
         <div className="profilePhotoEditor">
-          <button className={`profilePhotoButton${avatarDraft ? ' has-photo' : ''}`} type="button" onClick={() => photoInputRef.current?.click()} aria-label={c.photoHint}>{avatarDraft ? <img src={avatarDraft} alt="" /> : <span>{initials(user)}</span>}<i aria-hidden="true">📷</i></button>
+          <button className={`profilePhotoButton${avatarDraft ? ' has-photo' : ''}`} type="button" onClick={() => photoInputRef.current?.click()} aria-label={c.photoHint}>{avatarDraft ? <img src={avatarDraft} alt="" /> : <span>{initials(user)}</span>}<i aria-hidden="true"><CameraIcon /></i></button>
           <input ref={photoInputRef} className="profilePhotoInput" type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoChange} />
           <p>{c.photoHint}</p><small>{c.photoRules}</small>
         </div>
