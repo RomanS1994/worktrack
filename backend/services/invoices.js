@@ -5,6 +5,36 @@ function money(value) { return Number(value || 0).toFixed(2); }
 function iso(value) { return value ? new Date(value).toISOString() : ''; }
 function dateOnly(value) { return new Date(value).toISOString().slice(0, 10); }
 function object(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+function compactDate(value) { return dateOnly(value).replaceAll('-', ''); }
+function cleanIban(value) { return clean(value, 80).replace(/\s+/g, '').toUpperCase(); }
+
+function variableSymbolFor(invoiceNumber) {
+  const parts = String(invoiceNumber || '').match(/(\d{4}).*?(\d{1,6})$/);
+  if (parts) return `${parts[1]}${parts[2].padStart(6, '0')}`.slice(-10);
+  const digits = String(invoiceNumber || '').replace(/\D/g, '');
+  return digits.slice(-10) || '1';
+}
+
+function spaydValue(value) {
+  return encodeURIComponent(String(value || '').replaceAll('*', ' ')).replace(/%20/g, '+');
+}
+
+function buildSpayd(invoice) {
+  const seller = object(invoice.sellerSnapshot);
+  const iban = cleanIban(seller.iban);
+  if (!iban) return '';
+  const variableSymbol = variableSymbolFor(invoice.invoiceNumber);
+  const message = spaydValue(`Invoice ${invoice.invoiceNumber}`);
+  return [
+    'SPD*1.0',
+    `ACC:${iban}`,
+    `AM:${money(invoice.subtotal)}`,
+    `CC:${invoice.currency || 'CZK'}`,
+    `DT:${compactDate(invoice.dueDate)}`,
+    `X-VS:${variableSymbol}`,
+    `MSG:${message}`,
+  ].join('*') + '*';
+}
 
 function monthRange(raw) {
   const value = clean(raw, 7);
@@ -70,6 +100,8 @@ function serialize(invoice) {
   return {
     id: invoice.id,
     invoiceNumber: invoice.invoiceNumber,
+    variableSymbol: variableSymbolFor(invoice.invoiceNumber),
+    paymentDescriptor: buildSpayd(invoice),
     companyId: invoice.companyId,
     employeeMembershipId: invoice.employeeMembershipId,
     periodStart: dateOnly(invoice.periodStart),
@@ -151,9 +183,18 @@ async function buildDraftContext(client, context, payload = {}) {
 export async function previewInvoiceDraft(client, context, payload = {}) {
   const draft = await buildDraftContext(client, context, payload);
   const invoiceNumber = await nextInvoiceNumber(client, draft.membership.companyId, draft.tax.prefix, draft.range.year);
+  const previewShape = {
+    invoiceNumber,
+    subtotal: draft.subtotal,
+    currency: 'CZK',
+    dueDate: draft.dueDate,
+    sellerSnapshot: draft.tax,
+  };
   return {
     month: draft.range.value,
     invoiceNumber,
+    variableSymbol: variableSymbolFor(invoiceNumber),
+    paymentDescriptor: buildSpayd(previewShape),
     periodStart: dateOnly(draft.range.start),
     periodEnd: dateOnly(draft.range.end),
     issueDate: dateOnly(draft.issueDate),
