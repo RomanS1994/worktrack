@@ -12,31 +12,9 @@ const LANGUAGE_OPTIONS = [
   { id: "cs", label: "CS", titleKey: "settings.languageCard.cs" },
 ];
 
-const REGISTER_COPY = {
-  uk: {
-    title: 'Створіть робочий простір компанії',
-    intro: 'Зареєструйтеся як менеджер і створіть окремий акаунт для своєї компанії.',
-    heading: 'Реєстрація компанії',
-    copy: 'Перший створений акаунт стає менеджером цієї компанії.',
-  },
-  cs: {
-    title: 'Vytvořte pracovní prostor firmy',
-    intro: 'Zaregistrujte se jako manažer a vytvořte samostatný účet pro svou firmu.',
-    heading: 'Registrace firmy',
-    copy: 'První vytvořený účet se stane manažerem této firmy.',
-  },
-  en: {
-    title: 'Create your company workspace',
-    intro: 'Register as a manager and start with a dedicated company account.',
-    heading: 'Company registration',
-    copy: 'The first account becomes the manager for this company.',
-  },
-};
-
 export function GuestStage({ defaultMode = "login" }) {
   const [mode, setMode] = useState(() => defaultMode);
   const { language, setLanguage, t } = useI18n();
-  const registerCopy = REGISTER_COPY[language] || REGISTER_COPY.uk;
 
   useEffect(() => {
     setMode(defaultMode);
@@ -66,14 +44,14 @@ export function GuestStage({ defaultMode = "login" }) {
             })}
           </div>
         </div>
-        <h1>{mode === 'register' ? registerCopy.title : t('guest.titleLogin')}</h1>
-        <p>{mode === 'register' ? registerCopy.intro : t('guest.textLogin')}</p>
+        <h1>{mode === 'register' ? t('guestRegister.title') : t('guest.titleLogin')}</h1>
+        <p>{mode === 'register' ? t('guestRegister.intro') : t('guest.textLogin')}</p>
       </div>
 
       <section className="guestAuth screenCard">
         <div className="compactHeader">
-          <h2>{mode === 'register' ? registerCopy.heading : t('guest.signInHeading')}</h2>
-          <p>{mode === 'register' ? registerCopy.copy : t('guest.signInCopy')}</p>
+          <h2>{mode === 'register' ? t('guestRegister.heading') : t('guest.signInHeading')}</h2>
+          <p>{mode === 'register' ? t('guestRegister.copy') : t('guest.signInCopy')}</p>
         </div>
 
         <AuthModeSwitch value={mode} onChange={setMode} />
