@@ -4,7 +4,6 @@ import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { RequestLoadingState } from '@shared/app/components/RequestLoader/RequestLoader.jsx';
 import { SvgIcon } from '@shared/app/components/SvgIcon/SvgIcon.jsx';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
-import { getWorktrackMessage } from '@shared/app/i18n/worktrackMessages.js';
 import {
   useCreateProjectMutation,
   useGetProjectsQuery,
@@ -15,8 +14,7 @@ import './ProjectsPage.css';
 const EMPTY_FORM = { name: '', address: '', description: '' };
 
 export function ProjectsPage() {
-  const { language } = useI18n();
-  const t = (key, values) => getWorktrackMessage(language, key, values);
+  const { t } = useI18n();
   const { data, error, isLoading } = useGetProjectsQuery();
   const [createProject, createState] = useCreateProjectMutation();
   const [updateProject, updateState] = useUpdateProjectMutation();
