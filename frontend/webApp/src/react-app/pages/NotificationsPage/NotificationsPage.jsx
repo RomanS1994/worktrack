@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { RequestLoadingState } from '@shared/app/components/RequestLoader/RequestLoader.jsx';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
-import { getLocale, getWorktrackMessage } from '@shared/app/i18n/worktrackMessages.js';
 import {
   useGetNotificationsQuery,
   useMarkAllNotificationsReadMutation,
@@ -11,6 +10,7 @@ import {
 } from '../../features/worktrack/worktrackApi.js';
 import './NotificationsPage.css';
 
+const LOCALES = { uk: 'uk-UA', cs: 'cs-CZ', en: 'en-GB' };
 const NOTIFICATION_COPY = {
   uk: {
     submittedTitle: name => `${name} відправив(ла) тиждень`,
@@ -81,9 +81,8 @@ function localizeNotification(notification, language) {
 }
 
 export function NotificationsPage() {
-  const { language } = useI18n();
-  const t = (key, values) => getWorktrackMessage(language, key, values);
-  const locale = getLocale(language);
+  const { language, t } = useI18n();
+  const locale = LOCALES[language] || LOCALES.uk;
   const { data, error, isLoading } = useGetNotificationsQuery(undefined, { pollingInterval: 60000 });
   const notifications = Array.isArray(data?.notifications) ? data.notifications : [];
   const unreadCount = Number(data?.unreadCount || 0);
