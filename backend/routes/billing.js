@@ -2,6 +2,7 @@ import { requireEmployee, requireManager } from '../auth/context.js';
 import { runStoreRead, runStoreTransaction } from '../db/store.js';
 import { readJsonBody, sendJson } from '../lib/http.js';
 import { getEmployeeMonthlyHours } from '../services/monthly-hours.js';
+import { createNotification } from '../services/notifications.js';
 import { createInvoiceDraft, listEmployeeInvoices, listManagerInvoices, markInvoicePaid, sendInvoice } from '../services/invoices.js';
 
 const ALLOWED_CURRENCIES=new Set(['CZK','EUR']);
@@ -9,6 +10,9 @@ function clean(value,maxLength=180){return String(value??'').trim().slice(0,maxL
 function normalizeTaxInformation(body={}){const dueDays=Math.min(90,Math.max(1,Number.parseInt(body.dueDays,10)||14));const currency=clean(body.currency,3).toUpperCase();return{businessName:clean(body.businessName,160),ico:clean(body.ico,32),dic:clean(body.dic,40),address:clean(body.address,300),iban:clean(body.iban,80),currency:ALLOWED_CURRENCIES.has(currency)?currency:'CZK',dueDays,prefix:clean(body.prefix,16).toUpperCase()||'WT'}}
 function readTaxInformation(user){const profile=user?.profile&&typeof user.profile==='object'&&!Array.isArray(user.profile)?user.profile:{};return normalizeTaxInformation(profile.taxInformation||{})}
 function normalizeCompanyBilling(body={}){return{ico:clean(body.ico,32),dic:clean(body.dic,40),address:clean(body.address,300),email:clean(body.email,160)}}
+
+async function notifyManagersInvoiceSent(client,context,invoice){const managers=await client.companyMembership.findMany({where:{companyId:context.activeMembership.companyId,role:'MANAGER',status:'ACTIVE'},select:{id:true}});await Promise.all(managers.map(manager=>createNotification(client,{companyId:context.activeMembership.companyId,recipientMembershipId:manager.id,type:'invoice.sent',title:`Invoice ${invoice.invoiceNumber} received`,message:`${invoice.totalHours} h · ${invoice.subtotal} ${invoice.currency}`,href:'/manager/invoices'})))}
+async function notifyEmployeeInvoicePaid(client,context,invoice){await createNotification(client,{companyId:context.activeMembership.companyId,recipientMembershipId:invoice.employeeMembershipId,type:'invoice.paid',title:`Invoice ${invoice.invoiceNumber} paid`,message:`${invoice.subtotal} ${invoice.currency} was marked as paid.`,href:'/invoices'})}
 
 export async function handleBillingRoutes(request,response,{pathName,url}){
  if(request.method==='GET'&&pathName==='/api/tax-information'){const context=await requireEmployee(request,response);if(!context)return true;sendJson(response,200,{taxInformation:readTaxInformation(context.user)});return true}
@@ -18,8 +22,8 @@ export async function handleBillingRoutes(request,response,{pathName,url}){
  if(request.method==='GET'&&pathName==='/api/monthly-hours'){const context=await requireEmployee(request,response);if(!context)return true;const payload=await runStoreRead({prisma:client=>getEmployeeMonthlyHours(client,context,url.searchParams.get('month'))});sendJson(response,200,payload);return true}
  if(request.method==='GET'&&pathName==='/api/invoices'){const context=await requireEmployee(request,response);if(!context)return true;const invoices=await runStoreRead({prisma:client=>listEmployeeInvoices(client,context)});sendJson(response,200,{invoices});return true}
  if(request.method==='POST'&&pathName==='/api/invoices'){const context=await requireEmployee(request,response);if(!context)return true;const body=await readJsonBody(request);const invoice=await runStoreTransaction({prisma:client=>createInvoiceDraft(client,context,body)});sendJson(response,201,{invoice});return true}
- const sendMatch=pathName.match(/^\/api\/invoices\/([^/]+)\/send$/);if(request.method==='POST'&&sendMatch){const context=await requireEmployee(request,response);if(!context)return true;const invoice=await runStoreTransaction({prisma:client=>sendInvoice(client,context,sendMatch[1])});sendJson(response,200,{invoice});return true}
+ const sendMatch=pathName.match(/^\/api\/invoices\/([^/]+)\/send$/);if(request.method==='POST'&&sendMatch){const context=await requireEmployee(request,response);if(!context)return true;const invoice=await runStoreTransaction({prisma:async client=>{const result=await sendInvoice(client,context,sendMatch[1]);await notifyManagersInvoiceSent(client,context,result);return result}});sendJson(response,200,{invoice});return true}
  if(request.method==='GET'&&pathName==='/api/manager/invoices'){const context=await requireManager(request,response);if(!context)return true;const invoices=await runStoreRead({prisma:client=>listManagerInvoices(client,context)});sendJson(response,200,{invoices});return true}
- const paidMatch=pathName.match(/^\/api\/manager\/invoices\/([^/]+)\/paid$/);if(request.method==='POST'&&paidMatch){const context=await requireManager(request,response);if(!context)return true;const invoice=await runStoreTransaction({prisma:client=>markInvoicePaid(client,context,paidMatch[1])});sendJson(response,200,{invoice});return true}
+ const paidMatch=pathName.match(/^\/api\/manager\/invoices\/([^/]+)\/paid$/);if(request.method==='POST'&&paidMatch){const context=await requireManager(request,response);if(!context)return true;const invoice=await runStoreTransaction({prisma:async client=>{const result=await markInvoicePaid(client,context,paidMatch[1]);await notifyEmployeeInvoicePaid(client,context,result);return result}});sendJson(response,200,{invoice});return true}
  return false;
 }
