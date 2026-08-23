@@ -37,7 +37,7 @@ export function TaxInformationPage(){
   </form>
   <section className="taxCard screenCard"><div className="compactHeader"><h2>{t('tax.invoicing')}</h2><p>{t('tax.invoiceCopy')}</p></div>
    <div className="invoicePreview"><div><span>{t('tax.month')}</span><strong>{currentMonthLabel(language)}</strong></div><div><span>{t('tax.approved')}</span><strong>—</strong></div><div><span>{t('tax.amount')}</span><strong>— {form.currency}</strong></div><span className="invoiceBadge">{t('tax.draft')}</span></div>
-   <button className="taxPrimary" type="button" disabled>{t('tax.create')}</button><p className="taxNote">{t('tax.note')}</p>
+   <button className="taxPrimary" type="button" onClick={()=>navigate('/invoices')}>{t('tax.openInvoices')}</button><p className="taxNote">{t('tax.note')}</p>
   </section>
  </section>;
 }

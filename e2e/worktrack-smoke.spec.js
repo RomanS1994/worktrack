@@ -174,6 +174,29 @@ async function installApiMocks(page, role) {
       return json(route, { company: { id: 'company-1', name: 'WorkTrack QA', slug: 'worktrack-qa' } });
     }
 
+    if (method === 'GET' && path === '/company-billing') {
+      return json(route, {
+        company: {
+          id: 'company-1',
+          name: 'WorkTrack QA',
+          billingProfile: {
+            ico: '12345678',
+            dic: 'CZ12345678',
+            address: 'Václavské náměstí 1, Praha',
+            email: 'billing@example.test',
+          },
+        },
+      });
+    }
+
+    if (method === 'GET' && path === '/invoices') {
+      return json(route, { invoices: [] });
+    }
+
+    if (method === 'GET' && path === '/manager/invoices') {
+      return json(route, { invoices: [] });
+    }
+
     if (method === 'GET' && path === '/manager/employees') {
       return json(route, { week, employees: [] });
     }
@@ -236,6 +259,7 @@ test('manager can open every manager screen and is blocked from employee-only sc
     '/payroll-report',
     '/notifications',
     '/company-settings',
+    '/manager/invoices',
     '/profile',
   ]) {
     await expectScreen(page, path);
@@ -256,6 +280,7 @@ test('employee can open every employee screen and is blocked from manager-only s
     '/dashboard',
     '/hours',
     '/calendar',
+    '/invoices',
     '/payroll-report',
     '/notifications',
     '/profile',
