@@ -193,23 +193,52 @@ export const baseApi = createApi({
 
     async function refreshSession() {
       async function runRefreshRequest() {
-        return baseQuery({ url: '/auth/refresh', method: 'POST' }, api, extraOptions);
+        return baseQuery(
+          {
+            url: '/auth/refresh',
+            method: 'POST',
+          },
+          api,
+          extraOptions,
+        );
       }
 
       return getSharedRefreshRequest(async () => {
         let refreshResult = await runRefreshRequest();
-        if (applySuccessfulRefresh(api, refreshResult)) return { ok: true, reason: '' };
+
+        if (applySuccessfulRefresh(api, refreshResult)) {
+          return { ok: true, reason: '' };
+        }
+
         const refreshError = refreshResult.error;
-        if (refreshError?.status === 401) { expireSessionAfterRefreshRejected(api, t); return { ok: false, reason: 'expired' }; }
+        if (refreshError?.status === 401) {
+          expireSessionAfterRefreshRejected(api, t);
+          return { ok: false, reason: 'expired' };
+        }
+
         if (isNetworkRefreshError(refreshError)) {
           await sleep(350);
           refreshResult = await runRefreshRequest();
-          if (applySuccessfulRefresh(api, refreshResult)) return { ok: true, reason: '' };
+
+          if (applySuccessfulRefresh(api, refreshResult)) {
+            return { ok: true, reason: '' };
+          }
         }
+
         const finalRefreshError = refreshResult.error;
-        if (finalRefreshError?.status === 401) { expireSessionAfterRefreshRejected(api, t); return { ok: false, reason: 'expired' }; }
-        if (!finalRefreshError) return { ok: false, reason: 'server' };
-        return { ok: false, reason: isNetworkRefreshError(finalRefreshError) ? 'offline' : 'server' };
+        if (finalRefreshError?.status === 401) {
+          expireSessionAfterRefreshRejected(api, t);
+          return { ok: false, reason: 'expired' };
+        }
+
+        if (!finalRefreshError) {
+          return { ok: false, reason: 'server' };
+        }
+
+        return {
+          ok: false,
+          reason: isNetworkRefreshError(finalRefreshError) ? 'offline' : 'server',
+        };
       });
     }
 
@@ -221,22 +250,44 @@ export const baseApi = createApi({
     }
 
     let result = await baseQuery(args, api, extraOptions);
-    if (!result.error) resetRefreshWarningState();
+
+    if (!result.error) {
+      resetRefreshWarningState();
+    }
 
     if (result.error?.status === 401 && !isAuthEndpoint(args)) {
       const refreshed = await refreshSession();
+
       if (refreshed?.ok) {
         result = await baseQuery(args, api, extraOptions);
-        if (!result.error) resetRefreshWarningState();
-      } else if (refreshed?.reason === 'offline') warnAboutRefreshFailure(api, t, 'offline');
-      else if (refreshed?.reason === 'server') warnAboutRefreshFailure(api, t, 'server');
+
+        if (!result.error) {
+          resetRefreshWarningState();
+        }
+      } else if (refreshed?.reason === 'offline') {
+        warnAboutRefreshFailure(api, t, 'offline');
+      } else if (refreshed?.reason === 'server') {
+        warnAboutRefreshFailure(api, t, 'server');
+      }
     } else if (isCompanyAccessError(result.error) && getRequestUrl(args) !== '/me') {
       const synced = await syncCurrentUser();
-      if (synced) result = await baseQuery(args, api, extraOptions);
+      if (synced) {
+        result = await baseQuery(args, api, extraOptions);
+      }
     }
 
     return result;
   },
-  tagTypes: ['Me','Employees','Projects','Company','WorkEntries','WeeklySubmissions','Notifications','AuditLogs','Invoices'],
+  tagTypes: [
+    'Me',
+    'Employees',
+    'Projects',
+    'Company',
+    'WorkEntries',
+    'WeeklySubmissions',
+    'Notifications',
+    'AuditLogs',
+    'Invoices',
+  ],
   endpoints: () => ({}),
 });
