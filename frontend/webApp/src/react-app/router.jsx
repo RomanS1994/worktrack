@@ -13,6 +13,7 @@ import { FastHoursPage } from './pages/FastHoursPage/FastHoursPage.jsx';
 import { HomePage } from './pages/HomePage/HomePage.jsx';
 import { HoursPage } from './pages/HoursPage/HoursPage.jsx';
 import { HoursTablePage } from './pages/HoursTablePage/HoursTablePage.jsx';
+import { InvoiceDocumentPage } from './pages/InvoiceDocumentPage/InvoiceDocumentPage.jsx';
 import { InvoicesPage } from './pages/InvoicesPage/InvoicesPage.jsx';
 import { ManagerInvoicesPage } from './pages/ManagerInvoicesPage/ManagerInvoicesPage.jsx';
 import { NotificationsPage } from './pages/NotificationsPage/NotificationsPage.jsx';
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
       { path: 'hours-advanced', element: <ProtectedRoute requireEmployee><HoursPage /></ProtectedRoute> },
       { path: 'hours-table', element: <ProtectedRoute requireEmployee><HoursTablePage /></ProtectedRoute> },
       { path: 'invoices', element: <ProtectedRoute requireEmployee><InvoicesPage /></ProtectedRoute> },
+      { path: 'invoices/:invoiceId', element: <ProtectedRoute requireEmployee><InvoiceDocumentPage /></ProtectedRoute> },
       { path: 'calendar', element: <ProtectedRoute requireEmployee><CalendarPage /></ProtectedRoute> },
       { path: 'notifications', element: <ProtectedRoute><NotificationsPage /></ProtectedRoute> },
       { path: 'payroll-report', element: <ProtectedRoute><PayrollReportPage /></ProtectedRoute> },
