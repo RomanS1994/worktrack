@@ -1,33 +1,14 @@
 import { useDispatch, useSelector } from 'react-redux';
 
 import { selectLanguage, setLanguage as setLanguageAction } from './i18nSlice.js';
-import { getMessage } from './messages.js';
 import { normalizeLanguage } from './languageStorage.js';
-import { getWorktrackMessage } from './worktrackMessages.js';
-import { getPageMessage } from './worktrackPageMessages.js';
-import { getNotificationMessage } from './notificationMessages.js';
+import { resolveMessage } from './messageResolver.js';
 
 function formatMessage(template, values = {}) {
   return String(template).replace(/\{(\w+)\}/g, (_, key) => {
     const value = values[key];
     return value == null ? '' : String(value);
   });
-}
-
-function resolveMessage(language, key) {
-  const primary = getMessage(language, key);
-  if (primary !== key) return primary;
-
-  const worktrack = getWorktrackMessage(language, key);
-  if (worktrack !== key) return worktrack;
-
-  const page = getPageMessage(language, key);
-  if (page !== key) return page;
-
-  const notification = getNotificationMessage(language, key);
-  if (notification !== key) return notification;
-
-  return key;
 }
 
 export function useI18n() {
