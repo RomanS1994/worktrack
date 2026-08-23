@@ -1,0 +1,31 @@
+.workCalendarDay > strong {
+  display: block;
+  margin-top: -2px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.workCalendarDay.is-outside > strong {
+  opacity: 0.55;
+}
+
+.workCalendarDay.is-selected > strong,
+.workCalendarDay.is-today > strong {
+  color: var(--accent-strong);
+}
+
+@media (max-width: 560px) {
+  .workCalendarDay > strong {
+    display: block;
+    max-width: 100%;
+    margin-top: -3px;
+    font-size: 9px;
+    line-height: 1.1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
