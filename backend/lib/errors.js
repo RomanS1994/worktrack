@@ -56,6 +56,14 @@ const STATUS_BY_MESSAGE = new Map([
   ['Invalid payroll period', 400],
   ['Rejection reason is required', 400],
   ['Rejection reason must be 500 characters or fewer', 400],
+  ['Invalid invoice month', 400],
+  ['Complete tax information before creating an invoice', 400],
+  ['Employer billing information is incomplete', 400],
+  ['Invoice context not found', 404],
+  ['Invoice not found', 404],
+  ['No uninvoiced approved hours for this month', 400],
+  ['Only draft invoices can be sent', 409],
+  ['Invoice cannot be marked paid', 409],
 ]);
 
 export function resolveErrorStatus(error) {
