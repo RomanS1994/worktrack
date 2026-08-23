@@ -5,6 +5,7 @@ import { getMessage } from './messages.js';
 import { normalizeLanguage } from './languageStorage.js';
 import { getWorktrackMessage } from './worktrackMessages.js';
 import { getPageMessage } from './worktrackPageMessages.js';
+import { getNotificationMessage } from './notificationMessages.js';
 
 function formatMessage(template, values = {}) {
   return String(template).replace(/\{(\w+)\}/g, (_, key) => {
@@ -22,6 +23,9 @@ function resolveMessage(language, key) {
 
   const page = getPageMessage(language, key);
   if (page !== key) return page;
+
+  const notification = getNotificationMessage(language, key);
+  if (notification !== key) return notification;
 
   return key;
 }
