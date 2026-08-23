@@ -5,7 +5,6 @@ import { useSelector } from 'react-redux';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { RequestLoadingState } from '@shared/app/components/RequestLoader/RequestLoader.jsx';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
-import { getLocale, getWorktrackMessage } from '@shared/app/i18n/worktrackMessages.js';
 import { selectUser } from '@shared/features/auth/authSlice.js';
 import { hasManagerAccess } from '@shared/features/auth/authAccess.js';
 import { useGetManagerPayrollQuery, useGetWorkSummaryQuery } from '../../features/worktrack/worktrackApi.js';
@@ -13,11 +12,7 @@ import './PayrollReportPage.css';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const STATUS_KEYS = { DRAFT: 'draft', SUBMITTED: 'submitted', APPROVED: 'approved', REJECTED: 'rejected' };
-const STATUS_LABELS = {
-  uk: { draft: 'Чернетка', submitted: 'Відправлено', approved: 'Погоджено', rejected: 'Відхилено', active: 'Активний', inactive: 'Неактивний' },
-  en: { draft: 'Draft', submitted: 'Submitted', approved: 'Approved', rejected: 'Rejected', active: 'Active', inactive: 'Inactive' },
-  cs: { draft: 'Koncept', submitted: 'Odesláno', approved: 'Schváleno', rejected: 'Zamítnuto', active: 'Aktivní', inactive: 'Neaktivní' },
-};
+const LOCALES = { uk: 'uk-UA', cs: 'cs-CZ', en: 'en-GB' };
 
 function formatCzk(value, locale) {
   const amount = Number(value || 0);
@@ -48,10 +43,8 @@ function ReportRow({ label, value, emphasize = false }) {
 }
 
 export function PayrollReportPage() {
-  const { language } = useI18n();
-  const t = (key, values) => getWorktrackMessage(language, key, values);
-  const locale = getLocale(language);
-  const statusLabels = STATUS_LABELS[language] || STATUS_LABELS.uk;
+  const { language, t } = useI18n();
+  const locale = LOCALES[language] || LOCALES.uk;
   const user = useSelector(selectUser);
   const isManager = hasManagerAccess(user);
   const [managerPeriod, setManagerPeriod] = useState('week');
@@ -76,9 +69,9 @@ export function PayrollReportPage() {
 
   const localizedStatus = status => {
     const key = STATUS_KEYS[String(status || 'DRAFT').toUpperCase()] || 'draft';
-    return statusLabels[key];
+    return t(`common.${key}`);
   };
-  const localizedEmployeeStatus = status => String(status || '').toUpperCase() === 'ACTIVE' ? statusLabels.active : statusLabels.inactive;
+  const localizedEmployeeStatus = status => String(status || '').toUpperCase() === 'ACTIVE' ? t('projects.active') : t('projects.inactive');
 
   return (
     <section className="payrollReportPage pageStack">
