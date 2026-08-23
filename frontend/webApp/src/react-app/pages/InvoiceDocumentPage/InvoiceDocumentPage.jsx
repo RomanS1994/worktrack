@@ -1,7 +1,8 @@
+import { useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
-import { useGetInvoicesQuery, useGetManagerInvoicesQuery } from '../../features/worktrack/billingApi.js';
+import { useGetInvoicesQuery, useGetManagerInvoicesQuery, useMarkInvoiceViewedMutation } from '../../features/worktrack/billingApi.js';
 import './InvoiceDocumentPage.css';
 
 const COPY={
@@ -12,11 +13,23 @@ const COPY={
 function money(value,currency){return `${Number(value||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} ${currency||''}`}
 
 export function InvoiceDocumentPage({managerMode=false}){
- const {invoiceId}=useParams();const navigate=useNavigate();const {language}=useI18n();const c=COPY[language]||COPY.uk;
+ const {invoiceId}=useParams();
+ const navigate=useNavigate();
+ const {language}=useI18n();
+ const c=COPY[language]||COPY.uk;
+ const viewedRef=useRef('');
  const employeeQuery=useGetInvoicesQuery(undefined,{skip:managerMode});
  const managerQuery=useGetManagerInvoicesQuery(undefined,{skip:!managerMode});
+ const [markViewed]=useMarkInvoiceViewedMutation();
  const activeQuery=managerMode?managerQuery:employeeQuery;
  const invoice=(activeQuery.data?.invoices||[]).find(item=>item.id===invoiceId);
+
+ useEffect(()=>{
+  if(!managerMode||!invoice||invoice.status!=='SENT'||viewedRef.current===invoice.id)return;
+  viewedRef.current=invoice.id;
+  markViewed(invoice.id).unwrap().catch(()=>{viewedRef.current=''});
+ },[invoice,managerMode,markViewed]);
+
  if(activeQuery.isLoading)return <section className="invoiceDocState screenCard">{c.loading}</section>;
  if(activeQuery.error)return <section className="invoiceDocState screenCard statusNote is-error">{getApiErrorMessage(activeQuery.error)}</section>;
  if(!invoice)return <section className="invoiceDocState screenCard">{c.missing}</section>;
