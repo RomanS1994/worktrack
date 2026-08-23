@@ -96,14 +96,16 @@ test('employee rate draft survives an unrelated employees refetch', async ({ pag
   });
 
   await page.goto('/employees');
+  await page.getByRole('button', { name: /Anna Employee/ }).click();
 
-  const rateInput = page.locator('.employeeCard .employeeRateEditor input[type="number"]');
+  const dialog = page.getByRole('dialog');
+  const rateInput = dialog.getByLabel('Ставка CZK');
   await expect(rateInput).toHaveValue('250.00');
 
   await rateInput.fill('300');
   await expect(rateInput).toHaveValue('300');
 
-  await page.locator('.employeeCard-actions .is-deactivate').click();
+  await dialog.getByRole('button', { name: /Деактивувати/ }).click();
   await expect.poll(() => employeeListRequests).toBeGreaterThanOrEqual(2);
 
   await expect(rateInput).toHaveValue('300');

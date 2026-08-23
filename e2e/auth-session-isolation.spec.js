@@ -164,7 +164,7 @@ test('switching accounts clears protected RTK Query cache', async ({ page }) => 
   await expect.poll(() => summaryRequests.length).toBe(1);
 
   await page.goto('/profile');
-  await page.locator('.profileSecondaryButton').click();
+  await page.getByRole('button', { name: 'Вийти', exact: true }).click();
   await expect(page).toHaveURL(/\/sign-in$/);
 
   await page.locator('input[name="username"]').fill('employee@example.test');

@@ -21,7 +21,15 @@ export const worktrackApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, projectId) => [{ type: 'Projects', id: 'LIST' }, { type: 'Projects', id: projectId }, { type: 'WorkEntries', id: 'SUMMARY' }],
     }),
     getCompanySettings: builder.query({ query: () => '/company-settings', providesTags: [{ type: 'Company', id: 'SETTINGS' }] }),
-    updateCompanySettings: builder.mutation({ query: body => ({ url: '/company-settings', method: 'PATCH', body }), invalidatesTags: [{ type: 'Company', id: 'SETTINGS' }] }),
+    updateCompanySettings: builder.mutation({
+      query: body => ({ url: '/company-settings', method: 'PATCH', body }),
+      invalidatesTags: [
+        { type: 'Company', id: 'SETTINGS' },
+        { type: 'Me', id: 'CURRENT' },
+        { type: 'WorkEntries', id: 'SUMMARY' },
+        { type: 'WorkEntries', id: 'PAYROLL' },
+      ],
+    }),
     getWeekEntries: builder.query({
       query: (query = {}) => ({ url: '/work-entries', params: query }),
       providesTags: result => [{ type: 'WorkEntries', id: 'WEEK' }, ...(Array.isArray(result?.entries) ? result.entries : []).map(entry => ({ type: 'WorkEntries', id: entry.id }))],
