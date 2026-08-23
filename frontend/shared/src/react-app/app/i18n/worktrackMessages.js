@@ -18,17 +18,3 @@ export const worktrackMessages = {
     notifications: { eyebrow: 'Doručené', title: 'Oznámení', loadError: 'Oznámení se nepodařilo načíst', unread: '{count} nepřečtených', caughtUp: 'Vše je vyřízeno', markAll: 'Označit vše jako přečtené', loading: 'Načítání oznámení', empty: 'Zatím žádná oznámení', emptyCopy: 'Aktualizace o odeslaných a zkontrolovaných týdnech se zobrazí zde.' }
   }
 };
-
-const locales = { uk: 'uk-UA', en: 'en-GB', cs: 'cs-CZ' };
-
-export function getWorktrackMessage(language, key, values = {}) {
-  const parts = String(key || '').split('.');
-  let current = worktrackMessages[language] || worktrackMessages.uk;
-  for (const part of parts) current = current?.[part];
-  const template = typeof current === 'string' ? current : key;
-  return template.replace(/\{(\w+)\}/g, (_, name) => values[name] == null ? '' : String(values[name]));
-}
-
-export function getLocale(language) {
-  return locales[language] || locales.uk;
-}
