@@ -48,7 +48,7 @@ export function BottomTabs() {
           </NavLink>
           <NavLink className={linkProps => getTabClassName(linkProps, ' bottomTab-primary')} to="/calendar">
             <span className="bottomTab-icon" aria-hidden="true"><SvgIcon name="calendar" /></span>
-            <span className="bottomTab-label">Calendar</span>
+            <span className="bottomTab-label">{t('app.calendar')}</span>
           </NavLink>
         </>
       ) : null}
@@ -61,7 +61,7 @@ export function BottomTabs() {
           </NavLink>
           <NavLink className={linkProps => getTabClassName(linkProps, ' bottomTab-desktopOnly')} to="/projects">
             <span className="bottomTab-icon" aria-hidden="true"><SvgIcon name="location" /></span>
-            <span className="bottomTab-label">Projects</span>
+            <span className="bottomTab-label">{t('app.projects')}</span>
           </NavLink>
           <NavLink className={linkProps => getTabClassName(linkProps)} to="/approvals">
             <span className="bottomTab-icon" aria-hidden="true"><SvgIcon name="check-circle" /></span>
@@ -75,7 +75,7 @@ export function BottomTabs() {
           <SvgIcon name="check-circle" />
           {unreadCount ? <b className="bottomTab-badge">{unreadCount > 99 ? '99+' : unreadCount}</b> : null}
         </span>
-        <span className="bottomTab-label">Notifications</span>
+        <span className="bottomTab-label">{t('app.notifications')}</span>
       </NavLink>
 
       <NavLink className={linkProps => getTabClassName(linkProps)} to="/profile">
