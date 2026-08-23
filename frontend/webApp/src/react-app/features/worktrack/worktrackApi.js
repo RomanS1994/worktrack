@@ -30,6 +30,19 @@ export const worktrackApi = baseApi.injectEndpoints({
         { type: 'WorkEntries', id: 'PAYROLL' },
       ],
     }),
+    getWorkRules: builder.query({
+      query: () => '/work-rules',
+      providesTags: [{ type: 'Company', id: 'WORK_RULES' }],
+    }),
+    updateWorkRules: builder.mutation({
+      query: body => ({ url: '/work-rules', method: 'PATCH', body }),
+      invalidatesTags: [
+        { type: 'Company', id: 'WORK_RULES' },
+        { type: 'WorkEntries', id: 'WEEK' },
+        { type: 'WorkEntries', id: 'SUMMARY' },
+        { type: 'WorkEntries', id: 'PAYROLL' },
+      ],
+    }),
     getWeekEntries: builder.query({
       query: (query = {}) => ({ url: '/work-entries', params: query }),
       providesTags: result => [{ type: 'WorkEntries', id: 'WEEK' }, ...(Array.isArray(result?.entries) ? result.entries : []).map(entry => ({ type: 'WorkEntries', id: entry.id }))],
@@ -79,6 +92,7 @@ export const worktrackApi = baseApi.injectEndpoints({
 export const {
   useGetWorkSummaryQuery, useGetManagerPayrollQuery, useGetNotificationsQuery, useMarkNotificationReadMutation, useMarkAllNotificationsReadMutation,
   useGetProjectsQuery, useCreateProjectMutation, useUpdateProjectMutation, useDeactivateProjectMutation, useGetCompanySettingsQuery, useUpdateCompanySettingsMutation,
+  useGetWorkRulesQuery, useUpdateWorkRulesMutation,
   useGetWeekEntriesQuery, useCreateWorkEntryMutation, useUpdateWorkEntryMutation, useDeleteWorkEntryMutation, useSubmitWeekMutation,
   useGetManagerEmployeesQuery, useCreateManagerEmployeeMutation, useUpdateManagerEmployeeMutation, useResetManagerEmployeePasswordMutation,
   useGetManagerSubmissionsQuery, useGetManagerSubmissionQuery, useApproveSubmissionMutation, useRejectSubmissionMutation,
