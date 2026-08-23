@@ -3,8 +3,9 @@ import { worktrackMessages } from './worktrackMessages.js';
 import { pageMessages } from './worktrackPageMessages.js';
 import { notificationMessages } from './notificationMessages.js';
 import { authMessages } from './authMessages.js';
+import { teamMessages } from './teamMessages.js';
 
-const SOURCES = [messages, worktrackMessages, pageMessages, notificationMessages, authMessages];
+const SOURCES = [messages, worktrackMessages, pageMessages, notificationMessages, authMessages, teamMessages];
 const SUPPORTED_LANGUAGES = ['uk', 'cs', 'en'];
 
 function resolvePath(object, key) {
