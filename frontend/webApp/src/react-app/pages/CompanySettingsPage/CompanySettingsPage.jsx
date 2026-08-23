@@ -5,7 +5,6 @@ import { baseApi } from '@shared/app/api/baseApi.js';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { RequestLoadingState } from '@shared/app/components/RequestLoader/RequestLoader.jsx';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
-import { getWorktrackMessage } from '@shared/app/i18n/worktrackMessages.js';
 import { selectToken, selectUser, setSession } from '@shared/features/auth/authSlice.js';
 import { saveSession } from '@shared/features/auth/authStorage.js';
 import { useGetCompanyBillingQuery, useUpdateCompanyBillingMutation } from '../../features/worktrack/billingApi.js';
@@ -26,8 +25,7 @@ export function CompanySettingsPage() {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const token = useSelector(selectToken);
-  const { language } = useI18n();
-  const t = key => getWorktrackMessage(language, key);
+  const { language, t } = useI18n();
   const bc=BILLING_COPY[language]||BILLING_COPY.uk;
   const { data, error, isLoading } = useGetCompanySettingsQuery();
   const [updateCompanySettings, updateState] = useUpdateCompanySettingsMutation();
