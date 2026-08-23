@@ -1,4 +1,4 @@
-const pageMessages = {
+export const pageMessages = {
   uk: {
     fastHours: {
       eyebrow: 'Робочий час', title: 'Мої години', thisWeek: 'Цей тиждень', previous: 'Назад', next: 'Далі', project: 'Проєкт / об’єкт', quick: 'Швидке заповнення', weekday: '8 год Пн–Пт', clear: 'Очистити', hours: 'Години', total: 'Разом', save: 'Зберегти тиждень', saving: 'Збереження…', send: 'Відправити менеджеру', advanced: 'Детальний режим', advancedCopy: 'Кілька об’єктів в один день або редагування окремих записів', saved: 'Тиждень збережено', noProjects: 'Немає активних проєктів', draft: 'Чернетка', submitted: 'Відправлено', approved: 'Погоджено', rejected: 'Повернено', locked: 'Цей тиждень уже відправлено та заблоковано для редагування.'
@@ -33,43 +33,3 @@ const pageMessages = {
     }
   }
 };
-
-const locales = { uk: 'uk-UA', cs: 'cs-CZ', en: 'en-GB' };
-
-function resolve(object, path) {
-  return String(path || '').split('.').reduce((value, part) => value?.[part], object);
-}
-
-function flattenKeys(object, prefix = '') {
-  return Object.entries(object).flatMap(([key, value]) => {
-    const path = prefix ? `${prefix}.${key}` : key;
-    return value && typeof value === 'object' ? flattenKeys(value, path) : [path];
-  });
-}
-
-export function getPageMessage(language, key, values = {}) {
-  const dictionary = pageMessages[language] || pageMessages.uk;
-  const template = resolve(dictionary, key) ?? resolve(pageMessages.uk, key) ?? key;
-  return String(template).replace(/\{(\w+)\}/g, (_, name) => values[name] == null ? '' : String(values[name]));
-}
-
-export function getPageLocale(language) {
-  return locales[language] || locales.uk;
-}
-
-export function validatePageMessageParity() {
-  const baseKeys = flattenKeys(pageMessages.uk).sort();
-  return Object.fromEntries(['cs', 'en'].map(language => {
-    const keys = flattenKeys(pageMessages[language]).sort();
-    return [language, {
-      missing: baseKeys.filter(key => !keys.includes(key)),
-      extra: keys.filter(key => !baseKeys.includes(key)),
-    }];
-  }));
-}
-
-if (import.meta.env?.DEV) {
-  const parity = validatePageMessageParity();
-  const invalid = Object.entries(parity).filter(([, result]) => result.missing.length || result.extra.length);
-  if (invalid.length) console.warn('[i18n] WorkTrack page translations are out of sync', parity);
-}
