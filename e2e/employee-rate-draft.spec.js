@@ -105,7 +105,7 @@ test('employee rate draft survives an unrelated employees refetch', async ({ pag
   await rateInput.fill('300');
   await expect(rateInput).toHaveValue('300');
 
-  await dialog.getByRole('button', { name: 'Деактивувати', exact: true }).click();
+  await dialog.getByRole('button', { name: /Деактивувати/ }).click();
   await expect.poll(() => employeeListRequests).toBeGreaterThanOrEqual(2);
 
   await expect(rateInput).toHaveValue('300');
