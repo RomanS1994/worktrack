@@ -11,32 +11,6 @@ import {
 import './NotificationsPage.css';
 
 const LOCALES = { uk: 'uk-UA', cs: 'cs-CZ', en: 'en-GB' };
-const NOTIFICATION_COPY = {
-  uk: {
-    submittedTitle: name => `${name} відправив(ла) тиждень`,
-    submittedMessage: period => period ? `Перевірте робочі години за ${period}.` : 'Тиждень готовий до перевірки.',
-    approvedTitle: 'Тиждень погоджено',
-    approvedMessage: period => `Ваші години за ${period} погоджено.`,
-    rejectedTitle: 'Потрібні зміни в тижні',
-    rejectedFallback: 'Менеджер відхилив цей тиждень. Відкрийте його, внесіть виправлення та відправте повторно.',
-  },
-  en: {
-    submittedTitle: name => `${name} submitted a week`,
-    submittedMessage: period => period ? `Review work hours for ${period}.` : 'A weekly submission is ready for review.',
-    approvedTitle: 'Week approved',
-    approvedMessage: period => `Your work for ${period} was approved.`,
-    rejectedTitle: 'Week needs changes',
-    rejectedFallback: 'Your manager rejected this week. Open it to make corrections and resubmit it.',
-  },
-  cs: {
-    submittedTitle: name => `${name} odeslal(a) týden`,
-    submittedMessage: period => period ? `Zkontrolujte pracovní hodiny za období ${period}.` : 'Týden je připraven ke kontrole.',
-    approvedTitle: 'Týden byl schválen',
-    approvedMessage: period => `Vaše práce za období ${period} byla schválena.`,
-    rejectedTitle: 'Týden vyžaduje úpravy',
-    rejectedFallback: 'Manažer tento týden zamítl. Otevřete ho, proveďte opravy a odešlete znovu.',
-  },
-};
 
 function formatDateTime(value, locale) {
   if (!value) return '';
@@ -50,8 +24,7 @@ function extractPeriod(message = '') {
   return match ? `${match[1]} – ${match[2]}` : '';
 }
 
-function localizeNotification(notification, language) {
-  const copy = NOTIFICATION_COPY[language] || NOTIFICATION_COPY.en;
+function localizeNotification(notification, t) {
   const type = notification?.type || '';
 
   if (type === 'weekly_submission.submitted') {
@@ -59,22 +32,32 @@ function localizeNotification(notification, language) {
     const originalTitle = String(notification.title || '');
     const employeeName = originalTitle.endsWith(suffix)
       ? originalTitle.slice(0, -suffix.length)
-      : originalTitle || (language === 'cs' ? 'Zaměstnanec' : language === 'uk' ? 'Працівник' : 'Employee');
+      : originalTitle || t('notificationDynamic.employeeFallback');
     const period = extractPeriod(notification.message);
-    return { title: copy.submittedTitle(employeeName), message: copy.submittedMessage(period) };
+    return {
+      title: t('notificationDynamic.submittedTitle', { name: employeeName }),
+      message: period
+        ? t('notificationDynamic.submittedMessage', { period })
+        : t('notificationDynamic.submittedFallback'),
+    };
   }
 
   if (type === 'weekly_submission.approved') {
-    const period = extractPeriod(notification.message);
-    return { title: copy.approvedTitle, message: copy.approvedMessage(period || '—') };
+    const period = extractPeriod(notification.message) || '—';
+    return {
+      title: t('notificationDynamic.approvedTitle'),
+      message: t('notificationDynamic.approvedMessage', { period }),
+    };
   }
 
   if (type === 'weekly_submission.rejected') {
     const backendFallback = 'Your manager rejected this week. Open it to make corrections.';
-    const message = notification.message && notification.message !== backendFallback
-      ? notification.message
-      : copy.rejectedFallback;
-    return { title: copy.rejectedTitle, message };
+    return {
+      title: t('notificationDynamic.rejectedTitle'),
+      message: notification.message && notification.message !== backendFallback
+        ? notification.message
+        : t('notificationDynamic.rejectedFallback'),
+    };
   }
 
   return { title: notification.title, message: notification.message };
@@ -133,7 +116,7 @@ export function NotificationsPage() {
         <div className="notificationsList">
           {notifications.map(notification => {
             const className = `notificationItem${notification.readAt ? '' : ' is-unread'}`;
-            const localized = localizeNotification(notification, language);
+            const localized = localizeNotification(notification, t);
             const content = (
               <>
                 <span className="notificationDot" aria-hidden="true" />
