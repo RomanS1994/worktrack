@@ -50,13 +50,31 @@ function shiftDetailsFromPayload(payload = {}) {
   const start = startHour * 60 + startMinute;
   let end = endHour * 60 + endMinute;
   if (end <= start) end += 24 * 60;
-  const minutes = end - start;
-  if (minutes <= 0 || minutes > 24 * 60) throw new Error('Invalid work time range');
+  const grossMinutes = end - start;
+  if (grossMinutes <= 0 || grossMinutes > 24 * 60) throw new Error('Invalid work time range');
   return {
     startTime,
     endTime,
     note: note ?? '',
-    hours: (minutes / 60).toFixed(2),
+    grossMinutes,
+    grossHours: (grossMinutes / 60).toFixed(2),
+  };
+}
+
+async function applyWorkRules(client, context, shift) {
+  if (!shift?.grossMinutes) return shift;
+  const company = await client.company.findUnique({
+    where: { id: context.activeMembership.companyId },
+    select: { breakMinutes: true },
+  });
+  const configuredBreak = Number(company?.breakMinutes || 0);
+  const breakMinutes = shift.grossMinutes > configuredBreak ? configuredBreak : 0;
+  const netMinutes = shift.grossMinutes - breakMinutes;
+  if (netMinutes <= 0) throw new Error('Work time must be longer than the automatic break');
+  return {
+    ...shift,
+    breakMinutes,
+    netHours: (netMinutes / 60).toFixed(2),
   };
 }
 
@@ -65,12 +83,17 @@ async function enrichWorkEntries(client, payload) {
   if (!entries.length) return payload;
   const details = await client.workEntry.findMany({
     where: { id: { in: entries.map(entry => entry.id) } },
-    select: { id: true, startTime: true, endTime: true, note: true },
+    select: { id: true, startTime: true, endTime: true, note: true, grossHours: true, breakMinutes: true },
   });
   const byId = new Map(details.map(item => [item.id, item]));
   return {
     ...payload,
-    entries: entries.map(entry => ({ ...entry, ...(byId.get(entry.id) || {}) })),
+    entries: entries.map(entry => ({
+      ...entry,
+      ...(byId.get(entry.id) || {}),
+      grossHours: byId.get(entry.id)?.grossHours == null ? entry.hours : String(byId.get(entry.id).grossHours),
+      breakMinutes: Number(byId.get(entry.id)?.breakMinutes || 0),
+    })),
   };
 }
 
@@ -145,17 +168,23 @@ export async function handleWorkTrackRoutes(request, response, { pathName, url }
     const shift = shiftDetailsFromPayload(body);
     const entry = await runStoreTransaction({
       prisma: async client => {
-        const created = await createEmployeeWorkEntry(client, context, shift?.hours ? { ...body, hours: shift.hours } : body);
-        if (!shift) return created;
+        const ruledShift = await applyWorkRules(client, context, shift);
+        const created = await createEmployeeWorkEntry(client, context, ruledShift?.netHours ? { ...body, hours: ruledShift.netHours } : body);
+        if (!ruledShift) return created;
         const updated = await client.workEntry.update({
           where: { id: created.id },
           data: {
-            ...(shift.startTime ? { startTime: shift.startTime, endTime: shift.endTime } : {}),
-            ...(shift.note !== undefined ? { note: shift.note || null } : {}),
+            ...(ruledShift.startTime ? {
+              startTime: ruledShift.startTime,
+              endTime: ruledShift.endTime,
+              grossHours: ruledShift.grossHours,
+              breakMinutes: ruledShift.breakMinutes,
+            } : {}),
+            ...(ruledShift.note !== undefined ? { note: ruledShift.note || null } : {}),
           },
-          select: { startTime: true, endTime: true, note: true },
+          select: { startTime: true, endTime: true, note: true, grossHours: true, breakMinutes: true },
         });
-        return { ...created, ...updated };
+        return { ...created, ...updated, grossHours: updated.grossHours == null ? created.hours : String(updated.grossHours) };
       },
     });
     sendJson(response, 201, { entry });
@@ -170,17 +199,23 @@ export async function handleWorkTrackRoutes(request, response, { pathName, url }
     const shift = shiftDetailsFromPayload(body);
     const entry = await runStoreTransaction({
       prisma: async client => {
-        const updatedEntry = await updateEmployeeWorkEntry(client, context, workEntryMatch[1], shift?.hours ? { ...body, hours: shift.hours } : body);
-        if (!shift) return updatedEntry;
+        const ruledShift = await applyWorkRules(client, context, shift);
+        const updatedEntry = await updateEmployeeWorkEntry(client, context, workEntryMatch[1], ruledShift?.netHours ? { ...body, hours: ruledShift.netHours } : body);
+        if (!ruledShift) return updatedEntry;
         const details = await client.workEntry.update({
           where: { id: updatedEntry.id },
           data: {
-            ...(shift.startTime ? { startTime: shift.startTime, endTime: shift.endTime } : {}),
-            ...(shift.note !== undefined ? { note: shift.note || null } : {}),
+            ...(ruledShift.startTime ? {
+              startTime: ruledShift.startTime,
+              endTime: ruledShift.endTime,
+              grossHours: ruledShift.grossHours,
+              breakMinutes: ruledShift.breakMinutes,
+            } : {}),
+            ...(ruledShift.note !== undefined ? { note: ruledShift.note || null } : {}),
           },
-          select: { startTime: true, endTime: true, note: true },
+          select: { startTime: true, endTime: true, note: true, grossHours: true, breakMinutes: true },
         });
-        return { ...updatedEntry, ...details };
+        return { ...updatedEntry, ...details, grossHours: details.grossHours == null ? updatedEntry.hours : String(details.grossHours) };
       },
     });
     sendJson(response, 200, { entry });
