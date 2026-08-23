@@ -36,10 +36,3 @@ export const notificationMessages = {
     },
   },
 };
-
-export function getNotificationMessage(language, key) {
-  const parts = String(key || '').split('.');
-  let current = notificationMessages[language] || notificationMessages.uk;
-  for (const part of parts) current = current?.[part];
-  return typeof current === 'string' ? current : key;
-}
