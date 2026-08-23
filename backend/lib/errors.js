@@ -59,10 +59,12 @@ const STATUS_BY_MESSAGE = new Map([
   ['Invalid invoice month', 400],
   ['Complete tax information before creating an invoice', 400],
   ['Employer billing information is incomplete', 400],
+  ['Hourly rate must be greater than zero before creating an invoice', 400],
   ['Invoice context not found', 404],
   ['Invoice not found', 404],
   ['No uninvoiced approved hours for this month', 400],
   ['Only draft invoices can be sent', 409],
+  ['Invoice cannot be cancelled', 409],
   ['Invoice cannot be marked paid', 409],
 ]);
 
