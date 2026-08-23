@@ -1,18 +1,11 @@
 import { useI18n } from '@shared/app/i18n/useI18n.js';
 import './AuthModeSwitch.css';
 
-const COPY = {
-  uk: { label: 'Режим автентифікації', login: 'Увійти', register: 'Реєстрація' },
-  cs: { label: 'Způsob přihlášení', login: 'Přihlásit se', register: 'Registrace' },
-  en: { label: 'Authentication mode', login: 'Sign in', register: 'Register' },
-};
-
 export function AuthModeSwitch({ value, onChange }) {
-  const { language } = useI18n();
-  const c = COPY[language] || COPY.uk;
+  const { t } = useI18n();
 
   return (
-    <div className="authModeSwitch" role="tablist" aria-label={c.label}>
+    <div className="authModeSwitch" role="tablist" aria-label={t('authMode.label')}>
       <button
         className={`authModeSwitch-btn ${value === 'login' ? 'is-active' : ''}`}
         type="button"
@@ -20,7 +13,7 @@ export function AuthModeSwitch({ value, onChange }) {
         aria-selected={value === 'login'}
         onClick={() => onChange('login')}
       >
-        {c.login}
+        {t('authMode.login')}
       </button>
       <button
         className={`authModeSwitch-btn ${value === 'register' ? 'is-active' : ''}`}
@@ -29,7 +22,7 @@ export function AuthModeSwitch({ value, onChange }) {
         aria-selected={value === 'register'}
         onClick={() => onChange('register')}
       >
-        {c.register}
+        {t('authMode.register')}
       </button>
     </div>
   );
