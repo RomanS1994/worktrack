@@ -84,12 +84,14 @@ model Session {
 }
 
 model Company {
-  id             String   @id
-  name           String
-  slug           String   @unique
-  billingProfile Json     @default("{}")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                 String   @id
+  name               String
+  slug               String   @unique
+  billingProfile     Json     @default("{}")
+  breakMinutes       Int      @default(0)
+  standardDailyHours Decimal  @default(8) @db.Decimal(5, 2)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   memberships       CompanyMembership[]
   projects          Project[]
@@ -154,6 +156,8 @@ model WorkEntry {
   weeklySubmissionId   String?
   workDate             DateTime
   hours                Decimal         @db.Decimal(5, 2)
+  grossHours           Decimal?        @db.Decimal(5, 2)
+  breakMinutes         Int             @default(0)
   startTime            String?
   endTime              String?
   note                 String?
@@ -218,7 +222,7 @@ model Invoice {
   periodStart          DateTime
   periodEnd            DateTime
   issueDate            DateTime
-  dueDate              DateTime
+  dueDate               DateTime
   currency             String        @default("CZK")
   hourlyRate           Decimal       @db.Decimal(10, 2)
   totalHours           Decimal       @db.Decimal(8, 2)
