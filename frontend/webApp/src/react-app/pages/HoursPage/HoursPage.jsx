@@ -17,17 +17,6 @@ import './HoursPage.css';
 const LOCKED_STATUSES = new Set(['SUBMITTED', 'APPROVED']);
 const DAY_MS = 24 * 60 * 60 * 1000;
 const LOCALES = { uk: 'uk-UA', en: 'en-GB', cs: 'cs-CZ' };
-const TEXT = {
-  uk: {
-    eyebrow: 'Робочі записи', title: 'Години', hoursSelected: 'годин за вибраний тиждень', selectedWeek: 'Вибраний тиждень', weekNavigation: 'Навігація по тижнях', currentWeek: 'Поточний тиждень', weekHistory: 'Історія тижнів', managerChanges: 'Менеджер попросив внести зміни', salarySummary: 'Підсумок зарплати за вибраний тиждень', totalHours: 'Всього годин', approvedHours: 'Погоджені години', confirmedSalary: 'Підтверджена зарплата', predictedSalary: 'Очікувана зарплата', pending: 'очікує', approved: 'погоджено', loading: 'Завантаження годин', selectedWeekHours: 'Години за вибраний тиждень', inactive: 'неактивний', save: 'Зберегти', delete: 'Видалити', noProjects: 'Немає активних проєктів', add: 'Додати', sendCurrent: 'Відправте завершений тиждень менеджеру вашої компанії.', sendHistory: 'Перегляньте, відредагуйте або повторно відправте цей тиждень, якщо він не заблокований.', resubmit: 'Відправити повторно', sendWeek: 'Відправити тиждень', draft: 'Чернетка', submitted: 'Відправлено', rejected: 'Відхилено', approvedStatus: 'Погоджено', previous: 'Назад', next: 'Далі', today: 'Сьогодні'
-  },
-  en: {
-    eyebrow: 'Work entries', title: 'Hours', hoursSelected: 'hours in selected week', selectedWeek: 'Selected week', weekNavigation: 'Week history navigation', currentWeek: 'Current week', weekHistory: 'Week history', managerChanges: 'Manager requested changes', salarySummary: 'Selected week salary summary', totalHours: 'Total hours', approvedHours: 'Approved hours', confirmedSalary: 'Confirmed salary', predictedSalary: 'Predicted salary', pending: 'pending', approved: 'approved', loading: 'Loading hours', selectedWeekHours: 'Selected week hours', inactive: 'inactive', save: 'Save', delete: 'Delete', noProjects: 'No active projects', add: 'Add', sendCurrent: 'Send the completed week to your company manager.', sendHistory: 'Review, edit, or resubmit this historical week when it is not locked.', resubmit: 'Resubmit week', sendWeek: 'Send week', draft: 'Draft', submitted: 'Submitted', rejected: 'Rejected', approvedStatus: 'Approved', previous: 'Previous', next: 'Next', today: 'Today'
-  },
-  cs: {
-    eyebrow: 'Pracovní záznamy', title: 'Hodiny', hoursSelected: 'hodin ve vybraném týdnu', selectedWeek: 'Vybraný týden', weekNavigation: 'Navigace historie týdnů', currentWeek: 'Aktuální týden', weekHistory: 'Historie týdnů', managerChanges: 'Manažer požaduje úpravy', salarySummary: 'Souhrn mzdy za vybraný týden', totalHours: 'Celkem hodin', approvedHours: 'Schválené hodiny', confirmedSalary: 'Potvrzená mzda', predictedSalary: 'Předpokládaná mzda', pending: 'čeká', approved: 'schváleno', loading: 'Načítání hodin', selectedWeekHours: 'Hodiny ve vybraném týdnu', inactive: 'neaktivní', save: 'Uložit', delete: 'Odstranit', noProjects: 'Žádné aktivní projekty', add: 'Přidat', sendCurrent: 'Odešlete dokončený týden manažerovi vaší společnosti.', sendHistory: 'Zkontrolujte, upravte nebo znovu odešlete tento starší týden, pokud není uzamčen.', resubmit: 'Odeslat znovu', sendWeek: 'Odeslat týden', draft: 'Koncept', submitted: 'Odesláno', rejected: 'Zamítnuto', approvedStatus: 'Schváleno', previous: 'Předchozí', next: 'Další', today: 'Dnes'
-  },
-};
 
 function toDateKey(date) {
   return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())).toISOString().slice(0, 10);
@@ -79,9 +68,9 @@ function formatPeriod(week, locale, fallback) {
   return `${formatDate(week.weekStart, locale)} - ${formatDate(week.weekEnd, locale)}`;
 }
 
-function formatMoney(value) {
+function formatMoney(value, locale) {
   const amount = Number(value || 0);
-  return `${new Intl.NumberFormat('cs-CZ', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(Number.isFinite(amount) ? amount : 0)} Kč`;
+  return `${new Intl.NumberFormat(locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(Number.isFinite(amount) ? amount : 0)} Kč`;
 }
 
 function getEntriesByDate(entries) {
@@ -94,12 +83,11 @@ function getEntriesByDate(entries) {
 }
 
 export function HoursPage() {
-  const { language } = useI18n();
-  const copy = TEXT[language] || TEXT.uk;
+  const { language, t } = useI18n();
   const locale = LOCALES[language] || LOCALES.uk;
   const statusLabel = status => {
     const key = String(status || 'DRAFT').toLowerCase();
-    return key === 'approved' ? copy.approvedStatus : copy[key] || key;
+    return key === 'approved' ? t('hours.approvedStatus') : t(`hours.${key}`);
   };
   const currentWeekStart = useMemo(() => getCurrentWeekStart(), []);
   const [weekStart, setWeekStart] = useState(() => getInitialWeekStart(currentWeekStart));
@@ -195,50 +183,50 @@ export function HoursPage() {
     <section className="hoursPage pageStack">
       <header className="hoursHeader appTop">
         <div className="appTitleBlock">
-          <p className="sectionEyebrow">{copy.eyebrow}</p>
-          <h1>{copy.title}</h1>
-          {hasWeekData ? <p>{summary.totalHours || '0.00'} {copy.hoursSelected}</p> : null}
+          <p className="sectionEyebrow">{t('hours.eyebrow')}</p>
+          <h1>{t('hours.title')}</h1>
+          {hasWeekData ? <p>{summary.totalHours || '0.00'} {t('hours.hoursSelected')}</p> : null}
         </div>
         {hasWeekData ? <div className={`hoursStatusBadge hoursStatusBadge--${submissionStatus.toLowerCase()}`}>{statusLabel(submissionStatus)}</div> : null}
       </header>
 
-      <section className="hoursWeekNavigator screenCard" aria-label={copy.weekNavigation}>
-        <button type="button" disabled={isFetching || isMutating} onClick={() => changeWeek(shiftWeek(weekStart, -1))}>← {copy.previous}</button>
+      <section className="hoursWeekNavigator screenCard" aria-label={t('hours.weekNavigation')}>
+        <button type="button" disabled={isFetching || isMutating} onClick={() => changeWeek(shiftWeek(weekStart, -1))}>← {t('hours.previous')}</button>
         <div className="hoursWeekNavigator-current">
-          <span>{isCurrentWeek ? copy.currentWeek : copy.weekHistory}</span>
-          <strong>{hasWeekData ? formatPeriod(week, locale, copy.selectedWeek) : copy.selectedWeek}</strong>
+          <span>{isCurrentWeek ? t('hours.currentWeek') : t('hours.weekHistory')}</span>
+          <strong>{hasWeekData ? formatPeriod(week, locale, t('hours.selectedWeek')) : t('hours.selectedWeek')}</strong>
         </div>
         <div className="hoursWeekNavigator-actions">
-          {!isCurrentWeek ? <button type="button" disabled={isFetching || isMutating} onClick={() => changeWeek(currentWeekStart)}>{copy.today}</button> : null}
-          <button type="button" disabled={!canGoForward || isFetching || isMutating} onClick={() => changeWeek(shiftWeek(weekStart, 1))}>{copy.next} →</button>
+          {!isCurrentWeek ? <button type="button" disabled={isFetching || isMutating} onClick={() => changeWeek(currentWeekStart)}>{t('hours.today')}</button> : null}
+          <button type="button" disabled={!canGoForward || isFetching || isMutating} onClick={() => changeWeek(shiftWeek(weekStart, 1))}>{t('hours.next')} →</button>
         </div>
       </section>
 
       {hasWeekData && submissionStatus === 'REJECTED' && submission?.rejectionReason ? (
-        <section className="hoursRejectionNotice" role="status"><strong>{copy.managerChanges}</strong><p>{submission.rejectionReason}</p></section>
+        <section className="hoursRejectionNotice" role="status"><strong>{t('hours.managerChanges')}</strong><p>{submission.rejectionReason}</p></section>
       ) : null}
 
       {hasWeekData ? (
-        <section className="hoursSummaryGrid" aria-label={copy.salarySummary}>
-          <article className="hoursSummaryCard"><span>{copy.totalHours}</span><strong>{summary.totalHours || '0.00'}</strong></article>
-          <article className="hoursSummaryCard"><span>{copy.approvedHours}</span><strong>{summary.approvedHours || '0.00'}</strong></article>
-          <article className="hoursSummaryCard"><span>{copy.confirmedSalary}</span><strong>{formatMoney(summary.confirmedSalaryCzk)}</strong></article>
-          <article className="hoursSummaryCard"><span>{copy.predictedSalary}</span><strong>{formatMoney(summary.predictedSalaryCzk)}</strong></article>
+        <section className="hoursSummaryGrid" aria-label={t('hours.salarySummary')}>
+          <article className="hoursSummaryCard"><span>{t('hours.totalHours')}</span><strong>{summary.totalHours || '0.00'}</strong></article>
+          <article className="hoursSummaryCard"><span>{t('hours.approvedHours')}</span><strong>{summary.approvedHours || '0.00'}</strong></article>
+          <article className="hoursSummaryCard"><span>{t('hours.confirmedSalary')}</span><strong>{formatMoney(summary.confirmedSalaryCzk, locale)}</strong></article>
+          <article className="hoursSummaryCard"><span>{t('hours.predictedSalary')}</span><strong>{formatMoney(summary.predictedSalaryCzk, locale)}</strong></article>
         </section>
       ) : null}
 
       <section className="hoursWeek screenCard">
         {hasWeekData ? (
           <div className="compactHeader">
-            <h2>{formatPeriod(week, locale, copy.selectedWeek)}</h2>
-            <p>{summary.pendingHours || '0.00'} {copy.pending} · {summary.approvedHours || '0.00'} {copy.approved}</p>
+            <h2>{formatPeriod(week, locale, t('hours.selectedWeek'))}</h2>
+            <p>{summary.pendingHours || '0.00'} {t('hours.pending')} · {summary.approvedHours || '0.00'} {t('hours.approved')}</p>
           </div>
         ) : null}
 
-        {isLoading || isFetching || projectsQuery.isLoading || projectsQuery.isFetching ? <RequestLoadingState label={copy.loading} /> : null}
+        {isLoading || isFetching || projectsQuery.isLoading || projectsQuery.isFetching ? <RequestLoadingState label={t('hours.loading')} /> : null}
 
         {canEditWeek ? (
-          <div className="hoursWeekGrid" aria-label={copy.selectedWeekHours}>
+          <div className="hoursWeekGrid" aria-label={t('hours.selectedWeekHours')}>
             {(week?.days || []).map(day => {
               const dayEntries = entriesByDate.get(day.date) || [];
               const newDraft = newDrafts[day.date] || {};
@@ -253,14 +241,14 @@ export function HoursPage() {
                       return (
                         <div className="hoursEntryRow" key={entry.id}>
                           <select value={draft.projectId || ''} disabled={isLocked || isMutating} onChange={event => updateEntryDraft(entry.id, 'projectId', event.target.value)}>
-                            {entry.project && !projects.some(project => project.id === entry.project.id) ? <option value={entry.project.id}>{entry.project.name} ({copy.inactive})</option> : null}
+                            {entry.project && !projects.some(project => project.id === entry.project.id) ? <option value={entry.project.id}>{entry.project.name} ({t('hours.inactive')})</option> : null}
                             {projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}
                           </select>
                           <input inputMode="decimal" min="0" max="24" step="0.25" type="number" value={draft.hours || ''} disabled={isLocked || isMutating} placeholder="0" onChange={event => updateEntryDraft(entry.id, 'hours', event.target.value)} />
                           <span className={`hoursDay-status hoursDay-status--${String(entry.status || 'DRAFT').toLowerCase()}`}>{statusLabel(entry.status)}</span>
                           <div className="hoursDay-actions">
-                            <button type="button" disabled={isLocked || isMutating || !draft.hours || !draft.projectId} onClick={() => saveEntry(entry)}>{copy.save}</button>
-                            <button className="hoursDay-delete" type="button" disabled={isLocked || isMutating} aria-label={`${copy.delete} ${day.date}`} onClick={() => deleteEntry(entry)}><SvgIcon name="trash" /></button>
+                            <button type="button" disabled={isLocked || isMutating || !draft.hours || !draft.projectId} onClick={() => saveEntry(entry)}>{t('hours.save')}</button>
+                            <button className="hoursDay-delete" type="button" disabled={isLocked || isMutating} aria-label={`${t('hours.delete')} ${day.date}`} onClick={() => deleteEntry(entry)}><SvgIcon name="trash" /></button>
                           </div>
                         </div>
                       );
@@ -268,11 +256,11 @@ export function HoursPage() {
                   </div>
                   <div className="hoursEntryRow hoursEntryRow--new">
                     <select value={newDraft.projectId || ''} disabled={isSubmittedOrApproved || isMutating || !projects.length} onChange={event => updateNewDraft(day.date, 'projectId', event.target.value)}>
-                      {!projects.length ? <option value="">{copy.noProjects}</option> : null}
+                      {!projects.length ? <option value="">{t('hours.noProjects')}</option> : null}
                       {projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}
                     </select>
                     <input inputMode="decimal" min="0" max="24" step="0.25" type="number" value={newDraft.hours || ''} disabled={isSubmittedOrApproved || isMutating || !projects.length} placeholder="0" onChange={event => updateNewDraft(day.date, 'hours', event.target.value)} />
-                    <button type="button" disabled={!canAdd} onClick={() => addEntry(day)}>{copy.add}</button>
+                    <button type="button" disabled={!canAdd} onClick={() => addEntry(day)}>{t('hours.add')}</button>
                   </div>
                 </article>
               );
@@ -289,11 +277,11 @@ export function HoursPage() {
         <section className="hoursSubmitPanel">
           <div>
             <strong>{statusLabel(submission?.status || 'DRAFT')}</strong>
-            <p>{isCurrentWeek ? copy.sendCurrent : copy.sendHistory}</p>
+            <p>{isCurrentWeek ? t('hours.sendCurrent') : t('hours.sendHistory')}</p>
           </div>
           <button className="hoursSubmitButton" type="button" disabled={isFetching || isMutating || isSubmittedOrApproved || !entries.length} onClick={submitSelectedWeek}>
             <SvgIcon name="send" />
-            {submissionStatus === 'REJECTED' ? copy.resubmit : copy.sendWeek}
+            {submissionStatus === 'REJECTED' ? t('hours.resubmit') : t('hours.sendWeek')}
           </button>
         </section>
       ) : null}
