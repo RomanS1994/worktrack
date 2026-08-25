@@ -4,9 +4,9 @@ import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
 import {
   useGetInvoiceHistoryQuery,
-  useGetInvoicesQuery,
+  useGetInvoiceQuery,
   useGetManagerInvoiceHistoryQuery,
-  useGetManagerInvoicesQuery,
+  useGetManagerInvoiceQuery,
   useMarkInvoiceViewedMutation,
 } from '../../features/worktrack/billingApi.js';
 import './InvoiceDocumentPage.css';
@@ -29,20 +29,20 @@ export function InvoiceDocumentPage({managerMode=false}){
  const c=COPY[language]||COPY.uk;
  const viewedRef=useRef('');
  const [copied,setCopied]=useState(false);
- const employeeQuery=useGetInvoicesQuery(undefined,{skip:managerMode});
- const managerQuery=useGetManagerInvoicesQuery(undefined,{skip:!managerMode});
+ const employeeQuery=useGetInvoiceQuery(invoiceId,{skip:managerMode||!invoiceId});
+ const managerQuery=useGetManagerInvoiceQuery(invoiceId,{skip:!managerMode||!invoiceId});
  const employeeHistory=useGetInvoiceHistoryQuery(invoiceId,{skip:managerMode||!invoiceId});
  const managerHistory=useGetManagerInvoiceHistoryQuery(invoiceId,{skip:!managerMode||!invoiceId});
  const [markViewed]=useMarkInvoiceViewedMutation();
  const activeQuery=managerMode?managerQuery:employeeQuery;
  const historyQuery=managerMode?managerHistory:employeeHistory;
- const invoice=(activeQuery.data?.invoices||[]).find(item=>item.id===invoiceId);
+ const invoice=activeQuery.data?.invoice;
 
  useEffect(()=>{
   if(!managerMode||!invoice||invoice.status!=='SENT'||viewedRef.current===invoice.id)return;
   viewedRef.current=invoice.id;
-  markViewed(invoice.id).unwrap().then(()=>historyQuery.refetch()).catch(()=>{viewedRef.current=''});
- },[invoice,managerMode,markViewed,historyQuery]);
+  markViewed(invoice.id).unwrap().then(()=>Promise.all([activeQuery.refetch(),historyQuery.refetch()])).catch(()=>{viewedRef.current=''});
+ },[invoice,managerMode,markViewed,activeQuery,historyQuery]);
 
  useEffect(()=>{
   if(!invoice?.invoiceNumber)return undefined;
