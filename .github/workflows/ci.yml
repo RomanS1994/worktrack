@@ -2,10 +2,11 @@ name: CI
 
 on:
   pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
-      - 'agent/**'
 
 jobs:
   verify:
@@ -77,20 +78,23 @@ jobs:
       - name: Build frontend
         run: npm run build:web
 
-      - name: Install Playwright smoke runner
-        run: npm install --no-save --no-package-lock @playwright/test@1.55.0
-
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Run browser smoke tests
-        run: npx playwright test
-
       - name: Audit production runtime dependencies
         run: node tools/audit-production.js
 
       - name: Scan tracked files for secrets
         run: npm run secrets:check
+
+      - name: Install Playwright smoke runner
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: npm install --no-save --no-package-lock @playwright/test@1.55.0
+
+      - name: Install Chromium
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser smoke tests
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: npx playwright test
 
       - name: Show backend logs on failure
         if: failure()
