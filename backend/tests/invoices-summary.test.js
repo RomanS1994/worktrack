@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { listEmployeeInvoices, listManagerInvoices } from '../services/invoices.js';
+import {
+  getEmployeeInvoice,
+  getManagerInvoice,
+  listEmployeeInvoices,
+  listManagerInvoices,
+} from '../services/invoices.js';
 
 const BASE_INVOICE = {
   id: 'invoice-1',
@@ -123,4 +128,52 @@ test('manager invoice list keeps employee identity and the same financial summar
   assert.equal(result.summary.paidAmount, '2500.00');
   assert.equal(result.summary.openCount, 1);
   assert.equal(result.summary.paidCount, 1);
+});
+
+test('employee invoice detail is tenant and membership scoped', async () => {
+  let query;
+  const client = {
+    invoice: {
+      findFirst: async args => {
+        query = args;
+        return BASE_INVOICE;
+      },
+    },
+  };
+
+  const result = await getEmployeeInvoice(client, employeeContext(), 'invoice-1');
+
+  assert.equal(result.id, 'invoice-1');
+  assert.deepEqual(query.where, {
+    id: 'invoice-1',
+    companyId: 'company-1',
+    employeeMembershipId: 'employee-1',
+  });
+});
+
+test('manager invoice detail is company scoped and explicitly excludes drafts', async () => {
+  let query;
+  const client = {
+    invoice: {
+      findFirst: async args => {
+        query = args;
+        return {
+          ...BASE_INVOICE,
+          employeeMembership: {
+            id: 'employee-1',
+            user: { name: 'Employee One', email: 'employee@example.com' },
+          },
+        };
+      },
+    },
+  };
+
+  const result = await getManagerInvoice(client, managerContext(), 'invoice-1');
+
+  assert.equal(result.employee.id, 'employee-1');
+  assert.deepEqual(query.where, {
+    id: 'invoice-1',
+    companyId: 'company-1',
+    status: { not: 'DRAFT' },
+  });
 });
