@@ -225,16 +225,19 @@ async function main() {
   assert.equal(viewedInvoice.invoice?.status, 'VIEWED');
   assert.ok(viewedInvoice.invoice?.viewedAt);
 
+  const paymentDate = weekStart;
   const paidInvoice = await request(`/manager/invoices/${invoiceId}/paid`, {
     method: 'POST',
     token: managerToken,
+    body: { paidDate: paymentDate },
   });
   assert.equal(paidInvoice.invoice?.status, 'PAID');
-  assert.ok(paidInvoice.invoice?.paidAt);
+  assert.equal(paidInvoice.invoice?.paidAt?.slice(0, 10), paymentDate);
 
   const employeeInvoices = await request('/invoices', { token: employeeToken });
   const finalInvoice = employeeInvoices.invoices?.find(item => item.id === invoiceId);
   assert.equal(finalInvoice?.status, 'PAID');
+  assert.equal(finalInvoice?.paidAt?.slice(0, 10), paymentDate);
   assert.equal(employeeInvoices.summary?.openAmount, '0.00');
   assert.equal(employeeInvoices.summary?.paidAmount, '2000.00');
   assert.equal(employeeInvoices.summary?.paidCount, 1);
@@ -242,8 +245,9 @@ async function main() {
   const history = await request(`/invoices/${invoiceId}/history`, { token: employeeToken });
   const actions = (history.history || []).map(item => item.action);
   assert.deepEqual(actions, ['invoice.created', 'invoice.sent', 'invoice.viewed', 'invoice.paid']);
+  assert.equal(history.history?.at(-1)?.after?.paidAt?.slice(0, 10), paymentDate);
 
-  console.log('Integration E2E passed: register -> employee -> hours -> approve -> immutable invoice snapshot -> send -> viewed -> paid');
+  console.log('Integration E2E passed: register -> employee -> hours -> approve -> immutable invoice snapshot -> send -> viewed -> paid with explicit date');
 }
 
 main().catch(error => {
