@@ -17,7 +17,7 @@ export const billingApi = baseApi.injectEndpoints({
     getManagerInvoice: builder.query({ query: invoiceId => `/manager/invoices/${invoiceId}`, providesTags: ['Invoices'] }),
     getManagerInvoiceHistory: builder.query({ query: invoiceId => `/manager/invoices/${invoiceId}/history`, providesTags: ['Invoices'] }),
     markInvoiceViewed: builder.mutation({ query: invoiceId => ({ url: `/manager/invoices/${invoiceId}/viewed`, method: 'POST' }), invalidatesTags: ['Invoices'] }),
-    markInvoicePaid: builder.mutation({ query: invoiceId => ({ url: `/manager/invoices/${invoiceId}/paid`, method: 'POST' }), invalidatesTags: ['Invoices'] }),
+    markInvoicePaid: builder.mutation({ query: ({ invoiceId, paidDate }) => ({ url: `/manager/invoices/${invoiceId}/paid`, method: 'POST', body: { paidDate } }), invalidatesTags: ['Invoices'] }),
   }),
 });
 
