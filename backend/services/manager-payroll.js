@@ -78,46 +78,40 @@ function getEmployeeName(user) {
 
 function calculateOvertime(entries = [], standardDailyHours = 8) {
   const dailyNorm = Math.max(0, toHundredths(standardDailyHours));
-  const totalsByDay = new Map();
-  const approvedByDay = new Map();
-  const pendingByDay = new Map();
+  const byDay = new Map();
 
   for (const entry of entries) {
-    const day = toDateKey(entry.workDate instanceof Date ? entry.workDate : new Date(entry.workDate));
-    const hours = toHundredths(entry.hours);
-    totalsByDay.set(day, (totalsByDay.get(day) || 0) + hours);
+    const date = entry.workDate instanceof Date ? entry.workDate : new Date(entry.workDate);
+    if (Number.isNaN(date.getTime())) continue;
 
-    if (entry.status === 'APPROVED') {
-      approvedByDay.set(day, (approvedByDay.get(day) || 0) + hours);
-    } else if (entry.status === 'DRAFT' || entry.status === 'SUBMITTED') {
-      pendingByDay.set(day, (pendingByDay.get(day) || 0) + hours);
-    }
+    const day = toDateKey(date);
+    const bucket = byDay.get(day) || { approved: 0, pending: 0 };
+    const hours = toHundredths(entry.hours);
+
+    if (entry.status === 'APPROVED') bucket.approved += hours;
+    else if (entry.status === 'DRAFT' || entry.status === 'SUBMITTED') bucket.pending += hours;
+
+    byDay.set(day, bucket);
   }
 
   let overtime = 0;
   let approvedOvertime = 0;
   let pendingOvertime = 0;
 
-  for (const [day, total] of totalsByDay) {
-    const dayOvertime = Math.max(0, total - dailyNorm);
-    overtime += dayOvertime;
-    if (!dayOvertime) continue;
+  for (const { approved, pending } of byDay.values()) {
+    const totalOvertime = Math.max(0, approved + pending - dailyNorm);
+    const approvedDayOvertime = Math.max(0, approved - dailyNorm);
+    const pendingDayOvertime = Math.max(0, totalOvertime - approvedDayOvertime);
 
-    const approved = approvedByDay.get(day) || 0;
-    const pending = pendingByDay.get(day) || 0;
-    const approvedBase = Math.min(approved, dailyNorm);
-    approvedOvertime += Math.max(0, approved - approvedBase);
-    pendingOvertime += Math.max(0, dayOvertime - Math.max(0, approved - dailyNorm));
-
-    if (!approved && pending) {
-      pendingOvertime -= Math.max(0, dayOvertime - pending);
-    }
+    overtime += totalOvertime;
+    approvedOvertime += approvedDayOvertime;
+    pendingOvertime += pendingDayOvertime;
   }
 
   return {
     overtimeHours: formatHundredths(overtime),
     approvedOvertimeHours: formatHundredths(approvedOvertime),
-    pendingOvertimeHours: formatHundredths(Math.max(0, pendingOvertime)),
+    pendingOvertimeHours: formatHundredths(pendingOvertime),
   };
 }
 
