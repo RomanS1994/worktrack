@@ -8,6 +8,8 @@ export const worktrackApi = baseApi.injectEndpoints({
     markNotificationRead: builder.mutation({ query: notificationId => ({ url: `/notifications/${notificationId}/read`, method: 'POST' }), invalidatesTags: [{ type: 'Notifications', id: 'LIST' }] }),
     markAllNotificationsRead: builder.mutation({ query: () => ({ url: '/notifications/read-all', method: 'POST' }), invalidatesTags: [{ type: 'Notifications', id: 'LIST' }] }),
     getProjects: builder.query({ query: () => '/projects', providesTags: result => [{ type: 'Projects', id: 'LIST' }, ...(Array.isArray(result?.projects) ? result.projects : []).map(project => ({ type: 'Projects', id: project.id }))] }),
+    getDefaultProject: builder.query({ query: () => '/default-project', providesTags: [{ type: 'Projects', id: 'DEFAULT' }] }),
+    updateDefaultProject: builder.mutation({ query: projectId => ({ url: '/default-project', method: 'PATCH', body: { projectId } }), invalidatesTags: [{ type: 'Projects', id: 'DEFAULT' }] }),
     createProject: builder.mutation({ query: body => ({ url: '/projects', method: 'POST', body }), invalidatesTags: [{ type: 'Projects', id: 'LIST' }, { type: 'WorkEntries', id: 'SUMMARY' }] }),
     updateProject: builder.mutation({ query: ({ projectId, ...body }) => ({ url: `/projects/${projectId}`, method: 'PATCH', body }), invalidatesTags: (_result, _error, { projectId }) => [{ type: 'Projects', id: 'LIST' }, { type: 'Projects', id: projectId }, { type: 'WorkEntries', id: 'SUMMARY' }] }),
     deactivateProject: builder.mutation({ query: projectId => ({ url: `/projects/${projectId}/deactivate`, method: 'POST' }), invalidatesTags: (_result, _error, projectId) => [{ type: 'Projects', id: 'LIST' }, { type: 'Projects', id: projectId }, { type: 'WorkEntries', id: 'SUMMARY' }] }),
@@ -35,7 +37,7 @@ export const worktrackApi = baseApi.injectEndpoints({
 
 export const {
   useGetWorkSummaryQuery, useGetManagerPayrollQuery, useGetNotificationsQuery, useMarkNotificationReadMutation, useMarkAllNotificationsReadMutation,
-  useGetProjectsQuery, useCreateProjectMutation, useUpdateProjectMutation, useDeactivateProjectMutation, useGetCompanySettingsQuery, useUpdateCompanySettingsMutation,
+  useGetProjectsQuery, useGetDefaultProjectQuery, useUpdateDefaultProjectMutation, useCreateProjectMutation, useUpdateProjectMutation, useDeactivateProjectMutation, useGetCompanySettingsQuery, useUpdateCompanySettingsMutation,
   useGetWorkRulesQuery, useUpdateWorkRulesMutation,
   useGetWeekEntriesQuery, useCreateWorkEntryMutation, useUpdateWorkEntryMutation, useDeleteWorkEntryMutation, useSubmitWeekMutation,
   useGetManagerEmployeesQuery, useCreateManagerEmployeeMutation, useUpdateManagerEmployeeMutation, useResetManagerEmployeePasswordMutation,
