@@ -1,5 +1,8 @@
 import { NavLink } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
+import { selectUser } from '@shared/features/auth/authSlice.js';
+import { hasManagerAccess } from '@shared/features/auth/authAccess.js';
 import './SectionTabs.css';
 
 const COPY={
@@ -33,8 +36,10 @@ const CONFIG={
 
 export function SectionTabs({section}){
  const {language}=useI18n();
+ const user=useSelector(selectUser);
  const c=COPY[language]||COPY.uk;
- const tabs=CONFIG[section]?.(c)||[];
+ const configKey=section==='finance'?(hasManagerAccess(user)?'managerFinance':'employeeFinance'):section;
+ const tabs=CONFIG[configKey]?.(c)||[];
  return <nav className="sectionTabs" aria-label={c[section]||section}>
   {tabs.map(tab=><NavLink key={tab.to} to={tab.to} end={tab.end} className={({isActive})=>`sectionTabs-item${isActive?' is-active':''}`}>{tab.label}</NavLink>)}
  </nav>;
