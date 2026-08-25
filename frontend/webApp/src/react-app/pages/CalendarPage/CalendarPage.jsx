@@ -17,9 +17,9 @@ const DAY_MS = 86400000;
 const STATUS_PRIORITY = ['REJECTED', 'SUBMITTED', 'DRAFT', 'APPROVED'];
 const LOCALES = { uk: 'uk-UA', en: 'en-GB', cs: 'cs-CZ' };
 const COPY = {
-  uk: { editDay:'Робочий запис', object:'Об’єкт', from:'Від', to:'До', note:'Нотатка', notePlaceholder:'Наприклад: монтаж, сервіс, додаткові роботи…', total:'Чистими', gross:'Фактично', break:'Обід', add:'Додати запис', update:'Зберегти зміни', existing:'Записи цього дня', noProjects:'Немає активних об’єктів', close:'Закрити', delete:'Видалити', locked:'Цей тиждень уже відправлено або погоджено. Редагування заблоковано.', tapHint:'Натисніть на дату, щоб додати робочий час.', saved:'Запис збережено', invalidTime:'Перевірте час початку та завершення.' },
-  cs: { editDay:'Pracovní záznam', object:'Objekt', from:'Od', to:'Do', note:'Poznámka', notePlaceholder:'Např. montáž, servis, vícepráce…', total:'Čisté', gross:'Skutečně', break:'Oběd', add:'Přidat záznam', update:'Uložit změny', existing:'Záznamy tohoto dne', noProjects:'Žádné aktivní objekty', close:'Zavřít', delete:'Smazat', locked:'Tento týden již byl odeslán nebo schválen. Úpravy jsou uzamčeny.', tapHint:'Klikněte na datum pro přidání pracovní doby.', saved:'Záznam byl uložen', invalidTime:'Zkontrolujte čas začátku a konce.' },
-  en: { editDay:'Work entry', object:'Project / site', from:'From', to:'To', note:'Note', notePlaceholder:'For example: installation, service, extra work…', total:'Net', gross:'Gross', break:'Lunch', add:'Add entry', update:'Save changes', existing:'Entries for this day', noProjects:'No active projects', close:'Close', delete:'Delete', locked:'This week has already been submitted or approved. Editing is locked.', tapHint:'Tap a date to add working time.', saved:'Entry saved', invalidTime:'Check the start and end time.' },
+  uk: { editDay:'Робочий запис', object:'Об’єкт', from:'Від', to:'До', note:'Нотатка', notePlaceholder:'Наприклад: монтаж, сервіс, додаткові роботи…', total:'Чистими', gross:'Фактично', break:'Обід', add:'Додати запис', update:'Зберегти зміни', existing:'Записи цього дня', noProjects:'Немає активних об’єктів', close:'Закрити', delete:'Видалити', clearDay:'Очистити день', clearForm:'Очистити форму', locked:'Цей тиждень уже відправлено або погоджено. Редагування заблоковано.', tapHint:'Натисніть на дату, щоб додати робочий час.', saved:'Запис збережено', deleted:'Запис видалено', cleared:'Записи за цей день очищено', invalidTime:'Перевірте час початку та завершення.', deleteConfirm:'Видалити цей робочий запис?', clearDayConfirm:'Видалити всі записи за цей день? Цю дію не можна скасувати.' },
+  cs: { editDay:'Pracovní záznam', object:'Objekt', from:'Od', to:'Do', note:'Poznámka', notePlaceholder:'Např. montáž, servis, vícepráce…', total:'Čisté', gross:'Skutečně', break:'Oběd', add:'Přidat záznam', update:'Uložit změny', existing:'Záznamy tohoto dne', noProjects:'Žádné aktivní objekty', close:'Zavřít', delete:'Smazat', clearDay:'Vymazat den', clearForm:'Vymazat formulář', locked:'Tento týden již byl odeslán nebo schválen. Úpravy jsou uzamčeny.', tapHint:'Klikněte na datum pro přidání pracovní doby.', saved:'Záznam byl uložen', deleted:'Záznam byl smazán', cleared:'Záznamy pro tento den byly vymazány', invalidTime:'Zkontrolujte čas začátku a konce.', deleteConfirm:'Smazat tento pracovní záznam?', clearDayConfirm:'Smazat všechny záznamy pro tento den? Tuto akci nelze vrátit zpět.' },
+  en: { editDay:'Work entry', object:'Project / site', from:'From', to:'To', note:'Note', notePlaceholder:'For example: installation, service, extra work…', total:'Net', gross:'Gross', break:'Lunch', add:'Add entry', update:'Save changes', existing:'Entries for this day', noProjects:'No active projects', close:'Close', delete:'Delete', clearDay:'Clear day', clearForm:'Clear form', locked:'This week has already been submitted or approved. Editing is locked.', tapHint:'Tap a date to add working time.', saved:'Entry saved', deleted:'Entry deleted', cleared:'Entries for this day were cleared', invalidTime:'Check the start and end time.', deleteConfirm:'Delete this work entry?', clearDayConfirm:'Delete all entries for this day? This action cannot be undone.' },
 };
 
 function toDateKey(date) { return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())).toISOString().slice(0, 10); }
@@ -96,6 +96,7 @@ export function CalendarPage() {
   const statusLabel = status => t(`common.${String(status || 'draft').toLowerCase()}`);
 
   function resetEditor() { setEditingId(''); setProjectId(projects[0]?.id || ''); setStartTime('07:00'); setEndTime('15:30'); setNote(''); setActionError(''); setActionMessage(''); }
+  function clearForm() { setEditingId(''); setProjectId(projects[0]?.id || ''); setStartTime(''); setEndTime(''); setNote(''); setActionError(''); setActionMessage(''); }
   function openDay(dateKey) { setSelectedDateKey(dateKey); resetEditor(); setEditorOpen(true); }
   function editExisting(entry) { setEditingId(entry.id); setProjectId(entry.projectId || entry.project?.id || ''); setStartTime(entry.startTime || '07:00'); setEndTime(entry.endTime || '15:30'); setNote(entry.note || ''); setActionError(''); setActionMessage(''); }
   function changeMonth(amount) { const next = shiftMonth(monthDate, amount); setMonthDate(next); setSelectedDateKey(toDateKey(new Date(next.getFullYear(), next.getMonth(), 1))); setEditorOpen(false); }
@@ -109,12 +110,30 @@ export function CalendarPage() {
     try {
       if (editingId) await updateEntry({ entryId:editingId, ...payload }).unwrap();
       else await createEntry({ workDate:selectedDateKey, ...payload }).unwrap();
-      setActionMessage(c.saved);
       resetEditor();
+      setActionMessage(c.saved);
     } catch (error) { setActionError(getApiErrorMessage(error)); }
   }
 
-  async function removeEntry(entryId) { if (locked) return; setActionError(''); try { await deleteEntry(entryId).unwrap(); if (editingId === entryId) resetEditor(); } catch (error) { setActionError(getApiErrorMessage(error)); } }
+  async function removeEntry(entryId) {
+    if (locked || busy || !window.confirm(c.deleteConfirm)) return;
+    setActionError(''); setActionMessage('');
+    try {
+      await deleteEntry(entryId).unwrap();
+      if (editingId === entryId) resetEditor();
+      setActionMessage(c.deleted);
+    } catch (error) { setActionError(getApiErrorMessage(error)); }
+  }
+
+  async function clearSelectedDay() {
+    if (locked || busy || !selectedEntries.length || !window.confirm(c.clearDayConfirm)) return;
+    setActionError(''); setActionMessage('');
+    try {
+      for (const entry of selectedEntries) await deleteEntry(entry.id).unwrap();
+      resetEditor();
+      setActionMessage(c.cleared);
+    } catch (error) { setActionError(getApiErrorMessage(error)); }
+  }
 
   return <section className="workCalendarPage pageStack">
     <header className="workCalendarHeader"><div><p className="sectionEyebrow">{t('calendar.eyebrow')}</p><h1>{t('calendar.title')}</h1><p>{c.tapHint}</p></div></header>
@@ -127,7 +146,7 @@ export function CalendarPage() {
     </> : null}
 
     {editorOpen ? <div className="workHoursModalBackdrop" onMouseDown={event => { if (event.target === event.currentTarget) setEditorOpen(false); }}><section className="workHoursModal" role="dialog" aria-modal="true"><header><div><span>{formatLongDate(selectedDateKey, locale)}</span><h2>{c.editDay}</h2></div><button type="button" aria-label={c.close} onClick={() => setEditorOpen(false)}>×</button></header><div className="workHoursModalBody">
-      {selectedEntries.length ? <section className="workHoursExisting"><h3>{c.existing}</h3>{selectedEntries.map(entry => <article key={entry.id}><button className="workHoursExistingMain" type="button" disabled={locked} onClick={() => editExisting(entry)}><span><strong>{entry.project?.name || t('calendar.workEntry')}</strong><small>{entry.startTime && entry.endTime ? `${entry.startTime}–${entry.endTime}` : formatHours(entry.hours)}{Number(entry.breakMinutes)>0 ? ` · −${entry.breakMinutes}m ${c.break}` : ''}{entry.note ? ` · ${entry.note}` : ''}</small></span><b>{formatHours(entry.hours)}</b></button>{!locked ? <button className="workHoursDelete" type="button" disabled={busy} onClick={() => removeEntry(entry.id)}>{c.delete}</button> : null}</article>)}</section> : null}
+      {selectedEntries.length ? <section className="workHoursExisting"><div className="workHoursExistingHeader"><h3>{c.existing}</h3>{!locked ? <button className="workHoursClearDay" type="button" disabled={busy} onClick={clearSelectedDay}>{c.clearDay}</button> : null}</div>{selectedEntries.map(entry => <article key={entry.id}><button className="workHoursExistingMain" type="button" disabled={locked} onClick={() => editExisting(entry)}><span><strong>{entry.project?.name || t('calendar.workEntry')}</strong><small>{entry.startTime && entry.endTime ? `${entry.startTime}–${entry.endTime}` : formatHours(entry.hours)}{Number(entry.breakMinutes)>0 ? ` · −${entry.breakMinutes}m ${c.break}` : ''}{entry.note ? ` · ${entry.note}` : ''}</small></span><b>{formatHours(entry.hours)}</b></button>{!locked ? <button className="workHoursDelete" type="button" disabled={busy} onClick={() => removeEntry(entry.id)}>{c.delete}</button> : null}</article>)}</section> : null}
       {locked ? <p className="statusNote">{c.locked}</p> : <form className="workHoursForm" onSubmit={saveEntry}>
         <label><span>{c.object}</span><select value={projectId || projects[0]?.id || ''} disabled={busy || !projects.length} onChange={event => setProjectId(event.target.value)}>{!projects.length ? <option value="">{c.noProjects}</option> : null}{projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
         <div className="workHoursTimeGrid"><label><span>{c.from}</span><input type="time" value={startTime} onChange={event => setStartTime(event.target.value)} /></label><label><span>{c.to}</span><input type="time" value={endTime} onChange={event => setEndTime(event.target.value)} /></label></div>
@@ -135,7 +154,7 @@ export function CalendarPage() {
         {calculatedGrossHours > 0 ? <p className="statusNote">{c.gross}: {formatHours(calculatedGrossHours)}{calculatedBreakMinutes > 0 ? ` · −${calculatedBreakMinutes}m ${c.break}` : ''}</p> : null}
         <label><span>{c.note}</span><textarea rows="3" maxLength="1200" value={note} placeholder={c.notePlaceholder} onChange={event => setNote(event.target.value)} /></label>
         {actionError ? <p className="statusNote is-error">{actionError}</p> : null}{actionMessage ? <p className="statusNote is-success">{actionMessage}</p> : null}
-        <button className="workHoursSave" type="submit" disabled={busy || !projects.length || calculatedGrossHours <= 0}>{editingId ? c.update : c.add}</button>
+        <div className="workHoursFormActions"><button className="workHoursSave" type="submit" disabled={busy || !projects.length || calculatedGrossHours <= 0}>{editingId ? c.update : c.add}</button><button className="workHoursClearForm" type="button" disabled={busy} onClick={clearForm}>{c.clearForm}</button></div>
         {editingId ? <button className="workHoursCancelEdit" type="button" onClick={resetEditor}>{c.add}</button> : null}
       </form>}
     </div></section></div> : null}
