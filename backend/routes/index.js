@@ -1,5 +1,6 @@
 import { handleAuthRoutes } from './auth/index.js';
 import { handleBillingRoutes } from './billing.js';
+import { handleDefaultProjectRoutes } from './default-project.js';
 import { handleManagerRoutes } from './manager/index.js';
 import { handleMeRoutes } from './me.js';
 import { handleNotificationRoutes } from './notifications.js';
@@ -13,6 +14,7 @@ const routeHandlers = [
   handleMeRoutes,
   handleNotificationRoutes,
   handleBillingRoutes,
+  handleDefaultProjectRoutes,
   handleWorkRulesRoutes,
   handleWorkTrackRoutes,
   handleManagerRoutes,
