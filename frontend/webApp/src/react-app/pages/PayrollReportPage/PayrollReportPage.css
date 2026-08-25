@@ -1,241 +1,379 @@
-.payrollReportPage { gap:12px; }
+.payrollReportPage { gap:14px; }
 
 /* Employee finance dashboard */
 .employeeFinance {
-  width:min(680px,100%);
+  width:min(760px,100%);
   margin:0 auto;
   display:grid;
-  gap:10px;
+  gap:12px;
+  padding:0 2px 6px;
 }
+
 .employeeFinance-heading {
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:12px;
+  gap:14px;
+  min-height:52px;
   padding:0 2px;
 }
 .employeeFinance-heading h1 {
   margin:0;
   color:var(--text);
-  font-size:clamp(28px,5vw,36px);
-  line-height:1.05;
-  letter-spacing:-.04em;
+  font-size:clamp(30px,6vw,38px);
+  line-height:1;
+  letter-spacing:-.045em;
 }
-.employeeFinance-kicker { display:none; }
-.employeeFinance-heading > .employeeFinance-status { display:none; }
-.employeeFinance-status {
-  display:inline-flex;
-  min-height:28px;
-  align-items:center;
-  gap:6px;
-  padding:0 10px;
-  border:1px solid rgba(22,163,74,.13);
-  border-radius:999px;
-  color:#166534;
-  background:#effbf3;
-  font-size:11px;
+.employeeFinance-helpButton {
+  display:grid;
+  width:42px;
+  height:42px;
+  place-items:center;
+  padding:0;
+  border:1px solid rgba(148,163,184,.16);
+  border-radius:14px;
+  color:#111827;
+  background:#fff;
+  box-shadow:0 7px 18px rgba(15,23,42,.06);
+  font:inherit;
+  font-size:20px;
   font-weight:800;
-  white-space:nowrap;
 }
-.employeeFinance-status i {
-  width:6px;
-  height:6px;
-  border-radius:50%;
-  background:#16a34a;
+
+.employeeFinance-tabs {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  width:min(300px,100%);
+  padding:3px;
+  border:1px solid rgba(148,163,184,.17);
+  border-radius:15px;
+  background:#f3f4f6;
 }
-.employeeFinance-status.is-inline { display:inline-flex; }
-.employeeFinance-tabs { display:none; }
-.employeeFinance-period {
+.employeeFinance-tabs button {
+  min-height:42px;
+  padding:0 20px;
+  border:0;
+  border-radius:12px;
+  color:#64748b;
+  background:transparent;
+  font:inherit;
+  font-size:15px;
+  font-weight:800;
+}
+.employeeFinance-tabs button.is-active {
+  color:#15803d;
+  background:#fff;
+  box-shadow:0 4px 12px rgba(15,23,42,.07);
+}
+
+.employeeFinance-periodNav {
+  display:grid;
+  grid-template-columns:52px minmax(0,1fr) 52px;
+  align-items:center;
+  gap:12px;
+  min-height:84px;
+}
+.employeeFinance-periodNav > button {
+  display:grid;
+  width:52px;
+  height:52px;
+  place-items:center;
+  padding:0;
+  border:1px solid rgba(148,163,184,.18);
+  border-radius:15px;
+  color:#0f172a;
+  background:#fff;
+  box-shadow:0 7px 18px rgba(15,23,42,.055);
+  font:inherit;
+  font-size:34px;
+  font-weight:500;
+  line-height:1;
+}
+.employeeFinance-periodNav > div {
   display:grid;
   justify-items:center;
-  gap:1px;
-  padding:2px 8px 4px;
+  gap:3px;
   text-align:center;
 }
-.employeeFinance-period strong {
+.employeeFinance-periodNav strong {
   color:var(--text);
-  font-size:15px;
-  letter-spacing:-.015em;
+  font-size:18px;
+  letter-spacing:-.02em;
 }
-.employeeFinance-period span {
+.employeeFinance-periodNav span {
   color:var(--muted);
-  font-size:11px;
+  font-size:13px;
   font-weight:650;
 }
+
 .employeeFinance-hero,
 .employeeFinance-companyCard,
 .employeeFinance-card {
-  border:1px solid rgba(148,163,184,.16);
-  border-radius:18px;
+  border:1px solid rgba(148,163,184,.17);
+  border-radius:22px;
   background:#fff;
-  box-shadow:0 7px 20px rgba(15,23,42,.035);
+  box-shadow:0 9px 28px rgba(15,23,42,.045);
 }
 .employeeFinance-hero {
-  padding:16px 18px;
-  border-color:rgba(22,163,74,.15);
-  background:linear-gradient(135deg,#f2fcf5 0%,#fff 80%);
+  padding:22px 22px 19px;
+  border-color:rgba(22,163,74,.17);
+  background:linear-gradient(135deg,#f3fcf6 0%,#ffffff 85%);
 }
 .employeeFinance-heroTop {
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
-  gap:12px;
+  gap:16px;
 }
-.employeeFinance-heroTop > div { display:grid; gap:3px; }
-.employeeFinance-heroTop span:not(.employeeFinance-status) {
+.employeeFinance-heroTop > div { display:grid; gap:5px; }
+.employeeFinance-heroTop > div > span {
   color:#64748b;
-  font-size:12px;
-  font-weight:750;
+  font-size:14px;
+  font-weight:760;
 }
 .employeeFinance-heroTop strong {
   color:var(--text);
-  font-size:clamp(32px,8vw,44px);
-  line-height:1;
+  font-size:clamp(38px,9vw,52px);
+  line-height:1.02;
   letter-spacing:-.05em;
 }
 .employeeFinance-heroTop small {
   color:#64748b;
-  font-size:12px;
+  font-size:14px;
   font-weight:650;
 }
+.employeeFinance-status {
+  display:inline-flex;
+  min-height:34px;
+  align-items:center;
+  gap:8px;
+  padding:0 13px;
+  border:1px solid rgba(22,163,74,.15);
+  border-radius:999px;
+  color:#166534;
+  background:rgba(240,253,244,.92);
+  font-size:12px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.employeeFinance-status i {
+  width:7px;
+  height:7px;
+  flex:0 0 7px;
+  border-radius:50%;
+  background:#16a34a;
+}
 .employeeFinance-progress {
-  height:6px;
-  margin-top:14px;
+  height:7px;
+  margin-top:20px;
   overflow:hidden;
   border-radius:999px;
-  background:#e7ece9;
+  background:#e5e7eb;
 }
 .employeeFinance-progress > span {
   display:block;
   height:100%;
   border-radius:inherit;
-  background:linear-gradient(90deg,#16a34a,#22c55e);
+  background:#16a34a;
 }
 .employeeFinance-progressMeta {
   display:flex;
-  justify-content:flex-end;
-  margin-top:5px;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-top:8px;
   color:#64748b;
-  font-size:10px;
+  font-size:12px;
   font-weight:700;
 }
+
 .employeeFinance-companyCard {
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:12px 14px;
-}
-.employeeFinance-icon {
   display:grid;
-  width:38px;
-  height:38px;
-  flex:0 0 38px;
+  grid-template-columns:54px minmax(0,1fr) auto;
+  align-items:center;
+  gap:14px;
+  padding:15px 17px;
+}
+.employeeFinance-icon,
+.employeeFinance-rateIcon {
+  display:grid;
+  width:46px;
+  height:46px;
   place-items:center;
-  border-radius:12px;
-  color:#15803d;
-  background:#effbf3;
-  font-size:20px;
+  border-radius:50%;
+  color:#159447;
+  background:#edf9f0;
+  font-size:25px;
   font-weight:900;
 }
-.employeeFinance-companyCard > div:last-child {
+.employeeFinance-companyText {
   display:grid;
   min-width:0;
-  gap:1px;
+  gap:3px;
 }
-.employeeFinance-companyCard strong {
+.employeeFinance-companyText strong {
   overflow:hidden;
   color:var(--text);
-  font-size:15px;
+  font-size:17px;
   text-overflow:ellipsis;
   white-space:nowrap;
 }
-.employeeFinance-companyCard span {
+.employeeFinance-companyText span {
   overflow:hidden;
   color:var(--muted);
-  font-size:11px;
+  font-size:12.5px;
   text-overflow:ellipsis;
   white-space:nowrap;
 }
-.employeeFinance-card { padding:14px 16px; }
+.employeeFinance-detailsButton {
+  display:inline-flex;
+  min-height:42px;
+  align-items:center;
+  gap:8px;
+  padding:0 14px;
+  border:1px solid rgba(148,163,184,.18);
+  border-radius:14px;
+  color:#111827;
+  background:#fff;
+  font:inherit;
+  font-size:13px;
+  font-weight:800;
+}
+.employeeFinance-detailsButton span {
+  font-size:24px;
+  line-height:1;
+}
+
+.employeeFinance-card { padding:18px 20px; }
 .employeeFinance-card h2 {
-  margin:0 0 7px;
+  margin:0 0 10px;
   color:var(--text);
-  font-size:16px;
-  letter-spacing:-.015em;
+  font-size:18px;
+  letter-spacing:-.02em;
 }
 .employeeFinance-breakdownRow,
 .employeeFinance-totalRow {
   display:grid;
-  grid-template-columns:minmax(0,1fr) auto auto;
+  grid-template-columns:minmax(0,1fr) 80px 100px;
   align-items:center;
   gap:10px;
-  min-height:36px;
+  min-height:46px;
 }
 .employeeFinance-breakdownRow > span {
   display:flex;
   min-width:0;
   align-items:center;
-  gap:7px;
-  color:#334155;
-  font-size:12px;
+  gap:10px;
+  color:#253044;
+  font-size:13px;
   font-weight:650;
 }
 .employeeFinance-breakdownRow i {
-  width:6px;
-  height:6px;
-  flex:0 0 6px;
+  width:8px;
+  height:8px;
+  flex:0 0 8px;
   border-radius:50%;
 }
 .employeeFinance-breakdownRow.is-confirmed i { background:#16a34a; }
 .employeeFinance-breakdownRow.is-pending i { background:#f59e0b; }
+.employeeFinance-breakdownRow.is-overtime i { background:#6d42db; }
 .employeeFinance-breakdownRow strong,
 .employeeFinance-breakdownRow b,
 .employeeFinance-totalRow strong,
 .employeeFinance-totalRow b {
   color:var(--text);
-  font-size:12px;
+  font-size:13px;
   white-space:nowrap;
 }
-.employeeFinance-breakdownRow b { min-width:82px; text-align:right; }
+.employeeFinance-breakdownRow strong { text-align:right; font-weight:650; }
+.employeeFinance-breakdownRow b { text-align:right; font-weight:760; }
 .employeeFinance-breakdownRow.is-confirmed b { color:#15803d; }
 .employeeFinance-totalRow {
-  margin-top:4px;
-  padding-top:10px;
+  min-height:50px;
+  margin-top:7px;
+  padding-top:12px;
   border-top:1px solid var(--line);
 }
-.employeeFinance-totalRow span { color:var(--text); font-size:13px; font-weight:850; }
-.employeeFinance-totalRow b { min-width:82px; color:#15803d; font-size:15px; text-align:right; }
-.employeeFinance-rateCard { padding-block:12px; }
-.employeeFinance-rateCard > div {
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:14px;
-}
-.employeeFinance-rateCard span { color:var(--muted); font-size:12px; font-weight:700; }
-.employeeFinance-rateCard strong { color:var(--text); font-size:15px; }
-.employeeFinance-actions { display:block; }
-.employeeFinance-actions button {
-  display:flex;
-  width:100%;
-  min-height:44px;
-  align-items:center;
-  justify-content:center;
-  gap:7px;
-  padding:0 14px;
-  border-radius:14px;
-  font:inherit;
-  font-size:13px;
+.employeeFinance-totalRow span,
+.employeeFinance-totalRow strong,
+.employeeFinance-totalRow b {
+  font-size:16px;
   font-weight:850;
 }
-.employeeFinance-primaryAction {
-  border:1px solid rgba(22,163,74,.18);
-  color:#15803d;
-  background:#fff;
-  box-shadow:0 5px 14px rgba(15,23,42,.025);
+.employeeFinance-totalRow strong { text-align:right; }
+.employeeFinance-totalRow b { color:#15803d; text-align:right; }
+
+.employeeFinance-rateCard { padding:16px 18px; }
+.employeeFinance-rateLine {
+  display:grid;
+  grid-template-columns:46px minmax(0,1fr) auto;
+  align-items:center;
+  gap:13px;
 }
-.employeeFinance-secondaryAction { display:none !important; }
-.employeeFinance-actions button span { font-size:17px; line-height:1; }
+.employeeFinance-rateLine > div:nth-child(2) {
+  display:grid;
+  gap:2px;
+}
+.employeeFinance-rateLine strong {
+  color:var(--text);
+  font-size:16px;
+}
+.employeeFinance-rateLine span {
+  color:var(--muted);
+  font-size:12.5px;
+}
+.employeeFinance-rateLine b {
+  color:var(--text);
+  font-size:14px;
+  white-space:nowrap;
+}
+.employeeFinance-taxNote {
+  display:flex;
+  min-height:46px;
+  align-items:center;
+  gap:9px;
+  margin-top:13px;
+  padding:0 14px;
+  border:1px solid rgba(22,163,74,.12);
+  border-radius:13px;
+  color:#15803d;
+  background:#f8fcf9;
+  font-size:11.5px;
+  font-weight:700;
+}
+.employeeFinance-taxNote span { font-size:16px; }
+
+.employeeFinance-actions {
+  display:grid;
+  grid-template-columns:minmax(0,1.65fr) minmax(130px,.75fr);
+  gap:10px;
+}
+.employeeFinance-actions button {
+  display:flex;
+  min-height:54px;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  padding:0 16px;
+  border-radius:16px;
+  background:#fff;
+  font:inherit;
+  font-size:13.5px;
+  font-weight:850;
+  box-shadow:0 8px 22px rgba(15,23,42,.045);
+}
+.employeeFinance-primaryAction {
+  border:1px solid rgba(22,163,74,.15);
+  color:#15803d;
+}
+.employeeFinance-secondaryAction {
+  border:1px solid rgba(148,163,184,.18);
+  color:#253044;
+}
+.employeeFinance-actions button span {
+  font-size:21px;
+  line-height:1;
+}
 
 /* Printable report and manager view */
 .payrollReport-toolbar {
@@ -307,24 +445,55 @@
 
 @media (max-width:640px) {
   .payrollReportPage { gap:10px; }
-  .employeeFinance { gap:9px; }
-  .employeeFinance-heading h1 { font-size:29px; }
-  .employeeFinance-period { padding-block:0 3px; }
-  .employeeFinance-hero { padding:14px 15px; border-radius:17px; }
-  .employeeFinance-heroTop strong { font-size:34px; }
-  .employeeFinance-status.is-inline { min-height:26px; padding-inline:8px; font-size:10px; }
-  .employeeFinance-companyCard,.employeeFinance-card { border-radius:17px; }
-  .employeeFinance-companyCard { padding:11px 13px; }
-  .employeeFinance-card { padding:13px 14px; }
-  .employeeFinance-breakdownRow,.employeeFinance-totalRow { grid-template-columns:minmax(0,1fr) auto; gap:5px 10px; min-height:34px; }
-  .employeeFinance-breakdownRow b,.employeeFinance-totalRow b { grid-column:2; min-width:0; }
-  .employeeFinance-breakdownRow strong { color:var(--muted); font-size:10px; }
-  .employeeFinance-totalRow strong { display:none; }
+  .employeeFinance { gap:10px; }
+  .employeeFinance-heading { min-height:48px; }
+  .employeeFinance-heading h1 { font-size:31px; }
+  .employeeFinance-helpButton { width:40px; height:40px; }
+  .employeeFinance-tabs { width:300px; max-width:100%; }
+  .employeeFinance-tabs button { min-height:40px; padding:0 16px; font-size:14px; }
+  .employeeFinance-periodNav { grid-template-columns:48px minmax(0,1fr) 48px; min-height:76px; gap:9px; }
+  .employeeFinance-periodNav > button { width:48px; height:48px; border-radius:14px; font-size:31px; }
+  .employeeFinance-periodNav strong { font-size:17px; }
+  .employeeFinance-periodNav span { font-size:12px; }
+  .employeeFinance-hero { padding:18px 18px 16px; border-radius:20px; }
+  .employeeFinance-heroTop > div > span { font-size:13px; }
+  .employeeFinance-heroTop strong { font-size:40px; }
+  .employeeFinance-heroTop small { font-size:13px; }
+  .employeeFinance-status { min-height:31px; padding:0 11px; font-size:11px; }
+  .employeeFinance-progress { margin-top:17px; }
+  .employeeFinance-progressMeta { font-size:11px; }
+  .employeeFinance-companyCard { grid-template-columns:46px minmax(0,1fr) auto; gap:11px; padding:13px 14px; border-radius:19px; }
+  .employeeFinance-icon,.employeeFinance-rateIcon { width:42px; height:42px; font-size:22px; }
+  .employeeFinance-companyText strong { font-size:15px; }
+  .employeeFinance-companyText span { font-size:11.5px; }
+  .employeeFinance-detailsButton { min-height:39px; padding:0 12px; font-size:12px; border-radius:13px; }
+  .employeeFinance-card { padding:16px 17px; border-radius:19px; }
+  .employeeFinance-card h2 { margin-bottom:8px; font-size:17px; }
+  .employeeFinance-breakdownRow,.employeeFinance-totalRow { grid-template-columns:minmax(0,1fr) 64px 88px; gap:7px; min-height:42px; }
+  .employeeFinance-breakdownRow > span { gap:8px; font-size:12px; }
+  .employeeFinance-breakdownRow strong,.employeeFinance-breakdownRow b { font-size:12px; }
+  .employeeFinance-totalRow { min-height:46px; padding-top:10px; }
+  .employeeFinance-totalRow span,.employeeFinance-totalRow strong,.employeeFinance-totalRow b { font-size:14px; }
+  .employeeFinance-rateCard { padding:14px 16px; }
+  .employeeFinance-rateLine { grid-template-columns:42px minmax(0,1fr) auto; gap:10px; }
+  .employeeFinance-rateLine strong { font-size:15px; }
+  .employeeFinance-rateLine span { font-size:11.5px; }
+  .employeeFinance-rateLine b { font-size:13px; }
+  .employeeFinance-taxNote { min-height:42px; margin-top:11px; padding:0 12px; font-size:10.5px; }
+  .employeeFinance-actions { grid-template-columns:minmax(0,1.6fr) minmax(112px,.75fr); gap:8px; }
+  .employeeFinance-actions button { min-height:50px; padding:0 12px; border-radius:15px; font-size:12.5px; }
   .payrollReport-toolbar,.payrollReport-header,.payrollReport-footer { align-items:stretch; flex-direction:column; }
   .payrollReport-actions { display:grid; grid-template-columns:1fr; }
   .payrollReport-company { justify-items:start; text-align:left; }
   .payrollReport-meta { grid-template-columns:1fr; }
   .payrollReport-sheet { padding:20px; border-radius:18px; }
+}
+
+@media (max-width:430px) {
+  .employeeFinance-breakdownRow,.employeeFinance-totalRow { grid-template-columns:minmax(0,1fr) 58px 82px; }
+  .employeeFinance-breakdownRow > span { font-size:11.5px; }
+  .employeeFinance-breakdownRow strong,.employeeFinance-breakdownRow b { font-size:11.5px; }
+  .employeeFinance-actions { grid-template-columns:minmax(0,1.55fr) minmax(104px,.7fr); }
 }
 
 @media print {
