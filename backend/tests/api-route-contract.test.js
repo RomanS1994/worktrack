@@ -30,11 +30,13 @@ const FRONTEND_API_CONTRACTS = [
   ['GET', '/api/monthly-hours?month=2026-08'],
   ['GET', '/api/invoices/preview?month=2026-08'],
   ['GET', '/api/invoices'],
+  ['GET', '/api/invoices/invoice-test'],
   ['GET', '/api/invoices/invoice-test/history'],
   ['POST', '/api/invoices'],
   ['POST', '/api/invoices/invoice-test/send'],
   ['POST', '/api/invoices/invoice-test/cancel'],
   ['GET', '/api/manager/invoices'],
+  ['GET', '/api/manager/invoices/invoice-test'],
   ['GET', '/api/manager/invoices/invoice-test/history'],
   ['POST', '/api/manager/invoices/invoice-test/viewed'],
   ['POST', '/api/manager/invoices/invoice-test/paid'],
@@ -78,9 +80,7 @@ function createResponse() {
     },
     writeHead(statusCode, nextHeaders = {}) {
       this.statusCode = statusCode;
-      for (const [name, value] of Object.entries(nextHeaders)) {
-        this.setHeader(name, value);
-      }
+      for (const [name, value] of Object.entries(nextHeaders)) this.setHeader(name, value);
       return this;
     },
     end(chunk = '') {
