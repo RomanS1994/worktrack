@@ -6,7 +6,6 @@ import { SvgIcon } from '@shared/app/components/SvgIcon/SvgIcon.jsx';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
 import { selectUser } from '@shared/features/auth/authSlice.js';
 import { hasManagerAccess } from '@shared/features/auth/authAccess.js';
-import { SectionTabs } from '../../components/SectionTabs/SectionTabs.jsx';
 import { useGetWorkSummaryQuery } from '../../features/worktrack/worktrackApi.js';
 import './FinanceHubPage.css';
 
@@ -22,7 +21,6 @@ export function FinanceHubPage(){
  const {data,error,isLoading}=useGetWorkSummaryQuery(); const summary=data?.summary||{};
  return <section className="financeHub pageStack">
   <header className="financeHubHeader appTop"><div className="appTitleBlock"><p className="sectionEyebrow">{c.eyebrow}</p><h1>{c.title}</h1><p>{isManager?c.managerCopy:c.employeeCopy}</p></div></header>
-  <SectionTabs section={isManager?'managerFinance':'employeeFinance'} />
   {isLoading?<RequestLoadingState label={c.title}/>:null}{error?<p className="statusNote is-error">{getApiErrorMessage(error)}</p>:null}
   {!isLoading&&!error?<section className="financeHubTotals">
    <article><span>{c.approved}</span><strong>{money(summary.confirmedSalaryCzk)}</strong></article>
