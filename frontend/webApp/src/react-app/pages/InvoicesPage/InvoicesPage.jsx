@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
@@ -19,8 +19,6 @@ const COPY={
 function currentMonth(){return new Date().toISOString().slice(0,7)}
 function statusLabel(c,status){return c[String(status||'').toLowerCase()]||status}
 function amount(value,currency){return `${Number(value||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} ${currency||'CZK'}`}
-function isOverdue(invoice){if(!['SENT','VIEWED'].includes(invoice.status)||!invoice.dueDate)return false;return new Date(`${invoice.dueDate}T23:59:59`).getTime()<Date.now()}
-function sumAmount(items){return items.reduce((sum,invoice)=>sum+Number(invoice.subtotal||0),0)}
 
 export function InvoicesPage(){
  const navigate=useNavigate();
@@ -35,12 +33,7 @@ export function InvoicesPage(){
  const [sendInvoice,sendState]=useSendInvoiceMutation();
  const [cancelInvoice,cancelState]=useCancelInvoiceMutation();
  const invoices=data?.invoices||[];
- const summary=useMemo(()=>{
-  const open=invoices.filter(invoice=>['SENT','VIEWED'].includes(invoice.status));
-  const overdue=open.filter(isOverdue);
-  const paid=invoices.filter(invoice=>invoice.status==='PAID');
-  return {open:sumAmount(open),overdue:sumAmount(overdue),paid:sumAmount(paid),openCount:open.length,overdueCount:overdue.length,paidCount:paid.length};
- },[invoices]);
+ const summary=data?.summary||{};
 
  async function review(){setError('');try{const result=await getPreview(month,true).unwrap();setPreview(result.preview||null)}catch(err){setError(getApiErrorMessage(err))}}
  async function create(){setError('');try{await createInvoice({month}).unwrap();setPreview(null);await refetch()}catch(err){setError(getApiErrorMessage(err))}}
@@ -50,13 +43,13 @@ export function InvoicesPage(){
  return <section className="invoicePage pageStack">
   <header className="invoiceHeader appTop"><div className="appTitleBlock"><p className="sectionEyebrow">{c.eyebrow}</p><h1>{c.title}</h1><p>{c.subtitle}</p></div></header>
   <section className="invoiceFinancialSummary" aria-label={c.title}>
-   <article className="screenCard"><span>{c.openAmount}</span><strong>{amount(summary.open,'CZK')}</strong><small>{summary.openCount}</small></article>
-   <article className={`screenCard${summary.overdue>0?' is-overdue':''}`}><span>{c.overdueAmount}</span><strong>{amount(summary.overdue,'CZK')}</strong><small>{summary.overdueCount}</small></article>
-   <article className="screenCard is-paid"><span>{c.paidAmount}</span><strong>{amount(summary.paid,'CZK')}</strong><small>{summary.paidCount}</small></article>
+   <article className="screenCard"><span>{c.openAmount}</span><strong>{amount(summary.openAmount,'CZK')}</strong><small>{summary.openCount||0}</small></article>
+   <article className={`screenCard${Number(summary.overdueAmount||0)>0?' is-overdue':''}`}><span>{c.overdueAmount}</span><strong>{amount(summary.overdueAmount,'CZK')}</strong><small>{summary.overdueCount||0}</small></article>
+   <article className="screenCard is-paid"><span>{c.paidAmount}</span><strong>{amount(summary.paidAmount,'CZK')}</strong><small>{summary.paidCount||0}</small></article>
   </section>
   <section className="invoiceCreate screenCard"><label><span>{c.month}</span><input type="month" value={month} max={currentMonth()} onChange={e=>setMonth(e.target.value)}/></label><button type="button" onClick={review} disabled={previewState.isFetching}>{previewState.isFetching?c.checking:c.preview}</button></section>
   {error?<p className="statusNote is-error">{error}</p>:null}
-  <section className="invoiceList">{isLoading?<div className="screenCard">…</div>:invoices.length?invoices.map(invoice=>{const overdue=isOverdue(invoice);return <article className={`invoiceCard screenCard${overdue?' is-overdue':''}`} key={invoice.id}>
+  <section className="invoiceList">{isLoading?<div className="screenCard">…</div>:invoices.length?invoices.map(invoice=>{const overdue=Boolean(invoice.isOverdue);return <article className={`invoiceCard screenCard${overdue?' is-overdue':''}`} key={invoice.id}>
    <div className="invoiceCardTop"><div><span>{invoice.invoiceNumber}</span><strong>{Number(invoice.subtotal).toLocaleString()} {invoice.currency}</strong></div><div className="invoiceCardStatusRow"><span className={`invoiceStatus is-${String(invoice.status).toLowerCase()}`}>{statusLabel(c,invoice.status)}</span>{overdue?<span className="invoiceOverdueBadge">{c.overdue}</span>:null}</div></div>
    <div className="invoiceMeta"><span>{invoice.periodStart} — {invoice.periodEnd}</span><span>{invoice.totalHours} {c.hours}</span><span className={overdue?'is-overdue-text':''}>{c.due}: {invoice.dueDate}</span></div>
    <div className="invoiceActions"><button className="invoiceDocumentButton" type="button" onClick={()=>navigate(`/invoices/${invoice.id}`)}>{c.document}</button>{invoice.status==='DRAFT'?<button className="invoiceSend" type="button" disabled={sendState.isLoading} onClick={()=>send(invoice.id)}>{sendState.isLoading?c.sending:c.send}</button>:null}{['DRAFT','SENT','VIEWED'].includes(invoice.status)?<button className="invoiceCancel" type="button" disabled={cancelState.isLoading} onClick={()=>cancel(invoice.id)}>{cancelState.isLoading?c.cancelling:c.cancel}</button>:null}</div>
