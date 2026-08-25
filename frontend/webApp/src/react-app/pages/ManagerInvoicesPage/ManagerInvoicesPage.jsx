@@ -6,12 +6,14 @@ import { useGetManagerInvoicesQuery, useMarkInvoicePaidMutation } from '../../fe
 import './ManagerInvoicesPage.css';
 
 const COPY={
- uk:{eyebrow:'Фактури',title:'Фактури працівників',subtitle:'Отримані фактури та статус оплати.',empty:'Фактур за цим фільтром немає.',document:'Документ / PDF',paid:'Позначити оплачено',paying:'Збереження…',hours:'год',due:'Оплатити до',draft:'Чернетка',sent:'Відправлено',viewed:'Переглянуто',paidStatus:'Оплачено',cancelled:'Скасовано',overdue:'Прострочено',all:'Усі',open:'До оплати',overdueFilter:'Прострочені',paidFilter:'Оплачені',cancelledFilter:'Скасовані',markPaidConfirm:'Підтвердити, що цю фактуру оплачено?'},
- cs:{eyebrow:'Faktury',title:'Faktury pracovníků',subtitle:'Přijaté faktury a stav plateb.',empty:'Pro tento filtr nejsou žádné faktury.',document:'Doklad / PDF',paid:'Označit jako zaplacené',paying:'Ukládání…',hours:'h',due:'Splatnost',draft:'Koncept',sent:'Odesláno',viewed:'Zobrazeno',paidStatus:'Zaplaceno',cancelled:'Zrušeno',overdue:'Po splatnosti',all:'Vše',open:'K úhradě',overdueFilter:'Po splatnosti',paidFilter:'Zaplacené',cancelledFilter:'Zrušené',markPaidConfirm:'Potvrdit, že tato faktura byla zaplacena?'},
- en:{eyebrow:'Invoices',title:'Employee invoices',subtitle:'Received invoices and payment status.',empty:'No invoices match this filter.',document:'Document / PDF',paid:'Mark as paid',paying:'Saving…',hours:'h',due:'Due',draft:'Draft',sent:'Sent',viewed:'Viewed',paidStatus:'Paid',cancelled:'Cancelled',overdue:'Overdue',all:'All',open:'Open',overdueFilter:'Overdue',paidFilter:'Paid',cancelledFilter:'Cancelled',markPaidConfirm:'Confirm that this invoice has been paid?'}
+ uk:{eyebrow:'Фактури',title:'Фактури працівників',subtitle:'Отримані фактури та статус оплати.',empty:'Фактур за цим фільтром немає.',document:'Документ / PDF',paid:'Позначити оплачено',paying:'Збереження…',hours:'год',due:'Оплатити до',draft:'Чернетка',sent:'Відправлено',viewed:'Переглянуто',paidStatus:'Оплачено',cancelled:'Скасовано',overdue:'Прострочено',all:'Усі',open:'До оплати',overdueFilter:'Прострочені',paidFilter:'Оплачені',cancelledFilter:'Скасовані',markPaidConfirm:'Підтвердити, що цю фактуру оплачено?',openAmount:'До оплати',overdueAmount:'Прострочено',paidAmount:'Оплачено'},
+ cs:{eyebrow:'Faktury',title:'Faktury pracovníků',subtitle:'Přijaté faktury a stav plateb.',empty:'Pro tento filtr nejsou žádné faktury.',document:'Doklad / PDF',paid:'Označit jako zaplacené',paying:'Ukládání…',hours:'h',due:'Splatnost',draft:'Koncept',sent:'Odesláno',viewed:'Zobrazeno',paidStatus:'Zaplaceno',cancelled:'Zrušeno',overdue:'Po splatnosti',all:'Vše',open:'K úhradě',overdueFilter:'Po splatnosti',paidFilter:'Zaplacené',cancelledFilter:'Zrušené',markPaidConfirm:'Potvrdit, že tato faktura byla zaplacena?',openAmount:'K úhradě',overdueAmount:'Po splatnosti',paidAmount:'Zaplaceno'},
+ en:{eyebrow:'Invoices',title:'Employee invoices',subtitle:'Received invoices and payment status.',empty:'No invoices match this filter.',document:'Document / PDF',paid:'Mark as paid',paying:'Saving…',hours:'h',due:'Due',draft:'Draft',sent:'Sent',viewed:'Viewed',paidStatus:'Paid',cancelled:'Cancelled',overdue:'Overdue',all:'All',open:'Open',overdueFilter:'Overdue',paidFilter:'Paid',cancelledFilter:'Cancelled',markPaidConfirm:'Confirm that this invoice has been paid?',openAmount:'Open amount',overdueAmount:'Overdue',paidAmount:'Paid'}
 };
 function statusLabel(c,status){if(status==='PAID')return c.paidStatus;return c[String(status||'').toLowerCase()]||status}
 function isOverdue(invoice){if(!['SENT','VIEWED'].includes(invoice.status)||!invoice.dueDate)return false;const due=new Date(`${invoice.dueDate}T23:59:59`);return due.getTime()<Date.now()}
+function sumAmount(items){return items.reduce((sum,invoice)=>sum+Number(invoice.subtotal||0),0)}
+function money(value){return `${Number(value||0).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2})} CZK`}
 
 export function ManagerInvoicesPage(){
  const navigate=useNavigate();
@@ -37,10 +39,21 @@ export function ManagerInvoicesPage(){
   PAID:invoices.filter(invoice=>invoice.status==='PAID').length,
   CANCELLED:invoices.filter(invoice=>invoice.status==='CANCELLED').length,
  }),[invoices]);
+ const summary=useMemo(()=>{
+  const open=invoices.filter(invoice=>['SENT','VIEWED'].includes(invoice.status));
+  const overdue=open.filter(isOverdue);
+  const paid=invoices.filter(invoice=>invoice.status==='PAID');
+  return {open:sumAmount(open),overdue:sumAmount(overdue),paid:sumAmount(paid)};
+ },[invoices]);
  async function paid(id){if(!window.confirm(c.markPaidConfirm))return;setError('');try{await markPaid(id).unwrap();await refetch()}catch(err){setError(getApiErrorMessage(err))}}
  const filters=[['OPEN',c.open],['OVERDUE',c.overdueFilter],['PAID',c.paidFilter],['CANCELLED',c.cancelledFilter],['ALL',c.all]];
  return <section className="managerInvoicePage pageStack">
   <header className="managerInvoiceHeader appTop"><div className="appTitleBlock"><p className="sectionEyebrow">{c.eyebrow}</p><h1>{c.title}</h1><p>{c.subtitle}</p></div></header>
+  <section className="managerInvoiceSummary" aria-label={c.title}>
+   <article className="screenCard"><span>{c.openAmount}</span><strong>{money(summary.open)}</strong><small>{counts.OPEN}</small></article>
+   <article className={`screenCard${summary.overdue>0?' is-overdue':''}`}><span>{c.overdueAmount}</span><strong>{money(summary.overdue)}</strong><small>{counts.OVERDUE}</small></article>
+   <article className="screenCard is-paid"><span>{c.paidAmount}</span><strong>{money(summary.paid)}</strong><small>{counts.PAID}</small></article>
+  </section>
   <div className="managerInvoiceFilters" role="tablist" aria-label={c.title}>{filters.map(([key,label])=><button type="button" role="tab" aria-selected={filter===key} className={filter===key?'is-active':''} onClick={()=>setFilter(key)} key={key}><span>{label}</span><strong>{counts[key]}</strong></button>)}</div>
   {error?<p className="statusNote is-error">{error}</p>:null}
   <section className="managerInvoiceList">{isLoading?<div className="screenCard">…</div>:filtered.length?filtered.map(invoice=>{
