@@ -213,6 +213,16 @@ export async function listEmployeeInvoices(client, context) {
   return { invoices, summary: summarizeInvoices(invoices) };
 }
 
+export async function getEmployeeInvoice(client, context, invoiceId) {
+  const membership = employeeMembership(context);
+  const invoice = await client.invoice.findFirst({
+    where: { id: invoiceId, companyId: membership.companyId, employeeMembershipId: membership.id },
+    include: { items: { orderBy: { workDate: 'asc' } } },
+  });
+  if (!invoice) throw new Error('Invoice not found');
+  return serialize(invoice);
+}
+
 export async function sendInvoice(client, context, invoiceId) {
   const membership = employeeMembership(context);
   const invoice = await client.invoice.findFirst({ where: { id: invoiceId, companyId: membership.companyId, employeeMembershipId: membership.id }, include: { items: true } });
@@ -234,6 +244,23 @@ export async function listManagerInvoices(client, context) {
   const raw = await client.invoice.findMany({ where: { companyId: membership.companyId, status: { not: 'DRAFT' } }, include: { items: true, employeeMembership: { include: { user: true } } }, orderBy: { createdAt: 'desc' } });
   const invoices = raw.map(invoice => ({ ...serialize(invoice), employee: { id: invoice.employeeMembership.id, name: invoice.employeeMembership.user.name || invoice.employeeMembership.user.email, email: invoice.employeeMembership.user.email } }));
   return { invoices, summary: summarizeInvoices(invoices) };
+}
+
+export async function getManagerInvoice(client, context, invoiceId) {
+  const membership = managerMembership(context);
+  const invoice = await client.invoice.findFirst({
+    where: { id: invoiceId, companyId: membership.companyId, status: { not: 'DRAFT' } },
+    include: { items: { orderBy: { workDate: 'asc' } }, employeeMembership: { include: { user: true } } },
+  });
+  if (!invoice) throw new Error('Invoice not found');
+  return {
+    ...serialize(invoice),
+    employee: {
+      id: invoice.employeeMembership.id,
+      name: invoice.employeeMembership.user.name || invoice.employeeMembership.user.email,
+      email: invoice.employeeMembership.user.email,
+    },
+  };
 }
 
 export async function markInvoiceViewed(client, context, invoiceId) {
