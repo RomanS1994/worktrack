@@ -3,13 +3,14 @@
 /* Primary project selector follows the same compact language as Time / Week. */
 .fastProjectCard{
   position:relative;
-  z-index:2;
+  z-index:20;
   display:grid;
   grid-template-columns:38px minmax(0,1fr) 36px;
   align-items:center;
   gap:10px;
   padding:10px 14px;
   border-radius:17px;
+  anchor-name:--primary-project-card;
 }
 
 .fastProjectIcon{
@@ -83,48 +84,50 @@
 }
 
 .fastProjectCard>button:active:not(:disabled){transform:none}
+.fastProjectCard:has(+ .fastProjectPicker)>button::before{transform:translateY(2px) rotate(180deg)}
 
-.fastProjectCard:has(+ .fastProjectPicker)>button::before{
-  transform:translateY(2px) rotate(180deg);
-}
-
-/*
- * Picker is a sibling of .fastProjectCard. Keep it in document flow so it
- * always opens directly below the project card instead of being positioned
- * against the whole FastHoursPage and overlapping the hero.
- */
+/* Fallback: when anchor positioning is unavailable, keep the menu below the card. */
 .fastProjectPicker{
   position:relative;
-  z-index:5;
-  left:auto;
-  right:auto;
-  top:auto;
-  width:100%;
-  margin-top:-8px;
-  margin-bottom:0;
-  padding:7px;
+  z-index:40;
+  width:calc(100% - 24px);
+  margin:-9px 12px 0;
+  padding:5px;
   overflow:hidden;
   border:1px solid rgba(15,23,42,.08);
-  border-radius:16px;
+  border-radius:14px;
   background:rgba(255,255,255,.99);
   box-shadow:0 10px 24px rgba(15,23,42,.10);
   backdrop-filter:blur(18px);
   -webkit-backdrop-filter:blur(18px);
 }
 
+/* On modern Safari/iOS the picker floats directly under the selector and does not push the week list down. */
+@supports (position-anchor:--primary-project-card){
+  .fastProjectPicker{
+    position:fixed;
+    position-anchor:--primary-project-card;
+    top:calc(anchor(bottom) + 6px);
+    left:anchor(left);
+    right:auto;
+    width:anchor-size(width);
+    margin:0;
+  }
+}
+
 .fastProjectPicker>header{display:none}
-.fastProjectPicker>div{display:grid;gap:3px}
+.fastProjectPicker>div{display:grid;gap:2px}
 
 .fastProjectPicker>div>button{
   display:grid;
   grid-template-columns:minmax(0,1fr) auto;
   align-items:center;
-  gap:12px;
+  gap:10px;
   width:100%;
-  min-height:48px;
-  padding:8px 10px;
+  min-height:42px;
+  padding:6px 9px;
   border:0;
-  border-radius:12px;
+  border-radius:10px;
   background:transparent;
   box-shadow:none;
   text-align:left;
@@ -140,14 +143,14 @@
 
 .fastProjectPicker>div>button>span{
   display:grid;
-  gap:2px;
+  gap:1px;
   min-width:0;
 }
 
 .fastProjectPicker>div>button strong{
   overflow:hidden;
   color:var(--text);
-  font-size:13px;
+  font-size:12px;
   line-height:1.15;
   font-weight:800;
   letter-spacing:-.01em;
@@ -158,7 +161,7 @@
 .fastProjectPicker>div>button small{
   overflow:hidden;
   color:var(--muted);
-  font-size:10px;
+  font-size:9px;
   line-height:1.2;
   font-weight:600;
   text-overflow:ellipsis;
@@ -168,12 +171,12 @@
 .fastProjectPicker b{
   display:inline-flex;
   align-items:center;
-  min-height:24px;
-  padding:0 8px;
+  min-height:22px;
+  padding:0 7px;
   border-radius:999px;
   background:rgba(22,163,74,.08);
   color:#15803d;
-  font-size:9px;
+  font-size:8px;
   line-height:1;
   font-weight:800;
   white-space:nowrap;
@@ -182,23 +185,26 @@
 .fastProjectPicker i{
   color:#9aa4b2;
   font-style:normal;
-  font-size:18px;
+  font-size:17px;
 }
 
 @media(max-width:430px){
   .fastProjectCard{
-    grid-template-columns:34px minmax(0,1fr) 32px;
+    grid-template-columns:34px minmax(0,1fr) 30px;
     gap:9px;
     padding:9px 12px;
   }
   .fastProjectIcon{width:34px;height:34px;border-radius:10px;font-size:19px}
   .fastProjectCard>div>strong{font-size:13px}
   .fastProjectCard>div>small{font-size:10px}
-  .fastProjectCard>button{width:32px;height:32px;min-width:32px;min-height:32px}
-  .fastProjectCard>button::before{font-size:20px}
-  .fastProjectPicker{width:100%;margin-top:-7px;padding:6px;border-radius:15px}
-  .fastProjectPicker>div>button{min-height:46px;padding:7px 9px}
+  .fastProjectCard>button{width:30px;height:30px;min-width:30px;min-height:30px;border-radius:9px}
+  .fastProjectCard>button::before{font-size:19px}
+  .fastProjectPicker{width:calc(100% - 20px);margin:-8px 10px 0;padding:4px;border-radius:13px}
+  .fastProjectPicker>div>button{min-height:40px;padding:6px 8px}
   .fastProjectPicker>div>button strong{font-size:12px}
   .fastProjectPicker>div>button small{font-size:9px}
-  .fastProjectPicker b{min-height:22px;padding:0 7px;font-size:8px}
+  .fastProjectPicker b{min-height:21px;padding:0 6px;font-size:8px}
+  @supports (position-anchor:--primary-project-card){
+    .fastProjectPicker{width:anchor-size(width);margin:0}
+  }
 }
