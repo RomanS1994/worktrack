@@ -44,15 +44,23 @@ export function InvoiceDocumentPage({managerMode=false}){
   markViewed(invoice.id).unwrap().then(()=>historyQuery.refetch()).catch(()=>{viewedRef.current=''});
  },[invoice,managerMode,markViewed,historyQuery]);
 
+ useEffect(()=>{
+  if(!invoice?.invoiceNumber)return undefined;
+  const previousTitle=document.title;
+  document.title=`${invoice.invoiceNumber} · WorkTrack`;
+  return()=>{document.title=previousTitle};
+ },[invoice?.invoiceNumber]);
+
  async function copyPayment(){if(!invoice?.paymentDescriptor)return;try{await navigator.clipboard.writeText(invoice.paymentDescriptor);setCopied(true);window.setTimeout(()=>setCopied(false),1800)}catch{/* Clipboard may be unavailable on some embedded browsers. */}}
+ function printInvoice(){if(!invoice?.invoiceNumber)return;const previousTitle=document.title;document.title=`${invoice.invoiceNumber} · WorkTrack`;window.print();window.setTimeout(()=>{document.title=previousTitle},0)}
 
  if(activeQuery.isLoading)return <section className="invoiceDocState screenCard">{c.loading}</section>;
  if(activeQuery.error)return <section className="invoiceDocState screenCard statusNote is-error">{getApiErrorMessage(activeQuery.error)}</section>;
  if(!invoice)return <section className="invoiceDocState screenCard">{c.missing}</section>;
  const seller=invoice.seller||{};const buyer=invoice.buyer||{};const paymentQr=qrUrl(invoice.paymentDescriptor);const history=historyQuery.data?.history||[];const currentStatus=statusLabel(c,invoice);
  return <section className="invoiceDocumentPage">
-  <div className="invoiceDocumentActions noPrint"><button type="button" onClick={()=>navigate(managerMode?'/manager/invoices':'/invoices')}>← {c.back}</button><button className="invoiceDocumentPrint" type="button" onClick={()=>window.print()}>{c.print}</button></div>
-  <article className={`invoicePaper${invoice.isOverdue?' is-overdue':''}`}>
+  <div className="invoiceDocumentActions noPrint"><button type="button" onClick={()=>navigate(managerMode?'/manager/invoices':'/invoices')}>← {c.back}</button><button className="invoiceDocumentPrint" type="button" onClick={printInvoice}>{c.print}</button></div>
+  <article className={`invoicePaper${invoice.isOverdue?' is-overdue':''}`} data-invoice-number={invoice.invoiceNumber}>
    <header className="invoicePaperHeader"><div><p>WorkTrack</p><h1>{c.invoice}</h1></div><div className="invoiceNumber"><span>{invoice.invoiceNumber}</span><strong className={`invoiceDocStatus is-${invoice.isOverdue?'overdue':String(invoice.status).toLowerCase()}`}>{currentStatus}</strong></div></header>
    <section className="invoiceParties"><div><h2>{c.supplier}</h2><strong>{seller.businessName||'—'}</strong><p>{seller.address||'—'}</p><p>{c.ico}: {seller.ico||'—'}{seller.dic?` · ${c.dic}: ${seller.dic}`:''}</p><p>{seller.email||''}</p><p>{c.account}: {seller.iban||'—'}</p></div><div><h2>{c.customer}</h2><strong>{buyer.name||'—'}</strong><p>{buyer.address||'—'}</p><p>{c.ico}: {buyer.ico||'—'}{buyer.dic?` · ${c.dic}: ${buyer.dic}`:''}</p><p>{buyer.email||''}</p></div></section>
    <section className="invoiceDates"><div><span>{c.issue}</span><strong>{invoice.issueDate}</strong></div><div className={invoice.isOverdue?'is-overdue':''}><span>{c.due}</span><strong>{invoice.dueDate}</strong></div><div><span>{c.period}</span><strong>{invoice.periodStart} — {invoice.periodEnd}</strong></div></section>
