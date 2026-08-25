@@ -20,11 +20,14 @@ export function FinanceHubPage(){
  const user=useSelector(selectUser); const isManager=hasManagerAccess(user); const {language}=useI18n(); const c=COPY[language]||COPY.uk;
  const {data,error,isLoading}=useGetWorkSummaryQuery(); const summary=data?.summary||{};
  return <section className="financeHub pageStack">
-  <header className="financeHubHeader appTop"><div className="appTitleBlock"><p className="sectionEyebrow">{c.eyebrow}</p><h1>{c.title}</h1><p>{isManager?c.managerCopy:c.employeeCopy}</p></div></header>
+  <header className="financeHubHeader">
+   <div className="financeHubHeroCopy"><p className="sectionEyebrow">{c.eyebrow}</p><h2>{c.title}</h2><p>{isManager?c.managerCopy:c.employeeCopy}</p></div>
+   <div className="financeHubHeroIcon" aria-hidden="true"><SvgIcon name="wallet" /></div>
+  </header>
   {isLoading?<RequestLoadingState label={c.title}/>:null}{error?<p className="statusNote is-error">{getApiErrorMessage(error)}</p>:null}
   {!isLoading&&!error?<section className="financeHubTotals">
-   <article><span>{c.approved}</span><strong>{money(summary.confirmedSalaryCzk)}</strong></article>
-   <article><span>{c.predicted}</span><strong>{money(summary.predictedSalaryCzk)}</strong></article>
+   <article><span>{c.approved}</span><strong>{money(summary.confirmedSalaryCzk)}</strong><i className="financeHubTotalIcon is-approved"><SvgIcon name="check" /></i></article>
+   <article><span>{c.predicted}</span><strong>{money(summary.predictedSalaryCzk)}</strong><i className="financeHubTotalIcon"><SvgIcon name="clock" /></i></article>
   </section>:null}
   <section className="financeHubLinks screenCard">
    <Link to="/payroll-report"><span className="financeHubIcon"><SvgIcon name="wallet" /></span><span><strong>{c.payroll}</strong><small>{c.payrollCopy}</small></span><b>›</b></Link>
