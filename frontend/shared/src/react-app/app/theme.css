@@ -5,7 +5,7 @@
   --surface: rgba(255, 255, 255, 0.92);
   --surface-strong: #ffffff;
   --surface-border: rgba(22, 163, 74, 0.10);
-  --surface-shadow: 0 12px 30px rgba(20, 40, 28, 0.06);
+  --surface-shadow: 0 10px 26px rgba(20, 40, 28, 0.055);
   --text: #111827;
   --muted: #667085;
   --accent: #16a34a;
@@ -16,98 +16,118 @@
   --success: #15803d;
   --warning: #f59e0b;
   --danger: #b42318;
-  --radius-xl: 24px;
-  --radius-lg: 20px;
-  --radius-md: 16px;
+
+  /* WorkTrack design system — based on Time / Week */
+  --font-app: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  --font-size-page-title: 30px;
+  --font-size-section-title: 20px;
+  --font-size-card-title: 17px;
+  --font-size-body: 15px;
+  --font-size-secondary: 14px;
+  --font-size-label: 13px;
+  --font-size-caption: 12px;
+  --weight-regular: 400;
+  --weight-medium: 600;
+  --weight-semibold: 700;
+  --weight-bold: 800;
+  --radius-xl: 20px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+  --space-page: 14px;
+  --space-card: 16px;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
-html,
-body,
-#react-root {
+html, body, #react-root {
   width: 100%;
   min-height: 100%;
 }
 
 body {
   margin: 0;
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1.5;
+  font-family: var(--font-app);
+  font-size: var(--font-size-body);
+  font-weight: var(--weight-regular);
+  line-height: 1.45;
+  letter-spacing: -0.005em;
   color: var(--text);
-  font-family:
-    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
-    "Helvetica Neue", Arial, sans-serif;
   background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-body.no-scroll {
-  overflow: hidden;
-}
+body.no-scroll { overflow: hidden; }
+a { color: inherit; }
+button, input, select, textarea { font-family: var(--font-app); }
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 
-a {
-  color: inherit;
-}
-
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
-
-input:not([type="checkbox"]):not([type="radio"]),
-select,
-textarea {
+input:not([type="checkbox"]):not([type="radio"]), select, textarea {
   font-size: 16px !important;
+}
+
+/* Shared typography. Individual screens can still size hero numbers independently. */
+h1, h2, h3, h4, p { text-wrap: pretty; }
+
+.pageStack > header h1,
+.appTitleBlock h1,
+.compactHeader > h1 {
+  margin: 0;
+  font-size: var(--font-size-page-title);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  font-weight: var(--weight-bold);
+}
+
+.compactHeader h2,
+.compactHeader h3,
+.compactHeader h4 {
+  margin: 0;
+  font-size: var(--font-size-section-title);
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+  font-weight: var(--weight-bold);
+}
+
+.compactHeader p,
+.appTitleBlock p:last-child,
+.statusNote {
+  margin: 0;
+  font-size: var(--font-size-secondary);
+  line-height: 1.45;
+  color: var(--muted);
 }
 
 button {
   appearance: none;
-  border: 1px solid var(--line);
-  border-radius: 14px;
   min-height: 44px;
-  padding: 0 16px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
   color: var(--text);
   background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 4px 14px rgba(20, 40, 28, 0.04);
+  box-shadow: 0 3px 12px rgba(20, 40, 28, 0.035);
+  font: inherit;
+  font-size: var(--font-size-secondary);
+  font-weight: var(--weight-semibold);
+  line-height: 1.1;
   cursor: pointer;
-  transition:
-    transform 160ms ease,
-    box-shadow 160ms ease,
-    background-color 160ms ease,
-    border-color 160ms ease,
-    opacity 160ms ease;
+  transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease, opacity 150ms ease;
 }
 
-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  border-color: rgba(22, 163, 74, 0.2);
-  box-shadow: 0 8px 20px rgba(20, 40, 28, 0.07);
+@media (hover: hover) and (pointer: fine) {
+  button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: rgba(22, 163, 74, 0.18);
+    box-shadow: 0 6px 16px rgba(20, 40, 28, 0.055);
+  }
 }
 
-button:active:not(:disabled) {
-  transform: translateY(0) scale(0.99);
-}
+button:active:not(:disabled) { transform: scale(0.985); }
+button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+button:focus-visible, a:focus-visible { outline: 3px solid rgba(22, 163, 74, 0.2); outline-offset: 2px; }
 
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-button:focus-visible,
-a:focus-visible {
-  outline: 3px solid rgba(22, 163, 74, 0.2);
-  outline-offset: 2px;
-}
-
-.visually-hidden,
-.visuallyHidden {
+.visually-hidden, .visuallyHidden {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -120,257 +140,159 @@ a:focus-visible {
 }
 
 .sectionEyebrow {
-  margin: 0;
   display: inline-flex;
   width: fit-content;
-  min-height: 26px;
+  min-height: 24px;
+  margin: 0;
   align-items: center;
-  padding: 0 10px;
+  padding: 0 9px;
   border-radius: 999px;
   background: var(--accent-soft);
   color: var(--accent-strong);
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  line-height: 1;
 }
 
 .screenCard {
   display: grid;
-  gap: 16px;
-  padding: 20px;
+  gap: var(--space-page);
+  padding: var(--space-card);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--surface-strong);
   box-shadow: var(--surface-shadow);
 }
 
-.compactHeader {
-  display: grid;
-  gap: 6px;
-}
-
-.compactHeader h2,
-.compactHeader h3,
-.compactHeader h4 {
-  margin: 0;
-  font-size: clamp(20px, 4vw, 24px);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  font-weight: 750;
-}
-
-.compactHeader p {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--muted);
-}
+.compactHeader { display: grid; gap: 5px; }
 
 .appTop {
+  position: relative;
   display: grid;
-  gap: 10px;
-  padding: 22px;
+  gap: 8px;
+  padding: 18px;
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--radius-xl);
   background: rgba(255, 255, 255, 0.94);
   box-shadow: var(--surface-shadow);
-  position: relative;
-  overflow: hidden;
 }
 
-.appTitleBlock {
-  display: grid;
-  gap: 6px;
-}
+.appTitleBlock { display: grid; gap: 5px; }
 
 .appTitleBlock h1 {
   margin: 0;
-  font-size: clamp(30px, 5vw, 42px);
-  line-height: 1.05;
+  font-size: var(--font-size-page-title);
+  line-height: 1.08;
   letter-spacing: -0.035em;
-  font-weight: 780;
+  font-weight: var(--weight-bold);
 }
 
-.appTitleBlock p:last-child {
-  margin: 0;
-  max-width: 32rem;
-  font-size: 15px;
-  line-height: 1.5;
-  color: var(--muted);
-}
-
-.topMetrics {
-  display: flex;
-}
+.topMetrics { display: flex; }
 
 .topMetric {
   display: grid;
-  gap: 4px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: var(--accent-softer);
+  gap: 3px;
+  padding: 10px 12px;
   border: 1px solid rgba(22, 163, 74, 0.08);
+  border-radius: var(--radius-md);
+  background: var(--accent-softer);
 }
 
 .topMetric span {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
   color: var(--muted);
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
 }
 
 .topMetric strong {
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.1;
-  font-weight: 750;
+  font-weight: var(--weight-bold);
 }
 
-.screenCard-home {
-  gap: 16px;
-}
+.screenCard-home { gap: var(--space-page); }
 
 .homeOverviewGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .homeOverviewCard {
   display: grid;
-  gap: 6px;
-  min-height: 112px;
-  padding: 16px;
-  border-radius: 18px;
-  background: #fff;
+  gap: 5px;
+  min-height: 100px;
+  padding: 14px;
   border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: #fff;
 }
 
-.homeOverviewCard-link {
-  text-decoration: none;
-  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
-}
-
-.homeOverviewCard-link:active {
-  transform: scale(0.985);
-  border-color: rgba(22, 163, 74, 0.18);
-}
+.homeOverviewCard-link { text-decoration: none; transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease; }
+.homeOverviewCard-link:active { transform: scale(0.985); border-color: rgba(22, 163, 74, 0.18); }
 
 .homeOverviewCard span {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
   color: var(--muted);
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
 }
 
 .homeOverviewCard strong {
-  font-size: 18px;
-  line-height: 1.1;
-  font-weight: 750;
   overflow: hidden;
+  font-size: var(--font-size-card-title);
+  line-height: 1.12;
+  font-weight: var(--weight-bold);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .homeOverviewCard p {
   margin: 0;
-  font-size: 13px;
+  color: var(--muted);
+  font-size: var(--font-size-label);
   line-height: 1.4;
-  color: var(--muted);
 }
 
-.pageStack {
-  display: grid;
-  gap: 16px;
+.pageStack { display: grid; gap: var(--space-page); }
+.statusNote.is-error { color: var(--danger); }
+
+/* Normalize common page/card headings to the Time / Week hierarchy. */
+.screenCard > h2,
+.screenCard > h3,
+.screenCard header h2,
+.screenCard header h3,
+section > .compactHeader h2,
+article > .compactHeader h2 {
+  font-size: var(--font-size-section-title);
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+  font-weight: var(--weight-bold);
 }
 
-.statusNote {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--muted);
-}
-
-.statusNote.is-error {
-  color: var(--danger);
+.screenCard label,
+.screenCard small,
+.screenCard .meta,
+.screenCard [class*="subtitle"],
+.screenCard [class*="description"] {
+  font-family: var(--font-app);
 }
 
 @media (max-width: 480px) {
-  body {
-    font-size: 15px;
+  :root {
+    --font-size-page-title: 30px;
+    --font-size-section-title: 20px;
+    --font-size-card-title: 17px;
+    --font-size-body: 15px;
+    --space-page: 12px;
+    --space-card: 16px;
   }
 
-  .screenCard {
-    gap: 14px;
-    padding: 16px;
-    border-radius: 18px;
-  }
-
-  .appTop {
-    gap: 8px;
-    padding: 18px;
-    border-radius: 20px;
-  }
-
-  .sectionEyebrow {
-    min-height: 24px;
-    padding: 0 9px;
-    font-size: 11px;
-  }
-
-  .compactHeader h2,
-  .compactHeader h3,
-  .compactHeader h4 {
-    font-size: 20px;
-  }
-
-  .compactHeader p,
-  .appTitleBlock p:last-child {
-    font-size: 14px;
-  }
-
-  .appTitleBlock h1 {
-    font-size: 30px;
-  }
-
-  .topMetric span {
-    font-size: 10px;
-  }
-
-  .topMetric strong {
-    font-size: 16px;
-  }
-
-  .homeOverviewGrid {
-    gap: 10px;
-  }
-
-  .homeOverviewCard {
-    min-height: 104px;
-    padding: 14px;
-    border-radius: 16px;
-  }
-
-  .homeOverviewCard span {
-    font-size: 10px;
-  }
-
-  .homeOverviewCard strong {
-    font-size: 17px;
-  }
-
-  .homeOverviewCard p {
-    font-size: 13px;
-  }
-
-  .pageStack {
-    gap: 14px;
-  }
-
-  .statusNote {
-    font-size: 14px;
-  }
-
-  button {
-    min-height: 44px;
-    padding: 0 14px;
-  }
+  body { font-size: var(--font-size-body); }
+  .screenCard { border-radius: var(--radius-lg); }
+  .appTop { padding: 16px; border-radius: var(--radius-xl); }
+  .pageStack { gap: 12px; }
+  button { min-height: 44px; padding: 0 13px; }
 }
