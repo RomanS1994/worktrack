@@ -111,13 +111,17 @@ async function main() {
   assert.equal(week.summary?.approvedHours, '8.00');
   assert.equal(week.summary?.confirmedSalaryCzk, '2000.00');
 
+  const originalCompanyAddress = 'Integration Company, Praha 1, Czechia';
+  const originalSellerAddress = 'Integration Employee, Praha 2, Czechia';
+  const originalSellerIban = 'CZ6508000000192000145399';
+
   const companyBilling = await request('/company-billing', {
     method: 'PATCH',
     token: managerToken,
     body: {
       ico: '12345678',
       dic: 'CZ12345678',
-      address: 'Integration Company, Praha 1, Czechia',
+      address: originalCompanyAddress,
       email: managerEmail,
     },
   });
@@ -130,8 +134,8 @@ async function main() {
       businessName: 'Integration Employee OSVC',
       ico: '87654321',
       dic: '',
-      address: 'Integration Employee, Praha 2, Czechia',
-      iban: 'CZ6508000000192000145399',
+      address: originalSellerAddress,
+      iban: originalSellerIban,
       dueDays: 14,
       prefix: 'IT',
     },
@@ -155,12 +159,59 @@ async function main() {
   const invoiceId = createdInvoice.invoice?.id;
   assert.ok(invoiceId);
 
+  const draftDetail = await request(`/invoices/${invoiceId}`, { token: employeeToken });
+  assert.equal(draftDetail.invoice?.id, invoiceId);
+  assert.equal(draftDetail.invoice?.seller?.address, originalSellerAddress);
+  assert.equal(draftDetail.invoice?.buyer?.address, originalCompanyAddress);
+  assert.equal(draftDetail.invoice?.hourlyRate, '250.00');
+
   const sentInvoice = await request(`/invoices/${invoiceId}/send`, {
     method: 'POST',
     token: employeeToken,
   });
   assert.equal(sentInvoice.invoice?.status, 'SENT');
   assert.ok(sentInvoice.invoice?.sentAt);
+
+  const managerDetail = await request(`/manager/invoices/${invoiceId}`, { token: managerToken });
+  assert.equal(managerDetail.invoice?.id, invoiceId);
+  assert.equal(managerDetail.invoice?.status, 'SENT');
+
+  await request('/company-billing', {
+    method: 'PATCH',
+    token: managerToken,
+    body: {
+      ico: '99999999',
+      dic: 'CZ99999999',
+      address: 'Changed Company Address, Brno',
+      email: 'changed-company@example.test',
+    },
+  });
+  await request('/tax-information', {
+    method: 'PATCH',
+    token: employeeToken,
+    body: {
+      businessName: 'Changed Seller Name',
+      ico: '11111111',
+      dic: 'CZ11111111',
+      address: 'Changed Seller Address, Ostrava',
+      iban: 'CZ5855000000001265098001',
+      dueDays: 30,
+      prefix: 'NEW',
+    },
+  });
+
+  const immutableEmployeeDetail = await request(`/invoices/${invoiceId}`, { token: employeeToken });
+  assert.equal(immutableEmployeeDetail.invoice?.seller?.businessName, 'Integration Employee OSVC');
+  assert.equal(immutableEmployeeDetail.invoice?.seller?.address, originalSellerAddress);
+  assert.equal(immutableEmployeeDetail.invoice?.seller?.iban, originalSellerIban);
+  assert.equal(immutableEmployeeDetail.invoice?.buyer?.address, originalCompanyAddress);
+  assert.equal(immutableEmployeeDetail.invoice?.buyer?.ico, '12345678');
+  assert.equal(immutableEmployeeDetail.invoice?.hourlyRate, '250.00');
+  assert.ok(immutableEmployeeDetail.invoice?.paymentDescriptor?.includes(`ACC:${originalSellerIban}`));
+
+  const immutableManagerDetail = await request(`/manager/invoices/${invoiceId}`, { token: managerToken });
+  assert.equal(immutableManagerDetail.invoice?.seller?.address, originalSellerAddress);
+  assert.equal(immutableManagerDetail.invoice?.buyer?.address, originalCompanyAddress);
 
   const managerInvoices = await request('/manager/invoices', { token: managerToken });
   assert.ok(managerInvoices.invoices?.some(item => item.id === invoiceId));
@@ -192,7 +243,7 @@ async function main() {
   const actions = (history.history || []).map(item => item.action);
   assert.deepEqual(actions, ['invoice.created', 'invoice.sent', 'invoice.viewed', 'invoice.paid']);
 
-  console.log('Integration E2E passed: register -> employee -> hours -> approve -> invoice -> send -> viewed -> paid');
+  console.log('Integration E2E passed: register -> employee -> hours -> approve -> immutable invoice snapshot -> send -> viewed -> paid');
 }
 
 main().catch(error => {
