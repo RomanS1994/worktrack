@@ -1,0 +1,89 @@
+.fastHoursPage{gap:10px}
+.fastHero{gap:7px;padding:16px 18px;border-radius:20px}
+.fastHeroTop{gap:10px}
+.fastHeroTop h1{font-size:27px}
+.fastHeroTop p{margin-top:5px;font-size:12px}
+.fastHoursStatus{min-height:29px;padding:0 10px;font-size:10px}
+.fastHeroTotal{margin-top:3px;font-size:25px}
+.fastHeroNorm{font-size:11px}
+.fastHeroProgress{height:5px}
+
+.fastWeekBar{grid-template-columns:46px minmax(0,1fr) 46px;gap:8px}
+.fastWeekBar button{width:44px;height:44px;border-radius:14px;font-size:25px}
+.fastWeekBar>div{gap:1px}
+.fastWeekBar strong{font-size:16px}
+.fastWeekBar span{min-height:13px;font-size:10px}
+
+.fastProjectCard{grid-template-columns:42px minmax(0,1fr) 42px;gap:9px;padding:9px 11px;border-radius:17px}
+.fastProjectIcon{width:38px;height:38px;border-radius:12px;font-size:21px}
+.fastProjectCard strong{font-size:14px}
+.fastProjectCard small{font-size:10px}
+.fastProjectCard>button{width:38px;height:38px;border-radius:12px}
+
+.fastDaysCard{border-radius:18px}
+.fastDayRow{grid-template-columns:96px minmax(0,1fr) minmax(106px,auto);min-height:62px}
+.fastDayDate{gap:2px;padding:8px 12px}
+.fastDayDate strong{font-size:13px}
+.fastDayDate span{font-size:10px}
+.fastDayShift{padding:7px 11px}
+.fastDayMain{gap:2px}
+.fastDayMain strong,.fastDayEmpty strong{font-size:13px}
+.fastDayMain small,.fastDayEmpty small{font-size:10px}
+.fastDayEmpty{gap:2px}
+.fastDayAction{gap:7px;padding:6px 12px 6px 4px}
+.fastDayHours{min-height:30px;padding:0 10px;font-size:10px}
+.fastDayOvertime{right:29px;bottom:1px;font-size:8px}
+.fastDayChevron{font-size:20px}
+.fastDayPlus{width:38px;height:38px;border-radius:12px;font-size:23px}
+
+.fastQuickCard{border-radius:17px}
+.fastQuickTrigger{grid-template-columns:36px minmax(0,1fr) 20px;gap:10px;min-height:60px;padding:9px 13px}
+.fastQuickBolt{width:34px;height:34px;border-radius:10px;font-size:23px}
+.fastQuickTrigger strong{font-size:13px}
+.fastQuickTrigger small{font-size:10px}
+.fastQuickTrigger b{font-size:20px}
+
+.fastBottomSummary{gap:8px}
+.fastBottomSummary>div{gap:3px;padding:10px 13px;border-radius:14px}
+.fastBottomSummary span{font-size:10px}
+.fastBottomSummary strong{font-size:16px}
+.fastSend{min-height:46px;border-radius:14px}
+
+@media(max-width:700px){
+  .fastHoursPage{gap:9px}
+  .fastHero{padding:14px 16px}
+  .fastHeroTop h1{font-size:25px}
+  .fastHeroTotal{font-size:23px}
+  .fastWeekBar{grid-template-columns:44px minmax(0,1fr) 44px}
+  .fastWeekBar button{width:42px;height:42px}
+  .fastWeekBar strong{font-size:15px}
+  .fastProjectCard{padding:8px 10px}
+  .fastDayRow{grid-template-columns:78px minmax(0,1fr) 88px;min-height:58px}
+  .fastDayDate{padding:7px 9px}
+  .fastDayShift{padding:6px 9px}
+  .fastDayAction{padding:5px 8px 5px 2px}
+  .fastDayHours{min-height:28px;padding:0 8px}
+  .fastDayPlus{width:36px;height:36px}
+  .fastQuickTrigger{min-height:56px;padding:8px 11px}
+}
+
+@media(max-width:430px){
+  .fastHero{padding:13px 14px}
+  .fastHeroTop h1{font-size:23px}
+  .fastHeroTop p{font-size:11px}
+  .fastHoursStatus{min-height:27px;padding:0 8px;font-size:9px}
+  .fastHeroTotal{font-size:22px}
+  .fastWeekBar button{width:40px;height:40px}
+  .fastWeekBar strong{font-size:14px}
+  .fastProjectCard{grid-template-columns:38px minmax(0,1fr) 38px}
+  .fastProjectIcon,.fastProjectCard>button{width:34px;height:34px}
+  .fastDayRow{grid-template-columns:70px minmax(0,1fr) 78px;min-height:55px}
+  .fastDayDate{padding:6px 8px}
+  .fastDayDate strong{font-size:12px}
+  .fastDayShift{padding:5px 8px}
+  .fastDayMain strong,.fastDayEmpty strong{font-size:12px}
+  .fastDayMain small,.fastDayEmpty small{font-size:9px}
+  .fastDayHours{min-height:27px;font-size:9px}
+  .fastDayPlus{width:34px;height:34px;font-size:21px}
+  .fastQuickTrigger{min-height:54px}
+}
