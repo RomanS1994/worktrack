@@ -3,6 +3,7 @@
 /* Primary project selector follows the same compact language as Time / Week. */
 .fastProjectCard{
   position:relative;
+  z-index:2;
   display:grid;
   grid-template-columns:38px minmax(0,1fr) 36px;
   align-items:center;
@@ -44,7 +45,6 @@
   white-space:nowrap;
 }
 
-/* Replace the old ellipsis control visually with a quiet chevron. */
 .fastProjectCard>button{
   position:relative;
   justify-self:end;
@@ -56,7 +56,7 @@
   overflow:hidden;
   border:0;
   border-radius:10px;
-  background:transparent;
+  background:rgba(17,24,39,.035);
   box-shadow:none;
   color:transparent;
   font-size:0;
@@ -78,26 +78,36 @@
 
 .fastProjectCard>button:hover:not(:disabled){
   transform:none;
-  background:rgba(17,24,39,.035);
+  background:rgba(17,24,39,.055);
   box-shadow:none;
 }
 
 .fastProjectCard>button:active:not(:disabled){transform:none}
 
-/* Full-width dropdown attached directly below the selector card. */
+.fastProjectCard:has(+ .fastProjectPicker)>button::before{
+  transform:translateY(2px) rotate(180deg);
+}
+
+/*
+ * Picker is a sibling of .fastProjectCard. Keep it in document flow so it
+ * always opens directly below the project card instead of being positioned
+ * against the whole FastHoursPage and overlapping the hero.
+ */
 .fastProjectPicker{
-  position:absolute;
-  z-index:60;
-  left:0;
-  right:0;
-  width:auto;
-  margin-top:-5px;
+  position:relative;
+  z-index:5;
+  left:auto;
+  right:auto;
+  top:auto;
+  width:100%;
+  margin-top:-8px;
+  margin-bottom:0;
   padding:7px;
   overflow:hidden;
   border:1px solid rgba(15,23,42,.08);
   border-radius:16px;
-  background:rgba(255,255,255,.985);
-  box-shadow:0 12px 28px rgba(15,23,42,.12);
+  background:rgba(255,255,255,.99);
+  box-shadow:0 10px 24px rgba(15,23,42,.10);
   backdrop-filter:blur(18px);
   -webkit-backdrop-filter:blur(18px);
 }
@@ -186,7 +196,7 @@
   .fastProjectCard>div>small{font-size:10px}
   .fastProjectCard>button{width:32px;height:32px;min-width:32px;min-height:32px}
   .fastProjectCard>button::before{font-size:20px}
-  .fastProjectPicker{left:0;right:0;margin-top:-4px;padding:6px;border-radius:15px}
+  .fastProjectPicker{width:100%;margin-top:-7px;padding:6px;border-radius:15px}
   .fastProjectPicker>div>button{min-height:46px;padding:7px 9px}
   .fastProjectPicker>div>button strong{font-size:12px}
   .fastProjectPicker>div>button small{font-size:9px}
