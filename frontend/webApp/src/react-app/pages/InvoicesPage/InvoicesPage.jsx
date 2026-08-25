@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
@@ -12,14 +12,15 @@ import {
 import './InvoicesPage.css';
 
 const COPY={
- uk:{eyebrow:'Фактури',title:'Мої фактури',subtitle:'Створюйте фактури лише з погоджених годин.',month:'Місяць',preview:'Перевірити фактуру',checking:'Перевірка…',create:'Створити чернетку',creating:'Створення…',empty:'Фактур ще немає.',send:'Відправити роботодавцю',sending:'Відправлення…',cancel:'Скасувати фактуру',cancelling:'Скасування…',document:'Документ / PDF',hours:'год',due:'Оплатити до',draft:'Чернетка',sent:'Відправлено',viewed:'Переглянуто',paid:'Оплачено',cancelled:'Скасовано',overdue:'Прострочено',previewTitle:'Перевірте фактуру',invoiceNumber:'Номер',period:'Період',rate:'Ставка',total:'До сплати',seller:'Постачальник',buyer:'Замовник',close:'Назад',sendConfirm:'Відправити цю фактуру роботодавцю? Після відправлення вона стане доступною менеджеру.',cancelConfirm:'Скасувати цю фактуру? Години з неї знову можна буде використати для нової фактури.'},
- cs:{eyebrow:'Faktury',title:'Moje faktury',subtitle:'Vytvářejte faktury pouze ze schválených hodin.',month:'Měsíc',preview:'Zkontrolovat fakturu',checking:'Kontrola…',create:'Vytvořit koncept',creating:'Vytváření…',empty:'Zatím žádné faktury.',send:'Odeslat zaměstnavateli',sending:'Odesílání…',cancel:'Zrušit fakturu',cancelling:'Rušení…',document:'Doklad / PDF',hours:'h',due:'Splatnost',draft:'Koncept',sent:'Odesláno',viewed:'Zobrazeno',paid:'Zaplaceno',cancelled:'Zrušeno',overdue:'Po splatnosti',previewTitle:'Zkontrolujte fakturu',invoiceNumber:'Číslo',period:'Období',rate:'Sazba',total:'Celkem',seller:'Dodavatel',buyer:'Odběratel',close:'Zpět',sendConfirm:'Odeslat tuto fakturu zaměstnavateli? Po odeslání bude dostupná manažerovi.',cancelConfirm:'Zrušit tuto fakturu? Hodiny bude možné znovu použít v nové faktuře.'},
- en:{eyebrow:'Invoices',title:'My invoices',subtitle:'Create invoices only from approved hours.',month:'Month',preview:'Review invoice',checking:'Checking…',create:'Create draft',creating:'Creating…',empty:'No invoices yet.',send:'Send to employer',sending:'Sending…',cancel:'Cancel invoice',cancelling:'Cancelling…',document:'Document / PDF',hours:'h',due:'Due',draft:'Draft',sent:'Sent',viewed:'Viewed',paid:'Paid',cancelled:'Cancelled',overdue:'Overdue',previewTitle:'Review invoice',invoiceNumber:'Number',period:'Period',rate:'Rate',total:'Total due',seller:'Supplier',buyer:'Customer',close:'Back',sendConfirm:'Send this invoice to your employer? It will become visible to the manager.',cancelConfirm:'Cancel this invoice? Its hours will become available for a new invoice.'}
+ uk:{eyebrow:'Фактури',title:'Мої фактури',subtitle:'Створюйте фактури лише з погоджених годин.',month:'Місяць',preview:'Перевірити фактуру',checking:'Перевірка…',create:'Створити чернетку',creating:'Створення…',empty:'Фактур ще немає.',send:'Відправити роботодавцю',sending:'Відправлення…',cancel:'Скасувати фактуру',cancelling:'Скасування…',document:'Документ / PDF',hours:'год',due:'Оплатити до',draft:'Чернетка',sent:'Відправлено',viewed:'Переглянуто',paid:'Оплачено',cancelled:'Скасовано',overdue:'Прострочено',previewTitle:'Перевірте фактуру',invoiceNumber:'Номер',period:'Період',rate:'Ставка',total:'До сплати',seller:'Постачальник',buyer:'Замовник',close:'Назад',sendConfirm:'Відправити цю фактуру роботодавцю? Після відправлення вона стане доступною менеджеру.',cancelConfirm:'Скасувати цю фактуру? Години з неї знову можна буде використати для нової фактури.',openAmount:'Очікується оплата',overdueAmount:'Прострочено',paidAmount:'Оплачено'},
+ cs:{eyebrow:'Faktury',title:'Moje faktury',subtitle:'Vytvářejte faktury pouze ze schválených hodin.',month:'Měsíc',preview:'Zkontrolovat fakturu',checking:'Kontrola…',create:'Vytvořit koncept',creating:'Vytváření…',empty:'Zatím žádné faktury.',send:'Odeslat zaměstnavateli',sending:'Odesílání…',cancel:'Zrušit fakturu',cancelling:'Rušení…',document:'Doklad / PDF',hours:'h',due:'Splatnost',draft:'Koncept',sent:'Odesláno',viewed:'Zobrazeno',paid:'Zaplaceno',cancelled:'Zrušeno',overdue:'Po splatnosti',previewTitle:'Zkontrolujte fakturu',invoiceNumber:'Číslo',period:'Období',rate:'Sazba',total:'Celkem',seller:'Dodavatel',buyer:'Odběratel',close:'Zpět',sendConfirm:'Odeslat tuto fakturu zaměstnavateli? Po odeslání bude dostupná manažerovi.',cancelConfirm:'Zrušit tuto fakturu? Hodiny bude možné znovu použít v nové faktuře.',openAmount:'Čeká na úhradu',overdueAmount:'Po splatnosti',paidAmount:'Zaplaceno'},
+ en:{eyebrow:'Invoices',title:'My invoices',subtitle:'Create invoices only from approved hours.',month:'Month',preview:'Review invoice',checking:'Checking…',create:'Create draft',creating:'Creating…',empty:'No invoices yet.',send:'Send to employer',sending:'Sending…',cancel:'Cancel invoice',cancelling:'Cancelling…',document:'Document / PDF',hours:'h',due:'Due',draft:'Draft',sent:'Sent',viewed:'Viewed',paid:'Paid',cancelled:'Cancelled',overdue:'Overdue',previewTitle:'Review invoice',invoiceNumber:'Number',period:'Period',rate:'Rate',total:'Total due',seller:'Supplier',buyer:'Customer',close:'Back',sendConfirm:'Send this invoice to your employer? It will become visible to the manager.',cancelConfirm:'Cancel this invoice? Its hours will become available for a new invoice.',openAmount:'Awaiting payment',overdueAmount:'Overdue',paidAmount:'Paid'}
 };
 function currentMonth(){return new Date().toISOString().slice(0,7)}
 function statusLabel(c,status){return c[String(status||'').toLowerCase()]||status}
 function amount(value,currency){return `${Number(value||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} ${currency||'CZK'}`}
 function isOverdue(invoice){if(!['SENT','VIEWED'].includes(invoice.status)||!invoice.dueDate)return false;return new Date(`${invoice.dueDate}T23:59:59`).getTime()<Date.now()}
+function sumAmount(items){return items.reduce((sum,invoice)=>sum+Number(invoice.subtotal||0),0)}
 
 export function InvoicesPage(){
  const navigate=useNavigate();
@@ -34,6 +35,12 @@ export function InvoicesPage(){
  const [sendInvoice,sendState]=useSendInvoiceMutation();
  const [cancelInvoice,cancelState]=useCancelInvoiceMutation();
  const invoices=data?.invoices||[];
+ const summary=useMemo(()=>{
+  const open=invoices.filter(invoice=>['SENT','VIEWED'].includes(invoice.status));
+  const overdue=open.filter(isOverdue);
+  const paid=invoices.filter(invoice=>invoice.status==='PAID');
+  return {open:sumAmount(open),overdue:sumAmount(overdue),paid:sumAmount(paid),openCount:open.length,overdueCount:overdue.length,paidCount:paid.length};
+ },[invoices]);
 
  async function review(){setError('');try{const result=await getPreview(month,true).unwrap();setPreview(result.preview||null)}catch(err){setError(getApiErrorMessage(err))}}
  async function create(){setError('');try{await createInvoice({month}).unwrap();setPreview(null);await refetch()}catch(err){setError(getApiErrorMessage(err))}}
@@ -42,6 +49,11 @@ export function InvoicesPage(){
 
  return <section className="invoicePage pageStack">
   <header className="invoiceHeader appTop"><div className="appTitleBlock"><p className="sectionEyebrow">{c.eyebrow}</p><h1>{c.title}</h1><p>{c.subtitle}</p></div></header>
+  <section className="invoiceFinancialSummary" aria-label={c.title}>
+   <article className="screenCard"><span>{c.openAmount}</span><strong>{amount(summary.open,'CZK')}</strong><small>{summary.openCount}</small></article>
+   <article className={`screenCard${summary.overdue>0?' is-overdue':''}`}><span>{c.overdueAmount}</span><strong>{amount(summary.overdue,'CZK')}</strong><small>{summary.overdueCount}</small></article>
+   <article className="screenCard is-paid"><span>{c.paidAmount}</span><strong>{amount(summary.paid,'CZK')}</strong><small>{summary.paidCount}</small></article>
+  </section>
   <section className="invoiceCreate screenCard"><label><span>{c.month}</span><input type="month" value={month} max={currentMonth()} onChange={e=>setMonth(e.target.value)}/></label><button type="button" onClick={review} disabled={previewState.isFetching}>{previewState.isFetching?c.checking:c.preview}</button></section>
   {error?<p className="statusNote is-error">{error}</p>:null}
   <section className="invoiceList">{isLoading?<div className="screenCard">…</div>:invoices.length?invoices.map(invoice=>{const overdue=isOverdue(invoice);return <article className={`invoiceCard screenCard${overdue?' is-overdue':''}`} key={invoice.id}>
