@@ -16,9 +16,9 @@ import './ApprovalsPage.css';
 
 const LOCALES = { uk: 'uk-UA', en: 'en-GB', cs: 'cs-CZ' };
 const CLEAR_COPY = {
-  uk: { deleteEntry: 'Видалити', clearWeek: 'Очистити тиждень', deleteConfirm: 'Видалити цей запис працівника? Цю дію не можна скасувати.', clearConfirm: 'Очистити весь цей тиждень працівника? Усі записи та відправка на підтвердження будуть видалені.', deleted: 'Запис видалено.', cleared: 'Тиждень очищено.' },
-  cs: { deleteEntry: 'Smazat', clearWeek: 'Vymazat týden', deleteConfirm: 'Smazat tento záznam zaměstnance? Tuto akci nelze vrátit zpět.', clearConfirm: 'Vymazat celý týden zaměstnance? Všechny záznamy a odeslání ke schválení budou odstraněny.', deleted: 'Záznam byl smazán.', cleared: 'Týden byl vymazán.' },
-  en: { deleteEntry: 'Delete', clearWeek: 'Clear week', deleteConfirm: 'Delete this employee entry? This action cannot be undone.', clearConfirm: 'Clear this employee week? All entries and the submitted week will be deleted.', deleted: 'Entry deleted.', cleared: 'Week cleared.' },
+  uk: { deleteEntry: 'Видалити', clearWeek: 'Очистити тиждень', deleteConfirm: 'Видалити цей запис працівника? Цю дію не можна скасувати.', clearConfirm: 'Очистити весь цей тиждень працівника? Усі записи та відправка на підтвердження будуть видалені.', deleted: 'Запис видалено.', cleared: 'Тиждень очищено.', back:'Назад до списку' },
+  cs: { deleteEntry: 'Smazat', clearWeek: 'Vymazat týden', deleteConfirm: 'Smazat tento záznam zaměstnance? Tuto akci nelze vrátit zpět.', clearConfirm: 'Vymazat celý tento týden zaměstnance? Všechny záznamy a odeslání ke schválení budou odstraněny.', deleted: 'Záznam byl smazán.', cleared: 'Týden byl vymazán.', back:'Zpět na seznam' },
+  en: { deleteEntry: 'Delete', clearWeek: 'Clear week', deleteConfirm: 'Delete this employee entry? This action cannot be undone.', clearConfirm: 'Clear this employee week? All entries and the submitted week will be deleted.', deleted: 'Entry deleted.', cleared: 'Week cleared.', back:'Back to list' },
 };
 
 function getEmployeeName(submission, fallback) { const employee = submission?.employee; return employee?.name || employee?.email || fallback; }
@@ -35,6 +35,7 @@ export function ApprovalsPage() {
   const { data, error, isLoading } = useGetManagerSubmissionsQuery({ status: 'SUBMITTED' });
   const submissions = useMemo(() => (Array.isArray(data?.submissions) ? data.submissions : []), [data]);
   const [selectedId, setSelectedId] = useState('');
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
   const [actionError, setActionError] = useState('');
   const [actionMessage, setActionMessage] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
@@ -52,10 +53,18 @@ export function ApprovalsPage() {
 
   useEffect(() => {
     if (!selectedId && submissions[0]?.id) { setSelectedId(submissions[0].id); return; }
-    if (selectedId && !submissions.some(submission => submission.id === selectedId)) setSelectedId(submissions[0]?.id || '');
+    if (selectedId && !submissions.some(submission => submission.id === selectedId)) {
+      setSelectedId(submissions[0]?.id || '');
+      setMobileDetailOpen(false);
+    }
   }, [selectedId, submissions]);
 
   useEffect(() => { setActionError(''); setActionMessage(''); setRejectionReason(''); }, [selectedId]);
+
+  function openSubmission(id) {
+    setSelectedId(id);
+    setMobileDetailOpen(true);
+  }
 
   async function review(decision) {
     if (!hasQueue || !detail?.id) return;
@@ -64,7 +73,7 @@ export function ApprovalsPage() {
     try {
       if (decision === 'approve') await approveSubmission(detail.id).unwrap();
       else await rejectSubmission({ submissionId: detail.id, rejectionReason: trimmedRejectionReason }).unwrap();
-      setRejectionReason(''); setSelectedId('');
+      setRejectionReason(''); setSelectedId(''); setMobileDetailOpen(false);
     } catch (mutationError) { setActionError(getApiErrorMessage(mutationError)); }
   }
 
@@ -83,12 +92,10 @@ export function ApprovalsPage() {
     setActionError(''); setActionMessage('');
     try {
       await clearManagerSubmission(detail.id).unwrap();
-      setSelectedId('');
+      setSelectedId(''); setMobileDetailOpen(false);
       setActionMessage(clearCopy.cleared);
     } catch (mutationError) { setActionError(getApiErrorMessage(mutationError)); }
   }
-
-  const statusLabel = status => t(`common.${String(status || 'submitted').toLowerCase()}`);
 
   return <section className="approvalsPage pageStack">
     <header className="approvalsHeader"><div><p className="sectionEyebrow">{t('approvals.eyebrow')}</p><h1>{t('approvals.title')}</h1><p>{t('approvals.intro')}</p></div>{hasQueue ? <div className="approvalsHeaderStats" aria-label={t('approvals.pendingSummary')}><div><strong>{submissions.length}</strong><span>{t('approvals.pendingWeeks')}</span></div><div><strong>{pendingHours.toFixed(2)} h</strong><span>{t('approvals.hoursWaiting')}</span></div></div> : null}</header>
@@ -96,9 +103,10 @@ export function ApprovalsPage() {
     {error ? <p className="statusNote is-error">{getApiErrorMessage(error)}</p> : null}
     {actionMessage ? <p className="statusNote is-success">{actionMessage}</p> : null}
     {hasQueue && !submissions.length ? <section className="approvalsEmpty screenCard"><span aria-hidden="true"><SvgIcon name="check-circle" /></span><div><h2>{t('approvals.allCaughtUp')}</h2><p>{t('approvals.noPending')}</p></div></section> : null}
-    {hasQueue && submissions.length ? <section className="approvalsWorkspace">
-      <aside className="approvalsQueue"><div className="approvalsQueueHeader"><div><span>{t('approvals.pending')}</span><strong>{submissions.length}</strong></div><p>{t('approvals.selectWeek')}</p></div><div className="approvalsList" aria-label={t('approvals.pendingSubmissions')}>{submissions.map(submission => <button className={`approvalItem ${selectedId === submission.id ? 'is-active' : ''}`} type="button" key={submission.id} onClick={() => setSelectedId(submission.id)}><span className="approvalAvatar" aria-hidden="true">{getEmployeeName(submission, employeeFallback).slice(0,1).toUpperCase()}</span><span className="approvalItemCopy"><strong>{getEmployeeName(submission, employeeFallback)}</strong><em>{formatPeriod(submission, locale)}</em></span><span className="approvalItemMeta"><b>{submission.summary?.totalHours || '0.00'} h</b><i>{t('approvals.submittedStatus')}</i></span></button>)}</div></aside>
+    {hasQueue && submissions.length ? <section className={`approvalsWorkspace${mobileDetailOpen?' is-mobile-detail':''}`}>
+      <aside className="approvalsQueue"><div className="approvalsQueueHeader"><div><span>{t('approvals.pending')}</span><strong>{submissions.length}</strong></div><p>{t('approvals.selectWeek')}</p></div><div className="approvalsList" aria-label={t('approvals.pendingSubmissions')}>{submissions.map(submission => <button className={`approvalItem ${selectedId === submission.id ? 'is-active' : ''}`} type="button" key={submission.id} onClick={() => openSubmission(submission.id)}><span className="approvalAvatar" aria-hidden="true">{getEmployeeName(submission, employeeFallback).slice(0,1).toUpperCase()}</span><span className="approvalItemCopy"><strong>{getEmployeeName(submission, employeeFallback)}</strong><em>{formatPeriod(submission, locale)}</em></span><span className="approvalItemMeta"><b>{submission.summary?.totalHours || '0.00'} h</b><i>{t('approvals.submittedStatus')}</i></span><span className="approvalItemChevron" aria-hidden="true">›</span></button>)}</div></aside>
       <article className="approvalDetail">
+        <button className="approvalMobileBack" type="button" onClick={()=>setMobileDetailOpen(false)}>‹ {clearCopy.back}</button>
         {detailQuery.isFetching ? <RequestLoadingState label={t('approvals.loadingDetails')} /> : null}
         {detailQuery.error ? <p className="statusNote is-error">{getApiErrorMessage(detailQuery.error)}</p> : null}
         {detail && !detailQuery.error ? <>
