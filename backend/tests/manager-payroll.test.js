@@ -19,8 +19,11 @@ function createManagerContext() {
   };
 }
 
-function createClient({ onFindMany } = {}) {
+function createClient({ onFindMany, standardDailyHours = '8.00' } = {}) {
   return {
+    company: {
+      findUnique: async () => ({ standardDailyHours }),
+    },
     companyMembership: {
       findMany: async query => {
         onFindMany?.(query);
@@ -42,9 +45,9 @@ function createClient({ onFindMany } = {}) {
               deletedAt: null,
             },
             workEntries: [
-              { id: 'a1', status: 'APPROVED', hours: '8.00' },
-              { id: 'a2', status: 'SUBMITTED', hours: '4.00' },
-              { id: 'a3', status: 'DRAFT', hours: '2.00' },
+              { id: 'a1', status: 'APPROVED', hours: '8.00', workDate: new Date('2026-08-17T00:00:00.000Z') },
+              { id: 'a2', status: 'SUBMITTED', hours: '4.00', workDate: new Date('2026-08-18T00:00:00.000Z') },
+              { id: 'a3', status: 'DRAFT', hours: '6.00', workDate: new Date('2026-08-18T00:00:00.000Z') },
             ],
           },
           {
@@ -63,7 +66,9 @@ function createClient({ onFindMany } = {}) {
               email: 'petra@example.com',
               deletedAt: null,
             },
-            workEntries: [{ id: 'b1', status: 'APPROVED', hours: '5.00' }],
+            workEntries: [
+              { id: 'b1', status: 'APPROVED', hours: '9.50', workDate: new Date('2026-08-19T00:00:00.000Z') },
+            ],
           },
         ];
       },
@@ -71,7 +76,7 @@ function createClient({ onFindMany } = {}) {
   };
 }
 
-test('manager payroll calculates a selected week and employee breakdown', async () => {
+test('manager payroll calculates a selected week, salary and overtime breakdown', async () => {
   let query = null;
   const client = createClient({ onFindMany: value => (query = value) });
 
@@ -92,23 +97,44 @@ test('manager payroll calculates a selected week and employee breakdown', async 
   assert.equal(query.include.workEntries.where.workDate.lt.toISOString(), '2026-08-24T00:00:00.000Z');
   assert.deepEqual(query.include.workEntries.where.status.in, ['DRAFT', 'SUBMITTED', 'APPROVED']);
 
+  assert.equal(payload.company.standardDailyHours, '8.00');
   assert.equal(payload.employees[0].name, 'Anna Novak');
   assert.deepEqual(payload.employees[0].summary, {
-    totalHours: '14.00',
+    totalHours: '18.00',
     approvedHours: '8.00',
-    pendingHours: '6.00',
+    pendingHours: '10.00',
     confirmedSalaryCzk: '1600.00',
-    predictedSalaryCzk: '1200.00',
+    predictedSalaryCzk: '2000.00',
+    overtimeHours: '2.00',
+    approvedOvertimeHours: '0.00',
+    pendingOvertimeHours: '2.00',
   });
   assert.equal(payload.employees[1].status, 'INACTIVE');
+  assert.equal(payload.employees[1].summary.overtimeHours, '1.50');
   assert.deepEqual(payload.summary, {
     employeeCount: 2,
     employeesWithHours: 2,
-    approvedHours: '13.00',
-    pendingHours: '6.00',
-    confirmedSalaryCzk: '3100.00',
-    predictedSalaryCzk: '1200.00',
+    approvedHours: '17.50',
+    pendingHours: '10.00',
+    overtimeHours: '3.50',
+    approvedOvertimeHours: '1.50',
+    pendingOvertimeHours: '2.00',
+    confirmedSalaryCzk: '4450.00',
+    predictedSalaryCzk: '2000.00',
   });
+});
+
+test('manager payroll uses the configured company daily norm', async () => {
+  const payload = await getManagerPayroll(
+    createClient({ standardDailyHours: '7.50' }),
+    createManagerContext(),
+    { period: 'week', anchor: '2026-08-18' }
+  );
+
+  assert.equal(payload.company.standardDailyHours, '7.50');
+  assert.equal(payload.employees[0].summary.overtimeHours, '2.50');
+  assert.equal(payload.employees[1].summary.overtimeHours, '2.00');
+  assert.equal(payload.summary.overtimeHours, '4.50');
 });
 
 test('manager payroll resolves a complete calendar month', async () => {

@@ -13,6 +13,11 @@ import './PayrollReportPage.css';
 const DAY_MS = 24 * 60 * 60 * 1000;
 const STATUS_KEYS = { DRAFT: 'draft', SUBMITTED: 'submitted', APPROVED: 'approved', REJECTED: 'rejected' };
 const LOCALES = { uk: 'uk-UA', cs: 'cs-CZ', en: 'en-GB' };
+const OVERTIME_LABELS = {
+  uk: { overtime: 'Понаднормові', dailyNorm: 'Денна норма' },
+  cs: { overtime: 'Přesčasy', dailyNorm: 'Denní norma' },
+  en: { overtime: 'Overtime', dailyNorm: 'Daily standard' },
+};
 
 function formatCzk(value, locale) {
   const amount = Number(value || 0);
@@ -45,6 +50,7 @@ function ReportRow({ label, value, emphasize = false }) {
 export function PayrollReportPage() {
   const { language, t } = useI18n();
   const locale = LOCALES[language] || LOCALES.uk;
+  const overtimeCopy = OVERTIME_LABELS[language] || OVERTIME_LABELS.uk;
   const user = useSelector(selectUser);
   const isManager = hasManagerAccess(user);
   const [managerPeriod, setManagerPeriod] = useState('week');
@@ -119,6 +125,7 @@ export function PayrollReportPage() {
                 <ReportRow label={t('payroll.period')} value={managerPeriodLabel} />
                 <ReportRow label={t('payroll.employees')} value={String(summary.employeeCount || 0)} />
                 <ReportRow label={t('payroll.employeesWithHours')} value={String(summary.employeesWithHours || 0)} />
+                <ReportRow label={overtimeCopy.dailyNorm} value={formatHours(data?.company?.standardDailyHours || 8, locale)} />
               </>
             )}
           </section>
@@ -129,6 +136,7 @@ export function PayrollReportPage() {
               <>
                 <ReportRow label={t('payroll.approvedHours')} value={formatHours(summary.approvedHours, locale)} />
                 <ReportRow label={t('payroll.pendingHours')} value={formatHours(summary.pendingHours, locale)} />
+                <ReportRow label={overtimeCopy.overtime} value={formatHours(summary.overtimeHours, locale)} />
                 <ReportRow label={t('payroll.confirmedPayroll')} value={formatCzk(summary.confirmedSalaryCzk, locale)} emphasize />
                 <ReportRow label={t('payroll.predictedPayroll')} value={formatCzk(summary.predictedSalaryCzk, locale)} />
               </>
@@ -148,7 +156,7 @@ export function PayrollReportPage() {
               <div className="payrollReport-sectionHeader"><h3>{t('payroll.breakdown')}</h3><span>{managerEmployees.length} {t('payroll.employees').toLowerCase()}</span></div>
               <div className="payrollReport-tableWrap">
                 <table className="payrollReport-table">
-                  <thead><tr><th>{t('payroll.employee')}</th><th>{t('payroll.status')}</th><th>{t('payroll.rate')}</th><th>{t('payroll.approved')}</th><th>{t('payroll.pending')}</th><th>{t('payroll.confirmed')}</th><th>{t('payroll.predicted')}</th></tr></thead>
+                  <thead><tr><th>{t('payroll.employee')}</th><th>{t('payroll.status')}</th><th>{t('payroll.rate')}</th><th>{t('payroll.approved')}</th><th>{t('payroll.pending')}</th><th>{overtimeCopy.overtime}</th><th>{t('payroll.confirmed')}</th><th>{t('payroll.predicted')}</th></tr></thead>
                   <tbody>
                     {managerEmployees.map(employee => (
                       <tr key={employee.id}>
@@ -157,6 +165,7 @@ export function PayrollReportPage() {
                         <td>{formatCzk(employee.hourlyRateCzk, locale)}</td>
                         <td>{formatHours(employee.summary?.approvedHours, locale)}</td>
                         <td>{formatHours(employee.summary?.pendingHours, locale)}</td>
+                        <td>{formatHours(employee.summary?.overtimeHours, locale)}</td>
                         <td>{formatCzk(employee.summary?.confirmedSalaryCzk, locale)}</td>
                         <td>{formatCzk(employee.summary?.predictedSalaryCzk, locale)}</td>
                       </tr>

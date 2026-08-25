@@ -76,6 +76,45 @@ function getEmployeeName(user) {
   return fullName || user?.name || user?.email || 'Employee';
 }
 
+function calculateOvertime(entries = [], standardDailyHours = 8) {
+  const dailyNorm = Math.max(0, toHundredths(standardDailyHours));
+  const byDay = new Map();
+
+  for (const entry of entries) {
+    const date = entry.workDate instanceof Date ? entry.workDate : new Date(entry.workDate);
+    if (Number.isNaN(date.getTime())) continue;
+
+    const day = toDateKey(date);
+    const bucket = byDay.get(day) || { approved: 0, pending: 0 };
+    const hours = toHundredths(entry.hours);
+
+    if (entry.status === 'APPROVED') bucket.approved += hours;
+    else if (entry.status === 'DRAFT' || entry.status === 'SUBMITTED') bucket.pending += hours;
+
+    byDay.set(day, bucket);
+  }
+
+  let overtime = 0;
+  let approvedOvertime = 0;
+  let pendingOvertime = 0;
+
+  for (const { approved, pending } of byDay.values()) {
+    const totalOvertime = Math.max(0, approved + pending - dailyNorm);
+    const approvedDayOvertime = Math.max(0, approved - dailyNorm);
+    const pendingDayOvertime = Math.max(0, totalOvertime - approvedDayOvertime);
+
+    overtime += totalOvertime;
+    approvedOvertime += approvedDayOvertime;
+    pendingOvertime += pendingDayOvertime;
+  }
+
+  return {
+    overtimeHours: formatHundredths(overtime),
+    approvedOvertimeHours: formatHundredths(approvedOvertime),
+    pendingOvertimeHours: formatHundredths(pendingOvertime),
+  };
+}
+
 export async function getManagerPayroll(client, context, query = {}) {
   const managerMembership = context?.activeMembership;
   if (!managerMembership || managerMembership.role !== 'MANAGER') {
@@ -83,42 +122,52 @@ export async function getManagerPayroll(client, context, query = {}) {
   }
 
   const period = resolvePeriod(query.period, query.anchor);
-  const memberships = await client.companyMembership.findMany({
-    where: {
-      companyId: managerMembership.companyId,
-      role: 'EMPLOYEE',
-      user: {
-        is: {
-          deletedAt: null,
-        },
-      },
-    },
-    include: {
-      user: true,
-      workEntries: {
-        where: {
-          workDate: {
-            gte: period.start,
-            lt: period.next,
-          },
-          status: {
-            in: ['DRAFT', 'SUBMITTED', 'APPROVED'],
+  const [company, memberships] = await Promise.all([
+    client.company.findUnique({
+      where: { id: managerMembership.companyId },
+      select: { standardDailyHours: true },
+    }),
+    client.companyMembership.findMany({
+      where: {
+        companyId: managerMembership.companyId,
+        role: 'EMPLOYEE',
+        user: {
+          is: {
+            deletedAt: null,
           },
         },
-        orderBy: {
-          workDate: 'asc',
+      },
+      include: {
+        user: true,
+        workEntries: {
+          where: {
+            workDate: {
+              gte: period.start,
+              lt: period.next,
+            },
+            status: {
+              in: ['DRAFT', 'SUBMITTED', 'APPROVED'],
+            },
+          },
+          orderBy: {
+            workDate: 'asc',
+          },
         },
       },
-    },
-    orderBy: [
-      {
-        createdAt: 'asc',
-      },
-    ],
-  });
+      orderBy: [
+        {
+          createdAt: 'asc',
+        },
+      ],
+    }),
+  ]);
 
+  const standardDailyHours = Number(company?.standardDailyHours || 8);
   let approvedHours = 0;
   let pendingHours = 0;
+  let overtimeHours = 0;
+  let approvedOvertimeHours = 0;
+  let pendingOvertimeHours = 0;
   let confirmedSalary = 0;
   let predictedSalary = 0;
   let employeesWithHours = 0;
@@ -128,6 +177,8 @@ export async function getManagerPayroll(client, context, query = {}) {
       membership.workEntries || [],
       membership.hourlyRateCzk ?? '0'
     );
+    const overtime = calculateOvertime(membership.workEntries || [], standardDailyHours);
+    const summaryWithOvertime = { ...summary, ...overtime };
 
     if (toHundredths(summary.totalHours) > 0) {
       employeesWithHours += 1;
@@ -135,6 +186,9 @@ export async function getManagerPayroll(client, context, query = {}) {
 
     approvedHours += toHundredths(summary.approvedHours);
     pendingHours += toHundredths(summary.pendingHours);
+    overtimeHours += toHundredths(overtime.overtimeHours);
+    approvedOvertimeHours += toHundredths(overtime.approvedOvertimeHours);
+    pendingOvertimeHours += toHundredths(overtime.pendingOvertimeHours);
     confirmedSalary += toHundredths(summary.confirmedSalaryCzk);
     predictedSalary += toHundredths(summary.predictedSalaryCzk);
 
@@ -145,7 +199,7 @@ export async function getManagerPayroll(client, context, query = {}) {
       email: membership.user?.email || '',
       status: membership.status,
       hourlyRateCzk: membership.hourlyRateCzk == null ? '0.00' : String(membership.hourlyRateCzk),
-      summary,
+      summary: summaryWithOvertime,
     };
   });
 
@@ -154,6 +208,7 @@ export async function getManagerPayroll(client, context, query = {}) {
     company: {
       id: managerMembership.companyId,
       name: context?.activeCompany?.name || managerMembership.company?.name || '',
+      standardDailyHours: standardDailyHours.toFixed(2),
     },
     period: {
       type: period.type,
@@ -167,6 +222,9 @@ export async function getManagerPayroll(client, context, query = {}) {
       employeesWithHours,
       approvedHours: formatHundredths(approvedHours),
       pendingHours: formatHundredths(pendingHours),
+      overtimeHours: formatHundredths(overtimeHours),
+      approvedOvertimeHours: formatHundredths(approvedOvertimeHours),
+      pendingOvertimeHours: formatHundredths(pendingOvertimeHours),
       confirmedSalaryCzk: formatHundredths(confirmedSalary),
       predictedSalaryCzk: formatHundredths(predictedSalary),
     },
