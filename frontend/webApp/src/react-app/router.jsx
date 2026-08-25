@@ -4,18 +4,20 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { App } from '@shared/app/App.jsx';
 import { ProtectedRoute } from '@shared/app/components/ProtectedRoute/ProtectedRoute.jsx';
 import { RouterError } from '@shared/app/components/RouterError/RouterError.jsx';
+import { SectionShell } from './components/SectionTabs/SectionShell.jsx';
 import { ApprovalsPage } from './pages/ApprovalsPage/ApprovalsPage.jsx';
 import { CalendarPage } from './pages/CalendarPage/CalendarPage.jsx';
 import { CompanySettingsPage } from './pages/CompanySettingsPage/CompanySettingsPage.jsx';
 import { DashboardPage } from './pages/DashboardPage/DashboardPage.jsx';
 import { EmployeesPage } from './pages/EmployeesPage/EmployeesPage.jsx';
 import { FastHoursPage } from './pages/FastHoursPage/FastHoursPage.jsx';
+import { FinanceHubPage } from './pages/FinanceHubPage/FinanceHubPage.jsx';
 import { HomePage } from './pages/HomePage/HomePage.jsx';
-import { HoursPage } from './pages/HoursPage/HoursPage.jsx';
 import { HoursTablePage } from './pages/HoursTablePage/HoursTablePage.jsx';
 import { InvoiceDocumentPage } from './pages/InvoiceDocumentPage/InvoiceDocumentPage.jsx';
 import { InvoicesPage } from './pages/InvoicesPage/InvoicesPage.jsx';
 import { ManagerInvoicesPage } from './pages/ManagerInvoicesPage/ManagerInvoicesPage.jsx';
+import { MoreHubPage } from './pages/MoreHubPage/MoreHubPage.jsx';
 import { NotificationsPage } from './pages/NotificationsPage/NotificationsPage.jsx';
 import { PayrollReportPage } from './pages/PayrollReportPage/PayrollReportPage.jsx';
 import { ProfilePage } from './pages/ProfilePage/ProfilePage.jsx';
@@ -32,22 +34,39 @@ export const router = createBrowserRouter([
       { path: 'sign-in', element: <SignInPage /> },
       { path: 'register', element: <SignInPage defaultMode="register" /> },
       { path: 'dashboard', element: <ProtectedRoute><DashboardPage /></ProtectedRoute> },
-      { path: 'hours', element: <ProtectedRoute requireEmployee><FastHoursPage /></ProtectedRoute> },
-      { path: 'hours-advanced', element: <ProtectedRoute requireEmployee><HoursPage /></ProtectedRoute> },
-      { path: 'hours-table', element: <ProtectedRoute requireEmployee><HoursTablePage /></ProtectedRoute> },
-      { path: 'invoices', element: <ProtectedRoute requireEmployee><InvoicesPage /></ProtectedRoute> },
+      {
+        element: <ProtectedRoute requireEmployee><SectionShell section="time" /></ProtectedRoute>,
+        children: [
+          { path: 'hours', element: <FastHoursPage /> },
+          { path: 'calendar', element: <CalendarPage /> },
+          { path: 'hours-table', element: <HoursTablePage /> },
+        ],
+      },
+      { path: 'hours-advanced', element: <ProtectedRoute requireEmployee><Navigate to="/hours" replace /></ProtectedRoute> },
+      {
+        element: <ProtectedRoute><SectionShell section="finance" /></ProtectedRoute>,
+        children: [
+          { path: 'finance', element: <FinanceHubPage /> },
+          { path: 'payroll-report', element: <PayrollReportPage /> },
+          { path: 'invoices', element: <ProtectedRoute requireEmployee><InvoicesPage /></ProtectedRoute> },
+          { path: 'tax-information', element: <ProtectedRoute requireEmployee><TaxInformationPage /></ProtectedRoute> },
+          { path: 'manager/invoices', element: <ProtectedRoute requireManager><ManagerInvoicesPage /></ProtectedRoute> },
+        ],
+      },
       { path: 'invoices/:invoiceId', element: <ProtectedRoute requireEmployee><InvoiceDocumentPage /></ProtectedRoute> },
-      { path: 'calendar', element: <ProtectedRoute requireEmployee><CalendarPage /></ProtectedRoute> },
-      { path: 'notifications', element: <ProtectedRoute><NotificationsPage /></ProtectedRoute> },
-      { path: 'payroll-report', element: <ProtectedRoute><PayrollReportPage /></ProtectedRoute> },
-      { path: 'projects', element: <ProtectedRoute requireManager><ProjectsPage /></ProtectedRoute> },
-      { path: 'company-settings', element: <ProtectedRoute requireManager><CompanySettingsPage /></ProtectedRoute> },
-      { path: 'employees', element: <ProtectedRoute requireManager><EmployeesPage /></ProtectedRoute> },
-      { path: 'approvals', element: <ProtectedRoute requireManager><ApprovalsPage /></ProtectedRoute> },
-      { path: 'manager/invoices', element: <ProtectedRoute requireManager><ManagerInvoicesPage /></ProtectedRoute> },
       { path: 'manager/invoices/:invoiceId', element: <ProtectedRoute requireManager><InvoiceDocumentPage managerMode /></ProtectedRoute> },
+      {
+        element: <ProtectedRoute requireManager><SectionShell section="team" /></ProtectedRoute>,
+        children: [
+          { path: 'employees', element: <EmployeesPage /> },
+          { path: 'projects', element: <ProjectsPage /> },
+        ],
+      },
+      { path: 'approvals', element: <ProtectedRoute requireManager><ApprovalsPage /></ProtectedRoute> },
+      { path: 'company-settings', element: <ProtectedRoute requireManager><CompanySettingsPage /></ProtectedRoute> },
+      { path: 'more', element: <ProtectedRoute requireManager><MoreHubPage /></ProtectedRoute> },
+      { path: 'notifications', element: <ProtectedRoute><NotificationsPage /></ProtectedRoute> },
       { path: 'profile', element: <ProtectedRoute><ProfilePage /></ProtectedRoute> },
-      { path: 'tax-information', element: <ProtectedRoute requireEmployee><TaxInformationPage /></ProtectedRoute> },
       { path: '*', element: <Navigate to='/' replace /> },
     ],
   },
