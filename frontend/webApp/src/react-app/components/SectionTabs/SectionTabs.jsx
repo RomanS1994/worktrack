@@ -6,9 +6,9 @@ import { hasManagerAccess } from '@shared/features/auth/authAccess.js';
 import './SectionTabs.css';
 
 const COPY={
- uk:{time:'Час',week:'Тиждень',calendar:'Календар',history:'Історія',team:'Команда',employees:'Працівники',projects:'Об’єкти',finance:'Фінанси',overview:'Огляд',invoices:'Фактури',details:'Реквізити'},
- cs:{time:'Čas',week:'Týden',calendar:'Kalendář',history:'Historie',team:'Tým',employees:'Zaměstnanci',projects:'Objekty',finance:'Finance',overview:'Přehled',invoices:'Faktury',details:'Údaje'},
- en:{time:'Time',week:'Week',calendar:'Calendar',history:'History',team:'Team',employees:'Employees',projects:'Projects',finance:'Finance',overview:'Overview',invoices:'Invoices',details:'Billing details'}
+ uk:{time:'Час',week:'Тиждень',calendar:'Календар',history:'Історія',team:'Команда',employees:'Працівники',projects:'Об’єкти',finance:'Фінанси',overview:'Огляд',invoices:'Фактури'},
+ cs:{time:'Čas',week:'Týden',calendar:'Kalendář',history:'Historie',team:'Tým',employees:'Zaměstnanci',projects:'Objekty',finance:'Finance',overview:'Přehled',invoices:'Faktury'},
+ en:{time:'Time',week:'Week',calendar:'Calendar',history:'History',team:'Team',employees:'Employees',projects:'Projects',finance:'Finance',overview:'Overview',invoices:'Invoices'}
 };
 
 const CONFIG={
@@ -24,7 +24,6 @@ const CONFIG={
  employeeFinance:c=>[
   {to:'/finance',label:c.overview,end:true},
   {to:'/invoices',label:c.invoices},
-  {to:'/tax-information',label:c.details},
  ],
  managerFinance:c=>[
   {to:'/finance',label:c.overview,end:true},
@@ -38,7 +37,7 @@ export function SectionTabs({section}){
  const c=COPY[language]||COPY.uk;
  const configKey=section==='finance'?(hasManagerAccess(user)?'managerFinance':'employeeFinance'):section;
  const tabs=CONFIG[configKey]?.(c)||[];
- return <nav className="sectionTabs" aria-label={c[section]||section}>
+ return <nav className={`sectionTabs sectionTabs--${section}`} aria-label={c[section]||section}>
   {tabs.map(tab=><NavLink key={tab.to} to={tab.to} end={tab.end} className={({isActive})=>`sectionTabs-item${isActive?' is-active':''}`}>{tab.label}</NavLink>)}
  </nav>;
 }
