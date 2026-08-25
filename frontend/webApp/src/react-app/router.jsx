@@ -48,12 +48,12 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute><SectionShell section="finance" /></ProtectedRoute>,
         children: [
           { path: 'finance', element: <FinanceHubPage /> },
-          { path: 'payroll-report', element: <PayrollReportPage /> },
           { path: 'invoices', element: <ProtectedRoute requireEmployee><InvoicesPage /></ProtectedRoute> },
           { path: 'tax-information', element: <ProtectedRoute requireEmployee><TaxInformationPage /></ProtectedRoute> },
           { path: 'manager/invoices', element: <ProtectedRoute requireManager><ManagerInvoicesPage /></ProtectedRoute> },
         ],
       },
+      { path: 'payroll-report', element: <ProtectedRoute><PayrollReportPage /></ProtectedRoute> },
       { path: 'invoices/:invoiceId', element: <ProtectedRoute requireEmployee><InvoiceDocumentPage /></ProtectedRoute> },
       { path: 'manager/invoices/:invoiceId', element: <ProtectedRoute requireManager><InvoiceDocumentPage managerMode /></ProtectedRoute> },
       {
