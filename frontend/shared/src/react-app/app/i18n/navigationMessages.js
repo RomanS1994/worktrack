@@ -5,6 +5,12 @@ export const navigationMessages = {
       projects: 'Проєкти',
       notifications: 'Сповіщення',
     },
+    navigation: {
+      finance: 'Фінанси',
+    },
+    common: {
+      share: 'Поділитися',
+    },
   },
   cs: {
     app: {
@@ -12,12 +18,24 @@ export const navigationMessages = {
       projects: 'Projekty',
       notifications: 'Oznámení',
     },
+    navigation: {
+      finance: 'Finance',
+    },
+    common: {
+      share: 'Sdílet',
+    },
   },
   en: {
     app: {
       calendar: 'Calendar',
       projects: 'Projects',
       notifications: 'Notifications',
+    },
+    navigation: {
+      finance: 'Finance',
+    },
+    common: {
+      share: 'Share',
     },
   },
 };
