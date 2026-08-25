@@ -26,7 +26,7 @@ export function FinanceHubPage(){
   </header>
   {isLoading?<RequestLoadingState label={c.title}/>:null}{error?<p className="statusNote is-error">{getApiErrorMessage(error)}</p>:null}
   {!isLoading&&!error?<section className="financeHubTotals">
-   <article><span>{c.approved}</span><strong>{money(summary.confirmedSalaryCzk)}</strong><i className="financeHubTotalIcon is-approved"><SvgIcon name="check" /></i></article>
+   <article><span>{c.approved}</span><strong>{money(summary.confirmedSalaryCzk)}</strong><i className="financeHubTotalIcon is-approved"><SvgIcon name="wallet" /></i></article>
    <article><span>{c.predicted}</span><strong>{money(summary.predictedSalaryCzk)}</strong><i className="financeHubTotalIcon"><SvgIcon name="clock" /></i></article>
   </section>:null}
   <section className="financeHubLinks screenCard">
