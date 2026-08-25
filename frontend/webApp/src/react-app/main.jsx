@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { hideStartupSplash } from '@shared/app/startupSplash.js';
 
 import { AppProviders } from './app/providers/AppProviders.jsx';
+import './pages/FastHoursPage/FastHoursPage.compact.css';
 
 const rootElement = document.getElementById('react-root');
 
