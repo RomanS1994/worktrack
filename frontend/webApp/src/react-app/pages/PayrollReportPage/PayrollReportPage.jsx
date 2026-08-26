@@ -14,6 +14,7 @@ import './PayrollReportPage.css';
 const DAY_MS = 24 * 60 * 60 * 1000;
 const STATUS_KEYS = { DRAFT: 'draft', SUBMITTED: 'submitted', APPROVED: 'approved', REJECTED: 'rejected' };
 const LOCALES = { uk: 'uk-UA', cs: 'cs-CZ', en: 'en-GB' };
+const MIXED_RATE_LABELS = { uk: 'Кілька ставок', cs: 'Více sazeb', en: 'Multiple rates' };
 const FINANCE_COPY = {
   uk: {
     finance: 'Фінанси', week: 'Тиждень', month: 'Місяць', thisWeek: 'Цей тиждень', thisMonth: 'Цей місяць', expected: 'Очікувана зарплата',
@@ -350,7 +351,7 @@ export function PayrollReportPage() {
           {isManager ? (
             <section className="payrollReport-employeeSection">
               <div className="payrollReport-sectionHeader"><h3>{t('payroll.breakdown')}</h3><span>{managerEmployees.length} {t('payroll.employees').toLowerCase()}</span></div>
-              <div className="payrollReport-tableWrap"><table className="payrollReport-table"><thead><tr><th>{t('payroll.employee')}</th><th>{t('payroll.status')}</th><th>{t('payroll.rate')}</th><th>{t('payroll.approved')}</th><th>{t('payroll.pending')}</th><th>{t('payroll.confirmed')}</th><th>{t('payroll.predicted')}</th></tr></thead><tbody>{managerEmployees.map(employee => <tr key={employee.id}><td><strong>{employee.name}</strong><span>{employee.email}</span></td><td>{localizedEmployeeStatus(employee.status)}</td><td>{formatCzk(employee.hourlyRateCzk, locale)}</td><td>{formatHours(employee.summary?.approvedHours, locale)}</td><td>{formatHours(employee.summary?.pendingHours, locale)}</td><td>{formatCzk(employee.summary?.confirmedSalaryCzk, locale)}</td><td>{formatCzk(employee.summary?.predictedSalaryCzk, locale)}</td></tr>)}</tbody></table></div>
+              <div className="payrollReport-tableWrap"><table className="payrollReport-table"><thead><tr><th>{t('payroll.employee')}</th><th>{t('payroll.status')}</th><th>{t('payroll.rate')}</th><th>{t('payroll.approved')}</th><th>{t('payroll.pending')}</th><th>{t('payroll.confirmed')}</th><th>{t('payroll.predicted')}</th></tr></thead><tbody>{managerEmployees.map(employee => <tr key={employee.id}><td><strong>{employee.name}</strong><span>{employee.email}</span></td><td>{localizedEmployeeStatus(employee.status)}</td><td>{employee.mixedRates ? (MIXED_RATE_LABELS[language] || MIXED_RATE_LABELS.uk) : formatCzk(employee.effectiveRateCzk || employee.hourlyRateCzk, locale)}</td><td>{formatHours(employee.summary?.approvedHours, locale)}</td><td>{formatHours(employee.summary?.pendingHours, locale)}</td><td>{formatCzk(employee.summary?.confirmedSalaryCzk, locale)}</td><td>{formatCzk(employee.summary?.predictedSalaryCzk, locale)}</td></tr>)}</tbody></table></div>
             </section>
           ) : null}
           <footer className="payrollReport-footer"><p>{t('payroll.footer')}</p><span>{t('payroll.generated')}</span></footer>
