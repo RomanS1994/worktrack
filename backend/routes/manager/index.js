@@ -1,6 +1,7 @@
 import { requireManager } from '../../auth/context.js';
 import { runStoreRead, runStoreTransaction } from '../../db/store.js';
 import { readJsonBody, sendJson } from '../../lib/http.js';
+import { getManagerEmployees } from '../../services/manager-employees.js';
 import { resetEmployeePassword } from '../../services/employee-password-reset.js';
 import { getManagerPayroll } from '../../services/manager-payroll.js';
 import { notifyEmployeeAboutReview } from '../../services/notifications.js';
@@ -8,7 +9,6 @@ import { calculateNetWorkEntries, calculateNetWorkSummary } from '../../services
 import {
   createManagerEmployee,
   getManagerSubmissionById,
-  listManagerEmployees,
   listManagerSubmissions,
   reviewWeeklySubmission,
   updateEmployeeMembership,
@@ -68,7 +68,7 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
 
   if (request.method === 'GET' && pathName === '/api/manager/employees') {
     const context = await requireManager(request, response); if (!context) return true;
-    const payload = await runStoreRead({ prisma: client => listManagerEmployees(client, context) });
+    const payload = await runStoreRead({ prisma: client => getManagerEmployees(client, context) });
     sendJson(response, 200, payload); return true;
   }
 
