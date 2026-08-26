@@ -76,6 +76,23 @@ function getEmployeeName(user) {
   return fullName || user?.name || user?.email || 'Employee';
 }
 
+function rateMeta(entries = [], fallbackRate = 0) {
+  const fallback = Number(fallbackRate || 0);
+  const rates = entries
+    .map(entry => Number(entry.hourlyRateCzk ?? fallback))
+    .filter(rate => Number.isFinite(rate) && rate >= 0);
+  const uniqueRates = [...new Set(rates.map(rate => rate.toFixed(2)))];
+  const effectiveRate = uniqueRates.length === 1
+    ? Number(uniqueRates[0])
+    : rates.length
+      ? rates.reduce((sum, rate) => sum + rate, 0) / rates.length
+      : fallback;
+  return {
+    mixedRates: uniqueRates.length > 1,
+    effectiveRateCzk: Number.isFinite(effectiveRate) ? effectiveRate.toFixed(2) : '0.00',
+  };
+}
+
 export async function getManagerPayroll(client, context, query = {}) {
   const managerMembership = context?.activeMembership;
   if (!managerMembership || managerMembership.role !== 'MANAGER') {
@@ -138,11 +155,9 @@ export async function getManagerPayroll(client, context, query = {}) {
   let employeesWithHours = 0;
 
   const employees = memberships.map(membership => {
-    const summary = calculateNetWorkSummary(
-      membership.workEntries || [],
-      membership.hourlyRateCzk ?? '0',
-      rules
-    );
+    const entries = membership.workEntries || [];
+    const summary = calculateNetWorkSummary(entries, membership.hourlyRateCzk ?? '0', rules);
+    const rates = rateMeta(entries, membership.hourlyRateCzk ?? '0');
 
     if (toHundredths(summary.totalHours) > 0) {
       employeesWithHours += 1;
@@ -160,6 +175,8 @@ export async function getManagerPayroll(client, context, query = {}) {
       email: membership.user?.email || '',
       status: membership.status,
       hourlyRateCzk: membership.hourlyRateCzk == null ? '0.00' : String(membership.hourlyRateCzk),
+      effectiveRateCzk: rates.effectiveRateCzk,
+      mixedRates: rates.mixedRates,
       summary,
     };
   });
