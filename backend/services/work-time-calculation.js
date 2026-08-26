@@ -56,6 +56,13 @@ function applyDailyBreak(entries, breakMinutes) {
   return result;
 }
 
+export function calculateNetWorkEntries(entries = [], rules = {}) {
+  return applyDailyBreak(entries, rules.breakMinutes || 0).map(entry => ({
+    ...entry,
+    netHours: format2(entry.netHours),
+  }));
+}
+
 export function calculateNetWorkSummary(entries = [], hourlyRateCzk = 0, rules = {}) {
   const normalized = applyDailyBreak(entries, rules.breakMinutes || 0);
   const rate = toNumber(hourlyRateCzk);
