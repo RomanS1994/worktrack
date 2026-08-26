@@ -12,7 +12,6 @@ import { CompanySettingsPage } from './pages/CompanySettingsPage/CompanySettings
 import { DashboardPage } from './pages/DashboardPage/DashboardPage.jsx';
 import { EmployeesPage } from './pages/EmployeesPage/EmployeesPage.jsx';
 import { FastHoursPage } from './pages/FastHoursPage/FastHoursPage.jsx';
-import { FinanceHubPage } from './pages/FinanceHubPage/FinanceHubPage.jsx';
 import { HomePage } from './pages/HomePage/HomePage.jsx';
 import { HoursTablePage } from './pages/HoursTablePage/HoursTablePage.jsx';
 import { InvoiceDocumentPage } from './pages/InvoiceDocumentPage/InvoiceDocumentPage.jsx';
@@ -47,13 +46,13 @@ export const router = createBrowserRouter([
       {
         element: <ProtectedRoute><SectionShell section="finance" /></ProtectedRoute>,
         children: [
-          { path: 'finance', element: <FinanceHubPage /> },
+          { path: 'payroll-report', element: <PayrollReportPage /> },
+          { path: 'finance', element: <Navigate to="/payroll-report" replace /> },
           { path: 'invoices', element: <ProtectedRoute requireEmployee><InvoicesPage /></ProtectedRoute> },
           { path: 'tax-information', element: <ProtectedRoute requireEmployee><TaxInformationPage /></ProtectedRoute> },
           { path: 'manager/invoices', element: <ProtectedRoute requireManager><ManagerInvoicesPage /></ProtectedRoute> },
         ],
       },
-      { path: 'payroll-report', element: <ProtectedRoute><PayrollReportPage /></ProtectedRoute> },
       { path: 'invoices/:invoiceId', element: <ProtectedRoute requireEmployee><InvoiceDocumentPage /></ProtectedRoute> },
       { path: 'manager/invoices/:invoiceId', element: <ProtectedRoute requireManager><InvoiceDocumentPage managerMode /></ProtectedRoute> },
       {
