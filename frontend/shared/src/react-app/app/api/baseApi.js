@@ -288,6 +288,7 @@ export const baseApi = createApi({
     'Notifications',
     'AuditLogs',
     'Invoices',
+    'InvoicePreview',
   ],
   endpoints: () => ({}),
 });
