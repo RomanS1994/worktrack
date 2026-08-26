@@ -19,8 +19,11 @@ function createManagerContext() {
   };
 }
 
-function createClient({ onFindMany } = {}) {
+function createClient({ onFindMany, breakMinutes = 0, standardDailyHours = '8.00' } = {}) {
   return {
+    company: {
+      findUnique: async () => ({ breakMinutes, standardDailyHours }),
+    },
     companyMembership: {
       findMany: async query => {
         onFindMany?.(query);
@@ -42,9 +45,9 @@ function createClient({ onFindMany } = {}) {
               deletedAt: null,
             },
             workEntries: [
-              { id: 'a1', status: 'APPROVED', hours: '8.00' },
-              { id: 'a2', status: 'SUBMITTED', hours: '4.00' },
-              { id: 'a3', status: 'DRAFT', hours: '2.00' },
+              { id: 'a1', workDate: new Date('2026-08-17T00:00:00.000Z'), status: 'APPROVED', hours: '8.00' },
+              { id: 'a2', workDate: new Date('2026-08-18T00:00:00.000Z'), status: 'SUBMITTED', hours: '4.00' },
+              { id: 'a3', workDate: new Date('2026-08-18T00:00:00.000Z'), status: 'DRAFT', hours: '2.00' },
             ],
           },
           {
@@ -63,7 +66,7 @@ function createClient({ onFindMany } = {}) {
               email: 'petra@example.com',
               deletedAt: null,
             },
-            workEntries: [{ id: 'b1', status: 'APPROVED', hours: '5.00' }],
+            workEntries: [{ id: 'b1', workDate: new Date('2026-08-17T00:00:00.000Z'), status: 'APPROVED', hours: '5.00' }],
           },
         ];
       },
@@ -109,6 +112,25 @@ test('manager payroll calculates a selected week and employee breakdown', async 
     confirmedSalaryCzk: '3100.00',
     predictedSalaryCzk: '1200.00',
   });
+});
+
+test('manager payroll deducts lunch once per employee work day', async () => {
+  const payload = await getManagerPayroll(
+    createClient({ breakMinutes: 60 }),
+    createManagerContext(),
+    { period: 'week', anchor: '2026-08-18' }
+  );
+
+  assert.deepEqual(payload.employees[0].summary, {
+    totalHours: '12.00',
+    approvedHours: '7.00',
+    pendingHours: '5.00',
+    confirmedSalaryCzk: '1400.00',
+    predictedSalaryCzk: '1000.00',
+  });
+  assert.equal(payload.employees[1].summary.totalHours, '4.00');
+  assert.equal(payload.workRules.breakMinutes, 60);
+  assert.equal(payload.workRules.standardDailyHours, '8.00');
 });
 
 test('manager payroll resolves a complete calendar month', async () => {
