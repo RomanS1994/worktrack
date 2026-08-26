@@ -3,13 +3,13 @@ import { runStoreRead, runStoreTransaction } from '../db/store.js';
 import { readJsonBody, sendJson } from '../lib/http.js';
 import { getManagerDashboard } from '../services/manager-dashboard.js';
 import { notifyManagersAboutSubmission } from '../services/notifications.js';
+import { calculateDailyOvertime, calculateNetWorkSummary } from '../services/work-time-calculation.js';
 import {
   createEmployeeWorkEntry,
   createProject,
   deactivateProject,
   deleteEmployeeWorkEntry,
   getCompanySettings,
-  getEmployeeDashboardSummary,
   getEmployeeWeek,
   listProjects,
   submitEmployeeWeek,
@@ -94,6 +94,37 @@ async function enrichWorkEntries(client, payload) {
       grossHours: byId.get(entry.id)?.grossHours == null ? entry.hours : String(byId.get(entry.id).grossHours),
       breakMinutes: Number(byId.get(entry.id)?.breakMinutes || 0),
     })),
+  };
+}
+
+async function getEmployeeWeeklySummary(client, context, weekStart) {
+  const [weekPayload, companyRules] = await Promise.all([
+    enrichWorkEntries(client, await getEmployeeWeek(client, context, weekStart)),
+    client.company.findUnique({
+      where: { id: context.activeMembership.companyId },
+      select: { breakMinutes: true, standardDailyHours: true },
+    }),
+  ]);
+  const rules = {
+    breakMinutes: Number(companyRules?.breakMinutes || 0),
+    standardDailyHours: Number(companyRules?.standardDailyHours || 8),
+  };
+  const hourlyRateCzk = context.activeMembership.hourlyRateCzk == null ? '0.00' : String(context.activeMembership.hourlyRateCzk);
+  const summary = calculateNetWorkSummary(weekPayload.entries, hourlyRateCzk, rules);
+  return {
+    role: 'EMPLOYEE',
+    company: context.activeCompany || context.activeMembership.company || null,
+    week: weekPayload.week,
+    submission: weekPayload.submission,
+    summary: {
+      ...summary,
+      overtimeHours: calculateDailyOvertime(weekPayload.entries, rules),
+    },
+    workRules: {
+      breakMinutes: rules.breakMinutes,
+      standardDailyHours: rules.standardDailyHours.toFixed(2),
+    },
+    hourlyRateCzk,
   };
 }
 
@@ -251,15 +282,9 @@ export async function handleWorkTrackRoutes(request, response, { pathName, url }
     const payload = await runStoreRead({
       prisma: client => context.activeMembership?.role === 'MANAGER'
         ? getManagerDashboard(client, context)
-        : getEmployeeDashboardSummary(client, context, url.searchParams.get('weekStart')),
+        : getEmployeeWeeklySummary(client, context, url.searchParams.get('weekStart')),
     });
-    const responsePayload = context.activeMembership?.role === 'EMPLOYEE'
-      ? {
-          ...payload,
-          hourlyRateCzk: context.activeMembership.hourlyRateCzk == null ? '0.00' : String(context.activeMembership.hourlyRateCzk),
-        }
-      : payload;
-    sendJson(response, 200, responsePayload);
+    sendJson(response, 200, payload);
     return true;
   }
 
