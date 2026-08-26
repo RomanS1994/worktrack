@@ -17,7 +17,7 @@ function sourceHours(entry) {
   return entry?.grossHours == null ? toNumber(entry?.hours) : toNumber(entry.grossHours);
 }
 
-function sourceRate(entry, fallbackRate) {
+function entryRate(entry, fallbackRate) {
   return entry?.hourlyRateCzk == null ? toNumber(fallbackRate) : toNumber(entry.hourlyRateCzk);
 }
 
@@ -29,10 +29,14 @@ function format2(value) {
   return round2(value).toFixed(2);
 }
 
-function applyDailyBreak(entries, breakMinutes) {
-  const deductionHours = Math.max(0, toNumber(breakMinutes)) / 60;
-  if (!deductionHours) return entries.map(entry => ({ ...entry, netHours: sourceHours(entry) }));
+function dailyBreakHours(dayEntries, fallbackBreakMinutes) {
+  const hasSnapshot = dayEntries.some(entry => entry?.breakMinutes !== undefined && entry?.breakMinutes !== null);
+  if (!hasSnapshot) return Math.max(0, toNumber(fallbackBreakMinutes)) / 60;
+  const minutes = dayEntries.reduce((max, entry) => Math.max(max, Math.max(0, toNumber(entry.breakMinutes))), 0);
+  return minutes / 60;
+}
 
+function applyDailyBreak(entries, breakMinutes) {
   const byDay = new Map();
   for (const entry of entries) {
     const key = toDateKey(entry) || `__entry__${entry.id || byDay.size}`;
@@ -43,6 +47,7 @@ function applyDailyBreak(entries, breakMinutes) {
 
   const result = [];
   for (const dayEntries of byDay.values()) {
+    const deductionHours = dailyBreakHours(dayEntries, breakMinutes);
     const grossTotal = dayEntries.reduce((sum, entry) => sum + sourceHours(entry), 0);
     const netTotal = Math.max(0, grossTotal - deductionHours);
     let remaining = netTotal;
@@ -72,19 +77,19 @@ export function calculateNetWorkSummary(entries = [], hourlyRateCzk = 0, rules =
   let totalHours = 0;
   let approvedHours = 0;
   let pendingHours = 0;
-  let confirmedSalaryCzk = 0;
-  let predictedSalaryCzk = 0;
+  let confirmedSalary = 0;
+  let predictedSalary = 0;
 
   for (const entry of normalized) {
     const hours = toNumber(entry.netHours);
-    const rate = sourceRate(entry, hourlyRateCzk);
+    const rate = entryRate(entry, hourlyRateCzk);
     totalHours += hours;
     if (entry.status === 'APPROVED') {
       approvedHours += hours;
-      confirmedSalaryCzk += hours * rate;
+      confirmedSalary += hours * rate;
     } else if (PENDING_STATUSES.has(entry.status)) {
       pendingHours += hours;
-      predictedSalaryCzk += hours * rate;
+      predictedSalary += hours * rate;
     }
   }
 
@@ -92,8 +97,8 @@ export function calculateNetWorkSummary(entries = [], hourlyRateCzk = 0, rules =
     totalHours: format2(totalHours),
     approvedHours: format2(approvedHours),
     pendingHours: format2(pendingHours),
-    confirmedSalaryCzk: format2(confirmedSalaryCzk),
-    predictedSalaryCzk: format2(predictedSalaryCzk),
+    confirmedSalaryCzk: format2(confirmedSalary),
+    predictedSalaryCzk: format2(predictedSalary),
   };
 }
 
