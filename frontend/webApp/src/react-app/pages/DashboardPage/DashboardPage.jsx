@@ -10,15 +10,18 @@ import { hasManagerAccess } from '@shared/features/auth/authAccess.js';
 import { useGetWorkSummaryQuery } from '../../features/worktrack/worktrackApi.js';
 import './DashboardPage.css';
 
+const LOCALES = { uk: 'uk-UA', cs: 'cs-CZ', en: 'en-GB' };
+
 function getDisplayName(user) { return user?.firstName || user?.name || user?.email || 'WorkTrack user'; }
 function getFirstName(user) { return String(getDisplayName(user)).split(/[\s@]/)[0] || ''; }
 function getGreeting(t) { const hour = new Date().getHours(); if (hour < 12) return t('dashboard.goodMorning'); if (hour < 18) return t('dashboard.goodAfternoon'); return t('dashboard.goodEvening'); }
 function getCompanyName(user, data, t) { return data?.company?.name || user?.activeCompany?.name || t('dashboard.companyWorkspace'); }
-function formatCzk(value) { const amount = Number(value || 0); return `${new Intl.NumberFormat('cs-CZ', { maximumFractionDigits: 2 }).format(Number.isFinite(amount) ? amount : 0)} Kč`; }
+function formatCzk(value, locale) { const amount = Number(value || 0); return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(Number.isFinite(amount) ? amount : 0)} Kč`; }
 
 export function DashboardPage() {
   const user = useSelector(selectUser);
-  const { t } = useI18n();
+  const { language, t } = useI18n();
+  const locale = LOCALES[language] || LOCALES.uk;
   const isManager = hasManagerAccess(user);
   const { data, error, isLoading } = useGetWorkSummaryQuery();
   const summary = data?.summary || {};
@@ -34,7 +37,7 @@ export function DashboardPage() {
   const employeeStats = [
     { label: t('dashboard.thisWeek'), value: `${summary.totalHours || '0.00'} h` },
     { label: t('dashboard.approved'), value: `${summary.approvedHours || '0.00'} h` },
-    { label: t('dashboard.salary'), value: formatCzk(summary.confirmedSalaryCzk) },
+    { label: t('dashboard.salary'), value: formatCzk(summary.confirmedSalaryCzk, locale) },
   ];
   const stats = isManager ? managerStats : employeeStats;
 
@@ -71,9 +74,9 @@ export function DashboardPage() {
       <section className="dashboardShortcuts">
         {isManager ? <>
           <Link to="/employees"><span><SvgIcon name="accounts" /></span><strong>{t('dashboard.employees')}</strong><small>{t('dashboard.manageTeam')}</small><b>›</b></Link>
-          <Link to="/finance"><span><SvgIcon name="wallet" /></span><strong>{t('dashboard.payroll')}</strong><small>{formatCzk(summary.confirmedSalaryCzk)}</small><b>›</b></Link>
+          <Link to="/finance"><span><SvgIcon name="wallet" /></span><strong>{t('dashboard.payroll')}</strong><small>{formatCzk(summary.confirmedSalaryCzk, locale)}</small><b>›</b></Link>
         </> : <>
-          <Link to="/finance"><span><SvgIcon name="wallet" /></span><strong>{t('dashboard.salary')}</strong><small>{t('dashboard.predictedFromPending', { amount: formatCzk(summary.predictedSalaryCzk) })}</small><b>›</b></Link>
+          <Link to="/finance"><span><SvgIcon name="wallet" /></span><strong>{t('dashboard.salary')}</strong><small>{t('dashboard.predictedFromPending', { amount: formatCzk(summary.predictedSalaryCzk, locale) })}</small><b>›</b></Link>
           <Link to="/calendar"><span><SvgIcon name="calendar" /></span><strong>{t('dashboard.calendar')}</strong><small>{t('dashboard.monthlyOverview')}</small><b>›</b></Link>
         </>}
       </section>
