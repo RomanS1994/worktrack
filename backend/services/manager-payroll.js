@@ -83,7 +83,7 @@ export async function getManagerPayroll(client, context, query = {}) {
   }
 
   const period = resolvePeriod(query.period, query.anchor);
-  const [memberships, companyRules] = await Promise.all([
+  const [membershipRows, companyRules] = await Promise.all([
     client.companyMembership.findMany({
       where: {
         companyId: managerMembership.companyId,
@@ -123,6 +123,9 @@ export async function getManagerPayroll(client, context, query = {}) {
     }),
   ]);
 
+  const memberships = membershipRows.filter(
+    membership => membership.status === 'ACTIVE' || (membership.workEntries || []).length > 0
+  );
   const rules = {
     breakMinutes: Number(companyRules?.breakMinutes || 0),
     standardDailyHours: Number(companyRules?.standardDailyHours || 8),
