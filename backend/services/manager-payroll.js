@@ -1,4 +1,4 @@
-import { calculateWorkSummary } from './worktrack.js';
+import { calculateNetWorkSummary } from './work-time-calculation.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const PERIOD_TYPES = new Set(['week', 'month']);
@@ -83,39 +83,50 @@ export async function getManagerPayroll(client, context, query = {}) {
   }
 
   const period = resolvePeriod(query.period, query.anchor);
-  const memberships = await client.companyMembership.findMany({
-    where: {
-      companyId: managerMembership.companyId,
-      role: 'EMPLOYEE',
-      user: {
-        is: {
-          deletedAt: null,
-        },
-      },
-    },
-    include: {
-      user: true,
-      workEntries: {
-        where: {
-          workDate: {
-            gte: period.start,
-            lt: period.next,
-          },
-          status: {
-            in: ['DRAFT', 'SUBMITTED', 'APPROVED'],
+  const [memberships, companyRules] = await Promise.all([
+    client.companyMembership.findMany({
+      where: {
+        companyId: managerMembership.companyId,
+        role: 'EMPLOYEE',
+        user: {
+          is: {
+            deletedAt: null,
           },
         },
-        orderBy: {
-          workDate: 'asc',
+      },
+      include: {
+        user: true,
+        workEntries: {
+          where: {
+            workDate: {
+              gte: period.start,
+              lt: period.next,
+            },
+            status: {
+              in: ['DRAFT', 'SUBMITTED', 'APPROVED'],
+            },
+          },
+          orderBy: {
+            workDate: 'asc',
+          },
         },
       },
-    },
-    orderBy: [
-      {
-        createdAt: 'asc',
-      },
-    ],
-  });
+      orderBy: [
+        {
+          createdAt: 'asc',
+        },
+      ],
+    }),
+    client.company.findUnique({
+      where: { id: managerMembership.companyId },
+      select: { breakMinutes: true, standardDailyHours: true },
+    }),
+  ]);
+
+  const rules = {
+    breakMinutes: Number(companyRules?.breakMinutes || 0),
+    standardDailyHours: Number(companyRules?.standardDailyHours || 8),
+  };
 
   let approvedHours = 0;
   let pendingHours = 0;
@@ -124,9 +135,10 @@ export async function getManagerPayroll(client, context, query = {}) {
   let employeesWithHours = 0;
 
   const employees = memberships.map(membership => {
-    const summary = calculateWorkSummary(
+    const summary = calculateNetWorkSummary(
       membership.workEntries || [],
-      membership.hourlyRateCzk ?? '0'
+      membership.hourlyRateCzk ?? '0',
+      rules
     );
 
     if (toHundredths(summary.totalHours) > 0) {
@@ -154,6 +166,10 @@ export async function getManagerPayroll(client, context, query = {}) {
     company: {
       id: managerMembership.companyId,
       name: context?.activeCompany?.name || managerMembership.company?.name || '',
+    },
+    workRules: {
+      breakMinutes: rules.breakMinutes,
+      standardDailyHours: rules.standardDailyHours.toFixed(2),
     },
     period: {
       type: period.type,
