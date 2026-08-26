@@ -13,6 +13,10 @@ function toDateKey(entry) {
   return raw.length >= 10 ? raw.slice(0, 10) : raw;
 }
 
+function sourceHours(entry) {
+  return entry?.grossHours == null ? toNumber(entry?.hours) : toNumber(entry.grossHours);
+}
+
 function round2(value) {
   return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
 }
@@ -23,7 +27,7 @@ function format2(value) {
 
 function applyDailyBreak(entries, breakMinutes) {
   const deductionHours = Math.max(0, toNumber(breakMinutes)) / 60;
-  if (!deductionHours) return entries.map(entry => ({ ...entry, netHours: toNumber(entry.hours) }));
+  if (!deductionHours) return entries.map(entry => ({ ...entry, netHours: sourceHours(entry) }));
 
   const byDay = new Map();
   for (const entry of entries) {
@@ -35,12 +39,12 @@ function applyDailyBreak(entries, breakMinutes) {
 
   const result = [];
   for (const dayEntries of byDay.values()) {
-    const grossTotal = dayEntries.reduce((sum, entry) => sum + toNumber(entry.hours), 0);
+    const grossTotal = dayEntries.reduce((sum, entry) => sum + sourceHours(entry), 0);
     const netTotal = Math.max(0, grossTotal - deductionHours);
     let remaining = netTotal;
 
     dayEntries.forEach((entry, index) => {
-      const gross = toNumber(entry.hours);
+      const gross = sourceHours(entry);
       const netHours = index === dayEntries.length - 1
         ? Math.max(0, remaining)
         : Math.min(gross, Math.max(0, remaining));
