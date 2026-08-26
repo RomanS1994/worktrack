@@ -19,7 +19,7 @@ function createManagerContext() {
   };
 }
 
-function createClient({ onFindMany, breakMinutes = 0, standardDailyHours = '8.00' } = {}) {
+function createClient({ onFindMany, breakMinutes = 0, standardDailyHours = '8.00', memberships } = {}) {
   return {
     company: {
       findUnique: async () => ({ breakMinutes, standardDailyHours }),
@@ -27,6 +27,7 @@ function createClient({ onFindMany, breakMinutes = 0, standardDailyHours = '8.00
     companyMembership: {
       findMany: async query => {
         onFindMany?.(query);
+        if (memberships) return memberships;
         return [
           {
             id: 'employee-membership-1',
@@ -131,6 +132,58 @@ test('manager payroll deducts lunch once per employee work day', async () => {
   assert.equal(payload.employees[1].summary.totalHours, '4.00');
   assert.equal(payload.workRules.breakMinutes, 60);
   assert.equal(payload.workRules.standardDailyHours, '8.00');
+});
+
+test('manager payroll uses the rate snapshot stored on each work entry', async () => {
+  const payload = await getManagerPayroll(
+    createClient({
+      memberships: [
+        {
+          id: 'employee-membership-1',
+          userId: 'employee-user-1',
+          companyId: 'company-1',
+          role: 'EMPLOYEE',
+          status: 'ACTIVE',
+          hourlyRateCzk: '300.00',
+          createdAt: new Date('2026-01-01T00:00:00.000Z'),
+          user: { firstName: 'Anna', lastName: 'Novak', email: 'anna@example.com', deletedAt: null },
+          workEntries: [
+            { id: 'old-rate', workDate: new Date('2026-08-17T00:00:00.000Z'), status: 'APPROVED', hours: '8.00', hourlyRateCzk: '200.00' },
+            { id: 'new-rate', workDate: new Date('2026-08-18T00:00:00.000Z'), status: 'APPROVED', hours: '8.00', hourlyRateCzk: '300.00' },
+          ],
+        },
+      ],
+    }),
+    createManagerContext(),
+    { period: 'week', anchor: '2026-08-18' }
+  );
+
+  assert.equal(payload.summary.approvedHours, '16.00');
+  assert.equal(payload.summary.confirmedSalaryCzk, '4000.00');
+});
+
+test('manager payroll excludes inactive employees with no hours in the selected period', async () => {
+  const payload = await getManagerPayroll(
+    createClient({
+      memberships: [
+        {
+          id: 'active', userId: 'active-user', companyId: 'company-1', role: 'EMPLOYEE', status: 'ACTIVE', hourlyRateCzk: '200.00', createdAt: new Date(),
+          user: { firstName: 'Active', lastName: 'Worker', email: 'active@example.com', deletedAt: null },
+          workEntries: [],
+        },
+        {
+          id: 'inactive', userId: 'inactive-user', companyId: 'company-1', role: 'EMPLOYEE', status: 'INACTIVE', hourlyRateCzk: '200.00', createdAt: new Date(),
+          user: { firstName: 'Former', lastName: 'Worker', email: 'former@example.com', deletedAt: null },
+          workEntries: [],
+        },
+      ],
+    }),
+    createManagerContext(),
+    { period: 'week', anchor: '2026-08-18' }
+  );
+
+  assert.equal(payload.summary.employeeCount, 1);
+  assert.equal(payload.employees[0].id, 'active');
 });
 
 test('manager payroll resolves a complete calendar month', async () => {
