@@ -156,6 +156,7 @@ model WorkEntry {
   weeklySubmissionId   String?
   workDate             DateTime
   hours                Decimal         @db.Decimal(5, 2)
+  hourlyRateCzk        Decimal?        @db.Decimal(10, 2)
   grossHours           Decimal?        @db.Decimal(5, 2)
   breakMinutes         Int             @default(0)
   startTime            String?
@@ -231,14 +232,14 @@ model Invoice {
   sellerSnapshot       Json
   buyerSnapshot        Json
   sentAt               DateTime?
-  viewedAt             DateTime?
-  paidAt               DateTime?
-  cancelledAt          DateTime?
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
+  viewedAt              DateTime?
+  paidAt                DateTime?
+  cancelledAt           DateTime?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
 
   company            Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  employeeMembership CompanyMembership @relation("EmployeeMembershipInvoices", fields: [employeeMembershipId], references: [id], onDelete: Cascade)
+  employeeMembership CompanyMembership @relation(fields: [employeeMembershipId], references: [id], onDelete: Cascade)
   items              InvoiceItem[]
 
   @@unique([companyId, invoiceNumber])
