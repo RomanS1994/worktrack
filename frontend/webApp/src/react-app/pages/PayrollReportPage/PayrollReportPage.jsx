@@ -85,7 +85,7 @@ function ReportRow({ label, value, emphasize = false }) {
   return <div className={`payrollReport-row${emphasize ? ' is-emphasized' : ''}`}><span>{label}</span><strong>{value}</strong></div>;
 }
 
-function EmployeeFinanceDashboard({ anchor, companyName, hourlyRate, language, locale, localizedStatus, onChangeAnchor, onChangePeriod, period, submission, summary, user, week }) {
+function EmployeeFinanceDashboard({ anchor, companyName, hourlyRate, language, locale, localizedStatus, onChangeAnchor, onChangePeriod, period, submission, summary, user, week, workRules }) {
   const navigate = useNavigate();
   const copy = FINANCE_COPY[language] || FINANCE_COPY.uk;
   const totalHours = Number(summary.totalHours || 0);
@@ -97,7 +97,8 @@ function EmployeeFinanceDashboard({ anchor, companyName, hourlyRate, language, l
   const overtimeHours = period === 'week' ? Number(summary.overtimeHours || 0) : 0;
   const overtimeSalary = overtimeHours * Number(hourlyRate || 0);
   const status = localizedStatus(submission?.status);
-  const targetHours = 40;
+  const dailyTarget = Number(workRules?.standardDailyHours || 8);
+  const targetHours = Math.max(0.25, Number.isFinite(dailyTarget) ? dailyTarget : 8) * 5;
   const remainingHours = Math.max(targetHours - totalHours, 0);
   const progress = Math.min((totalHours / targetHours) * 100, 100);
   const periodLabel = period === 'month' ? formatMonth(anchor, locale) : formatPeriod(week?.weekStart, week?.weekEnd, locale);
@@ -147,7 +148,7 @@ function EmployeeFinanceDashboard({ anchor, companyName, hourlyRate, language, l
               <span style={{ width: `${progress}%` }} />
             </div>
             <div className="employeeFinance-progressMeta">
-              <span>{formatHours(totalHours, locale)} / {targetHours} {copy.norm}</span>
+              <span>{formatHours(totalHours, locale)} / {formatHours(targetHours, locale)} {copy.norm}</span>
               <span>{copy.remaining} {formatHours(remainingHours, locale)}</span>
             </div>
           </>
@@ -294,6 +295,7 @@ export function PayrollReportPage() {
           summary={summary}
           user={user}
           week={week}
+          workRules={data?.workRules}
         />
       ) : null}
 
