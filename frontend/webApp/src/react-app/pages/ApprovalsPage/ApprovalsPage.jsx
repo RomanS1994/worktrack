@@ -59,9 +59,10 @@ export function ApprovalsPage() {
     }
   }, [selectedId, submissions]);
 
-  useEffect(() => { setActionError(''); setActionMessage(''); setRejectionReason(''); }, [selectedId]);
+  useEffect(() => { setActionError(''); setRejectionReason(''); }, [selectedId]);
 
   function openSubmission(id) {
+    setActionMessage('');
     setSelectedId(id);
     setMobileDetailOpen(true);
   }
