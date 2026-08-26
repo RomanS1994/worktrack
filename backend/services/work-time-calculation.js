@@ -17,6 +17,10 @@ function sourceHours(entry) {
   return entry?.grossHours == null ? toNumber(entry?.hours) : toNumber(entry.grossHours);
 }
 
+function sourceRate(entry, fallbackRate) {
+  return entry?.hourlyRateCzk == null ? toNumber(fallbackRate) : toNumber(entry.hourlyRateCzk);
+}
+
 function round2(value) {
   return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
 }
@@ -65,24 +69,31 @@ export function calculateNetWorkEntries(entries = [], rules = {}) {
 
 export function calculateNetWorkSummary(entries = [], hourlyRateCzk = 0, rules = {}) {
   const normalized = applyDailyBreak(entries, rules.breakMinutes || 0);
-  const rate = toNumber(hourlyRateCzk);
   let totalHours = 0;
   let approvedHours = 0;
   let pendingHours = 0;
+  let confirmedSalaryCzk = 0;
+  let predictedSalaryCzk = 0;
 
   for (const entry of normalized) {
     const hours = toNumber(entry.netHours);
+    const rate = sourceRate(entry, hourlyRateCzk);
     totalHours += hours;
-    if (entry.status === 'APPROVED') approvedHours += hours;
-    else if (PENDING_STATUSES.has(entry.status)) pendingHours += hours;
+    if (entry.status === 'APPROVED') {
+      approvedHours += hours;
+      confirmedSalaryCzk += hours * rate;
+    } else if (PENDING_STATUSES.has(entry.status)) {
+      pendingHours += hours;
+      predictedSalaryCzk += hours * rate;
+    }
   }
 
   return {
     totalHours: format2(totalHours),
     approvedHours: format2(approvedHours),
     pendingHours: format2(pendingHours),
-    confirmedSalaryCzk: format2(approvedHours * rate),
-    predictedSalaryCzk: format2(pendingHours * rate),
+    confirmedSalaryCzk: format2(confirmedSalaryCzk),
+    predictedSalaryCzk: format2(predictedSalaryCzk),
   };
 }
 
