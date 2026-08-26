@@ -11,6 +11,38 @@ import {
 import './NotificationsPage.css';
 
 const LOCALES = { uk: 'uk-UA', cs: 'cs-CZ', en: 'en-GB' };
+const INVOICE_COPY = {
+  uk: {
+    sentTitle: number => `Отримано фактуру ${number}`,
+    sentMessage: message => `Нова фактура працівника: ${message}`,
+    cancelledTitle: number => `Фактуру ${number} скасовано`,
+    cancelledMessage: 'Працівник скасував цю фактуру.',
+    viewedTitle: number => `Фактуру ${number} переглянуто`,
+    viewedMessage: 'Роботодавець відкрив вашу фактуру.',
+    paidTitle: number => `Фактуру ${number} оплачено`,
+    paidMessage: message => `${message.replace(' was marked as paid.', '')} позначено як оплачено.`,
+  },
+  cs: {
+    sentTitle: number => `Přijata faktura ${number}`,
+    sentMessage: message => `Nová faktura pracovníka: ${message}`,
+    cancelledTitle: number => `Faktura ${number} byla zrušena`,
+    cancelledMessage: 'Pracovník tuto fakturu zrušil.',
+    viewedTitle: number => `Faktura ${number} byla zobrazena`,
+    viewedMessage: 'Zaměstnavatel otevřel vaši fakturu.',
+    paidTitle: number => `Faktura ${number} byla zaplacena`,
+    paidMessage: message => `${message.replace(' was marked as paid.', '')} bylo označeno jako zaplacené.`,
+  },
+  en: {
+    sentTitle: number => `Invoice ${number} received`,
+    sentMessage: message => message,
+    cancelledTitle: number => `Invoice ${number} cancelled`,
+    cancelledMessage: 'The employee cancelled this invoice.',
+    viewedTitle: number => `Invoice ${number} viewed`,
+    viewedMessage: 'Your employer opened the invoice.',
+    paidTitle: number => `Invoice ${number} paid`,
+    paidMessage: message => message,
+  },
+};
 
 function formatDateTime(value, locale) {
   if (!value) return '';
@@ -24,7 +56,13 @@ function extractPeriod(message = '') {
   return match ? `${match[1]} – ${match[2]}` : '';
 }
 
-function localizeNotification(notification, t) {
+function extractInvoiceNumber(notification) {
+  const title = String(notification?.title || '');
+  const match = title.match(/Invoice\s+([^\s]+)(?:\s|$)/i);
+  return match?.[1] || '';
+}
+
+function localizeNotification(notification, t, language) {
   const type = notification?.type || '';
 
   if (type === 'weekly_submission.submitted') {
@@ -58,6 +96,15 @@ function localizeNotification(notification, t) {
         ? notification.message
         : t('notificationDynamic.rejectedFallback'),
     };
+  }
+
+  if (type.startsWith('invoice.')) {
+    const copy = INVOICE_COPY[language] || INVOICE_COPY.uk;
+    const invoiceNumber = extractInvoiceNumber(notification) || '—';
+    if (type === 'invoice.sent') return { title: copy.sentTitle(invoiceNumber), message: copy.sentMessage(notification.message || '') };
+    if (type === 'invoice.cancelled') return { title: copy.cancelledTitle(invoiceNumber), message: copy.cancelledMessage };
+    if (type === 'invoice.viewed') return { title: copy.viewedTitle(invoiceNumber), message: copy.viewedMessage };
+    if (type === 'invoice.paid') return { title: copy.paidTitle(invoiceNumber), message: copy.paidMessage(notification.message || '') };
   }
 
   return { title: notification.title, message: notification.message };
@@ -116,7 +163,7 @@ export function NotificationsPage() {
         <div className="notificationsList">
           {notifications.map(notification => {
             const className = `notificationItem${notification.readAt ? '' : ' is-unread'}`;
-            const localized = localizeNotification(notification, t);
+            const localized = localizeNotification(notification, t, language);
             const content = (
               <>
                 <span className="notificationDot" aria-hidden="true" />
