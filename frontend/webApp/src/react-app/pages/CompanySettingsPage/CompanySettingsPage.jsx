@@ -35,16 +35,18 @@ export function CompanySettingsPage(){
  async function submitWorkRules(e){e.preventDefault();setWorkRulesMessage('');setWorkRulesActionError('');try{const result=await updateWorkRules({breakMinutes:Number(breakMinutes),standardDailyHours}).unwrap();setBreakMinutes(String(result.workRules.breakMinutes));setStandardDailyHours(String(result.workRules.standardDailyHours));setWorkRulesMessage(wc.saved)}catch(err){setWorkRulesActionError(getApiErrorMessage(err))}}
  async function submitBilling(e){e.preventDefault();setBillingMessage('');setBillingActionError('');try{const result=await updateCompanyBilling(billing).unwrap();setBilling({...emptyBilling,...result.company?.billingProfile});setBillingMessage(bc.saved)}catch(err){setBillingActionError(getApiErrorMessage(err))}}
  const setBillingField=(key,value)=>{setBillingMessage('');setBilling(current=>({...current,[key]:value}))};
- const workSummary=`${standardDailyHours || '8.00'} h · ${Number(breakMinutes) ? `${breakMinutes} min` : wc.none}`;
- const billingSummary=[billing.ico,billing.dic].filter(Boolean).join(' · ')||bc.copy;
+ const workSummary=workRulesError?wc.copy:`${standardDailyHours || '8.00'} h · ${Number(breakMinutes) ? `${breakMinutes} min` : wc.none}`;
+ const billingSummary=billingError?bc.copy:([billing.ico,billing.dic].filter(Boolean).join(' · ')||bc.copy);
  return <section className="companySettingsPage pageStack">
   <header className="companySettingsHeader appTop"><div className="appTitleBlock"><p className="sectionEyebrow">{t('company.eyebrow')}</p><h1>{t('company.title')}</h1><p>{company?.name||t('company.current')}</p></div></header>
   {(isLoading||workRulesLoading||billingLoading)?<RequestLoadingState label={t('company.loading')} />:null}
   {error?<p className="statusNote is-error">{getApiErrorMessage(error)}</p>:null}
+  {workRulesError?<p className="statusNote is-error">{getApiErrorMessage(workRulesError)}</p>:null}
+  {billingError?<p className="statusNote is-error">{getApiErrorMessage(billingError)}</p>:null}
   <section className="companySettingsMenu screenCard">
-   <button type="button" onClick={()=>setModal('identity')}><span className="companySettingsMenuIcon">🏢</span><span><strong>{mc.identity}</strong><small>{company?.name||mc.identityCopy}</small></span><b>›</b></button>
-   <button type="button" onClick={()=>setModal('work')}><span className="companySettingsMenuIcon">🕘</span><span><strong>{wc.title}</strong><small>{workSummary}</small></span><b>›</b></button>
-   <button type="button" onClick={()=>setModal('billing')}><span className="companySettingsMenuIcon">🧾</span><span><strong>{bc.title}</strong><small>{billingSummary}</small></span><b>›</b></button>
+   <button type="button" disabled={Boolean(error)||isLoading} onClick={()=>setModal('identity')}><span className="companySettingsMenuIcon">🏢</span><span><strong>{mc.identity}</strong><small>{company?.name||mc.identityCopy}</small></span><b>›</b></button>
+   <button type="button" disabled={Boolean(workRulesError)||workRulesLoading} onClick={()=>setModal('work')}><span className="companySettingsMenuIcon">🕘</span><span><strong>{wc.title}</strong><small>{workSummary}</small></span><b>›</b></button>
+   <button type="button" disabled={Boolean(billingError)||billingLoading} onClick={()=>setModal('billing')}><span className="companySettingsMenuIcon">🧾</span><span><strong>{bc.title}</strong><small>{billingSummary}</small></span><b>›</b></button>
   </section>
 
   {modal?<div className="companySettingsModalBackdrop" onMouseDown={e=>{if(e.target===e.currentTarget)close()}}><section className="companySettingsModal" role="dialog" aria-modal="true"><header><h2>{modal==='identity'?mc.identity:modal==='work'?wc.title:bc.title}</h2><button type="button" aria-label={mc.close} onClick={close}>×</button></header>
