@@ -1,0 +1,91 @@
+const PENDING_STATUSES = new Set(['DRAFT', 'SUBMITTED']);
+
+function toNumber(value) {
+  const parsed = Number(String(value ?? '0').replace(',', '.'));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function toDateKey(entry) {
+  const value = entry?.workDate ?? entry?.date;
+  if (!value) return '';
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  const raw = String(value);
+  return raw.length >= 10 ? raw.slice(0, 10) : raw;
+}
+
+function round2(value) {
+  return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+}
+
+function format2(value) {
+  return round2(value).toFixed(2);
+}
+
+function applyDailyBreak(entries, breakMinutes) {
+  const deductionHours = Math.max(0, toNumber(breakMinutes)) / 60;
+  if (!deductionHours) return entries.map(entry => ({ ...entry, netHours: toNumber(entry.hours) }));
+
+  const byDay = new Map();
+  for (const entry of entries) {
+    const key = toDateKey(entry) || `__entry__${entry.id || byDay.size}`;
+    const list = byDay.get(key) || [];
+    list.push(entry);
+    byDay.set(key, list);
+  }
+
+  const result = [];
+  for (const dayEntries of byDay.values()) {
+    const grossTotal = dayEntries.reduce((sum, entry) => sum + toNumber(entry.hours), 0);
+    const netTotal = Math.max(0, grossTotal - deductionHours);
+    let remaining = netTotal;
+
+    dayEntries.forEach((entry, index) => {
+      const gross = toNumber(entry.hours);
+      const netHours = index === dayEntries.length - 1
+        ? Math.max(0, remaining)
+        : Math.min(gross, Math.max(0, remaining));
+      remaining = round2(remaining - netHours);
+      result.push({ ...entry, netHours: round2(netHours) });
+    });
+  }
+
+  return result;
+}
+
+export function calculateNetWorkSummary(entries = [], hourlyRateCzk = 0, rules = {}) {
+  const normalized = applyDailyBreak(entries, rules.breakMinutes || 0);
+  const rate = toNumber(hourlyRateCzk);
+  let totalHours = 0;
+  let approvedHours = 0;
+  let pendingHours = 0;
+
+  for (const entry of normalized) {
+    const hours = toNumber(entry.netHours);
+    totalHours += hours;
+    if (entry.status === 'APPROVED') approvedHours += hours;
+    else if (PENDING_STATUSES.has(entry.status)) pendingHours += hours;
+  }
+
+  return {
+    totalHours: format2(totalHours),
+    approvedHours: format2(approvedHours),
+    pendingHours: format2(pendingHours),
+    confirmedSalaryCzk: format2(approvedHours * rate),
+    predictedSalaryCzk: format2(pendingHours * rate),
+  };
+}
+
+export function calculateDailyOvertime(entries = [], rules = {}) {
+  const standardDailyHours = Math.max(0, toNumber(rules.standardDailyHours || 8));
+  const normalized = applyDailyBreak(entries, rules.breakMinutes || 0);
+  const totals = new Map();
+
+  for (const entry of normalized) {
+    const key = toDateKey(entry) || `__entry__${entry.id || totals.size}`;
+    totals.set(key, (totals.get(key) || 0) + toNumber(entry.netHours));
+  }
+
+  let overtime = 0;
+  for (const hours of totals.values()) overtime += Math.max(0, hours - standardDailyHours);
+  return format2(overtime);
+}
