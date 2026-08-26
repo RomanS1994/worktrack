@@ -132,10 +132,13 @@
   font-weight:760;
 }
 .employeeFinance-heroTop strong {
-  color:var(--text);
-  font-size:clamp(38px,9vw,52px);
-  line-height:1.02;
-  letter-spacing:-.05em;
+  color:#15803d;
+  font-size:clamp(34px,7.8vw,46px);
+  line-height:.98;
+  letter-spacing:-.045em;
+  font-weight:900;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1,"kern" 1;
 }
 .employeeFinance-heroTop small {
   color:#64748b;
@@ -457,7 +460,7 @@
   .employeeFinance-periodNav span { font-size:12px; }
   .employeeFinance-hero { padding:18px 18px 16px; border-radius:20px; }
   .employeeFinance-heroTop > div > span { font-size:13px; }
-  .employeeFinance-heroTop strong { font-size:40px; }
+  .employeeFinance-heroTop strong { font-size:34px; }
   .employeeFinance-heroTop small { font-size:13px; }
   .employeeFinance-status { min-height:31px; padding:0 11px; font-size:11px; }
   .employeeFinance-progress { margin-top:17px; }
