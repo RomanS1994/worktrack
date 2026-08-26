@@ -18,6 +18,9 @@ function context() {
 
 function client() {
   return {
+    company: {
+      findUnique: async () => ({ breakMinutes: 0, standardDailyHours: '8.00' }),
+    },
     project: {
       count: async query => {
         assert.deepEqual(query.where, { companyId: 'company-1', isActive: true });
@@ -39,7 +42,7 @@ function client() {
             {
               id: 'employee-1', userId: 'user-1', companyId: 'company-1', role: 'EMPLOYEE', status: 'ACTIVE', hourlyRateCzk: '200.00', createdAt: new Date(),
               user: { firstName: 'Anna', lastName: 'Novak', email: 'anna@example.com', deletedAt: null },
-              workEntries: [{ id: 'e1', status: 'APPROVED', hours: '8.00' }],
+              workEntries: [{ id: 'e1', workDate: new Date('2026-08-17T00:00:00.000Z'), status: 'APPROVED', hours: '8.00' }],
             },
             {
               id: 'employee-2', userId: 'user-2', companyId: 'company-1', role: 'EMPLOYEE', status: 'ACTIVE', hourlyRateCzk: '300.00', createdAt: new Date(),
