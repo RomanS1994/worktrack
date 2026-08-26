@@ -4,6 +4,7 @@ import { readJsonBody, sendJson } from '../../lib/http.js';
 import { resetEmployeePassword } from '../../services/employee-password-reset.js';
 import { getManagerPayroll } from '../../services/manager-payroll.js';
 import { notifyEmployeeAboutReview } from '../../services/notifications.js';
+import { calculateNetWorkEntries, calculateNetWorkSummary } from '../../services/work-time-calculation.js';
 import {
   createManagerEmployee,
   getManagerSubmissionById,
@@ -12,6 +13,50 @@ import {
   reviewWeeklySubmission,
   updateEmployeeMembership,
 } from '../../services/worktrack.js';
+
+async function enrichSubmissionHours(client, context, submissions) {
+  const list = Array.isArray(submissions) ? submissions : [submissions].filter(Boolean);
+  if (!list.length) return list;
+
+  const rulesRow = await client.company.findUnique({
+    where: { id: context.activeMembership.companyId },
+    select: { breakMinutes: true, standardDailyHours: true },
+  });
+  const rules = {
+    breakMinutes: Number(rulesRow?.breakMinutes || 0),
+    standardDailyHours: Number(rulesRow?.standardDailyHours || 8),
+  };
+  const entryIds = list.flatMap(submission => (submission.entries || []).map(entry => entry.id)).filter(Boolean);
+  const storedEntries = entryIds.length
+    ? await client.workEntry.findMany({
+        where: { id: { in: entryIds }, companyId: context.activeMembership.companyId },
+        select: { id: true, grossHours: true },
+      })
+    : [];
+  const storedById = new Map(storedEntries.map(entry => [entry.id, entry]));
+
+  return list.map(submission => {
+    const sourceEntries = (submission.entries || []).map(entry => ({
+      ...entry,
+      grossHours: storedById.get(entry.id)?.grossHours == null ? null : String(storedById.get(entry.id).grossHours),
+    }));
+    const normalizedEntries = calculateNetWorkEntries(sourceEntries, rules);
+    const summary = calculateNetWorkSummary(
+      sourceEntries,
+      submission.employee?.hourlyRateCzk || 0,
+      rules
+    );
+    return {
+      ...submission,
+      entries: normalizedEntries.map(entry => ({ ...entry, hours: entry.netHours })),
+      summary,
+      workRules: {
+        breakMinutes: rules.breakMinutes,
+        standardDailyHours: rules.standardDailyHours.toFixed(2),
+      },
+    };
+  });
+}
 
 export async function handleManagerRoutes(request, response, { pathName, url }) {
   if (request.method === 'GET' && pathName === '/api/manager/payroll') {
@@ -52,7 +97,10 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
 
   if (request.method === 'GET' && pathName === '/api/manager/submissions') {
     const context = await requireManager(request, response); if (!context) return true;
-    const payload = await runStoreRead({ prisma: client => listManagerSubmissions(client, context, { status: url.searchParams.get('status') }) });
+    const payload = await runStoreRead({ prisma: async client => {
+      const raw = await listManagerSubmissions(client, context, { status: url.searchParams.get('status') });
+      return { submissions: await enrichSubmissionHours(client, context, raw.submissions) };
+    } });
     sendJson(response, 200, payload); return true;
   }
 
@@ -91,7 +139,11 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
   const submissionMatch = pathName.match(/^\/api\/manager\/submissions\/([^/]+)$/);
   if (request.method === 'GET' && submissionMatch) {
     const context = await requireManager(request, response); if (!context) return true;
-    const submission = await runStoreRead({ prisma: client => getManagerSubmissionById(client, context, submissionMatch[1]) });
+    const submission = await runStoreRead({ prisma: async client => {
+      const raw = await getManagerSubmissionById(client, context, submissionMatch[1]);
+      const [enriched] = await enrichSubmissionHours(client, context, raw);
+      return enriched;
+    } });
     sendJson(response, 200, { submission }); return true;
   }
 
