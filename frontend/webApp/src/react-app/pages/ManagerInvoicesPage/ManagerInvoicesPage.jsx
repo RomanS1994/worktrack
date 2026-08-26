@@ -1,14 +1,15 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
+import { RequestLoadingState } from '@shared/app/components/RequestLoader/RequestLoader.jsx';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
 import { useGetManagerInvoicesQuery, useMarkInvoicePaidMutation } from '../../features/worktrack/billingApi.js';
 import './ManagerInvoicesPage.css';
 
 const COPY={
- uk:{eyebrow:'Фактури',title:'Фактури працівників',subtitle:'Отримані фактури та статус оплати.',empty:'Фактур за цим фільтром немає.',document:'Документ / PDF',paid:'Позначити оплачено',paying:'Збереження…',hours:'год',due:'Оплатити до',paymentDate:'Дата оплати',paidOn:'Оплачено',draft:'Чернетка',sent:'Відправлено',viewed:'Переглянуто',paidStatus:'Оплачено',cancelled:'Скасовано',overdue:'Прострочено',all:'Усі',open:'До оплати',overdueFilter:'Прострочені',paidFilter:'Оплачені',cancelledFilter:'Скасовані',markPaidConfirm:'Підтвердити оплату фактури?',openAmount:'До оплати',overdueAmount:'Прострочено',paidAmount:'Оплачено',paymentTitle:'Підтвердження оплати',paymentCopy:'Вкажіть фактичну дату оплати. Після підтвердження працівник отримає сповіщення.',close:'Скасувати',confirmPaid:'Підтвердити оплату'},
- cs:{eyebrow:'Faktury',title:'Faktury pracovníků',subtitle:'Přijaté faktury a stav plateb.',empty:'Pro tento filtr nejsou žádné faktury.',document:'Doklad / PDF',paid:'Označit jako zaplacené',paying:'Ukládání…',hours:'h',due:'Splatnost',paymentDate:'Datum platby',paidOn:'Zaplaceno',draft:'Koncept',sent:'Odesláno',viewed:'Zobrazeno',paidStatus:'Zaplaceno',cancelled:'Zrušeno',overdue:'Po splatnosti',all:'Vše',open:'K úhradě',overdueFilter:'Po splatnosti',paidFilter:'Zaplacené',cancelledFilter:'Zrušené',markPaidConfirm:'Potvrdit úhradu faktury?',openAmount:'K úhradě',overdueAmount:'Po splatnosti',paidAmount:'Zaplaceno',paymentTitle:'Potvrzení platby',paymentCopy:'Zadejte skutečné datum platby. Po potvrzení dostane pracovník oznámení.',close:'Zrušit',confirmPaid:'Potvrdit platbu'},
- en:{eyebrow:'Invoices',title:'Employee invoices',subtitle:'Received invoices and payment status.',empty:'No invoices match this filter.',document:'Document / PDF',paid:'Mark as paid',paying:'Saving…',hours:'h',due:'Due',paymentDate:'Payment date',paidOn:'Paid on',draft:'Draft',sent:'Sent',viewed:'Viewed',paidStatus:'Paid',cancelled:'Cancelled',overdue:'Overdue',all:'All',open:'Open',overdueFilter:'Overdue',paidFilter:'Paid',cancelledFilter:'Cancelled',markPaidConfirm:'Confirm invoice payment?',openAmount:'Open amount',overdueAmount:'Overdue',paidAmount:'Paid',paymentTitle:'Confirm payment',paymentCopy:'Set the actual payment date. The employee will be notified after confirmation.',close:'Cancel',confirmPaid:'Confirm payment'}
+ uk:{eyebrow:'Фактури',title:'Фактури працівників',subtitle:'Отримані фактури та статус оплати.',empty:'Фактур за цим фільтром немає.',document:'Документ / PDF',paid:'Позначити оплачено',paying:'Збереження…',loading:'Завантаження фактур…',hours:'год',due:'Оплатити до',paymentDate:'Дата оплати',paidOn:'Оплачено',draft:'Чернетка',sent:'Відправлено',viewed:'Переглянуто',paidStatus:'Оплачено',cancelled:'Скасовано',overdue:'Прострочено',all:'Усі',open:'До оплати',overdueFilter:'Прострочені',paidFilter:'Оплачені',cancelledFilter:'Скасовані',openAmount:'До оплати',overdueAmount:'Прострочено',paidAmount:'Оплачено',paymentTitle:'Підтвердження оплати',paymentCopy:'Вкажіть фактичну дату оплати. Після підтвердження працівник отримає сповіщення.',close:'Скасувати',confirmPaid:'Підтвердити оплату'},
+ cs:{eyebrow:'Faktury',title:'Faktury pracovníků',subtitle:'Přijaté faktury a stav plateb.',empty:'Pro tento filtr nejsou žádné faktury.',document:'Doklad / PDF',paid:'Označit jako zaplacené',paying:'Ukládání…',loading:'Načítání faktur…',hours:'h',due:'Splatnost',paymentDate:'Datum platby',paidOn:'Zaplaceno',draft:'Koncept',sent:'Odesláno',viewed:'Zobrazeno',paidStatus:'Zaplaceno',cancelled:'Zrušeno',overdue:'Po splatnosti',all:'Vše',open:'K úhradě',overdueFilter:'Po splatnosti',paidFilter:'Zaplacené',cancelledFilter:'Zrušené',openAmount:'K úhradě',overdueAmount:'Po splatnosti',paidAmount:'Zaplaceno',paymentTitle:'Potvrzení platby',paymentCopy:'Zadejte skutečné datum platby. Po potvrzení dostane pracovník oznámení.',close:'Zrušit',confirmPaid:'Potvrdit platbu'},
+ en:{eyebrow:'Invoices',title:'Employee invoices',subtitle:'Received invoices and payment status.',empty:'No invoices match this filter.',document:'Document / PDF',paid:'Mark as paid',paying:'Saving…',loading:'Loading invoices…',hours:'h',due:'Due',paymentDate:'Payment date',paidOn:'Paid on',draft:'Draft',sent:'Sent',viewed:'Viewed',paidStatus:'Paid',cancelled:'Cancelled',overdue:'Overdue',all:'All',open:'Open',overdueFilter:'Overdue',paidFilter:'Paid',cancelledFilter:'Cancelled',openAmount:'Open amount',overdueAmount:'Overdue',paidAmount:'Paid',paymentTitle:'Confirm payment',paymentCopy:'Set the actual payment date. The employee will be notified after confirmation.',close:'Cancel',confirmPaid:'Confirm payment'}
 };
 function statusLabel(c,status){if(status==='PAID')return c.paidStatus;return c[String(status||'').toLowerCase()]||status}
 function money(value){return `${Number(value||0).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2})} CZK`}
@@ -20,11 +21,11 @@ export function ManagerInvoicesPage(){
  const {language}=useI18n();
  const c=COPY[language]||COPY.uk;
  const today=localDateValue();
- const [error,setError]=useState('');
+ const [actionError,setActionError]=useState('');
  const [filter,setFilter]=useState('OPEN');
  const [payTarget,setPayTarget]=useState(null);
  const [paymentDate,setPaymentDate]=useState(today);
- const {data,isLoading,refetch}=useGetManagerInvoicesQuery();
+ const {data,error:queryError,isLoading,isFetching}=useGetManagerInvoicesQuery();
  const [markPaid,state]=useMarkInvoicePaidMutation();
  const invoices=data?.invoices||[];
  const summary=data?.summary||{};
@@ -37,27 +38,32 @@ export function ManagerInvoicesPage(){
   return true;
  }),[filter,invoices]);
  const counts={ALL:summary.totalCount??invoices.length,OPEN:summary.openCount??0,OVERDUE:summary.overdueCount??0,PAID:summary.paidCount??0,CANCELLED:summary.cancelledCount??0};
- function openPayment(invoice){setPaymentDate(today);setError('');setPayTarget(invoice)}
- async function paid(){if(!payTarget?.id||!paymentDate)return;setError('');try{await markPaid({invoiceId:payTarget.id,paidDate:paymentDate}).unwrap();setPayTarget(null);await refetch()}catch(err){setError(getApiErrorMessage(err))}}
+ function openPayment(invoice){setPaymentDate(today);setActionError('');setPayTarget(invoice)}
+ async function paid(){if(!payTarget?.id||!paymentDate)return;setActionError('');try{await markPaid({invoiceId:payTarget.id,paidDate:paymentDate}).unwrap();setPayTarget(null)}catch(err){setActionError(getApiErrorMessage(err))}}
  const filters=[['OPEN',c.open],['OVERDUE',c.overdueFilter],['PAID',c.paidFilter],['CANCELLED',c.cancelledFilter],['ALL',c.all]];
+ const showContent=!isLoading&&!queryError;
  return <section className="managerInvoicePage pageStack">
   <header className="managerInvoiceHeader appTop"><div className="appTitleBlock"><p className="sectionEyebrow">{c.eyebrow}</p><h1>{c.title}</h1><p>{c.subtitle}</p></div></header>
-  <section className="managerInvoiceSummary" aria-label={c.title}>
-   <article className="screenCard"><span>{c.openAmount}</span><strong>{money(summary.openAmount)}</strong><small>{counts.OPEN}</small></article>
-   <article className={`screenCard${Number(summary.overdueAmount||0)>0?' is-overdue':''}`}><span>{c.overdueAmount}</span><strong>{money(summary.overdueAmount)}</strong><small>{counts.OVERDUE}</small></article>
-   <article className="screenCard is-paid"><span>{c.paidAmount}</span><strong>{money(summary.paidAmount)}</strong><small>{counts.PAID}</small></article>
-  </section>
-  <div className="managerInvoiceFilters" role="tablist" aria-label={c.title}>{filters.map(([key,label])=><button type="button" role="tab" aria-selected={filter===key} className={filter===key?'is-active':''} onClick={()=>setFilter(key)} key={key}><span>{label}</span><strong>{counts[key]}</strong></button>)}</div>
-  {error?<p className="statusNote is-error">{error}</p>:null}
-  <section className="managerInvoiceList">{isLoading?<div className="screenCard">…</div>:filtered.length?filtered.map(invoice=>{
-   const overdue=Boolean(invoice.isOverdue);
-   const canPay=['SENT','VIEWED'].includes(invoice.status);
-   return <article className={`managerInvoiceCard screenCard${overdue?' is-overdue':''}`} key={invoice.id}>
-    <div className="managerInvoiceTop"><div><span>{invoice.employee?.name||invoice.employee?.email}</span><strong>{invoice.invoiceNumber}</strong></div><div className="managerInvoiceAmount"><strong>{Number(invoice.subtotal).toLocaleString()} {invoice.currency}</strong><div className="managerInvoiceStatusRow"><span className={`invoiceStatus is-${String(invoice.status).toLowerCase()}`}>{statusLabel(c,invoice.status)}</span>{overdue?<span className="invoiceOverdueBadge">{c.overdue}</span>:null}</div></div></div>
-    <div className="managerInvoiceMeta"><span>{invoice.periodStart} — {invoice.periodEnd}</span><span>{invoice.totalHours} {c.hours}</span><span className={overdue?'is-overdue-text':''}>{c.due}: {invoice.dueDate}</span>{invoice.status==='PAID'&&invoice.paidAt?<span>{c.paidOn}: {paidDateValue(invoice.paidAt)}</span>:null}</div>
-    <div className="managerInvoiceActions"><button className="managerInvoiceDocument" type="button" onClick={()=>navigate(`/manager/invoices/${invoice.id}`)}>{c.document}</button>{canPay?<button type="button" onClick={()=>openPayment(invoice)}>{c.paid}</button>:null}</div>
-   </article>
-  }):<div className="screenCard managerInvoiceEmpty">{c.empty}</div>}</section>
+  {isLoading?<RequestLoadingState label={c.loading}/>:null}
+  {queryError?<p className="statusNote is-error">{getApiErrorMessage(queryError)}</p>:null}
+  {showContent?<>
+   <section className="managerInvoiceSummary" aria-label={c.title}>
+    <article className="screenCard"><span>{c.openAmount}</span><strong>{money(summary.openAmount)}</strong><small>{counts.OPEN}</small></article>
+    <article className={`screenCard${Number(summary.overdueAmount||0)>0?' is-overdue':''}`}><span>{c.overdueAmount}</span><strong>{money(summary.overdueAmount)}</strong><small>{counts.OVERDUE}</small></article>
+    <article className="screenCard is-paid"><span>{c.paidAmount}</span><strong>{money(summary.paidAmount)}</strong><small>{counts.PAID}</small></article>
+   </section>
+   <div className="managerInvoiceFilters" role="tablist" aria-label={c.title}>{filters.map(([key,label])=><button type="button" role="tab" aria-selected={filter===key} className={filter===key?'is-active':''} onClick={()=>setFilter(key)} key={key}><span>{label}</span><strong>{counts[key]}</strong></button>)}</div>
+   {actionError?<p className="statusNote is-error">{actionError}</p>:null}
+   <section className="managerInvoiceList" aria-busy={isFetching}>{filtered.length?filtered.map(invoice=>{
+    const overdue=Boolean(invoice.isOverdue);
+    const canPay=['SENT','VIEWED'].includes(invoice.status);
+    return <article className={`managerInvoiceCard screenCard${overdue?' is-overdue':''}`} key={invoice.id}>
+     <div className="managerInvoiceTop"><div><span>{invoice.employee?.name||invoice.employee?.email}</span><strong>{invoice.invoiceNumber}</strong></div><div className="managerInvoiceAmount"><strong>{Number(invoice.subtotal).toLocaleString()} {invoice.currency}</strong><div className="managerInvoiceStatusRow"><span className={`invoiceStatus is-${String(invoice.status).toLowerCase()}`}>{statusLabel(c,invoice.status)}</span>{overdue?<span className="invoiceOverdueBadge">{c.overdue}</span>:null}</div></div></div>
+     <div className="managerInvoiceMeta"><span>{invoice.periodStart} — {invoice.periodEnd}</span><span>{invoice.totalHours} {c.hours}</span><span className={overdue?'is-overdue-text':''}>{c.due}: {invoice.dueDate}</span>{invoice.status==='PAID'&&invoice.paidAt?<span>{c.paidOn}: {paidDateValue(invoice.paidAt)}</span>:null}</div>
+     <div className="managerInvoiceActions"><button className="managerInvoiceDocument" type="button" onClick={()=>navigate(`/manager/invoices/${invoice.id}`)}>{c.document}</button>{canPay?<button type="button" onClick={()=>openPayment(invoice)}>{c.paid}</button>:null}</div>
+    </article>
+   }):<div className="screenCard managerInvoiceEmpty">{c.empty}</div>}</section>
+  </>:null}
   {payTarget?<div className="managerPaymentBackdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget&&!state.isLoading)setPayTarget(null)}}><section className="managerPaymentModal" role="dialog" aria-modal="true" aria-labelledby="manager-payment-title"><header><div><span>{payTarget.invoiceNumber}</span><h2 id="manager-payment-title">{c.paymentTitle}</h2></div><button type="button" aria-label={c.close} onClick={()=>setPayTarget(null)} disabled={state.isLoading}>×</button></header><div className="managerPaymentBody"><p>{c.paymentCopy}</p><div className="managerPaymentAmount"><span>{payTarget.employee?.name||payTarget.employee?.email}</span><strong>{Number(payTarget.subtotal).toLocaleString()} {payTarget.currency}</strong></div><label><span>{c.paymentDate}</span><input type="date" value={paymentDate} max={today} onChange={event=>setPaymentDate(event.target.value)} /></label><div className="managerPaymentActions"><button type="button" className="is-secondary" onClick={()=>setPayTarget(null)} disabled={state.isLoading}>{c.close}</button><button type="button" onClick={paid} disabled={state.isLoading||!paymentDate}>{state.isLoading?c.paying:c.confirmPaid}</button></div></div></section></div>:null}
  </section>;
 }
