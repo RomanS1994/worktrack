@@ -3,6 +3,7 @@ import { handleBillingRoutes } from './billing.js';
 import { handleDefaultProjectRoutes } from './default-project.js';
 import { handleManagerRoutes } from './manager/index.js';
 import { handleMeRoutes } from './me.js';
+import { handleMonthlyHoursRoutes } from './monthly-hours.js';
 import { handleNotificationRoutes } from './notifications.js';
 import { handlePublicRoutes } from './public.js';
 import { handleWorkRulesRoutes } from './work-rules.js';
@@ -16,6 +17,7 @@ const routeHandlers = [
   handleBillingRoutes,
   handleDefaultProjectRoutes,
   handleWorkRulesRoutes,
+  handleMonthlyHoursRoutes,
   handleWorkTrackRoutes,
   handleManagerRoutes,
 ];
