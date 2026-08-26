@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
+import { calculateNetWorkEntries } from './work-time-calculation.js';
+
 function clean(value, max = 300) { return String(value ?? '').trim().slice(0, max); }
 function money(value) { return Number(value || 0).toFixed(2); }
 function iso(value) { return value ? new Date(value).toISOString() : ''; }
@@ -182,12 +184,20 @@ async function buildDraftContext(client, context, payload = {}) {
   const company = await client.company.findUnique({ where: { id: membership.companyId } });
   if (!user || !company) throw new Error('Invoice context not found');
   const tax = profileTax(user); const buyer = companyBilling(company); assertSellerReady(tax); assertBuyerReady(buyer);
-  const rate = Number(membership.hourlyRateCzk || 0);
-  if (!Number.isFinite(rate) || rate <= 0) throw new Error('Hourly rate must be greater than zero before creating an invoice');
-  const entries = await client.workEntry.findMany({ where: { companyId: membership.companyId, employeeMembershipId: membership.id, status: 'APPROVED', workDate: { gte: range.start, lt: range.endExclusive }, invoiceItems: { none: { invoice: { status: { not: 'CANCELLED' } } } } }, include: { project: true }, orderBy: [{ workDate: 'asc' }, { createdAt: 'asc' }] });
-  if (!entries.length) throw new Error('No uninvoiced approved hours for this month');
-  const totalHours = entries.reduce((sum, entry) => sum + Number(entry.hours), 0);
-  const subtotal = totalHours * rate;
+  const fallbackRate = Number(membership.hourlyRateCzk || 0);
+  if (!Number.isFinite(fallbackRate) || fallbackRate <= 0) throw new Error('Hourly rate must be greater than zero before creating an invoice');
+  const storedEntries = await client.workEntry.findMany({ where: { companyId: membership.companyId, employeeMembershipId: membership.id, status: 'APPROVED', workDate: { gte: range.start, lt: range.endExclusive }, invoiceItems: { none: { invoice: { status: { not: 'CANCELLED' } } } } }, include: { project: true }, orderBy: [{ workDate: 'asc' }, { createdAt: 'asc' }] });
+  if (!storedEntries.length) throw new Error('No uninvoiced approved hours for this month');
+  const rules = { breakMinutes: Number(company.breakMinutes || 0), standardDailyHours: Number(company.standardDailyHours || 8) };
+  const entries = calculateNetWorkEntries(storedEntries, rules).map(entry => {
+    const rate = Number(entry.hourlyRateCzk ?? fallbackRate);
+    if (!Number.isFinite(rate) || rate <= 0) throw new Error('Hourly rate must be greater than zero before creating an invoice');
+    const hours = Number(entry.netHours || 0);
+    return { ...entry, invoiceHours: hours, invoiceRate: rate, invoiceAmount: hours * rate };
+  });
+  const totalHours = entries.reduce((sum, entry) => sum + entry.invoiceHours, 0);
+  const subtotal = entries.reduce((sum, entry) => sum + entry.invoiceAmount, 0);
+  const rate = totalHours > 0 ? subtotal / totalHours : fallbackRate;
   const issueDate = new Date(); issueDate.setUTCHours(0, 0, 0, 0);
   const dueDate = new Date(issueDate.getTime() + tax.dueDays * 86400000);
   return { membership, range, user, company, tax, buyer, rate, entries, totalHours, subtotal, issueDate, dueDate };
@@ -203,7 +213,7 @@ export async function previewInvoiceDraft(client, context, payload = {}) {
 export async function createInvoiceDraft(client, context, payload = {}) {
   const draft = await buildDraftContext(client, context, payload);
   const invoiceNumber = await nextInvoiceNumber(client, draft.membership.companyId, draft.tax.prefix, draft.range.year);
-  const invoice = await client.invoice.create({ data: { id: randomUUID(), companyId: draft.membership.companyId, employeeMembershipId: draft.membership.id, invoiceNumber, periodStart: draft.range.start, periodEnd: draft.range.end, issueDate: draft.issueDate, dueDate: draft.dueDate, currency: 'CZK', hourlyRate: money(draft.rate), totalHours: money(draft.totalHours), subtotal: money(draft.subtotal), status: 'DRAFT', sellerSnapshot: { ...draft.tax, email: draft.user.email, phone: draft.user.phone || '' }, buyerSnapshot: { ...draft.buyer, companyId: draft.company.id }, items: { create: draft.entries.map(entry => ({ id: randomUUID(), workEntryId: entry.id, description: entry.project?.name || 'Work', workDate: entry.workDate, hours: money(entry.hours), hourlyRate: money(draft.rate), amount: money(Number(entry.hours) * draft.rate) })) } }, include: { items: { orderBy: { workDate: 'asc' } } } });
+  const invoice = await client.invoice.create({ data: { id: randomUUID(), companyId: draft.membership.companyId, employeeMembershipId: draft.membership.id, invoiceNumber, periodStart: draft.range.start, periodEnd: draft.range.end, issueDate: draft.issueDate, dueDate: draft.dueDate, currency: 'CZK', hourlyRate: money(draft.rate), totalHours: money(draft.totalHours), subtotal: money(draft.subtotal), status: 'DRAFT', sellerSnapshot: { ...draft.tax, email: draft.user.email, phone: draft.user.phone || '' }, buyerSnapshot: { ...draft.buyer, companyId: draft.company.id }, items: { create: draft.entries.map(entry => ({ id: randomUUID(), workEntryId: entry.id, description: entry.project?.name || 'Work', workDate: entry.workDate, hours: money(entry.invoiceHours), hourlyRate: money(entry.invoiceRate), amount: money(entry.invoiceAmount) })) } }, include: { items: { orderBy: { workDate: 'asc' } } } });
   return serialize(invoice);
 }
 
