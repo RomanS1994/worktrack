@@ -10,6 +10,14 @@ function parseMonth(value) {
   return { raw, start, end, year, month };
 }
 
+function parseDate(value) {
+  const raw = String(value || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) throw new Error('Invalid date');
+  const date = new Date(`${raw}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== raw) throw new Error('Invalid date');
+  return { raw, date };
+}
+
 function isoDate(value) {
   return new Date(value).toISOString().slice(0, 10);
 }
@@ -61,14 +69,18 @@ export async function getManagerTimesheet(client, context, { month }) {
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
     }),
-    client.$queryRawUnsafe(
-      `SELECT "id", "employeeMembershipId", "workDate", "hours", "breakMinutes", "projectId", "note"
-       FROM "manager_timesheet_entries"
-       WHERE "companyId" = $1 AND "workDate" >= $2::date AND "workDate" < $3::date`,
-      companyId,
-      isoDate(period.start),
-      isoDate(period.end)
-    ),
+    client.managerTimesheetEntry.findMany({
+      where: { companyId, workDate: { gte: period.start, lt: period.end } },
+      select: {
+        id: true,
+        employeeMembershipId: true,
+        workDate: true,
+        hours: true,
+        breakMinutes: true,
+        projectId: true,
+        note: true,
+      },
+    }),
   ]);
 
   const employeeDayMap = new Map();
@@ -173,8 +185,7 @@ export async function getManagerTimesheet(client, context, { month }) {
 export async function upsertManagerTimesheetCell(client, context, employeeMembershipId, body) {
   const manager = context.activeMembership || context.membership || context;
   const companyId = manager.companyId;
-  const date = String(body?.date || '').trim();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('Invalid date');
+  const { raw: date, date: workDate } = parseDate(body?.date);
 
   const employee = await client.companyMembership.findFirst({
     where: { id: employeeMembershipId, companyId, role: 'EMPLOYEE', status: 'ACTIVE' },
@@ -190,13 +201,14 @@ export async function upsertManagerTimesheetCell(client, context, employeeMember
   const note = String(body?.note || '').trim().slice(0, 500) || null;
 
   if (hours == null && breakMinutes == null && !projectId && !note) {
-    await client.$executeRawUnsafe(
-      `DELETE FROM "manager_timesheet_entries" WHERE "companyId" = $1 AND "employeeMembershipId" = $2 AND "workDate" = $3::date`,
-      companyId,
-      employeeMembershipId,
-      date
-    );
-    return { deleted: true };
+    const existing = await client.managerTimesheetEntry.findUnique({
+      where: { employeeMembershipId_workDate: { employeeMembershipId, workDate } },
+      select: { id: true, companyId: true },
+    });
+    if (existing?.companyId === companyId) {
+      await client.managerTimesheetEntry.delete({ where: { id: existing.id } });
+    }
+    return { deleted: Boolean(existing?.companyId === companyId) };
   }
 
   if (projectId) {
@@ -204,36 +216,40 @@ export async function upsertManagerTimesheetCell(client, context, employeeMember
     if (!project) throw new Error('Project not found');
   }
 
-  const id = randomUUID();
-  const rows = await client.$queryRawUnsafe(
-    `INSERT INTO "manager_timesheet_entries"
-      ("id", "companyId", "employeeMembershipId", "managerMembershipId", "workDate", "hours", "breakMinutes", "projectId", "note", "updatedAt")
-     VALUES ($1, $2, $3, $4, $5::date, $6::numeric, $7, $8, $9, CURRENT_TIMESTAMP)
-     ON CONFLICT ("employeeMembershipId", "workDate") DO UPDATE SET
-       "managerMembershipId" = EXCLUDED."managerMembershipId",
-       "hours" = EXCLUDED."hours",
-       "breakMinutes" = EXCLUDED."breakMinutes",
-       "projectId" = EXCLUDED."projectId",
-       "note" = EXCLUDED."note",
-       "updatedAt" = CURRENT_TIMESTAMP
-     RETURNING "id", "employeeMembershipId", "workDate", "hours", "breakMinutes", "projectId", "note"`,
-    id,
-    companyId,
-    employeeMembershipId,
-    manager.id,
-    date,
-    hours,
-    breakMinutes,
-    projectId,
-    note
-  );
+  const existing = await client.managerTimesheetEntry.findUnique({
+    where: { employeeMembershipId_workDate: { employeeMembershipId, workDate } },
+    select: { id: true, companyId: true },
+  });
+  if (existing && existing.companyId !== companyId) throw new Error('Timesheet entry belongs to another company');
 
-  const row = rows[0];
+  const entry = existing
+    ? await client.managerTimesheetEntry.update({
+        where: { id: existing.id },
+        data: { managerMembershipId: manager.id, hours, breakMinutes, projectId, note },
+      })
+    : await client.managerTimesheetEntry.create({
+        data: {
+          id: randomUUID(),
+          companyId,
+          employeeMembershipId,
+          managerMembershipId: manager.id,
+          workDate,
+          hours,
+          breakMinutes,
+          projectId,
+          note,
+        },
+      });
+
   return {
     entry: {
-      ...row,
-      workDate: isoDate(row.workDate),
-      hours: row.hours == null ? null : Number(row.hours),
+      id: entry.id,
+      employeeMembershipId: entry.employeeMembershipId,
+      workDate: date,
+      hours: entry.hours == null ? null : Number(entry.hours),
+      breakMinutes: entry.breakMinutes,
+      projectId: entry.projectId,
+      note: entry.note || '',
     },
   };
 }
