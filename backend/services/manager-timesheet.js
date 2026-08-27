@@ -222,7 +222,9 @@ export async function upsertManagerTimesheetCell(client, context, employeeMember
   });
   if (!employee) throw new Error('Employee not found');
 
-  const hours = body?.hours === '' || body?.hours == null ? null : toNumber(body.hours);
+  const hasHoursInput = body?.hours !== '' && body?.hours != null;
+  const hours = hasHoursInput ? toNumber(body.hours) : null;
+  if (hasHoursInput && hours == null) throw new Error('Invalid hours');
   if (hours != null && (hours < 0 || hours > 24)) throw new Error('Hours must be between 0 and 24');
   const breakMinutes = body?.breakMinutes === '' || body?.breakMinutes == null ? null : Math.round(Number(body.breakMinutes));
   if (breakMinutes != null && (!Number.isFinite(breakMinutes) || breakMinutes < 0 || breakMinutes > 1440)) throw new Error('Invalid break');
