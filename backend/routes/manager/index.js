@@ -4,6 +4,7 @@ import { readJsonBody, sendJson } from '../../lib/http.js';
 import { getManagerEmployees } from '../../services/manager-employees.js';
 import { resetEmployeePassword } from '../../services/employee-password-reset.js';
 import { getManagerPayroll } from '../../services/manager-payroll.js';
+import { getManagerTimesheet, upsertManagerTimesheetCell } from '../../services/manager-timesheet.js';
 import { notifyEmployeeAboutReview } from '../../services/notifications.js';
 import { calculateNetWorkEntries, calculateNetWorkSummary } from '../../services/work-time-calculation.js';
 import {
@@ -59,6 +60,20 @@ async function enrichSubmissionHours(client, context, submissions) {
 }
 
 export async function handleManagerRoutes(request, response, { pathName, url }) {
+  if (request.method === 'GET' && pathName === '/api/manager/timesheet') {
+    const context = await requireManager(request, response); if (!context) return true;
+    const payload = await runStoreRead({ prisma: client => getManagerTimesheet(client, context, { month: url.searchParams.get('month') }) });
+    sendJson(response, 200, payload); return true;
+  }
+
+  const timesheetCellMatch = pathName.match(/^\/api\/manager\/timesheet\/([^/]+)$/);
+  if (request.method === 'PUT' && timesheetCellMatch) {
+    const context = await requireManager(request, response); if (!context) return true;
+    const body = await readJsonBody(request);
+    const payload = await runStoreTransaction({ prisma: client => upsertManagerTimesheetCell(client, context, timesheetCellMatch[1], body) });
+    sendJson(response, 200, payload); return true;
+  }
+
   if (request.method === 'GET' && pathName === '/api/manager/payroll') {
     const context = await requireManager(request, response);
     if (!context) return true;
