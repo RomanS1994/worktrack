@@ -17,6 +17,7 @@ import { HoursTablePage } from './pages/HoursTablePage/HoursTablePage.jsx';
 import { InvoiceDocumentPage } from './pages/InvoiceDocumentPage/InvoiceDocumentPage.jsx';
 import { InvoicesPage } from './pages/InvoicesPage/InvoicesPage.jsx';
 import { ManagerInvoicesPage } from './pages/ManagerInvoicesPage/ManagerInvoicesPage.jsx';
+import { ManagerTimesheetPage } from './pages/ManagerTimesheetPage/ManagerTimesheetPage.jsx';
 import { MoreHubPage } from './pages/MoreHubPage/MoreHubPage.jsx';
 import { NotificationsPage } from './pages/NotificationsPage/NotificationsPage.jsx';
 import { PayrollReportPage } from './pages/PayrollReportPage/PayrollReportPage.jsx';
@@ -62,6 +63,7 @@ export const router = createBrowserRouter([
           { path: 'projects', element: <ProjectsPage /> },
         ],
       },
+      { path: 'manager/timesheet', element: <ProtectedRoute requireManager><ManagerTimesheetPage /></ProtectedRoute> },
       { path: 'approvals', element: <ProtectedRoute requireManager><ApprovalsPage /></ProtectedRoute> },
       { path: 'company-settings', element: <ProtectedRoute requireManager><CompanySettingsPage /></ProtectedRoute> },
       { path: 'more', element: <ProtectedRoute requireManager><MoreHubPage /></ProtectedRoute> },
