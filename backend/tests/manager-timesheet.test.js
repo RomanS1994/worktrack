@@ -106,14 +106,16 @@ test('manager timesheet pinpoints a half-hour mismatch', async () => {
 test('manager timesheet reports lunch and project differences separately', async () => {
   const payload = await getManagerTimesheet(
     readClient({
-      workEntries: [workEntry({ breakMinutes: 30 })],
-      managerEntries: [managerEntry({ breakMinutes: 60, projectId: 'project-b' })],
+      workEntries: [workEntry({ hours: '8.50', grossHours: '8.50', breakMinutes: 30 })],
+      managerEntries: [managerEntry({ hours: '8.00', breakMinutes: 60, projectId: 'project-b' })],
     }),
     context(),
     { month: '2026-08' }
   );
 
   const day = payload.rows[0].days[9];
+  assert.equal(day.employeeHours, 8);
+  assert.equal(day.managerHours, 8);
   assert.equal(day.status, 'MISMATCH');
   assert.deepEqual(day.reasons, ['break', 'project']);
   assert.deepEqual(day.employeeProjects, ['Praha 5']);
