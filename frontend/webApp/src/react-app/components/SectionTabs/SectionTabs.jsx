@@ -6,9 +6,9 @@ import { hasManagerAccess } from '@shared/features/auth/authAccess.js';
 import './SectionTabs.css';
 
 const COPY={
- uk:{time:'Час',week:'Тиждень',calendar:'Календар',history:'Історія',team:'Команда',employees:'Працівники',projects:'Об’єкти',finance:'Зарплата',overview:'Звіт',invoices:'Фактури',details:'Реквізити'},
- cs:{time:'Čas',week:'Týden',calendar:'Kalendář',history:'Historie',team:'Tým',employees:'Zaměstnanci',projects:'Objekty',finance:'Mzda',overview:'Přehled',invoices:'Faktury',details:'Údaje'},
- en:{time:'Time',week:'Week',calendar:'Calendar',history:'History',team:'Team',employees:'Employees',projects:'Projects',finance:'Payroll',overview:'Report',invoices:'Invoices',details:'Billing details'}
+ uk:{time:'Час',week:'Тиждень',calendar:'Календар',history:'Історія',team:'Команда',employees:'Працівники',projects:'Об’єкти',timesheet:'Табель',finance:'Зарплата',overview:'Звіт',invoices:'Фактури',details:'Реквізити'},
+ cs:{time:'Čas',week:'Týden',calendar:'Kalendář',history:'Historie',team:'Tým',employees:'Zaměstnanci',projects:'Objekty',timesheet:'Výkaz',finance:'Mzda',overview:'Přehled',invoices:'Faktury',details:'Údaje'},
+ en:{time:'Time',week:'Week',calendar:'Calendar',history:'History',team:'Team',employees:'Employees',projects:'Projects',timesheet:'Timesheet',finance:'Payroll',overview:'Report',invoices:'Invoices',details:'Billing details'}
 };
 
 const CONFIG={
@@ -20,6 +20,7 @@ const CONFIG={
  team:c=>[
   {to:'/employees',label:c.employees},
   {to:'/projects',label:c.projects},
+  {to:'/manager/timesheet',label:c.timesheet},
  ],
  employeeFinance:c=>[
   {to:'/payroll-report',label:c.overview,end:true},
