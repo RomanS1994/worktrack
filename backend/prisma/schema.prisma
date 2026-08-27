@@ -93,12 +93,13 @@ model Company {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  memberships       CompanyMembership[]
-  projects          Project[]
-  workEntries       WorkEntry[]
-  weeklySubmissions WeeklySubmission[]
-  notifications     Notification[]
-  invoices          Invoice[]
+  memberships            CompanyMembership[]
+  projects               Project[]
+  workEntries            WorkEntry[]
+  weeklySubmissions      WeeklySubmission[]
+  notifications          Notification[]
+  invoices               Invoice[]
+  managerTimesheetEntries ManagerTimesheetEntry[]
 
   @@index([slug])
   @@map("companies")
@@ -117,11 +118,13 @@ model CompanyMembership {
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  workEntries               WorkEntry[]        @relation("EmployeeMembershipWorkEntries")
-  weeklySubmissions         WeeklySubmission[] @relation("EmployeeMembershipWeeklySubmissions")
-  reviewedWeeklySubmissions WeeklySubmission[] @relation("ReviewerMembershipWeeklySubmissions")
-  notifications             Notification[]     @relation("RecipientMembershipNotifications")
-  invoices                  Invoice[]          @relation("EmployeeMembershipInvoices")
+  workEntries                       WorkEntry[]             @relation("EmployeeMembershipWorkEntries")
+  weeklySubmissions                 WeeklySubmission[]      @relation("EmployeeMembershipWeeklySubmissions")
+  reviewedWeeklySubmissions         WeeklySubmission[]      @relation("ReviewerMembershipWeeklySubmissions")
+  notifications                     Notification[]          @relation("RecipientMembershipNotifications")
+  invoices                          Invoice[]
+  employeeManagerTimesheetEntries   ManagerTimesheetEntry[] @relation("EmployeeManagerTimesheetEntries")
+  managerManagerTimesheetEntries    ManagerTimesheetEntry[] @relation("ManagerManagerTimesheetEntries")
 
   @@unique([companyId, userId])
   @@index([userId])
@@ -140,8 +143,9 @@ model Project {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  company     Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  workEntries WorkEntry[]
+  company                 Company                 @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  workEntries             WorkEntry[]
+  managerTimesheetEntries ManagerTimesheetEntry[]
 
   @@index([companyId])
   @@index([companyId, isActive])
@@ -182,6 +186,30 @@ model WorkEntry {
   @@index([weeklySubmissionId])
   @@index([status])
   @@map("work_entries")
+}
+
+model ManagerTimesheetEntry {
+  id                   String   @id
+  companyId            String
+  employeeMembershipId String
+  managerMembershipId  String
+  workDate             DateTime @db.Date
+  hours                Decimal? @db.Decimal(5, 2)
+  breakMinutes         Int?
+  projectId            String?
+  note                 String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  company            Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employeeMembership CompanyMembership @relation("EmployeeManagerTimesheetEntries", fields: [employeeMembershipId], references: [id], onDelete: Cascade)
+  managerMembership  CompanyMembership @relation("ManagerManagerTimesheetEntries", fields: [managerMembershipId], references: [id], onDelete: Cascade)
+  project            Project?          @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@unique([employeeMembershipId, workDate])
+  @@index([companyId, workDate])
+  @@index([managerMembershipId])
+  @@map("manager_timesheet_entries")
 }
 
 model WeeklySubmission {
@@ -275,7 +303,7 @@ model Notification {
   message               String
   href                  String?
   readAt                DateTime?
-  createdAt             DateTime @default(now())
+  createdAt              DateTime @default(now())
 
   company             Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
   recipientMembership CompanyMembership @relation("RecipientMembershipNotifications", fields: [recipientMembershipId], references: [id], onDelete: Cascade)
