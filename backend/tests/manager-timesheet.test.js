@@ -152,3 +152,24 @@ test('manager timesheet rejects non-numeric hour input instead of deleting a cel
     /Invalid hours/
   );
 });
+
+test('manager timesheet clears an existing manager control entry', async () => {
+  let deletedId = null;
+  const client = {
+    companyMembership: { findFirst: async () => ({ id: 'employee-1' }) },
+    managerTimesheetEntry: {
+      findUnique: async () => ({ id: 'manager-entry-1', companyId: 'company-1' }),
+      delete: async ({ where }) => { deletedId = where.id; },
+    },
+  };
+
+  const result = await upsertManagerTimesheetCell(client, context(), 'employee-1', {
+    date: '2026-08-10',
+    hours: '',
+    breakMinutes: '',
+    projectId: '',
+  });
+
+  assert.deepEqual(result, { deleted: true });
+  assert.equal(deletedId, 'manager-entry-1');
+});
