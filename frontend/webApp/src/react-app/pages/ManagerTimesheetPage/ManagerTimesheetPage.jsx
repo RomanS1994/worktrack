@@ -38,30 +38,20 @@ function problemDetails(day) {
   if (day.status === 'MATCH') return [{ tone: 'ok', title: 'Все сходиться', text: 'Контрольний запис відповідає даним працівника.' }];
   if (day.status === 'MISSING_MANAGER') return [{ tone: 'warning', title: 'Немає запису менеджера', text: `Працівник записав ${day.employeeHours ?? '—'} год. Додайте контрольний запис.` }];
   if (day.status === 'MISSING_EMPLOYEE') return [{ tone: 'warning', title: 'Немає запису працівника', text: `У табелі менеджера є ${day.managerHours ?? '—'} год, але працівник нічого не подав.` }];
-
   const details = [];
-  if (day.reasons?.includes('hours')) {
-    details.push({
-      tone: 'danger',
-      title: 'Не сходяться години',
-      text: `Працівник: ${day.employeeHours ?? '—'} год · Менеджер: ${day.managerHours ?? '—'} год${day.difference == null ? '' : ` · Різниця: ${day.difference > 0 ? '+' : ''}${day.difference} год`}`,
-    });
-  }
-  if (day.reasons?.includes('break')) {
-    details.push({
-      tone: 'danger',
-      title: 'Не сходиться обід',
-      text: `Працівник: ${day.employeeBreakMinutes ?? 0} хв · Менеджер: ${day.managerBreakMinutes ?? 0} хв`,
-    });
-  }
-  if (day.reasons?.includes('project')) {
-    details.push({
-      tone: 'danger',
-      title: 'Не сходиться об’єкт',
-      text: `Працівник: ${day.employeeProjects?.join(', ') || 'не вказано'}`,
-    });
-  }
+  if (day.reasons?.includes('hours')) details.push({ tone: 'danger', title: 'Не сходяться години', text: `Працівник: ${day.employeeHours ?? '—'} год · Менеджер: ${day.managerHours ?? '—'} год${day.difference == null ? '' : ` · Різниця: ${day.difference > 0 ? '+' : ''}${day.difference} год`}` });
+  if (day.reasons?.includes('break')) details.push({ tone: 'danger', title: 'Не сходиться обід', text: `Працівник: ${day.employeeBreakMinutes ?? 0} хв · Менеджер: ${day.managerBreakMinutes ?? 0} хв` });
+  if (day.reasons?.includes('project')) details.push({ tone: 'danger', title: 'Не сходиться об’єкт', text: `Працівник: ${day.employeeProjects?.join(', ') || 'не вказано'}` });
   return details;
+}
+
+function monthBounds(month, days) {
+  return { start: `${month}-01`, end: days.at(-1)?.date || `${month}-01` };
+}
+
+function isWeekend(date) {
+  const day = new Date(`${date}T12:00:00`).getDay();
+  return day === 0 || day === 6;
 }
 
 export function ManagerTimesheetPage() {
@@ -71,6 +61,18 @@ export function ManagerTimesheetPage() {
   const [breakMinutes, setBreakMinutes] = useState('');
   const [projectId, setProjectId] = useState('');
   const [filter, setFilter] = useState('all');
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkEmployeeId, setBulkEmployeeId] = useState('');
+  const [bulkStart, setBulkStart] = useState('');
+  const [bulkEnd, setBulkEnd] = useState('');
+  const [bulkHours, setBulkHours] = useState('8');
+  const [bulkBreak, setBulkBreak] = useState('');
+  const [bulkProjectId, setBulkProjectId] = useState('');
+  const [bulkWeekdaysOnly, setBulkWeekdaysOnly] = useState(true);
+  const [bulkOverwrite, setBulkOverwrite] = useState(false);
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const [bulkError, setBulkError] = useState('');
+
   const { data, error, isFetching } = useGetManagerTimesheetQuery(month);
   const [saveCell, { isLoading: isSaving, error: saveError }] = useSaveManagerTimesheetCellMutation();
 
@@ -79,11 +81,11 @@ export function ManagerTimesheetPage() {
   const projects = data?.projects || [];
   const label = useMemo(() => monthLabel(month), [month]);
   const days = rows[0]?.days || [];
+  const bounds = monthBounds(month, days);
 
   const problems = useMemo(() => rows.flatMap(row => row.days
     .filter(day => !['MATCH', 'EMPTY'].includes(day.status))
     .map(day => ({ ...day, employeeId: row.employeeId, employeeName: row.name }))), [rows]);
-
   const visibleRows = filter === 'problems' ? rows.filter(row => row.problems > 0) : rows;
 
   function openCell(row, day) {
@@ -93,128 +95,96 @@ export function ManagerTimesheetPage() {
     setProjectId(day.managerProjectId || '');
   }
 
+  function openBulk(row = rows[0]) {
+    if (!row) return;
+    setBulkEmployeeId(row.employeeId);
+    setBulkStart(bounds.start);
+    setBulkEnd(bounds.end);
+    setBulkHours('8');
+    setBulkBreak('');
+    setBulkProjectId('');
+    setBulkWeekdaysOnly(true);
+    setBulkOverwrite(false);
+    setBulkError('');
+    setBulkOpen(true);
+  }
+
   async function submitCell(event) {
     event.preventDefault();
     if (!selected) return;
-    await saveCell({
-      employeeId: selected.row.employeeId,
-      date: selected.day.date,
-      hours,
-      breakMinutes,
-      projectId,
-    }).unwrap();
+    await saveCell({ employeeId: selected.row.employeeId, date: selected.day.date, hours, breakMinutes, projectId }).unwrap();
     setSelected(null);
   }
 
   async function clearCell() {
     if (!selected) return;
-    await saveCell({
-      employeeId: selected.row.employeeId,
-      date: selected.day.date,
-      hours: '',
-      breakMinutes: '',
-      projectId: '',
-    }).unwrap();
+    await saveCell({ employeeId: selected.row.employeeId, date: selected.day.date, hours: '', breakMinutes: '', projectId: '' }).unwrap();
     setSelected(null);
+  }
+
+  async function submitBulk(event) {
+    event.preventDefault();
+    setBulkError('');
+    const row = rows.find(item => item.employeeId === bulkEmployeeId);
+    if (!row) return setBulkError('Оберіть працівника.');
+    if (!bulkStart || !bulkEnd || bulkStart > bulkEnd) return setBulkError('Перевірте діапазон дат.');
+    const candidates = row.days.filter(day => day.date >= bulkStart && day.date <= bulkEnd)
+      .filter(day => !bulkWeekdaysOnly || !isWeekend(day.date))
+      .filter(day => bulkOverwrite || (day.managerHours == null && day.managerBreakMinutes == null && !day.managerProjectId));
+    if (!candidates.length) return setBulkError('У вибраному діапазоні немає днів для заповнення.');
+    setBulkSaving(true);
+    try {
+      await Promise.all(candidates.map(day => saveCell({
+        employeeId: row.employeeId,
+        date: day.date,
+        hours: bulkHours,
+        breakMinutes: bulkBreak,
+        projectId: bulkProjectId,
+      }).unwrap()));
+      setBulkOpen(false);
+    } catch (err) {
+      setBulkError(getApiErrorMessage(err));
+    } finally {
+      setBulkSaving(false);
+    }
   }
 
   const selectedProblems = selected ? problemDetails(selected.day) : [];
   const selectedReasons = selected?.day?.reasons || [];
+  const bulkRow = rows.find(row => row.employeeId === bulkEmployeeId);
+  const bulkCount = bulkRow ? bulkRow.days.filter(day => day.date >= bulkStart && day.date <= bulkEnd)
+    .filter(day => !bulkWeekdaysOnly || !isWeekend(day.date))
+    .filter(day => bulkOverwrite || (day.managerHours == null && day.managerBreakMinutes == null && !day.managerProjectId)).length : 0;
 
   return <section className="managerTimesheetPage pageStack">
     <header className="managerTimesheetHeader appTop">
-      <div className="appTitleBlock">
-        <p className="sectionEyebrow">Контроль годин</p>
-        <h1>Табель</h1>
-        <p>Записуйте контрольні години менеджера та одразу бачте, де дані не сходяться з записами працівників.</p>
+      <div className="appTitleBlock"><p className="sectionEyebrow">Контроль годин</p><h1>Табель</h1><p>Записуйте контрольні години менеджера та одразу бачте, де дані не сходяться з записами працівників.</p></div>
+      <div className="managerTimesheetHeaderActions">
+        <button type="button" className="managerTimesheetBulkButton" onClick={() => openBulk()} disabled={!rows.length}>Заповнити період</button>
+        <button type="button" className={`managerTimesheetProblemsButton${filter === 'problems' ? ' is-active' : ''}`} onClick={() => setFilter(filter === 'problems' ? 'all' : 'problems')}>Перевірки {summary.problems ? `(${summary.problems})` : ''}</button>
       </div>
-      <button type="button" className={`managerTimesheetProblemsButton${filter === 'problems' ? ' is-active' : ''}`} onClick={() => setFilter(filter === 'problems' ? 'all' : 'problems')}>
-        Перевірки {summary.problems ? `(${summary.problems})` : ''}
-      </button>
     </header>
 
-    <section className="managerTimesheetToolbar screenCard">
-      <button type="button" onClick={() => setMonth(shiftMonth(month, -1))} aria-label="Попередній місяць">‹</button>
-      <strong>{label}</strong>
-      <button type="button" onClick={() => setMonth(shiftMonth(month, 1))} disabled={month >= currentMonth()} aria-label="Наступний місяць">›</button>
-    </section>
-
+    <section className="managerTimesheetToolbar screenCard"><button type="button" onClick={() => setMonth(shiftMonth(month, -1))} aria-label="Попередній місяць">‹</button><strong>{label}</strong><button type="button" onClick={() => setMonth(shiftMonth(month, 1))} disabled={month >= currentMonth()} aria-label="Наступний місяць">›</button></section>
     {error ? <p className="statusNote is-error">{getApiErrorMessage(error)}</p> : null}
 
-    <section className="managerTimesheetSummary">
-      <article><span>Працівники</span><strong>{summary.employees || 0}</strong></article>
-      <article className="is-ok"><span>Збігається</span><strong>{summary.matched || 0}</strong></article>
-      <article className="is-warning"><span>Невідповідності</span><strong>{summary.mismatches || 0}</strong></article>
-      <article><span>Відсутні записи</span><strong>{summary.missing || 0}</strong></article>
-    </section>
-
+    <section className="managerTimesheetSummary"><article><span>Працівники</span><strong>{summary.employees || 0}</strong></article><article className="is-ok"><span>Збігається</span><strong>{summary.matched || 0}</strong></article><article className="is-warning"><span>Невідповідності</span><strong>{summary.mismatches || 0}</strong></article><article><span>Відсутні записи</span><strong>{summary.missing || 0}</strong></article></section>
     {isFetching ? <p className="statusNote">Завантаження табеля…</p> : null}
 
     {!isFetching && visibleRows.length ? <>
-      <section className="managerTimesheetDesktop screenCard">
-        <div className="managerTimesheetScroll">
-          <table>
-            <thead><tr><th className="employeeColumn">Працівник</th>{days.map(day => <th key={day.date}><span>{day.day}</span><small>{new Intl.DateTimeFormat('uk-UA', { weekday: 'short' }).format(new Date(`${day.date}T00:00:00`))}</small></th>)}<th className="totalColumn">Разом</th></tr></thead>
-            <tbody>{visibleRows.map(row => <tr key={row.employeeId}>
-              <th className="employeeColumn"><span className="employeeName">{row.name}</span>{row.problems ? <small className="employeeProblems">{row.problems} проблем</small> : <small className="employeeOk">Все сходиться</small>}</th>
-              {row.days.map(day => <td key={day.date}><button type="button" className={cellClass(day.status)} onClick={() => openCell(row, day)} title={problemLabel(day)}>{day.managerHours ?? '—'}</button></td>)}
-              <td className="totalColumn"><strong>{row.managerTotal} год</strong><small className={Math.abs(row.difference) > 0.001 ? 'totalDiff is-bad' : 'totalDiff'}>{row.difference > 0 ? '+' : ''}{row.difference} год</small></td>
-            </tr>)}</tbody>
-          </table>
-        </div>
-      </section>
+      <section className="managerTimesheetDesktop screenCard"><div className="managerTimesheetScroll"><table><thead><tr><th className="employeeColumn">Працівник</th>{days.map(day => <th key={day.date}><span>{day.day}</span><small>{new Intl.DateTimeFormat('uk-UA', { weekday: 'short' }).format(new Date(`${day.date}T00:00:00`))}</small></th>)}<th className="totalColumn">Разом</th></tr></thead><tbody>{visibleRows.map(row => <tr key={row.employeeId}><th className="employeeColumn"><span className="employeeName">{row.name}</span>{row.problems ? <small className="employeeProblems">{row.problems} проблем</small> : <small className="employeeOk">Все сходиться</small>}</th>{row.days.map(day => <td key={day.date}><button type="button" className={cellClass(day.status)} onClick={() => openCell(row, day)} title={problemLabel(day)}>{day.managerHours ?? '—'}</button></td>)}<td className="totalColumn"><strong>{row.managerTotal} год</strong><small className={Math.abs(row.difference) > 0.001 ? 'totalDiff is-bad' : 'totalDiff'}>{row.difference > 0 ? '+' : ''}{row.difference} год</small></td></tr>)}</tbody></table></div></section>
 
-      <section className="managerTimesheetMobile">
-        {visibleRows.map(row => <article className="managerTimesheetEmployeeCard screenCard" key={row.employeeId}>
-          <div className="managerTimesheetEmployeeTop">
-            <span><strong>{row.name}</strong><small>{row.problems ? `${row.problems} проблем` : 'Все сходиться'}</small></span>
-            <span className="employeeHoursTotal">{row.managerTotal} год</span>
-          </div>
-          <div className="managerTimesheetMobileDays">{row.days.filter(day => day.managerHours != null || day.employeeHours != null).map(day => <button type="button" key={day.date} className={cellClass(day.status)} onClick={() => openCell(row, day)} aria-label={`${day.date}: ${problemLabel(day)}`}><span>{day.day}</span><strong>{day.managerHours ?? '—'}</strong></button>)}</div>
-        </article>)}
-      </section>
+      <section className="managerTimesheetMobile">{visibleRows.map(row => <article className="managerTimesheetEmployeeCard screenCard" key={row.employeeId}><div className="managerTimesheetEmployeeTop"><span><strong>{row.name}</strong><small>{row.problems ? `${row.problems} проблем` : 'Все сходиться'}</small></span><span className="employeeHoursTotal">{row.managerTotal} год</span></div><button type="button" className="managerTimesheetEmployeeBulk" onClick={() => openBulk(row)}>Заповнити кілька днів</button><div className="managerTimesheetMobileDays">{row.days.filter(day => day.managerHours != null || day.employeeHours != null).map(day => <button type="button" key={day.date} className={cellClass(day.status)} onClick={() => openCell(row, day)} aria-label={`${day.date}: ${problemLabel(day)}`}><span>{day.day}</span><strong>{day.managerHours ?? '—'}</strong></button>)}</div></article>)}</section>
     </> : null}
 
     {!isFetching && !visibleRows.length ? <section className="screenCard managerTimesheetEmpty">Немає працівників або записів для цього місяця.</section> : null}
 
-    {filter === 'problems' && problems.length ? <section className="managerTimesheetProblems screenCard">
-      <div className="managerTimesheetProblemsHead"><div><span>Перевірки</span><strong>{problems.length}</strong></div><button type="button" onClick={() => setFilter('all')}>Показати весь табель</button></div>
-      {problems.map(problem => <button type="button" className="managerTimesheetProblemRow" key={`${problem.employeeId}:${problem.date}`} onClick={() => {
-        const row = rows.find(item => item.employeeId === problem.employeeId); if (row) openCell(row, problem);
-      }}>
-        <span><strong>{problem.employeeName}</strong><small>{new Intl.DateTimeFormat('uk-UA', { day: 'numeric', month: 'long' }).format(new Date(`${problem.date}T00:00:00`))}</small></span>
-        <span><strong>{problemLabel(problem)}</strong><small>Працівник: {problem.employeeHours ?? '—'} · Менеджер: {problem.managerHours ?? '—'}</small></span>
-        <b>›</b>
-      </button>)}
-    </section> : null}
+    {filter === 'problems' && problems.length ? <section className="managerTimesheetProblems screenCard"><div className="managerTimesheetProblemsHead"><div><span>Перевірки</span><strong>{problems.length}</strong></div><button type="button" onClick={() => setFilter('all')}>Показати весь табель</button></div>{problems.map(problem => <button type="button" className="managerTimesheetProblemRow" key={`${problem.employeeId}:${problem.date}`} onClick={() => { const row = rows.find(item => item.employeeId === problem.employeeId); if (row) openCell(row, problem); }}><span><strong>{problem.employeeName}</strong><small>{new Intl.DateTimeFormat('uk-UA', { day: 'numeric', month: 'long' }).format(new Date(`${problem.date}T00:00:00`))}</small></span><span><strong>{problemLabel(problem)}</strong><small>Працівник: {problem.employeeHours ?? '—'} · Менеджер: {problem.managerHours ?? '—'}</small></span><b>›</b></button>)}</section> : null}
 
     <div className="managerTimesheetLegend" aria-label="Легенда"><span className="is-match">Збігається</span><span className="is-mismatch">Невідповідність</span><span className="is-missing">Немає запису</span><span className="is-empty">Немає даних</span></div>
 
-    {selected ? <div className="managerTimesheetModalBackdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setSelected(null); }}>
-      <form className="managerTimesheetModal screenCard" onSubmit={submitCell}>
-        <div className="managerTimesheetModalHead"><div><span>{selected.day.date}</span><h2>{selected.row.name}</h2></div><button type="button" onClick={() => setSelected(null)} aria-label="Закрити">×</button></div>
-        <section className="managerTimesheetCompare">
-          <article><span>Працівник</span><strong>{selected.day.employeeHours ?? '—'} год</strong></article>
-          <article><span>Менеджер</span><strong>{selected.day.managerHours ?? '—'} год</strong></article>
-          <article className={selected.day.difference ? 'is-difference' : ''}><span>Різниця</span><strong>{selected.day.difference == null ? '—' : `${selected.day.difference > 0 ? '+' : ''}${selected.day.difference} год`}</strong></article>
-        </section>
+    {selected ? <div className="managerTimesheetModalBackdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setSelected(null); }}><form className="managerTimesheetModal screenCard" onSubmit={submitCell}><div className="managerTimesheetModalHead"><div><span>{selected.day.date}</span><h2>{selected.row.name}</h2></div><button type="button" onClick={() => setSelected(null)} aria-label="Закрити">×</button></div><section className="managerTimesheetCompare"><article><span>Працівник</span><strong>{selected.day.employeeHours ?? '—'} год</strong></article><article><span>Менеджер</span><strong>{selected.day.managerHours ?? '—'} год</strong></article><article className={selected.day.difference ? 'is-difference' : ''}><span>Різниця</span><strong>{selected.day.difference == null ? '—' : `${selected.day.difference > 0 ? '+' : ''}${selected.day.difference} год`}</strong></article></section>{selectedProblems.length ? <section className="managerTimesheetIssueList" aria-label="Результат перевірки">{selectedProblems.map(item => <article className={`managerTimesheetIssue is-${item.tone}`} key={`${item.title}:${item.text}`}><span aria-hidden="true">{item.tone === 'ok' ? '✓' : item.tone === 'warning' ? '!' : '×'}</span><div><strong>{item.title}</strong><small>{item.text}</small></div></article>)}</section> : null}<label className={selectedReasons.includes('hours') ? 'is-problem' : ''}>Години менеджера<input inputMode="decimal" value={hours} onChange={event => setHours(event.target.value.replace(',', '.'))} placeholder="8" /></label><label className={selectedReasons.includes('break') ? 'is-problem' : ''}>Обід, хв<input inputMode="numeric" value={breakMinutes} onChange={event => setBreakMinutes(event.target.value)} placeholder="30" /></label><label className={selectedReasons.includes('project') ? 'is-problem' : ''}>Об’єкт<select value={projectId} onChange={event => setProjectId(event.target.value)}><option value="">Не перевіряти об’єкт</option>{projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>{selected.day.employeeProjects?.length ? <p className="managerTimesheetEmployeeMeta">Працівник вказав: {selected.day.employeeProjects.join(', ')} · обід {selected.day.employeeBreakMinutes ?? 0} хв</p> : null}{saveError ? <p className="statusNote is-error">{getApiErrorMessage(saveError)}</p> : null}<div className="managerTimesheetModalActions">{selected.day.managerHours != null || selected.day.managerBreakMinutes != null || selected.day.managerProjectId ? <button type="button" className="dangerButton" onClick={clearCell} disabled={isSaving}>Очистити запис</button> : null}<span className="managerTimesheetModalActionSpacer" /><button type="button" className="secondaryButton" onClick={() => { setHours(selected.day.employeeHours == null ? '' : String(selected.day.employeeHours)); setBreakMinutes(selected.day.employeeBreakMinutes == null ? '' : String(selected.day.employeeBreakMinutes)); setProjectId(selected.day.employeeProjectIds?.length === 1 ? selected.day.employeeProjectIds[0] : ''); }}>Взяти дані працівника</button><button type="submit" className="primaryButton" disabled={isSaving}>{isSaving ? 'Збереження…' : 'Зберегти'}</button></div></form></div> : null}
 
-        {selectedProblems.length ? <section className="managerTimesheetIssueList" aria-label="Результат перевірки">
-          {selectedProblems.map(item => <article className={`managerTimesheetIssue is-${item.tone}`} key={`${item.title}:${item.text}`}><span aria-hidden="true">{item.tone === 'ok' ? '✓' : item.tone === 'warning' ? '!' : '×'}</span><div><strong>{item.title}</strong><small>{item.text}</small></div></article>)}
-        </section> : null}
-
-        <label className={selectedReasons.includes('hours') ? 'is-problem' : ''}>Години менеджера<input inputMode="decimal" value={hours} onChange={event => setHours(event.target.value.replace(',', '.'))} placeholder="8" /></label>
-        <label className={selectedReasons.includes('break') ? 'is-problem' : ''}>Обід, хв<input inputMode="numeric" value={breakMinutes} onChange={event => setBreakMinutes(event.target.value)} placeholder="30" /></label>
-        <label className={selectedReasons.includes('project') ? 'is-problem' : ''}>Об’єкт<select value={projectId} onChange={event => setProjectId(event.target.value)}><option value="">Не перевіряти об’єкт</option>{projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
-        {selected.day.employeeProjects?.length ? <p className="managerTimesheetEmployeeMeta">Працівник вказав: {selected.day.employeeProjects.join(', ')} · обід {selected.day.employeeBreakMinutes ?? 0} хв</p> : null}
-        {saveError ? <p className="statusNote is-error">{getApiErrorMessage(saveError)}</p> : null}
-        <div className="managerTimesheetModalActions">
-          {selected.day.managerHours != null || selected.day.managerBreakMinutes != null || selected.day.managerProjectId ? <button type="button" className="dangerButton" onClick={clearCell} disabled={isSaving}>Очистити запис</button> : null}
-          <span className="managerTimesheetModalActionSpacer" />
-          <button type="button" className="secondaryButton" onClick={() => { setHours(selected.day.employeeHours == null ? '' : String(selected.day.employeeHours)); setBreakMinutes(selected.day.employeeBreakMinutes == null ? '' : String(selected.day.employeeBreakMinutes)); setProjectId(selected.day.employeeProjectIds?.length === 1 ? selected.day.employeeProjectIds[0] : ''); }}>Взяти дані працівника</button>
-          <button type="submit" className="primaryButton" disabled={isSaving}>{isSaving ? 'Збереження…' : 'Зберегти'}</button>
-        </div>
-      </form>
-    </div> : null}
+    {bulkOpen ? <div className="managerTimesheetModalBackdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget && !bulkSaving) setBulkOpen(false); }}><form className="managerTimesheetModal managerTimesheetBulkModal screenCard" onSubmit={submitBulk}><div className="managerTimesheetModalHead"><div><span>{label}</span><h2>Заповнити період</h2></div><button type="button" onClick={() => setBulkOpen(false)} disabled={bulkSaving} aria-label="Закрити">×</button></div><p className="managerTimesheetBulkIntro">Один запис буде застосовано до вибраних днів. За замовчуванням уже заповнені комірки не змінюються.</p><label>Працівник<select value={bulkEmployeeId} onChange={event => setBulkEmployeeId(event.target.value)}>{rows.map(row => <option key={row.employeeId} value={row.employeeId}>{row.name}</option>)}</select></label><div className="managerTimesheetBulkDates"><label>Від<input type="date" min={bounds.start} max={bounds.end} value={bulkStart} onChange={event => setBulkStart(event.target.value)} /></label><label>До<input type="date" min={bounds.start} max={bounds.end} value={bulkEnd} onChange={event => setBulkEnd(event.target.value)} /></label></div><div className="managerTimesheetBulkFields"><label>Години<input inputMode="decimal" value={bulkHours} onChange={event => setBulkHours(event.target.value.replace(',', '.'))} placeholder="8" /></label><label>Обід, хв<input inputMode="numeric" value={bulkBreak} onChange={event => setBulkBreak(event.target.value)} placeholder="30" /></label></div><label>Об’єкт<select value={bulkProjectId} onChange={event => setBulkProjectId(event.target.value)}><option value="">Без перевірки об’єкта</option>{projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label><div className="managerTimesheetBulkOptions"><label><input type="checkbox" checked={bulkWeekdaysOnly} onChange={event => setBulkWeekdaysOnly(event.target.checked)} />Лише понеділок–п’ятниця</label><label><input type="checkbox" checked={bulkOverwrite} onChange={event => setBulkOverwrite(event.target.checked)} />Перезаписати вже заповнені дні</label></div><div className="managerTimesheetBulkPreview"><span>Буде заповнено</span><strong>{bulkCount} {bulkCount === 1 ? 'день' : 'днів'}</strong></div>{bulkError ? <p className="statusNote is-error">{bulkError}</p> : null}<div className="managerTimesheetModalActions"><span className="managerTimesheetModalActionSpacer" /><button type="button" className="secondaryButton" onClick={() => setBulkOpen(false)} disabled={bulkSaving}>Скасувати</button><button type="submit" className="primaryButton" disabled={bulkSaving || !bulkCount}>{bulkSaving ? 'Заповнення…' : `Заповнити ${bulkCount || ''}`}</button></div></form></div> : null}
   </section>;
 }
