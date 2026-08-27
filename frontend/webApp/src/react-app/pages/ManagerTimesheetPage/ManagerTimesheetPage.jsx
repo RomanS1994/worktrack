@@ -33,6 +33,37 @@ function problemLabel(day) {
   return labels.length ? `Різниця: ${labels.join(', ')}` : 'Невідповідність';
 }
 
+function problemDetails(day) {
+  if (day.status === 'EMPTY') return [];
+  if (day.status === 'MATCH') return [{ tone: 'ok', title: 'Все сходиться', text: 'Контрольний запис відповідає даним працівника.' }];
+  if (day.status === 'MISSING_MANAGER') return [{ tone: 'warning', title: 'Немає запису менеджера', text: `Працівник записав ${day.employeeHours ?? '—'} год. Додайте контрольний запис.` }];
+  if (day.status === 'MISSING_EMPLOYEE') return [{ tone: 'warning', title: 'Немає запису працівника', text: `У табелі менеджера є ${day.managerHours ?? '—'} год, але працівник нічого не подав.` }];
+
+  const details = [];
+  if (day.reasons?.includes('hours')) {
+    details.push({
+      tone: 'danger',
+      title: 'Не сходяться години',
+      text: `Працівник: ${day.employeeHours ?? '—'} год · Менеджер: ${day.managerHours ?? '—'} год${day.difference == null ? '' : ` · Різниця: ${day.difference > 0 ? '+' : ''}${day.difference} год`}`,
+    });
+  }
+  if (day.reasons?.includes('break')) {
+    details.push({
+      tone: 'danger',
+      title: 'Не сходиться обід',
+      text: `Працівник: ${day.employeeBreakMinutes ?? 0} хв · Менеджер: ${day.managerBreakMinutes ?? 0} хв`,
+    });
+  }
+  if (day.reasons?.includes('project')) {
+    details.push({
+      tone: 'danger',
+      title: 'Не сходиться об’єкт',
+      text: `Працівник: ${day.employeeProjects?.join(', ') || 'не вказано'}`,
+    });
+  }
+  return details;
+}
+
 export function ManagerTimesheetPage() {
   const [month, setMonth] = useState(currentMonth);
   const [selected, setSelected] = useState(null);
@@ -75,6 +106,21 @@ export function ManagerTimesheetPage() {
     setSelected(null);
   }
 
+  async function clearCell() {
+    if (!selected) return;
+    await saveCell({
+      employeeId: selected.row.employeeId,
+      date: selected.day.date,
+      hours: '',
+      breakMinutes: '',
+      projectId: '',
+    }).unwrap();
+    setSelected(null);
+  }
+
+  const selectedProblems = selected ? problemDetails(selected.day) : [];
+  const selectedReasons = selected?.day?.reasons || [];
+
   return <section className="managerTimesheetPage pageStack">
     <header className="managerTimesheetHeader appTop">
       <div className="appTitleBlock">
@@ -82,7 +128,7 @@ export function ManagerTimesheetPage() {
         <h1>Табель</h1>
         <p>Записуйте контрольні години менеджера та одразу бачте, де дані не сходяться з записами працівників.</p>
       </div>
-      <button type="button" className="managerTimesheetProblemsButton" onClick={() => setFilter(filter === 'problems' ? 'all' : 'problems')}>
+      <button type="button" className={`managerTimesheetProblemsButton${filter === 'problems' ? ' is-active' : ''}`} onClick={() => setFilter(filter === 'problems' ? 'all' : 'problems')}>
         Перевірки {summary.problems ? `(${summary.problems})` : ''}
       </button>
     </header>
@@ -120,11 +166,11 @@ export function ManagerTimesheetPage() {
 
       <section className="managerTimesheetMobile">
         {visibleRows.map(row => <article className="managerTimesheetEmployeeCard screenCard" key={row.employeeId}>
-          <button type="button" className="managerTimesheetEmployeeTop" onClick={() => setFilter('problems')}>
+          <div className="managerTimesheetEmployeeTop">
             <span><strong>{row.name}</strong><small>{row.problems ? `${row.problems} проблем` : 'Все сходиться'}</small></span>
             <span className="employeeHoursTotal">{row.managerTotal} год</span>
-          </button>
-          <div className="managerTimesheetMobileDays">{row.days.filter(day => day.managerHours != null || day.employeeHours != null).map(day => <button type="button" key={day.date} className={cellClass(day.status)} onClick={() => openCell(row, day)}><span>{day.day}</span><strong>{day.managerHours ?? '—'}</strong></button>)}</div>
+          </div>
+          <div className="managerTimesheetMobileDays">{row.days.filter(day => day.managerHours != null || day.employeeHours != null).map(day => <button type="button" key={day.date} className={cellClass(day.status)} onClick={() => openCell(row, day)} aria-label={`${day.date}: ${problemLabel(day)}`}><span>{day.day}</span><strong>{day.managerHours ?? '—'}</strong></button>)}</div>
         </article>)}
       </section>
     </> : null}
@@ -152,12 +198,22 @@ export function ManagerTimesheetPage() {
           <article><span>Менеджер</span><strong>{selected.day.managerHours ?? '—'} год</strong></article>
           <article className={selected.day.difference ? 'is-difference' : ''}><span>Різниця</span><strong>{selected.day.difference == null ? '—' : `${selected.day.difference > 0 ? '+' : ''}${selected.day.difference} год`}</strong></article>
         </section>
-        <label>Години менеджера<input inputMode="decimal" value={hours} onChange={event => setHours(event.target.value.replace(',', '.'))} placeholder="8" /></label>
-        <label>Обід, хв<input inputMode="numeric" value={breakMinutes} onChange={event => setBreakMinutes(event.target.value)} placeholder="30" /></label>
-        <label>Об’єкт<select value={projectId} onChange={event => setProjectId(event.target.value)}><option value="">Не перевіряти об’єкт</option>{projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
+
+        {selectedProblems.length ? <section className="managerTimesheetIssueList" aria-label="Результат перевірки">
+          {selectedProblems.map(item => <article className={`managerTimesheetIssue is-${item.tone}`} key={`${item.title}:${item.text}`}><span aria-hidden="true">{item.tone === 'ok' ? '✓' : item.tone === 'warning' ? '!' : '×'}</span><div><strong>{item.title}</strong><small>{item.text}</small></div></article>)}
+        </section> : null}
+
+        <label className={selectedReasons.includes('hours') ? 'is-problem' : ''}>Години менеджера<input inputMode="decimal" value={hours} onChange={event => setHours(event.target.value.replace(',', '.'))} placeholder="8" /></label>
+        <label className={selectedReasons.includes('break') ? 'is-problem' : ''}>Обід, хв<input inputMode="numeric" value={breakMinutes} onChange={event => setBreakMinutes(event.target.value)} placeholder="30" /></label>
+        <label className={selectedReasons.includes('project') ? 'is-problem' : ''}>Об’єкт<select value={projectId} onChange={event => setProjectId(event.target.value)}><option value="">Не перевіряти об’єкт</option>{projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
         {selected.day.employeeProjects?.length ? <p className="managerTimesheetEmployeeMeta">Працівник вказав: {selected.day.employeeProjects.join(', ')} · обід {selected.day.employeeBreakMinutes ?? 0} хв</p> : null}
         {saveError ? <p className="statusNote is-error">{getApiErrorMessage(saveError)}</p> : null}
-        <div className="managerTimesheetModalActions"><button type="button" className="secondaryButton" onClick={() => { setHours(selected.day.employeeHours == null ? '' : String(selected.day.employeeHours)); setBreakMinutes(selected.day.employeeBreakMinutes == null ? '' : String(selected.day.employeeBreakMinutes)); setProjectId(selected.day.employeeProjectIds?.length === 1 ? selected.day.employeeProjectIds[0] : ''); }}>Взяти дані працівника</button><button type="submit" className="primaryButton" disabled={isSaving}>{isSaving ? 'Збереження…' : 'Зберегти'}</button></div>
+        <div className="managerTimesheetModalActions">
+          {selected.day.managerHours != null || selected.day.managerBreakMinutes != null || selected.day.managerProjectId ? <button type="button" className="dangerButton" onClick={clearCell} disabled={isSaving}>Очистити запис</button> : null}
+          <span className="managerTimesheetModalActionSpacer" />
+          <button type="button" className="secondaryButton" onClick={() => { setHours(selected.day.employeeHours == null ? '' : String(selected.day.employeeHours)); setBreakMinutes(selected.day.employeeBreakMinutes == null ? '' : String(selected.day.employeeBreakMinutes)); setProjectId(selected.day.employeeProjectIds?.length === 1 ? selected.day.employeeProjectIds[0] : ''); }}>Взяти дані працівника</button>
+          <button type="submit" className="primaryButton" disabled={isSaving}>{isSaving ? 'Збереження…' : 'Зберегти'}</button>
+        </div>
       </form>
     </div> : null}
   </section>;
