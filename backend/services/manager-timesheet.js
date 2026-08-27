@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
+import { calculateNetWorkEntries } from './work-time-calculation.js';
+
 function parseMonth(value) {
   const raw = String(value || '').trim();
   if (!/^\d{4}-\d{2}$/.test(raw)) throw new Error('Invalid month');
@@ -47,7 +49,7 @@ export async function getManagerTimesheet(client, context, { month }) {
   const manager = context.activeMembership || context.membership || context;
   const companyId = manager.companyId;
 
-  const [employees, workEntries, projects, managerEntries] = await Promise.all([
+  const [employees, workEntries, projects, managerEntries, company] = await Promise.all([
     client.companyMembership.findMany({
       where: { companyId, role: 'EMPLOYEE', status: 'ACTIVE' },
       include: { user: true },
@@ -56,9 +58,11 @@ export async function getManagerTimesheet(client, context, { month }) {
     client.workEntry.findMany({
       where: { companyId, workDate: { gte: period.start, lt: period.end } },
       select: {
+        id: true,
         employeeMembershipId: true,
         workDate: true,
         hours: true,
+        grossHours: true,
         breakMinutes: true,
         projectId: true,
         project: { select: { name: true } },
@@ -81,15 +85,28 @@ export async function getManagerTimesheet(client, context, { month }) {
         note: true,
       },
     }),
+    client.company.findUnique({
+      where: { id: companyId },
+      select: { breakMinutes: true },
+    }),
   ]);
 
+  const defaultBreakMinutes = Number(company?.breakMinutes || 0);
+  const normalizedWorkEntries = calculateNetWorkEntries(workEntries, { breakMinutes: defaultBreakMinutes });
+
   const employeeDayMap = new Map();
-  for (const entry of workEntries) {
+  for (const entry of normalizedWorkEntries) {
     const date = isoDate(entry.workDate);
     const key = `${entry.employeeMembershipId}:${date}`;
-    const current = employeeDayMap.get(key) || { hours: 0, breakMinutes: 0, projectIds: new Set(), projectNames: new Set() };
-    current.hours += Number(entry.hours || 0);
-    current.breakMinutes += Number(entry.breakMinutes || 0);
+    const current = employeeDayMap.get(key) || {
+      hours: 0,
+      breakMinutes: null,
+      projectIds: new Set(),
+      projectNames: new Set(),
+    };
+    current.hours += Number(entry.netHours || 0);
+    const entryBreak = entry.breakMinutes == null ? defaultBreakMinutes : Number(entry.breakMinutes || 0);
+    current.breakMinutes = Math.max(current.breakMinutes || 0, entryBreak);
     if (entry.projectId) current.projectIds.add(entry.projectId);
     if (entry.project?.name) current.projectNames.add(entry.project.name);
     employeeDayMap.set(key, current);
@@ -143,8 +160,14 @@ export async function getManagerTimesheet(client, context, { month }) {
       }
 
       if (status === 'MATCH') matched += 1;
-      if (status === 'MISMATCH') { mismatches += 1; problems += 1; }
-      if (status === 'MISSING_EMPLOYEE' || status === 'MISSING_MANAGER') { missing += 1; problems += 1; }
+      if (status === 'MISMATCH') {
+        mismatches += 1;
+        problems += 1;
+      }
+      if (status === 'MISSING_EMPLOYEE' || status === 'MISSING_MANAGER') {
+        missing += 1;
+        problems += 1;
+      }
 
       return {
         date,
@@ -177,7 +200,13 @@ export async function getManagerTimesheet(client, context, { month }) {
   return {
     month: period.raw,
     projects,
-    summary: { employees: rows.length, matched, mismatches, missing, problems: mismatches + missing },
+    summary: {
+      employees: rows.length,
+      matched,
+      mismatches,
+      missing,
+      problems: mismatches + missing,
+    },
     rows,
   };
 }
@@ -212,7 +241,10 @@ export async function upsertManagerTimesheetCell(client, context, employeeMember
   }
 
   if (projectId) {
-    const project = await client.project.findFirst({ where: { id: projectId, companyId }, select: { id: true } });
+    const project = await client.project.findFirst({
+      where: { id: projectId, companyId },
+      select: { id: true },
+    });
     if (!project) throw new Error('Project not found');
   }
 
