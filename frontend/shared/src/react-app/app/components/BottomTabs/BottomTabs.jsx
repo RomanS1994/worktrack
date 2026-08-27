@@ -33,7 +33,7 @@ export function BottomTabs(){
    <TaskTab to="/payroll-report" label={c.payroll} icon="wallet" activePaths={['/payroll-report','/invoices','/tax-information']}/>
    <TaskTab to="/profile" label={c.profile} icon="profile" />
   </>:<>
-   <TaskTab to="/employees" label={c.team} icon="accounts" activePaths={['/employees','/projects']}/>
+   <TaskTab to="/employees" label={c.team} icon="accounts" activePaths={['/employees','/projects','/manager/timesheet']}/>
    <TaskTab to="/approvals" label={c.approvals} icon="check-circle" />
    <TaskTab to="/payroll-report" label={c.payroll} icon="wallet" activePaths={['/payroll-report','/manager/invoices']}/>
    <TaskTab to="/more" label={c.more} icon="profile" activePaths={['/more','/company-settings','/profile']}/>
