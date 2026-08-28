@@ -14,13 +14,12 @@
 .bottomTab.is-active { background:var(--accent-soft); }
 .bottomTab.is-active .bottomTab-icon,.bottomTab.is-active .bottomTab-label { color:var(--accent); }
 .bottomTab.is-active .bottomTab-icon svg { stroke-width:2.1; }
-.bottomTab-notificationIcon { position:relative; }
-.bottomTab-badge { position:absolute; right:-7px; top:-5px; display:flex; align-items:center; justify-content:center; min-width:17px; height:17px; padding:0 4px; border:2px solid #fff; border-radius:999px; color:#fff; background:#ef4444; font-size:9px; font-weight:800; line-height:1; }
-.bottomTab-primary { flex:1 1 0; transform:none; }
-.bottomTab-primary .bottomTab-icon { width:25px; height:25px; margin:0; border:0; border-radius:0; background:transparent; box-shadow:none; color:#7b8794; }
-.bottomTab-primary .bottomTab-icon svg { width:24px; height:24px; }
-.bottomTab-primary .bottomTab-label { font-size:9px; font-weight:700; color:#7b8794; }
-.bottomTab-primary.is-active .bottomTab-icon { color:var(--accent); background:transparent; box-shadow:none; }
+.bottomTab-primary { flex:1.08 1 0; overflow:visible; }
+.bottomTab-primary .bottomTab-icon { width:42px; height:42px; margin-top:-18px; margin-bottom:1px; border-radius:14px; background:var(--accent); color:#fff; box-shadow:0 8px 18px rgba(22,163,74,.24); }
+.bottomTab-primary .bottomTab-icon svg { width:23px; height:23px; stroke-width:2.1; }
+.bottomTab-primary .bottomTab-label { color:#475569; font-weight:800; }
+.bottomTab-primary.is-active { background:transparent; }
+.bottomTab-primary.is-active .bottomTab-icon { color:#fff; background:var(--accent); box-shadow:0 9px 22px rgba(22,163,74,.3); }
 .bottomTab-primary.is-active .bottomTab-label { color:var(--accent); }
 .bottomTab-desktopOnly { display:none; }
 
@@ -28,7 +27,7 @@
   .bottomTabs { top:20px; bottom:auto; left:20px; right:auto; width:236px; flex-direction:column; align-items:stretch; justify-content:flex-start; gap:4px; padding:14px 10px; border-radius:22px; background:rgba(255,255,255,.94); box-shadow:0 10px 34px rgba(15,23,42,.055); }
   .bottomTab,.bottomTab-primary { flex:0 0 auto; transform:none; display:grid; grid-template-columns:32px minmax(0,1fr); justify-items:start; align-items:center; gap:11px; min-height:46px; padding:7px 10px; border-radius:13px; }
   .bottomTab-desktopOnly { display:grid; }
-  .bottomTab-icon,.bottomTab-primary .bottomTab-icon { width:32px; height:32px; margin:0; border-radius:10px; background:transparent; border:0; box-shadow:none; }
+  .bottomTab-icon,.bottomTab-primary .bottomTab-icon { width:32px; height:32px; margin:0; border-radius:10px; background:transparent; border:0; box-shadow:none; color:#7b8794; }
   .bottomTab-icon svg,.bottomTab-primary .bottomTab-icon svg { width:20px; height:20px; }
   .bottomTab-label,.bottomTab-primary .bottomTab-label { min-width:0; font-size:13px; font-weight:700; line-height:1.15; color:#64748b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .bottomTab.is-active { background:var(--accent-soft); box-shadow:none; }
@@ -39,7 +38,8 @@
 @media (max-width:480px) {
   .bottomTabs { left:8px; right:8px; bottom:10px; padding:4px; border-radius:20px; }
   .bottomTab { min-height:50px; padding:4px 1px; border-radius:14px; }
-  .bottomTab-icon,.bottomTab-primary .bottomTab-icon { width:24px; height:24px; }
-  .bottomTab-icon svg,.bottomTab-primary .bottomTab-icon svg { width:23px; height:23px; }
-  .bottomTab-label,.bottomTab-primary .bottomTab-label { font-size:9px; }
+  .bottomTab-icon { width:24px; height:24px; }
+  .bottomTab-icon svg { width:23px; height:23px; }
+  .bottomTab-label { font-size:9px; }
+  .bottomTab-primary .bottomTab-icon { width:40px; height:40px; margin-top:-17px; }
 }
