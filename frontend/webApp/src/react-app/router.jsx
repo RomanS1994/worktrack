@@ -21,6 +21,7 @@ import { ManagerTimesheetPage } from './pages/ManagerTimesheetPage/ManagerTimesh
 import { MoreHubPage } from './pages/MoreHubPage/MoreHubPage.jsx';
 import { NotificationsPage } from './pages/NotificationsPage/NotificationsPage.jsx';
 import { PayrollReportPage } from './pages/PayrollReportPage/PayrollReportPage.jsx';
+import './pages/PayrollReportPage/ManagerPayrollMobile.css';
 import { ProfilePage } from './pages/ProfilePage/ProfilePage.jsx';
 import { ProjectsPage } from './pages/ProjectsPage/ProjectsPage.jsx';
 import { SignInPage } from './pages/SignInPage/SignInPage.jsx';
