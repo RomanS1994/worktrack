@@ -61,10 +61,15 @@ export const router = createBrowserRouter([
         children: [
           { path: 'employees', element: <EmployeesPage /> },
           { path: 'projects', element: <ProjectsPage /> },
-          { path: 'manager/timesheet', element: <ManagerTimesheetPage /> },
         ],
       },
-      { path: 'approvals', element: <ProtectedRoute requireManager><ApprovalsPage /></ProtectedRoute> },
+      {
+        element: <ProtectedRoute requireManager><SectionShell section="time" /></ProtectedRoute>,
+        children: [
+          { path: 'manager/timesheet', element: <ManagerTimesheetPage /> },
+          { path: 'approvals', element: <ApprovalsPage /> },
+        ],
+      },
       { path: 'company-settings', element: <ProtectedRoute requireManager><CompanySettingsPage /></ProtectedRoute> },
       { path: 'more', element: <ProtectedRoute requireManager><MoreHubPage /></ProtectedRoute> },
       { path: 'notifications', element: <ProtectedRoute><NotificationsPage /></ProtectedRoute> },
