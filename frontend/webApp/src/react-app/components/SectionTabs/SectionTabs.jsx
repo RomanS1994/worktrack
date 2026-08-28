@@ -43,7 +43,7 @@ export function SectionTabs({section}){
  const isManager=hasManagerAccess(user);
  const configKey=section==='finance'?(isManager?'managerFinance':'employeeFinance'):section==='time'&&isManager?'managerTime':section;
  const tabs=CONFIG[configKey]?.(c)||[];
- return <nav className="sectionTabs" aria-label={c[section]||section}>
+ return <nav className={`sectionTabs sectionTabs--${configKey}`} aria-label={c[section]||section}>
   {tabs.map(tab=><NavLink key={tab.to} to={tab.to} end={tab.end} className={({isActive})=>`sectionTabs-item${isActive?' is-active':''}`}>{tab.label}</NavLink>)}
  </nav>;
 }
