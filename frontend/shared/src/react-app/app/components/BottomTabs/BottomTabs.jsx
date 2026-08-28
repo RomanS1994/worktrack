@@ -8,7 +8,7 @@ import './BottomTabs.css';
 
 const COPY={
  uk:{home:'Головна',time:'Години',payroll:'Зарплата',profile:'Профіль',team:'Команда',approvals:'Погодження',more:'Налаштування'},
- cs:{home:'Domů',time:'Hodiny',payroll:'Mzda',profile:'Profil',team:'Tým',approvals:'Schválení',more:'Nastavení'},
+ cs:{home:'Domů',time:'Hodини',payroll:'Mzda',profile:'Profil',team:'Tým',approvals:'Schválení',more:'Nastavení'},
  en:{home:'Home',time:'Hours',payroll:'Payroll',profile:'Profile',team:'Team',approvals:'Approvals',more:'Settings'}
 };
 
@@ -36,7 +36,7 @@ export function BottomTabs(){
    <TaskTab to="/employees" label={c.team} icon="accounts" activePaths={['/employees','/projects']}/>
    <TaskTab to="/manager/timesheet" label={c.time} icon="clock" primary activePaths={['/manager/timesheet','/approvals']}/>
    <TaskTab to="/payroll-report" label={c.payroll} icon="wallet" activePaths={['/payroll-report','/manager/invoices']}/>
-   <TaskTab to="/more" label={c.more} icon="profile" activePaths={['/more','/company-settings','/profile']}/>
+   <TaskTab to="/more" label={c.more} icon="settings" activePaths={['/more','/company-settings','/profile']}/>
   </>}
  </nav>;
 }
