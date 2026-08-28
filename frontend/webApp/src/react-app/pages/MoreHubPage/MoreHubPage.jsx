@@ -18,13 +18,13 @@ export function MoreHubPage(){
  return <section className="moreHub pageStack">
   <header className="moreHubHeader appTop"><div className="appTitleBlock"><h1>{c.title}</h1><p>{c.copy}</p></div></header>
   <section className="moreHubMenu screenCard">
-   <SettingsLink to="/company-settings?section=identity" icon="building" title={c.company} copy={c.companyCopy}/>
+   <SettingsLink to="/company-settings?section=identity" icon="location" title={c.company} copy={c.companyCopy}/>
    <SettingsLink to="/company-settings?section=work" icon="clock" title={c.work} copy={c.workCopy}/>
    <SettingsLink to="/company-settings?section=billing" icon="file" title={c.billing} copy={c.billingCopy}/>
   </section>
   <section className="moreHubMenu screenCard">
    <SettingsLink to="/profile" icon="profile" title={c.profile} copy={c.profileCopy}/>
-   <SettingsLink to="/profile?section=language" icon="globe" title={c.language} copy={c.languageCopy}/>
+   <SettingsLink to="/profile?section=language" icon="monitor" title={c.language} copy={c.languageCopy}/>
   </section>
  </section>;
 }
