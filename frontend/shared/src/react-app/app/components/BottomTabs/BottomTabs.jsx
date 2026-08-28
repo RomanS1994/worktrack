@@ -7,15 +7,15 @@ import { hasManagerAccess } from '../../../features/auth/authAccess.js';
 import './BottomTabs.css';
 
 const COPY={
- uk:{home:'Головна',time:'Час',payroll:'Зарплата',profile:'Профіль',team:'Команда',approvals:'Погодження',more:'Ще'},
- cs:{home:'Domů',time:'Čas',payroll:'Mzda',profile:'Profil',team:'Tým',approvals:'Schválení',more:'Více'},
- en:{home:'Home',time:'Time',payroll:'Payroll',profile:'Profile',team:'Team',approvals:'Approvals',more:'More'}
+ uk:{home:'Головна',time:'Години',payroll:'Зарплата',profile:'Профіль',team:'Команда',approvals:'Погодження',more:'Ще'},
+ cs:{home:'Domů',time:'Hodiny',payroll:'Mzda',profile:'Profil',team:'Tým',approvals:'Schválení',more:'Více'},
+ en:{home:'Home',time:'Hours',payroll:'Payroll',profile:'Profile',team:'Team',approvals:'Approvals',more:'More'}
 };
 
-function TaskTab({to,label,icon,activePaths=[]}){
+function TaskTab({to,label,icon,activePaths=[],primary=false}){
  const {pathname}=useLocation();
  const active=pathname===to||activePaths.some(path=>pathname===path||pathname.startsWith(`${path}/`));
- return <Link className={`bottomTab${active?' is-active':''}`} to={to}>
+ return <Link className={`bottomTab${primary?' bottomTab-primary':''}${active?' is-active':''}`} to={to}>
   <span className="bottomTab-icon" aria-hidden="true"><SvgIcon name={icon}/></span>
   <span className="bottomTab-label">{label}</span>
  </Link>;
@@ -33,8 +33,8 @@ export function BottomTabs(){
    <TaskTab to="/payroll-report" label={c.payroll} icon="wallet" activePaths={['/payroll-report','/invoices','/tax-information']}/>
    <TaskTab to="/profile" label={c.profile} icon="profile" />
   </>:<>
-   <TaskTab to="/employees" label={c.team} icon="accounts" activePaths={['/employees','/projects','/manager/timesheet']}/>
-   <TaskTab to="/approvals" label={c.approvals} icon="check-circle" />
+   <TaskTab to="/employees" label={c.team} icon="accounts" activePaths={['/employees','/projects']}/>
+   <TaskTab to="/manager/timesheet" label={c.time} icon="clock" primary activePaths={['/manager/timesheet','/approvals']}/>
    <TaskTab to="/payroll-report" label={c.payroll} icon="wallet" activePaths={['/payroll-report','/manager/invoices']}/>
    <TaskTab to="/more" label={c.more} icon="profile" activePaths={['/more','/company-settings','/profile']}/>
   </>}
