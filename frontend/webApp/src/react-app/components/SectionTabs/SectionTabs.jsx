@@ -6,9 +6,9 @@ import { hasManagerAccess } from '@shared/features/auth/authAccess.js';
 import './SectionTabs.css';
 
 const COPY={
- uk:{time:'Години',week:'Тиждень',calendar:'Календар',history:'Історія',team:'Команда',employees:'Працівники',projects:'Об’єкти',timesheet:'Табель',approvals:'Погодження',finance:'Зарплата',overview:'Звіт',invoices:'Фактури',details:'Реквізити'},
- cs:{time:'Hodiny',week:'Týden',calendar:'Kalendář',history:'Historie',team:'Tým',employees:'Zaměstnanci',projects:'Objekty',timesheet:'Výkaz',approvals:'Schválení',finance:'Mzda',overview:'Přehled',invoices:'Faktury',details:'Údaje'},
- en:{time:'Hours',week:'Week',calendar:'Calendar',history:'History',team:'Team',employees:'Employees',projects:'Projects',timesheet:'Timesheet',approvals:'Approvals',finance:'Payroll',overview:'Report',invoices:'Invoices',details:'Billing details'}
+ uk:{time:'Години',week:'Тиждень',calendar:'Календар',history:'Історія',team:'Команда',employees:'Працівники',projects:'Об’єкти',timesheet:'Табель',approvals:'Погодження',finance:'Зарплата',overview:'Звіт',payrollReport:'Звіт по зарплаті',invoices:'Фактури',details:'Реквізити'},
+ cs:{time:'Hodiny',week:'Týden',calendar:'Kalendář',history:'Historie',team:'Tým',employees:'Zaměstnanci',projects:'Objekty',timesheet:'Výkaz',approvals:'Schválení',finance:'Mzda',overview:'Přehled',payrollReport:'Mzdový report',invoices:'Faktury',details:'Údaje'},
+ en:{time:'Hours',week:'Week',calendar:'Calendar',history:'History',team:'Team',employees:'Employees',projects:'Projects',timesheet:'Timesheet',approvals:'Approvals',finance:'Payroll',overview:'Report',payrollReport:'Payroll report',invoices:'Invoices',details:'Billing details'}
 };
 
 const CONFIG={
@@ -31,7 +31,7 @@ const CONFIG={
   {to:'/tax-information',label:c.details},
  ],
  managerFinance:c=>[
-  {to:'/payroll-report',label:c.overview,end:true},
+  {to:'/payroll-report',label:c.payrollReport,end:true},
   {to:'/manager/invoices',label:c.invoices},
  ],
 };
@@ -43,7 +43,7 @@ export function SectionTabs({section}){
  const isManager=hasManagerAccess(user);
  const configKey=section==='finance'?(isManager?'managerFinance':'employeeFinance'):section==='time'&&isManager?'managerTime':section;
  const tabs=CONFIG[configKey]?.(c)||[];
- return <nav className={`sectionTabs sectionTabs--${configKey}`} aria-label={c[section]||section}>
+ return <nav className={`sectionTabs sectionTabs-${configKey}`} aria-label={c[section]||section}>
   {tabs.map(tab=><NavLink key={tab.to} to={tab.to} end={tab.end} className={({isActive})=>`sectionTabs-item${isActive?' is-active':''}`}>{tab.label}</NavLink>)}
  </nav>;
 }
