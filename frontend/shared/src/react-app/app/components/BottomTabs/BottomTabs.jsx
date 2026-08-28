@@ -8,7 +8,7 @@ import './BottomTabs.css';
 
 const COPY={
  uk:{home:'Головна',time:'Години',payroll:'Зарплата',profile:'Профіль',team:'Команда',approvals:'Погодження',more:'Налаштування'},
- cs:{home:'Domů',time:'Hodини',payroll:'Mzda',profile:'Profil',team:'Tým',approvals:'Schválení',more:'Nastavení'},
+ cs:{home:'Domů',time:'Hodiny',payroll:'Mzda',profile:'Profil',team:'Tým',approvals:'Schválení',more:'Nastavení'},
  en:{home:'Home',time:'Hours',payroll:'Payroll',profile:'Profile',team:'Team',approvals:'Approvals',more:'Settings'}
 };
 
