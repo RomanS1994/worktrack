@@ -135,10 +135,6 @@ export function ManagerTimesheetPage() {
   const selectedReasons = selected?.day?.reasons || [];
 
   return <section className="managerTimesheetPage pageStack">
-    <header className="managerTimesheetHeader appTop">
-      <h1>Табель</h1>
-    </header>
-
     <section className="managerTimesheetToolbar screenCard">
       <button type="button" onClick={() => changeMonth(-1)} aria-label="Попередній місяць">‹</button>
       <strong>{label}</strong>
