@@ -183,6 +183,28 @@ export async function handleExpenseRoutes(request, response, { pathName, url }) 
     return true;
   }
 
+  if (request.method === 'PATCH' && receiptMatch) {
+    const context = await requireManager(request, response); if (!context) return true;
+    const body = await readJsonBody(request);
+    const receipt = parseReceipt(body?.receipt);
+    if (!receipt.receiptData) throw new Error('Receipt is required');
+
+    const expense = await runStoreTransaction({ prisma: async client => {
+      const existing = await client.companyExpense.findFirst({
+        where: { id: receiptMatch[1], companyId: context.activeMembership.companyId },
+        select: { id: true },
+      });
+      if (!existing) throw new Error('Expense not found');
+      return client.companyExpense.update({
+        where: { id: existing.id },
+        data: receipt,
+        select: expenseListSelect,
+      });
+    } });
+    sendJson(response, 200, { expense: serialize(expense) });
+    return true;
+  }
+
   const match = pathName.match(/^\/api\/manager\/expenses\/([^/]+)$/);
   if (request.method === 'DELETE' && match) {
     const context = await requireManager(request, response); if (!context) return true;
