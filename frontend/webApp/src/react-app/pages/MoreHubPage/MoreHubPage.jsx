@@ -117,13 +117,13 @@ export function MoreHubPage() {
       </SettingsGroup>
 
       <SettingsGroup title={c.accountGroup}>
-        <SettingsRow to="/profile?section=personal" icon="profile" title={c.personal} copy={c.personalCopy} />
-        <SettingsRow to="/profile?section=work" icon="briefcase" title={c.workInfo} copy={c.workInfoCopy} />
+        <SettingsRow to="/profile?section=personal" icon="user" title={c.personal} copy={c.personalCopy} />
+        <SettingsRow to="/profile?section=work" icon="wallet" title={c.workInfo} copy={c.workInfoCopy} />
         <SettingsRow to="/profile?section=language" icon="monitor" title={c.language} copy={c.languageCopy} />
       </SettingsGroup>
 
       <SettingsGroup title={c.securityGroup}>
-        <SettingsRow to="/profile?section=password" icon="lock" title={c.security} copy={c.securityCopy} />
+        <SettingsRow to="/profile?section=password" icon="settings" title={c.security} copy={c.securityCopy} />
       </SettingsGroup>
     </section>
   );
