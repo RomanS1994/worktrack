@@ -16,6 +16,7 @@ import { HomePage } from './pages/HomePage/HomePage.jsx';
 import { HoursTablePage } from './pages/HoursTablePage/HoursTablePage.jsx';
 import { InvoiceDocumentPage } from './pages/InvoiceDocumentPage/InvoiceDocumentPage.jsx';
 import { InvoicesPage } from './pages/InvoicesPage/InvoicesPage.jsx';
+import { ManagerAdvanceCreatePage } from './pages/ManagerAdvancesPage/ManagerAdvanceCreatePage.jsx';
 import { ManagerAdvancesPage } from './pages/ManagerAdvancesPage/ManagerAdvancesPage.jsx';
 import { ManagerInvoicesPage } from './pages/ManagerInvoicesPage/ManagerInvoicesPage.jsx';
 import { ManagerTimesheetPage } from './pages/ManagerTimesheetPage/ManagerTimesheetPage.jsx';
@@ -57,6 +58,7 @@ export const router = createBrowserRouter([
           { path: 'manager/invoices', element: <ProtectedRoute requireManager><ManagerInvoicesPage /></ProtectedRoute> },
         ],
       },
+      { path: 'manager/advances/new', element: <ProtectedRoute requireManager><ManagerAdvanceCreatePage /></ProtectedRoute> },
       { path: 'invoices/:invoiceId', element: <ProtectedRoute requireEmployee><InvoiceDocumentPage /></ProtectedRoute> },
       { path: 'manager/invoices/:invoiceId', element: <ProtectedRoute requireManager><InvoiceDocumentPage managerMode /></ProtectedRoute> },
       {
