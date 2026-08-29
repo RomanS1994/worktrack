@@ -15,6 +15,7 @@
     "create:manager": "node backend/tools/create-manager.js",
     "create:employee": "node backend/tools/create-employee.js",
     "import:timesheet": "node backend/tools/import-month-timesheet.js",
+    "import:manager-timesheet": "node backend/tools/import-manager-timesheet.js",
     "prepare": "node tools/install-git-hooks.js",
     "postinstall": "node backend/tools/prisma-postinstall.js",
     "secrets:check": "node tools/check-secrets.js",
@@ -43,7 +44,7 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-mobile-picker": "^1.2.0",
-    "react-redux": "^9.2.0",
+    "react-redux": "^2.11.2",
     "react-router-dom": "7.18.2",
     "vite-plugin-full-reload": "^1.2.0",
     "vite-plugin-html-inject": "^1.1.2"
