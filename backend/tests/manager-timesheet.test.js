@@ -39,7 +39,15 @@ function readClient({ workEntries = [], managerEntries = [], breakMinutes = 0, e
         return true;
       }),
     },
-    workEntry: { findMany: async () => workEntries },
+    workEntry: {
+      findMany: async ({ where } = {}) => workEntries.filter(item => {
+        if (where?.companyId && item.companyId && item.companyId !== where.companyId) return false;
+        if (where?.status?.in && !where.status.in.includes(item.status)) return false;
+        if (where?.workDate?.gte && item.workDate < where.workDate.gte) return false;
+        if (where?.workDate?.lt && item.workDate >= where.workDate.lt) return false;
+        return true;
+      }),
+    },
     project: {
       findMany: async () => [
         { id: 'project-a', name: 'Praha 5' },
@@ -54,6 +62,7 @@ function readClient({ workEntries = [], managerEntries = [], breakMinutes = 0, e
 function workEntry(overrides = {}) {
   return {
     id: 'work-1',
+    companyId: 'company-1',
     employeeMembershipId: 'employee-1',
     workDate: new Date('2026-08-10T00:00:00.000Z'),
     hours: '8.00',
@@ -61,6 +70,7 @@ function workEntry(overrides = {}) {
     breakMinutes: 0,
     projectId: 'project-a',
     project: { name: 'Praha 5' },
+    status: 'SUBMITTED',
     ...overrides,
   };
 }
@@ -95,6 +105,40 @@ test('manager timesheet compares against net hours after lunch deduction', async
   assert.deepEqual(day.reasons, []);
   assert.equal(payload.summary.matched, 1);
   assert.equal(payload.summary.problems, 0);
+});
+
+test('manager timesheet ignores draft entries when comparing submitted worker hours', async () => {
+  const payload = await getManagerTimesheet(
+    readClient({
+      workEntries: [
+        workEntry({
+          id: 'submitted-entry',
+          hours: '11.00',
+          grossHours: '11.00',
+          breakMinutes: 30,
+          status: 'SUBMITTED',
+        }),
+        workEntry({
+          id: 'draft-entry',
+          projectId: 'project-b',
+          project: { name: 'Brno' },
+          hours: '0.24',
+          grossHours: '0.24',
+          breakMinutes: 0,
+          status: 'DRAFT',
+        }),
+      ],
+      managerEntries: [managerEntry({ hours: '10.50', breakMinutes: 30 })],
+    }),
+    context(),
+    { month: '2026-08' }
+  );
+
+  const day = payload.rows[0].days[9];
+  assert.equal(day.employeeHours, 10.5);
+  assert.equal(day.managerHours, 10.5);
+  assert.equal(day.status, 'MATCH');
+  assert.deepEqual(day.reasons, []);
 });
 
 test('manager timesheet pinpoints a half-hour mismatch', async () => {
