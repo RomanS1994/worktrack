@@ -6,4 +6,8 @@
  .payrollReportPage:has(.payrollReport-toolbar) .payrollReport-row{min-height:34px!important;padding:5px 0!important}
  .payrollReportPage:has(.payrollReport-toolbar) .payrollReport-row.is-emphasized{margin-top:4px!important;padding:9px 10px!important}
  .payrollReportPage:has(.payrollReport-toolbar) .payrollReport-employeeSection{margin-top:12px!important}
+ .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodNavigation{display:grid!important;grid-template-columns:42px minmax(0,1fr) 42px!important;align-items:center!important;gap:9px!important;width:100%!important}
+ .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodNavigation button{width:42px!important;min-width:42px!important;min-height:42px!important;padding:0!important;border-radius:12px!important}
+ .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodDate{width:100%!important;min-width:0!important;margin:0!important}
+ .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodDate input{display:block!important;width:100%!important;min-width:0!important;min-height:42px!important;padding:0 10px!important;text-align:center!important;border-radius:12px!important}
 }
