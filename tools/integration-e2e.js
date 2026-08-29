@@ -47,10 +47,18 @@ async function main() {
   const projectResponse = await request('/projects', {
     method: 'POST',
     token: managerToken,
-    body: { name: 'Integration Project', address: 'Praha' },
+    body: { name: 'Integration Project A', address: 'Praha' },
   });
   const projectId = projectResponse.project?.id;
   assert.ok(projectId);
+
+  const secondProjectResponse = await request('/projects', {
+    method: 'POST',
+    token: managerToken,
+    body: { name: 'Integration Project B', address: 'Brno' },
+  });
+  const secondProjectId = secondProjectResponse.project?.id;
+  assert.ok(secondProjectId);
 
   const employeeResponse = await request('/manager/employees', {
     method: 'POST',
@@ -64,6 +72,8 @@ async function main() {
     },
   });
   assert.equal(employeeResponse.employee?.status, 'ACTIVE');
+  const employeeId = employeeResponse.employee?.id;
+  assert.ok(employeeId);
 
   const employeeLogin = await request('/auth/login', {
     method: 'POST',
@@ -73,19 +83,50 @@ async function main() {
   const employeeToken = employeeLogin.token;
   assert.ok(employeeToken);
 
+  const workRules = await request('/work-rules', {
+    method: 'PATCH',
+    token: managerToken,
+    body: { breakMinutes: 60, standardDailyHours: 8 },
+  });
+  assert.equal(Number(workRules.workRules?.breakMinutes), 60);
+  assert.equal(Number(workRules.workRules?.standardDailyHours), 8);
+
   const now = new Date();
   const day = now.getUTCDay();
   const mondayOffset = day === 0 ? -6 : 1 - day;
   const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + mondayOffset));
+  const tuesday = new Date(monday.getTime() + 86400000);
   const weekStart = monday.toISOString().slice(0, 10);
+  const secondWorkDate = tuesday.toISOString().slice(0, 10);
   const invoiceMonth = weekStart.slice(0, 7);
 
-  const entryResponse = await request('/work-entries', {
+  const firstEntryResponse = await request('/work-entries', {
     method: 'POST',
     token: employeeToken,
-    body: { projectId, workDate: weekStart, hours: '8' },
+    body: { projectId, workDate: weekStart, hours: '4' },
   });
-  assert.equal(entryResponse.entry?.status, 'DRAFT');
+  assert.equal(firstEntryResponse.entry?.status, 'DRAFT');
+
+  const secondEntryResponse = await request('/work-entries', {
+    method: 'POST',
+    token: employeeToken,
+    body: { projectId: secondProjectId, workDate: weekStart, hours: '5' },
+  });
+  assert.equal(secondEntryResponse.entry?.status, 'DRAFT');
+
+  const updatedEmployee = await request(`/manager/employees/${employeeId}`, {
+    method: 'PATCH',
+    token: managerToken,
+    body: { hourlyRateCzk: '300.00' },
+  });
+  assert.equal(Number(updatedEmployee.employee?.hourlyRateCzk), 300);
+
+  const thirdEntryResponse = await request('/work-entries', {
+    method: 'POST',
+    token: employeeToken,
+    body: { projectId, workDate: secondWorkDate, hours: '8' },
+  });
+  assert.equal(thirdEntryResponse.entry?.status, 'DRAFT');
 
   const submitted = await request('/weekly-submissions', {
     method: 'POST',
@@ -97,7 +138,10 @@ async function main() {
   assert.ok(submissionId);
 
   const queue = await request('/manager/submissions?status=SUBMITTED', { token: managerToken });
-  assert.ok(queue.submissions?.some(item => item.id === submissionId));
+  const queuedSubmission = queue.submissions?.find(item => item.id === submissionId);
+  assert.ok(queuedSubmission);
+  assert.equal(queuedSubmission.summary?.totalHours, '15.00');
+  assert.equal(queuedSubmission.summary?.predictedSalaryCzk, '4100.00');
 
   const approved = await request(`/manager/submissions/${submissionId}/approve`, {
     method: 'POST',
@@ -107,9 +151,19 @@ async function main() {
 
   const week = await request(`/work-entries?weekStart=${weekStart}`, { token: employeeToken });
   assert.equal(week.submission?.status, 'APPROVED');
-  assert.equal(week.entries?.[0]?.status, 'APPROVED');
-  assert.equal(week.summary?.approvedHours, '8.00');
-  assert.equal(week.summary?.confirmedSalaryCzk, '2000.00');
+  assert.equal(week.entries?.length, 3);
+  assert.ok(week.entries?.every(entry => entry.status === 'APPROVED'));
+  assert.equal(week.summary?.approvedHours, '15.00');
+  assert.equal(week.summary?.confirmedSalaryCzk, '4100.00');
+
+  const managerPayroll = await request(`/manager/payroll?period=week&anchor=${weekStart}`, { token: managerToken });
+  const payrollEmployee = managerPayroll.employees?.find(item => item.id === employeeId);
+  assert.ok(payrollEmployee);
+  assert.equal(payrollEmployee.summary?.approvedHours, '15.00');
+  assert.equal(payrollEmployee.summary?.confirmedSalaryCzk, '4100.00');
+  assert.equal(payrollEmployee.mixedRates, true);
+  assert.equal(payrollEmployee.effectiveRateCzk, '273.33');
+  assert.equal(managerPayroll.summary?.confirmedSalaryCzk, '4100.00');
 
   const originalCompanyAddress = 'Integration Company, Praha 1, Czechia';
   const originalSellerAddress = 'Integration Employee, Praha 2, Czechia';
@@ -143,8 +197,9 @@ async function main() {
   assert.equal(employeeTax.taxInformation?.currency, 'CZK');
 
   const preview = await request(`/invoices/preview?month=${invoiceMonth}`, { token: employeeToken });
-  assert.equal(preview.preview?.totalHours, '8.00');
-  assert.equal(preview.preview?.subtotal, '2000.00');
+  assert.equal(preview.preview?.totalHours, '15.00');
+  assert.equal(preview.preview?.subtotal, '4100.00');
+  assert.equal(preview.preview?.hourlyRate, '273.33');
   assert.equal(preview.preview?.currency, 'CZK');
   assert.ok(preview.preview?.paymentDescriptor?.startsWith('SPD*1.0*'));
 
@@ -154,8 +209,13 @@ async function main() {
     body: { month: invoiceMonth },
   });
   assert.equal(createdInvoice.invoice?.status, 'DRAFT');
-  assert.equal(createdInvoice.invoice?.totalHours, '8.00');
-  assert.equal(createdInvoice.invoice?.subtotal, '2000.00');
+  assert.equal(createdInvoice.invoice?.totalHours, '15.00');
+  assert.equal(createdInvoice.invoice?.subtotal, '4100.00');
+  assert.equal(createdInvoice.invoice?.hourlyRate, '273.33');
+  assert.deepEqual(
+    [...new Set((createdInvoice.invoice?.items || []).map(item => item.hourlyRate))].sort(),
+    ['250.00', '300.00'],
+  );
   const invoiceId = createdInvoice.invoice?.id;
   assert.ok(invoiceId);
 
@@ -163,7 +223,7 @@ async function main() {
   assert.equal(draftDetail.invoice?.id, invoiceId);
   assert.equal(draftDetail.invoice?.seller?.address, originalSellerAddress);
   assert.equal(draftDetail.invoice?.buyer?.address, originalCompanyAddress);
-  assert.equal(draftDetail.invoice?.hourlyRate, '250.00');
+  assert.equal(draftDetail.invoice?.hourlyRate, '273.33');
 
   const sentInvoice = await request(`/invoices/${invoiceId}/send`, {
     method: 'POST',
@@ -206,7 +266,7 @@ async function main() {
   assert.equal(immutableEmployeeDetail.invoice?.seller?.iban, originalSellerIban);
   assert.equal(immutableEmployeeDetail.invoice?.buyer?.address, originalCompanyAddress);
   assert.equal(immutableEmployeeDetail.invoice?.buyer?.ico, '12345678');
-  assert.equal(immutableEmployeeDetail.invoice?.hourlyRate, '250.00');
+  assert.equal(immutableEmployeeDetail.invoice?.hourlyRate, '273.33');
   assert.ok(immutableEmployeeDetail.invoice?.paymentDescriptor?.includes(`ACC:${originalSellerIban}`));
 
   const immutableManagerDetail = await request(`/manager/invoices/${invoiceId}`, { token: managerToken });
@@ -215,7 +275,7 @@ async function main() {
 
   const managerInvoices = await request('/manager/invoices', { token: managerToken });
   assert.ok(managerInvoices.invoices?.some(item => item.id === invoiceId));
-  assert.equal(managerInvoices.summary?.openAmount, '2000.00');
+  assert.equal(managerInvoices.summary?.openAmount, '4100.00');
   assert.equal(managerInvoices.summary?.openCount, 1);
 
   const viewedInvoice = await request(`/manager/invoices/${invoiceId}/viewed`, {
@@ -239,7 +299,7 @@ async function main() {
   assert.equal(finalInvoice?.status, 'PAID');
   assert.equal(finalInvoice?.paidAt?.slice(0, 10), paymentDate);
   assert.equal(employeeInvoices.summary?.openAmount, '0.00');
-  assert.equal(employeeInvoices.summary?.paidAmount, '2000.00');
+  assert.equal(employeeInvoices.summary?.paidAmount, '4100.00');
   assert.equal(employeeInvoices.summary?.paidCount, 1);
 
   const history = await request(`/invoices/${invoiceId}/history`, { token: employeeToken });
@@ -247,7 +307,7 @@ async function main() {
   assert.deepEqual(actions, ['invoice.created', 'invoice.sent', 'invoice.viewed', 'invoice.paid']);
   assert.equal(history.history?.at(-1)?.after?.paidAt?.slice(0, 10), paymentDate);
 
-  console.log('Integration E2E passed: register -> employee -> hours -> approve -> immutable invoice snapshot -> send -> viewed -> paid with explicit date');
+  console.log('Integration E2E passed: lunch deduction + rate snapshots -> approve -> payroll -> immutable mixed-rate invoice -> viewed -> paid');
 }
 
 main().catch(error => {
