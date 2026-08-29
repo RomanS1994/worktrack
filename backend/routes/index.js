@@ -1,3 +1,4 @@
+import { handleAdvanceRoutes } from './advances.js';
 import { handleAuthRoutes } from './auth/index.js';
 import { handleBillingRoutes } from './billing.js';
 import { handleDefaultProjectRoutes } from './default-project.js';
@@ -18,6 +19,7 @@ const routeHandlers = [
   handleDefaultProjectRoutes,
   handleWorkRulesRoutes,
   handleMonthlyHoursRoutes,
+  handleAdvanceRoutes,
   handleWorkTrackRoutes,
   handleManagerRoutes,
 ];
