@@ -32,6 +32,7 @@ const STATUS_BY_MESSAGE = new Map([
   ['Project is required', 400],
   ['Project name is required', 400],
   ['Project not found', 404],
+  ['Project has work history and cannot be deleted. Deactivate it instead.', 409],
   ['Invalid hourly rate', 400],
   ['Invalid membership status', 400],
   ['Employee already belongs to this company', 409],
