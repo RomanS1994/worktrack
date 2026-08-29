@@ -1,4 +1,4 @@
-import { calculateNetWorkSummary } from './work-time-calculation.js';
+import { calculateNetWorkEntries, calculateNetWorkSummary } from './work-time-calculation.js';
 
 function normalizeMonth(value) {
   const raw = String(value || '').trim();
@@ -36,19 +36,19 @@ export async function getEmployeeMonthlyHours(client, context, monthInput) {
     }),
   ]);
 
-  const rows = entries.map(entry => ({
-    id: entry.id,
-    date: entry.workDate.toISOString().slice(0, 10),
-    projectId: entry.projectId,
-    project: entry.project?.name || '',
-    hours: Number(entry.hours).toFixed(2),
-    status: entry.status,
-  }));
-
   const rules = {
     breakMinutes: Number(companyRules?.breakMinutes || 0),
     standardDailyHours: Number(companyRules?.standardDailyHours || 8),
   };
+  const normalizedEntries = calculateNetWorkEntries(entries, rules);
+  const rows = normalizedEntries.map(entry => ({
+    id: entry.id,
+    date: entry.workDate.toISOString().slice(0, 10),
+    projectId: entry.projectId,
+    project: entry.project?.name || '',
+    hours: entry.netHours,
+    status: entry.status,
+  }));
   const summary = calculateNetWorkSummary(entries, membership.hourlyRateCzk || 0, rules);
 
   return {

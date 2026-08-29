@@ -23,7 +23,7 @@ async function main(){
   await request('/company-billing',{method:'PATCH',token:managerToken,body:{ico:'12345678',dic:'CZ12345678',address:'Finance Company, Praha',email:managerEmail}});
   await request('/tax-information',{method:'PATCH',token:employeeToken,body:{businessName:'Finance Employee OSVC',ico:'87654321',dic:'',address:'Finance Employee, Praha',iban:'CZ6508000000192000145399',dueDays:14,prefix:'FT'}});
   const preview=await request(`/invoices/preview?month=${invoiceMonth}`,{token:employeeToken});assert.equal(preview.preview?.totalHours,'15.00');assert.equal(preview.preview?.subtotal,'4100.00');assert.equal(preview.preview?.hourlyRate,'273.33');
-  const created=await request('/invoices',{method:'POST',token:employeeToken,body:{month:invoiceMonth}});assert.equal(created.invoice?.totalHours,'15.00');assert.equal(created.invoice?.subtotal,'4100.00');assert.equal(created.invoice?.hourlyRate,'273.33');assert.deepEqual((created.invoice?.items||[]).map(item=>[item.hours,item.hourlyRate,item.amount]),[['4.00','250.00','1000.00'],['4.00','250.00','1000.00'],['7.00','300.00','2100.00']]);
-  console.log('Finance E2E passed: multi-project lunch + historical rate snapshots -> payroll -> invoice');
+  const created=await request('/invoices',{method:'POST',token:employeeToken,body:{month:invoiceMonth}});assert.equal(created.invoice?.totalHours,'15.00');assert.equal(created.invoice?.subtotal,'4100.00');assert.equal(created.invoice?.hourlyRate,'273.33');assert.deepEqual((created.invoice?.items||[]).map(item=>[item.hours,item.hourlyRate,item.amount]),[['3.56','250.00','890.00'],['4.44','250.00','1110.00'],['7.00','300.00','2100.00']]);
+  console.log('Finance E2E passed: proportional multi-project lunch + historical rate snapshots -> payroll -> invoice');
 }
 main().catch(error=>{console.error(error instanceof Error?error.stack||error.message:String(error));process.exit(1)});

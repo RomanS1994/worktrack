@@ -32,8 +32,27 @@ function format2(value) {
 function dailyBreakHours(dayEntries, fallbackBreakMinutes) {
   const hasSnapshot = dayEntries.some(entry => entry?.breakMinutes !== undefined && entry?.breakMinutes !== null);
   if (!hasSnapshot) return Math.max(0, toNumber(fallbackBreakMinutes)) / 60;
-  const minutes = dayEntries.reduce((max, entry) => Math.max(max, Math.max(0, toNumber(entry.breakMinutes))), 0);
+  const minutes = dayEntries.reduce(
+    (max, entry) => Math.max(max, Math.max(0, toNumber(entry.breakMinutes))),
+    0
+  );
   return minutes / 60;
+}
+
+function distributeDayNetHours(dayEntries, netTotal, grossTotal) {
+  if (grossTotal <= 0 || netTotal <= 0) {
+    return dayEntries.map(entry => ({ ...entry, netHours: 0 }));
+  }
+
+  let assigned = 0;
+  return dayEntries.map((entry, index) => {
+    const gross = Math.max(0, sourceHours(entry));
+    const netHours = index === dayEntries.length - 1
+      ? Math.max(0, round2(netTotal - assigned))
+      : Math.max(0, round2((gross / grossTotal) * netTotal));
+    assigned = round2(assigned + netHours);
+    return { ...entry, netHours };
+  });
 }
 
 function applyDailyBreak(entries, breakMinutes) {
@@ -48,18 +67,9 @@ function applyDailyBreak(entries, breakMinutes) {
   const result = [];
   for (const dayEntries of byDay.values()) {
     const deductionHours = dailyBreakHours(dayEntries, breakMinutes);
-    const grossTotal = dayEntries.reduce((sum, entry) => sum + sourceHours(entry), 0);
-    const netTotal = Math.max(0, grossTotal - deductionHours);
-    let remaining = netTotal;
-
-    dayEntries.forEach((entry, index) => {
-      const gross = sourceHours(entry);
-      const netHours = index === dayEntries.length - 1
-        ? Math.max(0, remaining)
-        : Math.min(gross, Math.max(0, remaining));
-      remaining = round2(remaining - netHours);
-      result.push({ ...entry, netHours: round2(netHours) });
-    });
+    const grossTotal = dayEntries.reduce((sum, entry) => sum + Math.max(0, sourceHours(entry)), 0);
+    const netTotal = Math.max(0, round2(grossTotal - deductionHours));
+    result.push(...distributeDayNetHours(dayEntries, netTotal, grossTotal));
   }
 
   return result;
