@@ -130,7 +130,8 @@ model CompanyMembership {
   managerManagerTimesheetEntries    ManagerTimesheetEntry[] @relation("ManagerManagerTimesheetEntries")
   employeeSalaryAdvances            SalaryAdvance[]         @relation("EmployeeSalaryAdvances")
   managerSalaryAdvances             SalaryAdvance[]         @relation("ManagerSalaryAdvances")
-  companyExpenses                   CompanyExpense[]
+  employeeCompanyExpenses           CompanyExpense[]        @relation("EmployeeCompanyExpenses")
+  managerCompanyExpenses            CompanyExpense[]        @relation("ManagerCompanyExpenses")
 
   @@unique([companyId, userId])
   @@index([userId])
@@ -241,20 +242,23 @@ model SalaryAdvance {
 }
 
 model CompanyExpense {
-  id                  String   @id
-  companyId           String
-  managerMembershipId String
-  amountCzk           Decimal  @db.Decimal(12, 2)
-  spentAt             DateTime @db.Date
-  category            String
-  note                String?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                   String   @id
+  companyId            String
+  employeeMembershipId String?
+  managerMembershipId  String
+  amountCzk            Decimal  @db.Decimal(12, 2)
+  spentAt               DateTime @db.Date
+  category              String
+  note                  String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
-  company           Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  managerMembership CompanyMembership @relation(fields: [managerMembershipId], references: [id], onDelete: Cascade)
+  company            Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employeeMembership CompanyMembership? @relation("EmployeeCompanyExpenses", fields: [employeeMembershipId], references: [id], onDelete: SetNull)
+  managerMembership  CompanyMembership  @relation("ManagerCompanyExpenses", fields: [managerMembershipId], references: [id], onDelete: Cascade)
 
   @@index([companyId, spentAt])
+  @@index([employeeMembershipId])
   @@index([managerMembershipId])
   @@index([companyId, category])
   @@map("company_expenses")
