@@ -1,3 +1,5 @@
+import { useMemo, useState } from 'react';
+
 import { formatCzk, formatHours } from '../../app/formatters.js';
 
 function initials(name = '') {
@@ -8,6 +10,16 @@ function initials(name = '') {
     .slice(0, 2)
     .map(part => part[0]?.toUpperCase() || '')
     .join('') || '—';
+}
+
+function WalletIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4.5 7.5h13A2.5 2.5 0 0 1 20 10v7.5A2.5 2.5 0 0 1 17.5 20h-13A2.5 2.5 0 0 1 2 17.5v-11A2.5 2.5 0 0 1 4.5 4h11" />
+      <path d="M20 11.5h-4.25a2.25 2.25 0 0 0 0 4.5H20" />
+      <circle cx="15.75" cy="13.75" r=".65" />
+    </svg>
+  );
 }
 
 export function ManagerPayrollDashboard({
@@ -24,9 +36,21 @@ export function ManagerPayrollDashboard({
   summary,
   t,
 }) {
-  const confirmed = Number(summary.confirmedSalaryCzk || 0);
-  const expected = Number(summary.predictedSalaryCzk || 0);
-  const pending = Math.max(expected - confirmed, 0);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
+  const selectedEmployee = useMemo(
+    () => employees.find(employee => employee.id === selectedEmployeeId) || null,
+    [employees, selectedEmployeeId],
+  );
+  const visibleSummary = selectedEmployee?.summary || summary;
+  const confirmed = Number(visibleSummary?.confirmedSalaryCzk || 0);
+  const expected = Number(visibleSummary?.predictedSalaryCzk || 0);
+  const pending = selectedEmployee ? expected : Math.max(expected - confirmed, 0);
+  const approvedHours = visibleSummary?.approvedHours || 0;
+  const pendingHours = visibleSummary?.pendingHours || 0;
+
+  const toggleEmployee = employeeId => {
+    setSelectedEmployeeId(current => current === employeeId ? null : employeeId);
+  };
 
   return (
     <div className="managerPayrollMobile noPrint">
@@ -54,16 +78,18 @@ export function ManagerPayrollDashboard({
       </section>
 
       <section className="managerPayrollMobile-hero">
-        <div className="managerPayrollMobile-wallet" aria-hidden="true">▱</div>
-        <span className="managerPayrollMobile-eyebrow">{t('payroll.predictedPayroll')}</span>
+        <div className="managerPayrollMobile-wallet"><WalletIcon /></div>
+        <span className="managerPayrollMobile-eyebrow">
+          {selectedEmployee ? `${t('payroll.predictedPayroll')} · ${selectedEmployee.name}` : t('payroll.predictedPayroll')}
+        </span>
         <strong className="managerPayrollMobile-total">{formatCzk(expected, locale)}</strong>
         <div className="managerPayrollMobile-moneyGrid">
           <div><span>{t('payroll.confirmed')}</span><strong>{formatCzk(confirmed, locale)}</strong></div>
           <div><span>{t('payroll.pending')}</span><strong>{formatCzk(pending, locale)}</strong></div>
         </div>
         <div className="managerPayrollMobile-hours">
-          <span><i className="is-confirmed" /> <b>{formatHours(summary.approvedHours, locale)}</b> {t('payroll.confirmed').toLowerCase()}</span>
-          <span><i className="is-pending" /> <b>{formatHours(summary.pendingHours, locale)}</b> {t('payroll.pending').toLowerCase()}</span>
+          <span><i className="is-confirmed" /> <b>{formatHours(approvedHours, locale)}</b> {t('payroll.confirmed').toLowerCase()}</span>
+          <span><i className="is-pending" /> <b>{formatHours(pendingHours, locale)}</b> {t('payroll.pending').toLowerCase()}</span>
         </div>
       </section>
 
@@ -73,20 +99,29 @@ export function ManagerPayrollDashboard({
           <span>{employees.length} {t('payroll.employees').toLowerCase()}</span>
         </header>
         <div className="managerPayrollMobile-list">
-          {employees.map(employee => (
-            <article className="managerPayrollMobile-employee" key={employee.id}>
-              <div className="managerPayrollMobile-avatar" aria-hidden="true">{initials(employee.name)}</div>
-              <div className="managerPayrollMobile-person">
-                <strong>{employee.name}</strong>
-                <span>{employee.mixedRates ? '—' : `${formatCzk(employee.effectiveRateCzk ?? employee.hourlyRateCzk, locale)}/год`}</span>
-              </div>
-              <span className="managerPayrollMobile-chevron" aria-hidden="true">›</span>
-              <div className="managerPayrollMobile-employeeAmounts">
-                <div className="is-confirmed"><span>● {t('payroll.confirmed')}</span><strong>{formatCzk(employee.summary?.confirmedSalaryCzk, locale)}</strong></div>
-                <div className="is-pending"><span>◷ {t('payroll.pending')}</span><strong>{formatCzk(employee.summary?.predictedSalaryCzk, locale)}</strong></div>
-              </div>
-            </article>
-          ))}
+          {employees.map(employee => {
+            const isSelected = employee.id === selectedEmployeeId;
+            return (
+              <button
+                type="button"
+                className={`managerPayrollMobile-employee${isSelected ? ' is-selected' : ''}`}
+                key={employee.id}
+                onClick={() => toggleEmployee(employee.id)}
+                aria-pressed={isSelected}
+              >
+                <div className="managerPayrollMobile-avatar" aria-hidden="true">{initials(employee.name)}</div>
+                <div className="managerPayrollMobile-person">
+                  <strong>{employee.name}</strong>
+                  <span>{employee.mixedRates ? '—' : `${formatCzk(employee.effectiveRateCzk ?? employee.hourlyRateCzk, locale)}/год`}</span>
+                </div>
+                <span className="managerPayrollMobile-chevron" aria-hidden="true">{isSelected ? '⌃' : '›'}</span>
+                <div className="managerPayrollMobile-employeeAmounts">
+                  <div className="is-confirmed"><span>● {t('payroll.confirmed')}</span><strong>{formatCzk(employee.summary?.confirmedSalaryCzk, locale)}</strong></div>
+                  <div className="is-pending"><span>◷ {t('payroll.pending')}</span><strong>{formatCzk(employee.summary?.predictedSalaryCzk, locale)}</strong></div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </section>
     </div>
