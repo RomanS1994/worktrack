@@ -151,6 +151,23 @@ async function installApiMocks(page, role) {
       });
     }
 
+    if (method === 'GET' && path === '/work-rules') {
+      return json(route, {
+        workRules: {
+          standardDailyHours: '8.00',
+          breakMinutes: 30,
+        },
+      });
+    }
+
+    if (method === 'GET' && path === '/default-project') {
+      return json(route, { projectId: 'project-1' });
+    }
+
+    if (method === 'GET' && path === '/advances') {
+      return json(route, { advances: [] });
+    }
+
     if (method === 'GET' && path === '/work-entries') {
       return json(route, {
         week,
