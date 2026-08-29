@@ -7,7 +7,7 @@ function getActiveMembership(context) {
 function ensureManagerContext(context) {
   const membership = getActiveMembership(context);
 
-  if (!membership?.companyId || membership.status === 'INACTIVE') {
+  if (!membership?.companyId || membership.status === 'INACTIVE' || membership.deletedAt) {
     throw new Error('Company access is required');
   }
 
@@ -41,21 +41,21 @@ export async function deleteManagerEmployee(client, context, employeeMembershipI
     userId: employee.userId,
     role: employee.role,
     status: employee.status,
+    deletedAt: employee.deletedAt || null,
     hourlyRateCzk: employee.hourlyRateCzk == null ? '0.00' : String(employee.hourlyRateCzk),
     email: employee.user?.email || '',
     name: employee.user?.name || employee.user?.email || '',
   };
 
-  // Employee deletion is intentionally a soft delete. Work entries, submissions,
-  // invoices, salary advances and manager timesheet history all reference the
-  // membership with cascading relations, so physically deleting it would erase
-  // financial history. INACTIVE immediately revokes company access because auth
-  // only loads ACTIVE memberships.
-  const archived = employee.status === 'INACTIVE'
+  // Employee deletion is intentionally a membership soft delete. Work entries,
+  // submissions, invoices, salary advances and manager timesheet history all keep
+  // their original membership foreign key. Auth and Team queries exclude deletedAt.
+  const deletedAt = employee.deletedAt || new Date();
+  const archived = employee.deletedAt
     ? employee
     : await client.companyMembership.update({
         where: { id: employee.id },
-        data: { status: 'INACTIVE' },
+        data: { status: 'INACTIVE', deletedAt },
         include: { user: true },
       });
 
@@ -71,6 +71,7 @@ export async function deleteManagerEmployee(client, context, employeeMembershipI
       softDeleted: true,
       companyId: managerMembership.companyId,
       status: archived.status,
+      deletedAt: archived.deletedAt || deletedAt,
     },
   });
 
