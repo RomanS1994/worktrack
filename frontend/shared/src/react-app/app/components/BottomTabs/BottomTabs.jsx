@@ -7,9 +7,9 @@ import { hasManagerAccess } from '../../../features/auth/authAccess.js';
 import './BottomTabs.css';
 
 const COPY={
- uk:{home:'Головна',time:'Години',payroll:'Зарплата',profile:'Профіль',team:'Команда',approvals:'Погодження',more:'Налаштування'},
- cs:{home:'Domů',time:'Hodiny',payroll:'Mzda',profile:'Profil',team:'Tým',approvals:'Schválení',more:'Nastavení'},
- en:{home:'Home',time:'Hours',payroll:'Payroll',profile:'Profile',team:'Team',approvals:'Approvals',more:'Settings'}
+ uk:{home:'Головна',time:'Години',payroll:'Фінанси',profile:'Профіль',team:'Команда',approvals:'Погодження',more:'Налаштування'},
+ cs:{home:'Domů',time:'Hodiny',payroll:'Finance',profile:'Profil',team:'Tým',approvals:'Schválení',more:'Nastavení'},
+ en:{home:'Home',time:'Hours',payroll:'Finances',profile:'Profile',team:'Team',approvals:'Approvals',more:'Settings'}
 };
 
 function TaskTab({to,label,icon,activePaths=[],primary=false}){
@@ -35,7 +35,7 @@ export function BottomTabs(){
   </>:<>
    <TaskTab to="/employees" label={c.team} icon="accounts" activePaths={['/employees','/projects']}/>
    <TaskTab to="/manager/timesheet" label={c.time} icon="clock" primary activePaths={['/manager/timesheet','/approvals']}/>
-   <TaskTab to="/payroll-report" label={c.payroll} icon="wallet" activePaths={['/payroll-report','/manager/invoices']}/>
+   <TaskTab to="/payroll-report" label={c.payroll} icon="wallet" activePaths={['/payroll-report','/manager/advances','/manager/expenses','/manager/invoices']}/>
    <TaskTab to="/more" label={c.more} icon="settings" activePaths={['/more','/company-settings','/profile']}/>
   </>}
  </nav>;
