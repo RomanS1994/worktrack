@@ -2,9 +2,11 @@ import { randomUUID } from 'node:crypto';
 
 import { requireManager } from '../auth/context.js';
 import { runStoreRead, runStoreTransaction } from '../db/store.js';
-import { readJsonBody, sendJson } from '../lib/http.js';
+import { readJsonBody, sendJson, setCorsHeaders } from '../lib/http.js';
 
 const CATEGORIES = new Set(['MATERIALS','TRANSPORT','FUEL','TOOLS','OFFICE','OTHER']);
+const RECEIPT_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const MAX_RECEIPT_BYTES = 2.5 * 1024 * 1024;
 
 function parseDate(value, fallback = new Date()) {
   const raw = String(value || '').trim() || fallback.toISOString().slice(0, 10);
@@ -28,6 +30,34 @@ function money(value) {
   return normalized.toFixed(2);
 }
 
+function parseReceipt(receipt) {
+  if (!receipt) return { receiptData: null, receiptMimeType: null, receiptFileName: null };
+
+  const dataUrl = String(receipt.dataUrl || '').trim();
+  const match = dataUrl.match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=\r\n]+)$/);
+  if (!match || !RECEIPT_MIME_TYPES.has(match[1])) throw new Error('Invalid receipt image');
+
+  const receiptData = Buffer.from(match[2].replace(/\s/g, ''), 'base64');
+  if (!receiptData.length) throw new Error('Invalid receipt image');
+  if (receiptData.length > MAX_RECEIPT_BYTES) throw new Error('Receipt image is too large');
+
+  const extension = match[1] === 'image/png' ? 'png' : match[1] === 'image/webp' ? 'webp' : 'jpg';
+  const requestedName = String(receipt.fileName || '').trim();
+  const receiptFileName = (requestedName || `receipt.${extension}`).slice(0, 120);
+
+  return { receiptData, receiptMimeType: match[1], receiptFileName };
+}
+
+function safeDownloadName(value, mimeType) {
+  const extension = mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : 'jpg';
+  const ascii = String(value || '')
+    .replace(/[^A-Za-z0-9._ -]/g, '_')
+    .replace(/[\r\n"]/g, '_')
+    .trim()
+    .slice(0, 100);
+  return ascii || `receipt.${extension}`;
+}
+
 function employeeName(membership) {
   if (!membership) return '';
   return [membership.user?.firstName, membership.user?.lastName].filter(Boolean).join(' ').trim()
@@ -44,6 +74,8 @@ function serialize(row) {
     spentAt: row.spentAt.toISOString().slice(0, 10),
     category: row.category,
     note: row.note || '',
+    hasReceipt: Boolean(row.receiptMimeType),
+    receiptFileName: row.receiptFileName || '',
     createdAt: row.createdAt.toISOString(),
     employee: row.employeeMembership ? {
       id: row.employeeMembership.id,
@@ -52,6 +84,19 @@ function serialize(row) {
     } : null,
   };
 }
+
+const expenseListSelect = {
+  id: true,
+  employeeMembershipId: true,
+  amountCzk: true,
+  spentAt: true,
+  category: true,
+  note: true,
+  receiptMimeType: true,
+  receiptFileName: true,
+  createdAt: true,
+  employeeMembership: { include: { user: true } },
+};
 
 export async function handleExpenseRoutes(request, response, { pathName, url }) {
   if (request.method === 'GET' && pathName === '/api/manager/expenses') {
@@ -64,7 +109,7 @@ export async function handleExpenseRoutes(request, response, { pathName, url }) 
         ...(month ? { spentAt: { gte: month.start, lt: month.end } } : {}),
         ...(category && CATEGORIES.has(category) ? { category } : {}),
       },
-      include: { employeeMembership: { include: { user: true } } },
+      select: expenseListSelect,
       orderBy: [{ spentAt: 'desc' }, { createdAt: 'desc' }],
     }) });
     const totalCzk = expenses.reduce((sum, item) => sum + Number(item.amountCzk || 0), 0).toFixed(2);
@@ -82,6 +127,7 @@ export async function handleExpenseRoutes(request, response, { pathName, url }) 
     if (!CATEGORIES.has(category)) throw new Error('Invalid expense category');
     if (!employeeMembershipId) throw new Error('Employee is required');
     const note = String(body?.note || '').trim().slice(0, 500);
+    const receipt = parseReceipt(body?.receipt);
     const expense = await runStoreTransaction({ prisma: async client => {
       const employee = await client.companyMembership.findFirst({
         where: {
@@ -103,11 +149,37 @@ export async function handleExpenseRoutes(request, response, { pathName, url }) 
           spentAt,
           category,
           note: note || null,
+          ...receipt,
         },
-        include: { employeeMembership: { include: { user: true } } },
+        select: expenseListSelect,
       });
     } });
     sendJson(response, 201, { expense: serialize(expense) });
+    return true;
+  }
+
+  const receiptMatch = pathName.match(/^\/api\/manager\/expenses\/([^/]+)\/receipt$/);
+  if (request.method === 'GET' && receiptMatch) {
+    const context = await requireManager(request, response); if (!context) return true;
+    const expense = await runStoreRead({ prisma: client => client.companyExpense.findFirst({
+      where: { id: receiptMatch[1], companyId: context.activeMembership.companyId },
+      select: { receiptData: true, receiptMimeType: true, receiptFileName: true },
+    }) });
+
+    if (!expense?.receiptData || !expense.receiptMimeType) {
+      sendJson(response, 404, { error: 'Receipt not found' });
+      return true;
+    }
+
+    const fileName = safeDownloadName(expense.receiptFileName, expense.receiptMimeType);
+    setCorsHeaders(response);
+    response.writeHead(200, {
+      'Content-Type': expense.receiptMimeType,
+      'Content-Disposition': `inline; filename="${fileName}"`,
+      'Content-Length': expense.receiptData.length,
+      'Cache-Control': 'private, max-age=300',
+    });
+    response.end(expense.receiptData);
     return true;
   }
 
