@@ -49,9 +49,15 @@ export async function getManagerTimesheet(client, context, { month }) {
   const manager = context.activeMembership || context.membership || context;
   const companyId = manager.companyId;
 
-  const [employeeMemberships, workEntries, projects, managerEntries, company] = await Promise.all([
+  const [employees, workEntries, projects, managerEntries, company] = await Promise.all([
     client.companyMembership.findMany({
-      where: { companyId, role: 'EMPLOYEE' },
+      where: {
+        companyId,
+        role: 'EMPLOYEE',
+        status: 'ACTIVE',
+        deletedAt: null,
+        user: { is: { deletedAt: null } },
+      },
       include: { user: true },
       orderBy: { createdAt: 'asc' },
     }),
@@ -91,16 +97,12 @@ export async function getManagerTimesheet(client, context, { month }) {
     }),
   ]);
 
-  const employeeIdsWithHistory = new Set([
-    ...workEntries.map(entry => entry.employeeMembershipId),
-    ...managerEntries.map(entry => entry.employeeMembershipId),
-  ]);
-  const employees = employeeMemberships.filter(
-    membership => membership.status === 'ACTIVE' || employeeIdsWithHistory.has(membership.id)
-  );
+  const activeEmployeeIds = new Set(employees.map(employee => employee.id));
+  const visibleWorkEntries = workEntries.filter(entry => activeEmployeeIds.has(entry.employeeMembershipId));
+  const visibleManagerEntries = managerEntries.filter(entry => activeEmployeeIds.has(entry.employeeMembershipId));
 
   const defaultBreakMinutes = Number(company?.breakMinutes || 0);
-  const normalizedWorkEntries = calculateNetWorkEntries(workEntries, { breakMinutes: defaultBreakMinutes });
+  const normalizedWorkEntries = calculateNetWorkEntries(visibleWorkEntries, { breakMinutes: defaultBreakMinutes });
 
   const employeeDayMap = new Map();
   for (const entry of normalizedWorkEntries) {
@@ -121,7 +123,7 @@ export async function getManagerTimesheet(client, context, { month }) {
   }
 
   const managerDayMap = new Map(
-    managerEntries.map(entry => [`${entry.employeeMembershipId}:${isoDate(entry.workDate)}`, entry])
+    visibleManagerEntries.map(entry => [`${entry.employeeMembershipId}:${isoDate(entry.workDate)}`, entry])
   );
 
   const daysInMonth = new Date(Date.UTC(period.year, period.month, 0)).getUTCDate();
@@ -226,7 +228,7 @@ export async function upsertManagerTimesheetCell(client, context, employeeMember
   const { raw: date, date: workDate } = parseDate(body?.date);
 
   const employee = await client.companyMembership.findFirst({
-    where: { id: employeeMembershipId, companyId, role: 'EMPLOYEE', status: 'ACTIVE' },
+    where: { id: employeeMembershipId, companyId, role: 'EMPLOYEE', status: 'ACTIVE', deletedAt: null },
     select: { id: true },
   });
   if (!employee) throw new Error('Employee not found');
