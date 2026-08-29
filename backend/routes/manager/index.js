@@ -1,6 +1,7 @@
 import { requireManager } from '../../auth/context.js';
 import { runStoreRead, runStoreTransaction } from '../../db/store.js';
 import { readJsonBody, sendJson } from '../../lib/http.js';
+import { deleteManagerEmployee } from '../../services/deletion.js';
 import { getManagerEmployees } from '../../services/manager-employees.js';
 import { resetEmployeePassword } from '../../services/employee-password-reset.js';
 import { getManagerPayroll } from '../../services/manager-payroll.js';
@@ -108,6 +109,12 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
     const body = await readJsonBody(request);
     const employee = await runStoreTransaction({ prisma: client => updateEmployeeMembership(client, context, employeeMatch[1], body) });
     sendJson(response, 200, { employee }); return true;
+  }
+
+  if (request.method === 'DELETE' && employeeMatch) {
+    const context = await requireManager(request, response); if (!context) return true;
+    const result = await runStoreTransaction({ prisma: client => deleteManagerEmployee(client, context, employeeMatch[1]) });
+    sendJson(response, 200, result); return true;
   }
 
   if (request.method === 'GET' && pathName === '/api/manager/submissions') {
