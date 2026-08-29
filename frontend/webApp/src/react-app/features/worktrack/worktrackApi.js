@@ -9,6 +9,9 @@ export const worktrackApi = baseApi.injectEndpoints({
     createManagerAdvance: builder.mutation({ query:body=>({url:'/manager/advances',method:'POST',body}), invalidatesTags:[{type:'WorkEntries',id:'ADVANCES'},{type:'WorkEntries',id:'PAYROLL'},{type:'WorkEntries',id:'SUMMARY'}] }),
     deleteManagerAdvance: builder.mutation({ query:advanceId=>({url:`/manager/advances/${advanceId}`,method:'DELETE'}), invalidatesTags:[{type:'WorkEntries',id:'ADVANCES'},{type:'WorkEntries',id:'PAYROLL'},{type:'WorkEntries',id:'SUMMARY'}] }),
     getEmployeeAdvances: builder.query({ query:(query={})=>({url:'/advances',params:query}), providesTags:[{type:'WorkEntries',id:'ADVANCES'}] }),
+    getManagerExpenses: builder.query({ query:(query={})=>({url:'/manager/expenses',params:query}), providesTags:[{type:'WorkEntries',id:'EXPENSES'}] }),
+    createManagerExpense: builder.mutation({ query:body=>({url:'/manager/expenses',method:'POST',body}), invalidatesTags:[{type:'WorkEntries',id:'EXPENSES'}] }),
+    deleteManagerExpense: builder.mutation({ query:expenseId=>({url:`/manager/expenses/${expenseId}`,method:'DELETE'}), invalidatesTags:[{type:'WorkEntries',id:'EXPENSES'}] }),
     getNotifications: builder.query({ query:()=>'/notifications', providesTags:[{type:'Notifications',id:'LIST'}] }),
     markNotificationRead: builder.mutation({ query:notificationId=>({url:`/notifications/${notificationId}/read`,method:'POST'}), invalidatesTags:[{type:'Notifications',id:'LIST'}] }),
     markAllNotificationsRead: builder.mutation({ query:()=>({url:'/notifications/read-all',method:'POST'}), invalidatesTags:[{type:'Notifications',id:'LIST'}] }),
@@ -43,7 +46,7 @@ export const worktrackApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useGetWorkSummaryQuery,useGetManagerPayrollQuery,useGetManagerAdvancesQuery,useCreateManagerAdvanceMutation,useDeleteManagerAdvanceMutation,useGetEmployeeAdvancesQuery,useGetNotificationsQuery,useMarkNotificationReadMutation,useMarkAllNotificationsReadMutation,
+  useGetWorkSummaryQuery,useGetManagerPayrollQuery,useGetManagerAdvancesQuery,useCreateManagerAdvanceMutation,useDeleteManagerAdvanceMutation,useGetEmployeeAdvancesQuery,useGetManagerExpensesQuery,useCreateManagerExpenseMutation,useDeleteManagerExpenseMutation,useGetNotificationsQuery,useMarkNotificationReadMutation,useMarkAllNotificationsReadMutation,
   useGetProjectsQuery,useGetDefaultProjectQuery,useUpdateDefaultProjectMutation,useCreateProjectMutation,useUpdateProjectMutation,useDeactivateProjectMutation,useDeleteProjectMutation,useGetCompanySettingsQuery,useUpdateCompanySettingsMutation,
   useGetWorkRulesQuery,useUpdateWorkRulesMutation,
   useGetWeekEntriesQuery,useCreateWorkEntryMutation,useUpdateWorkEntryMutation,useDeleteWorkEntryMutation,useSubmitWeekMutation,
