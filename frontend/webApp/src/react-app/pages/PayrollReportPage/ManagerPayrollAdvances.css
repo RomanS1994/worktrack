@@ -1,0 +1,25 @@
+@media(max-width:760px){
+  .managerPayrollMobile-moneyGrid.is-net-pay{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .managerPayrollMobile-moneyGrid.is-net-pay>div+div{padding-left:10px}
+  .managerPayrollMobile-moneyGrid.is-net-pay strong{font-size:14px}
+  .managerPayrollMobile-moneyGrid.is-net-pay .is-advance strong{color:#b45309}
+  .managerPayrollMobile-moneyGrid.is-net-pay .is-net strong{color:#15803d}
+
+  .managerPayrollMobile-employeeAmounts.is-net-pay{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+  .managerPayrollMobile-employeeAmounts.is-net-pay>div+div{padding-left:9px}
+  .managerPayrollMobile-employeeAmounts.is-net-pay>div{text-align:left}
+  .managerPayrollMobile-employeeAmounts.is-net-pay .is-advance strong{color:#b45309}
+  .managerPayrollMobile-employeeAmounts.is-net-pay .is-net strong{color:#15803d}
+  .managerPayrollMobile-employeeAmounts.is-net-pay .is-net{text-align:right}
+}
+
+@media(max-width:390px){
+  .managerPayrollMobile-moneyGrid.is-net-pay{gap:7px}
+  .managerPayrollMobile-moneyGrid.is-net-pay>div+div{padding-left:7px}
+  .managerPayrollMobile-moneyGrid.is-net-pay strong{font-size:12px}
+  .managerPayrollMobile-moneyGrid.is-net-pay span{font-size:9px}
+  .managerPayrollMobile-employeeAmounts.is-net-pay{gap:6px}
+  .managerPayrollMobile-employeeAmounts.is-net-pay>div+div{padding-left:6px}
+  .managerPayrollMobile-employeeAmounts.is-net-pay strong{font-size:11px}
+  .managerPayrollMobile-employeeAmounts.is-net-pay span{font-size:8px}
+}
