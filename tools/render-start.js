@@ -20,13 +20,17 @@ function canResolvePackage(packageName) {
   }
 }
 
-function runChecked(command, args, options = {}) {
-  const result = spawnSync(command, args, {
+function runCommand(command, args, options = {}) {
+  return spawnSync(command, args, {
     cwd: rootDir,
     stdio: 'inherit',
     env: process.env,
     ...options,
   });
+}
+
+function runChecked(command, args, options = {}) {
+  const result = runCommand(command, args, options);
 
   if (result.error) {
     throw result.error;
@@ -35,6 +39,10 @@ function runChecked(command, args, options = {}) {
   if (result.status !== 0) {
     process.exit(result.status ?? 1);
   }
+}
+
+function sleep(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
 
 function ensureBackendDependencies() {
@@ -68,8 +76,29 @@ function deployPrismaMigrations() {
     return;
   }
 
-  console.log('Applying pending Prisma migrations...');
-  runChecked(npmCommand, ['--prefix', 'backend', 'run', 'db:migrate:deploy']);
+  const maxAttempts = 5;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    console.log(`Applying pending Prisma migrations (attempt ${attempt}/${maxAttempts})...`);
+    const result = runCommand(npmCommand, ['--prefix', 'backend', 'run', 'db:migrate:deploy']);
+
+    if (result.error) {
+      throw result.error;
+    }
+
+    if (result.status === 0) {
+      return;
+    }
+
+    if (attempt < maxAttempts) {
+      const delayMs = attempt * 5000;
+      console.warn(`Prisma migration attempt failed. Retrying in ${delayMs / 1000}s...`);
+      sleep(delayMs);
+    }
+  }
+
+  console.error('Prisma migrations failed after multiple attempts.');
+  process.exit(1);
 }
 
 if (isRenderBuildPhase) {
