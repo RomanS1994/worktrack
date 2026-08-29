@@ -25,6 +25,8 @@ const COPY = {
     securityGroup: 'Безпека',
     security: 'Пароль',
     securityCopy: 'Зміна пароля та захист акаунта',
+    accountManagement: 'Керування акаунтом',
+    accountManagementCopy: 'Вихід і видалення акаунта',
   },
   cs: {
     title: 'Nastavení',
@@ -47,6 +49,8 @@ const COPY = {
     securityGroup: 'Zabezpečení',
     security: 'Heslo',
     securityCopy: 'Změna hesla a zabezpečení účtu',
+    accountManagement: 'Správa účtu',
+    accountManagementCopy: 'Odhlášení a odstranění účtu',
   },
   en: {
     title: 'Settings',
@@ -69,6 +73,8 @@ const COPY = {
     securityGroup: 'Security',
     security: 'Password',
     securityCopy: 'Change password and protect account',
+    accountManagement: 'Account management',
+    accountManagementCopy: 'Sign out and delete account',
   },
 };
 
@@ -124,6 +130,7 @@ export function MoreHubPage() {
 
       <SettingsGroup title={c.securityGroup}>
         <SettingsRow to="/profile?section=password" icon="settings" title={c.security} copy={c.securityCopy} />
+        <SettingsRow to="/profile?section=account" icon="user" title={c.accountManagement} copy={c.accountManagementCopy} />
       </SettingsGroup>
     </section>
   );
