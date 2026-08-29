@@ -1,0 +1,36 @@
+{
+  "source": "Шихтовка_2026(1).xlsm + manager screenshot",
+  "month": "2026-08",
+  "fileTotalsThroughLoadedData": {
+    "Roman": 219.5,
+    "Michal Strizhka": 237,
+    "Dima": 179,
+    "Zahar": 143.5
+  },
+  "latestConfirmedMonthTotals": {
+    "Roman": 241.5,
+    "Michal Strizhka": 260,
+    "Dima": 189.5,
+    "Zahar": 165.5
+  },
+  "remainingHoursNotYetAssignedToDates": {
+    "Roman": 22,
+    "Michal Strizhka": 23,
+    "Dima": 10.5,
+    "Zahar": 22
+  },
+  "ratesCzkPerHour": {
+    "Roman": 350,
+    "Michal Strizhka": 350,
+    "Dima": 250,
+    "Zahar": 240
+  },
+  "latestConfirmedSalariesCzk": {
+    "Roman": 84525,
+    "Michal Strizhka": 91000,
+    "Dima": 47375,
+    "Zahar": 39720
+  },
+  "latestConfirmedSalaryTotalCzk": 262620,
+  "status": "DO_NOT_APPLY_UNTIL_REMAINING_HOURS_HAVE_DATES"
+}
