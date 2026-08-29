@@ -2,6 +2,7 @@ import { handleAdvanceRoutes } from './advances.js';
 import { handleAuthRoutes } from './auth/index.js';
 import { handleBillingRoutes } from './billing.js';
 import { handleDefaultProjectRoutes } from './default-project.js';
+import { handleExpenseRoutes } from './expenses.js';
 import { handleManagerRoutes } from './manager/index.js';
 import { handleMeRoutes } from './me.js';
 import { handleMonthlyHoursRoutes } from './monthly-hours.js';
@@ -20,6 +21,7 @@ const routeHandlers = [
   handleWorkRulesRoutes,
   handleMonthlyHoursRoutes,
   handleAdvanceRoutes,
+  handleExpenseRoutes,
   handleWorkTrackRoutes,
   handleManagerRoutes,
 ];
