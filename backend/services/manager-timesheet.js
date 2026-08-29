@@ -62,7 +62,11 @@ export async function getManagerTimesheet(client, context, { month }) {
       orderBy: { createdAt: 'asc' },
     }),
     client.workEntry.findMany({
-      where: { companyId, workDate: { gte: period.start, lt: period.end } },
+      where: {
+        companyId,
+        status: { in: ['SUBMITTED', 'APPROVED'] },
+        workDate: { gte: period.start, lt: period.end },
+      },
       select: {
         id: true,
         employeeMembershipId: true,
