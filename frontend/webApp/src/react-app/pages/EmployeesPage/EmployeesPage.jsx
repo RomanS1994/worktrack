@@ -17,6 +17,11 @@ const EMPTY_EMPLOYEE_FORM = { firstName: '', lastName: '', email: '', temporaryP
 const EMPTY_EMPLOYEES = [];
 
 function getEmployeeName(employee, fallback) { return employee?.name || employee?.email || fallback; }
+function formatHours(value) {
+  const hours = Number(value || 0);
+  if (!Number.isFinite(hours)) return '0';
+  return new Intl.NumberFormat('uk-UA', { maximumFractionDigits: 2 }).format(hours);
+}
 
 export function EmployeesPage() {
   const { t } = useI18n();
@@ -43,6 +48,7 @@ export function EmployeesPage() {
   function clearMessages(){setActionError('');setActionSuccess('')}
   function updateForm(field,value){setForm(current=>({...current,[field]:value}))}
   function openManage(employee){clearMessages();setSelectedEmployeeId(employee.id);setRateDraft(employee.hourlyRateCzk || '0.00');setResetPassword('');setModal('manage')}
+  function openAddEmployee(){setForm(EMPTY_EMPLOYEE_FORM);clearMessages();setModal('add')}
   function closeModal(){if(deleteState.isLoading)return;setModal('');setResetPassword('');setActionError('')}
 
   async function submitEmployee(event){
@@ -109,15 +115,49 @@ export function EmployeesPage() {
         :getEmployeeName(selectedEmployee,t('employees.employee'));
 
   return <section className="employeesPage pageStack">
-    <header className="employeesHeader appTop"><div className="appTitleBlock"><p className="sectionEyebrow">{t('employees.team')}</p><h1>{t('employees.title')}</h1>{hasEmployeeList?<p>{activeEmployeeCount} {t('employees.active')} · {employees.length} {t('employees.total')}</p>:null}</div><button className="employeesAddTop" type="button" onClick={()=>{setForm(EMPTY_EMPLOYEE_FORM);clearMessages();setModal('add')}}>+ {t('employees.addEmployee')}</button></header>
+    <header className="employeesHeader appTop">
+      <div className="appTitleBlock">
+        <p className="sectionEyebrow">{t('employees.team')}</p>
+        <h1>{t('employees.title')}</h1>
+        {hasEmployeeList?<p>{activeEmployeeCount} {t('employees.active')} · {employees.length} {t('employees.total')}</p>:null}
+      </div>
+      <button className="employeesAddTop" type="button" onClick={openAddEmployee}>+ {t('employees.addEmployee')}</button>
+    </header>
+
     {actionSuccess?<p className="statusNote is-success">{actionSuccess}</p>:null}
-    <section className="employeesPanel screenCard"><div className="compactHeader"><h2>{t('employees.list')}</h2>{hasEmployeeList?<p>{data?.week?`${data.week.weekStart} - ${data.week.weekEnd}`:t('employees.currentWeek')}</p>:null}</div>{isLoading?<RequestLoadingState label={t('employees.loading')}/>:null}{error?<p className="statusNote is-error">{getApiErrorMessage(error)}</p>:null}{hasEmployeeList&&!employees.length?<div className="employeesEmpty"><span aria-hidden="true"><SvgIcon name="accounts"/></span><strong>{t('employees.none')}</strong></div>:null}
-      {hasEmployeeList&&employees.length?<div className="employeesList">{employees.map(employee=>{const isActive=employee.status==='ACTIVE';return <button className={`employeeCard${isActive?'':' is-inactive'}`} type="button" key={employee.id} onClick={()=>openManage(employee)}><div className="employeeCard-main"><span className="employeeCard-avatar">{getEmployeeName(employee,t('employees.employee')).slice(0,1).toUpperCase()}</span><div><strong>{getEmployeeName(employee,t('employees.employee'))}</strong><p>{employee.email}</p></div></div><div className="employeeCard-metrics"><span><strong>{employee.summary?.totalHours||'0.00'} h</strong><em>{t('employees.week')}</em></span><span><strong>{employee.pendingSubmissions||0}</strong><em>{t('employees.pending')}</em></span><span><strong>{isActive?t('employees.activeStatus'):t('employees.inactiveStatus')}</strong><em>{t('employees.status')}</em></span></div><span className="employeeCard-chevron">›</span></button>})}</div>:null}
+
+    <section className="employeesPanel">
+      <div className="employeesPanelHeader">
+        <h2>{t('employees.title')} <span>· {employees.length}</span></h2>
+        <button type="button" onClick={openAddEmployee}>+ {t('employees.addEmployee')}</button>
+      </div>
+
+      {isLoading?<RequestLoadingState label={t('employees.loading')}/>:null}
+      {error?<p className="statusNote is-error">{getApiErrorMessage(error)}</p>:null}
+      {hasEmployeeList&&!employees.length?<div className="employeesEmpty"><span aria-hidden="true"><SvgIcon name="accounts"/></span><strong>{t('employees.none')}</strong></div>:null}
+
+      {hasEmployeeList&&employees.length?<div className="employeesList">{employees.map(employee=>{
+        const isActive=employee.status==='ACTIVE';
+        const pending=Number(employee.pendingSubmissions||0);
+        return <button className={`employeeCard${isActive?'':' is-inactive'}`} type="button" key={employee.id} onClick={()=>openManage(employee)}>
+          <span className="employeeCard-avatar">{getEmployeeName(employee,t('employees.employee')).slice(0,1).toUpperCase()}</span>
+          <div className="employeeCard-content">
+            <strong className="employeeCard-name">{getEmployeeName(employee,t('employees.employee'))}</strong>
+            <p className="employeeCard-email">{employee.email}</p>
+            <div className="employeeCard-meta">
+              <span className="employeeCard-hours"><SvgIcon name="clock"/><strong>{formatHours(employee.summary?.totalHours)} {t('employees.hourShort') || 'год'}</strong></span>
+              <span className="employeeCard-dot" aria-hidden="true">•</span>
+              <span className={`employeeCard-pending${pending>0?' has-pending':''}`}>{pending} {t('employees.pending')}</span>
+            </div>
+          </div>
+          <span className="employeeCard-chevron" aria-hidden="true">›</span>
+        </button>
+      })}</div>:null}
     </section>
 
     {modal?<div className="employeesModalBackdrop" onMouseDown={e=>{if(e.target===e.currentTarget)closeModal()}}><section className={`employeesModal${modal==='manage'?' is-drawer':''}`} role="dialog" aria-modal="true"><header><div><span>{t('employees.team')}</span><h2>{modalTitle}</h2></div><button type="button" aria-label={t('employees.close')} onClick={closeModal}>×</button></header>
       {modal==='add'?<form className="employeesModalBody" onSubmit={submitEmployee}><p className="employeesModalCopy">{t('employees.addCopy')}</p><div className="employeesFormGrid"><label className="employeesField"><span>{t('employees.firstName')}</span><input type="text" value={form.firstName} onChange={e=>updateForm('firstName',e.target.value)} required/></label><label className="employeesField"><span>{t('employees.lastName')}</span><input type="text" value={form.lastName} onChange={e=>updateForm('lastName',e.target.value)} required/></label></div><label className="employeesField"><span>{t('employees.email')}</span><input type="email" value={form.email} onChange={e=>updateForm('email',e.target.value)} required/></label><div className="employeesFormGrid"><label className="employeesField"><span>{t('employees.temporaryPassword')}</span><input type="password" minLength={8} value={form.temporaryPassword} onChange={e=>updateForm('temporaryPassword',e.target.value)} required/></label><label className="employeesField"><span>{t('employees.hourlyRate')}</span><input inputMode="decimal" type="number" min="0" step="0.01" value={form.hourlyRateCzk} onChange={e=>updateForm('hourlyRateCzk',e.target.value)} required/></label></div>{actionError?<p className="statusNote is-error">{actionError}</p>:null}<button className="employeesPrimaryButton" disabled={isMutating}>{t('employees.addEmployee')}</button></form>:null}
-      {modal==='manage'&&selectedEmployee?<div className="employeesModalBody"><section className="employeeDetailHero"><span className="employeeDetailAvatar">{getEmployeeName(selectedEmployee,t('employees.employee')).slice(0,1).toUpperCase()}</span><div><strong>{getEmployeeName(selectedEmployee,t('employees.employee'))}</strong><p>{selectedEmployee.email}</p></div><em className={selectedEmployee.status==='ACTIVE'?'is-active':''}>{selectedEmployee.status==='ACTIVE'?t('employees.activeStatus'):t('employees.inactiveStatus')}</em></section><section className="employeeDetailStats"><div><strong>{selectedEmployee.summary?.totalHours||'0.00'} h</strong><span>{t('employees.week')}</span></div><div><strong>{selectedEmployee.pendingSubmissions||0}</strong><span>{t('employees.pending')}</span></div></section><section className="employeeDetailSection"><h3>{t('employees.employeeDetails')}</h3><label className="employeesField"><span>{t('employees.rate')}</span><div className="employeeRateRow"><input inputMode="decimal" type="number" min="0" step="0.01" value={rateDraft} onChange={e=>setRateDraft(e.target.value)}/><button type="button" disabled={isMutating||!hasValidRateDraft} onClick={saveRate}>{t('employees.saveRate')}</button></div></label></section>{actionError?<p className="statusNote is-error">{actionError}</p>:null}{actionSuccess?<p className="statusNote is-success">{actionSuccess}</p>:null}<section className="employeeDetailSection"><h3>{t('employees.actions')}</h3><button className="employeeAction" type="button" onClick={()=>{setResetPassword('');setModal('password')}}>{t('employees.resetPassword')}<span>›</span></button><button className={`employeeAction ${selectedEmployee.status==='ACTIVE'?'is-danger':'is-success'}`} type="button" disabled={isMutating} onClick={toggleEmployeeStatus}>{selectedEmployee.status==='ACTIVE'?t('employees.deactivate'):t('employees.reactivate')}<span>›</span></button><button className="employeeAction is-danger" type="button" disabled={isMutating} onClick={()=>{setActionError('');setModal('delete')}}>{t('employees.deleteEmployee')}<span>›</span></button></section></div>:null}
+      {modal==='manage'&&selectedEmployee?<div className="employeesModalBody"><section className="employeeDetailHero"><span className="employeeDetailAvatar">{getEmployeeName(selectedEmployee,t('employees.employee')).slice(0,1).toUpperCase()}</span><div><strong>{getEmployeeName(selectedEmployee,t('employees.employee'))}</strong><p>{selectedEmployee.email}</p></div><em className={selectedEmployee.status==='ACTIVE'?'is-active':''}>{selectedEmployee.status==='ACTIVE'?t('employees.activeStatus'):t('employees.inactiveStatus')}</em></section><section className="employeeDetailStats"><div><strong>{formatHours(selectedEmployee.summary?.totalHours)} h</strong><span>{t('employees.week')}</span></div><div><strong>{selectedEmployee.pendingSubmissions||0}</strong><span>{t('employees.pending')}</span></div></section><section className="employeeDetailSection"><h3>{t('employees.employeeDetails')}</h3><label className="employeesField"><span>{t('employees.rate')}</span><div className="employeeRateRow"><input inputMode="decimal" type="number" min="0" step="0.01" value={rateDraft} onChange={e=>setRateDraft(e.target.value)}/><button type="button" disabled={isMutating||!hasValidRateDraft} onClick={saveRate}>{t('employees.saveRate')}</button></div></label></section>{actionError?<p className="statusNote is-error">{actionError}</p>:null}{actionSuccess?<p className="statusNote is-success">{actionSuccess}</p>:null}<section className="employeeDetailSection"><h3>{t('employees.actions')}</h3><button className="employeeAction" type="button" onClick={()=>{setResetPassword('');setModal('password')}}>{t('employees.resetPassword')}<span>›</span></button><button className={`employeeAction ${selectedEmployee.status==='ACTIVE'?'is-danger':'is-success'}`} type="button" disabled={isMutating} onClick={toggleEmployeeStatus}>{selectedEmployee.status==='ACTIVE'?t('employees.deactivate'):t('employees.reactivate')}<span>›</span></button><button className="employeeAction is-danger" type="button" disabled={isMutating} onClick={()=>{setActionError('');setModal('delete')}}>{t('employees.deleteEmployee')}<span>›</span></button></section></div>:null}
       {modal==='password'&&selectedEmployee?<form className="employeesModalBody" onSubmit={submitPasswordReset}><p className="employeesModalCopy">{t('employees.resetCopy')}</p><label className="employeesField"><span>{t('employees.newTemporaryPassword')}</span><input type="password" minLength={8} value={resetPassword} placeholder={t('employees.minPlaceholder')} onChange={e=>setResetPassword(e.target.value)} required/></label>{actionError?<p className="statusNote is-error">{actionError}</p>:null}<button className="employeesPrimaryButton" disabled={isMutating||resetPassword.length<8}>{t('employees.setTemporaryPassword')}</button><button className="employeesCancelButton" type="button" onClick={()=>setModal('manage')}>{t('employees.cancel')}</button></form>:null}
       {modal==='delete'&&selectedEmployee?<div className="employeesModalBody"><p className="employeesModalCopy">{t('employees.deleteCopy',{name:getEmployeeName(selectedEmployee,t('employees.employee'))})}</p><p className="employeesDeleteWarning">{t('employees.deleteWarning')}</p>{actionError?<p className="statusNote is-error">{actionError}</p>:null}<button className="employeesDangerButton" type="button" disabled={deleteState.isLoading} onClick={confirmDeleteEmployee}>{deleteState.isLoading?t('employees.deleting'):t('employees.confirmDelete')}</button><button className="employeesCancelButton" type="button" disabled={deleteState.isLoading} onClick={()=>{setActionError('');setModal('manage')}}>{t('employees.cancel')}</button></div>:null}
     </section></div>:null}
