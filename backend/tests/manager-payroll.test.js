@@ -19,10 +19,13 @@ function createManagerContext() {
   };
 }
 
-function createClient({ onFindMany, breakMinutes = 0, standardDailyHours = '8.00', memberships } = {}) {
+function createClient({ onFindMany, breakMinutes = 0, standardDailyHours = '8.00', memberships, advances = [] } = {}) {
   return {
     company: {
       findUnique: async () => ({ breakMinutes, standardDailyHours }),
+    },
+    salaryAdvance: {
+      findMany: async () => advances,
     },
     companyMembership: {
       findMany: async query => {
@@ -103,6 +106,8 @@ test('manager payroll calculates a selected week and employee breakdown', async 
     pendingHours: '6.00',
     confirmedSalaryCzk: '1600.00',
     predictedSalaryCzk: '1200.00',
+    advancesCzk: '0.00',
+    netPayCzk: '1200.00',
   });
   assert.equal(payload.employees[1].status, 'INACTIVE');
   assert.deepEqual(payload.summary, {
@@ -112,6 +117,8 @@ test('manager payroll calculates a selected week and employee breakdown', async 
     pendingHours: '6.00',
     confirmedSalaryCzk: '3100.00',
     predictedSalaryCzk: '1200.00',
+    advancesCzk: '0.00',
+    netPayCzk: '1200.00',
   });
 });
 
@@ -128,6 +135,8 @@ test('manager payroll deducts lunch once per employee work day', async () => {
     pendingHours: '5.00',
     confirmedSalaryCzk: '1400.00',
     predictedSalaryCzk: '1000.00',
+    advancesCzk: '0.00',
+    netPayCzk: '1000.00',
   });
   assert.equal(payload.employees[1].summary.totalHours, '4.00');
   assert.equal(payload.workRules.breakMinutes, 60);
@@ -184,6 +193,19 @@ test('manager payroll excludes inactive employees with no hours in the selected 
 
   assert.equal(payload.summary.employeeCount, 1);
   assert.equal(payload.employees[0].id, 'active');
+});
+
+test('manager payroll includes advances in the selected period', async () => {
+  const payload = await getManagerPayroll(
+    createClient({ advances: [{ employeeMembershipId: 'employee-membership-1', amountCzk: '500.00' }] }),
+    createManagerContext(),
+    { period: 'week', anchor: '2026-08-18' }
+  );
+
+  assert.equal(payload.employees[0].summary.advancesCzk, '500.00');
+  assert.equal(payload.employees[0].summary.netPayCzk, '700.00');
+  assert.equal(payload.summary.advancesCzk, '500.00');
+  assert.equal(payload.summary.netPayCzk, '700.00');
 });
 
 test('manager payroll resolves a complete calendar month', async () => {
