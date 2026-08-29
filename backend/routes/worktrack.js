@@ -3,7 +3,7 @@ import { runStoreRead, runStoreTransaction } from '../db/store.js';
 import { readJsonBody, sendJson } from '../lib/http.js';
 import { getManagerDashboard } from '../services/manager-dashboard.js';
 import { notifyManagersAboutSubmission } from '../services/notifications.js';
-import { calculateDailyOvertime, calculateNetWorkSummary } from '../services/work-time-calculation.js';
+import { calculateDailyOvertime, calculateNetWorkEntries, calculateNetWorkSummary } from '../services/work-time-calculation.js';
 import {
   createEmployeeWorkEntry,
   createProject,
@@ -61,6 +61,17 @@ function shiftDetailsFromPayload(payload = {}) {
   };
 }
 
+async function getWorkRules(client, context) {
+  const company = await client.company.findUnique({
+    where: { id: context.activeMembership.companyId },
+    select: { breakMinutes: true, standardDailyHours: true },
+  });
+  return {
+    breakMinutes: Number(company?.breakMinutes || 0),
+    standardDailyHours: Number(company?.standardDailyHours || 8),
+  };
+}
+
 async function applyWorkRules(client, context, shift) {
   if (!shift?.grossMinutes) return shift;
   const company = await client.company.findUnique({
@@ -78,46 +89,62 @@ async function applyWorkRules(client, context, shift) {
   };
 }
 
-async function enrichWorkEntries(client, payload) {
+async function enrichWorkEntries(client, payload, { hourlyRateCzk = '0.00', rules = {} } = {}) {
   const entries = Array.isArray(payload?.entries) ? payload.entries : [];
-  if (!entries.length) return payload;
+  if (!entries.length) {
+    return {
+      ...payload,
+      summary: calculateNetWorkSummary([], hourlyRateCzk, rules),
+    };
+  }
+
   const details = await client.workEntry.findMany({
     where: { id: { in: entries.map(entry => entry.id) } },
-    select: { id: true, startTime: true, endTime: true, note: true, grossHours: true, breakMinutes: true },
+    select: {
+      id: true,
+      startTime: true,
+      endTime: true,
+      note: true,
+      grossHours: true,
+      breakMinutes: true,
+      hourlyRateCzk: true,
+    },
   });
   const byId = new Map(details.map(item => [item.id, item]));
+  const enrichedEntries = entries.map(entry => {
+    const detail = byId.get(entry.id);
+    return {
+      ...entry,
+      ...(detail || {}),
+      grossHours: detail?.grossHours == null ? entry.hours : String(detail.grossHours),
+      breakMinutes: Number(detail?.breakMinutes || 0),
+      hourlyRateCzk: detail?.hourlyRateCzk == null ? null : String(detail.hourlyRateCzk),
+    };
+  });
+  const normalizedEntries = calculateNetWorkEntries(enrichedEntries, rules);
+
   return {
     ...payload,
-    entries: entries.map(entry => ({
-      ...entry,
-      ...(byId.get(entry.id) || {}),
-      grossHours: byId.get(entry.id)?.grossHours == null ? entry.hours : String(byId.get(entry.id).grossHours),
-      breakMinutes: Number(byId.get(entry.id)?.breakMinutes || 0),
-    })),
+    entries: normalizedEntries,
+    summary: calculateNetWorkSummary(enrichedEntries, hourlyRateCzk, rules),
   };
 }
 
 async function getEmployeeWeeklySummary(client, context, weekStart) {
-  const [weekPayload, companyRules] = await Promise.all([
-    enrichWorkEntries(client, await getEmployeeWeek(client, context, weekStart)),
-    client.company.findUnique({
-      where: { id: context.activeMembership.companyId },
-      select: { breakMinutes: true, standardDailyHours: true },
-    }),
-  ]);
-  const rules = {
-    breakMinutes: Number(companyRules?.breakMinutes || 0),
-    standardDailyHours: Number(companyRules?.standardDailyHours || 8),
-  };
   const hourlyRateCzk = context.activeMembership.hourlyRateCzk == null ? '0.00' : String(context.activeMembership.hourlyRateCzk);
-  const summary = calculateNetWorkSummary(weekPayload.entries, hourlyRateCzk, rules);
+  const rules = await getWorkRules(client, context);
+  const weekPayload = await enrichWorkEntries(
+    client,
+    await getEmployeeWeek(client, context, weekStart),
+    { hourlyRateCzk, rules }
+  );
   return {
     role: 'EMPLOYEE',
     company: context.activeCompany || context.activeMembership.company || null,
     week: weekPayload.week,
     submission: weekPayload.submission,
     summary: {
-      ...summary,
+      ...weekPayload.summary,
       overtimeHours: calculateDailyOvertime(weekPayload.entries, rules),
     },
     workRules: {
@@ -186,7 +213,15 @@ export async function handleWorkTrackRoutes(request, response, { pathName, url }
     const context = await requireEmployee(request, response);
     if (!context) return true;
     const payload = await runStoreRead({
-      prisma: async client => enrichWorkEntries(client, await getEmployeeWeek(client, context, url.searchParams.get('weekStart'))),
+      prisma: async client => {
+        const hourlyRateCzk = context.activeMembership.hourlyRateCzk == null ? '0.00' : String(context.activeMembership.hourlyRateCzk);
+        const rules = await getWorkRules(client, context);
+        return enrichWorkEntries(
+          client,
+          await getEmployeeWeek(client, context, url.searchParams.get('weekStart')),
+          { hourlyRateCzk, rules }
+        );
+      },
     });
     sendJson(response, 200, payload);
     return true;
@@ -213,9 +248,16 @@ export async function handleWorkTrackRoutes(request, response, { pathName, url }
             } : {}),
             ...(ruledShift.note !== undefined ? { note: ruledShift.note || null } : {}),
           },
-          select: { startTime: true, endTime: true, note: true, grossHours: true, breakMinutes: true },
+          select: { startTime: true, endTime: true, note: true, grossHours: true, breakMinutes: true, hourlyRateCzk: true },
         });
-        return { ...created, ...updated, grossHours: updated.grossHours == null ? created.hours : String(updated.grossHours) };
+        return {
+          ...created,
+          ...updated,
+          grossHours: updated.grossHours == null ? created.hours : String(updated.grossHours),
+          breakMinutes: Number(updated.breakMinutes || 0),
+          hourlyRateCzk: updated.hourlyRateCzk == null ? null : String(updated.hourlyRateCzk),
+          netHours: created.hours,
+        };
       },
     });
     sendJson(response, 201, { entry });
@@ -244,9 +286,16 @@ export async function handleWorkTrackRoutes(request, response, { pathName, url }
             } : {}),
             ...(ruledShift.note !== undefined ? { note: ruledShift.note || null } : {}),
           },
-          select: { startTime: true, endTime: true, note: true, grossHours: true, breakMinutes: true },
+          select: { startTime: true, endTime: true, note: true, grossHours: true, breakMinutes: true, hourlyRateCzk: true },
         });
-        return { ...updatedEntry, ...details, grossHours: details.grossHours == null ? updatedEntry.hours : String(details.grossHours) };
+        return {
+          ...updatedEntry,
+          ...details,
+          grossHours: details.grossHours == null ? updatedEntry.hours : String(details.grossHours),
+          breakMinutes: Number(details.breakMinutes || 0),
+          hourlyRateCzk: details.hourlyRateCzk == null ? null : String(details.hourlyRateCzk),
+          netHours: updatedEntry.hours,
+        };
       },
     });
     sendJson(response, 200, { entry });
