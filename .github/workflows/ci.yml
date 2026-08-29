@@ -35,28 +35,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version-file: .node-version
           cache: npm
-
       - name: Install root dependencies
         run: npm ci
-
       - name: Install backend dependencies
         run: npm --prefix backend ci
-
       - name: Generate Prisma client
         run: npm --prefix backend run db:generate
-
       - name: Apply integration database migrations
         run: npm --prefix backend run db:migrate:deploy
-
       - name: Run backend tests
         run: npm --prefix backend test
-
       - name: Start integration backend
         run: |
           npm --prefix backend start > /tmp/worktrack-backend.log 2>&1 &
@@ -70,28 +63,22 @@ jobs:
           done
           cat /tmp/worktrack-backend.log
           exit 1
-
       - name: Run real API integration E2E
         run: node tools/integration-e2e.js
-
+      - name: Run finance consistency E2E
+        run: node tools/integration-finance-e2e.js
       - name: Build frontend
         run: npm run build:web
-
       - name: Install Playwright smoke runner
         run: npm install --no-save --no-package-lock @playwright/test@1.55.0
-
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-
       - name: Run browser smoke tests
         run: npx playwright test
-
       - name: Audit production runtime dependencies
         run: node tools/audit-production.js
-
       - name: Scan tracked files for secrets
         run: npm run secrets:check
-
       - name: Show backend logs on failure
         if: failure()
         run: cat /tmp/worktrack-backend.log || true
