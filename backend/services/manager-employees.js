@@ -19,16 +19,17 @@ function serializeUser(user) {
 
 export async function getManagerEmployees(client, context, now = new Date()) {
   const manager = context?.activeMembership;
-  if (!manager || manager.role !== 'MANAGER' || manager.status === 'INACTIVE') {
+  if (!manager || manager.role !== 'MANAGER' || manager.status === 'INACTIVE' || manager.deletedAt) {
     throw new Error('Manager access is required');
   }
 
   const range = getWeekRange(now);
-  const [employees, companyRules, deletionLogs] = await Promise.all([
+  const [employees, companyRules] = await Promise.all([
     client.companyMembership.findMany({
       where: {
         companyId: manager.companyId,
         role: 'EMPLOYEE',
+        deletedAt: null,
         user: { is: { deletedAt: null } },
       },
       include: {
@@ -50,18 +51,8 @@ export async function getManagerEmployees(client, context, now = new Date()) {
       where: { id: manager.companyId },
       select: { breakMinutes: true, standardDailyHours: true },
     }),
-    client.auditLog.findMany({
-      where: {
-        action: 'employee.deleted',
-        entityType: 'company_membership',
-        entityId: { not: null },
-      },
-      select: { entityId: true },
-    }),
   ]);
 
-  const deletedMembershipIds = new Set(deletionLogs.map(log => log.entityId).filter(Boolean));
-  const visibleEmployees = employees.filter(employee => !deletedMembershipIds.has(employee.id));
   const rules = {
     breakMinutes: Number(companyRules?.breakMinutes || 0),
     standardDailyHours: Number(companyRules?.standardDailyHours || 8),
@@ -73,7 +64,7 @@ export async function getManagerEmployees(client, context, now = new Date()) {
       breakMinutes: rules.breakMinutes,
       standardDailyHours: rules.standardDailyHours.toFixed(2),
     },
-    employees: visibleEmployees.map(employee => ({
+    employees: employees.map(employee => ({
       id: employee.id,
       userId: employee.userId,
       companyId: employee.companyId,
