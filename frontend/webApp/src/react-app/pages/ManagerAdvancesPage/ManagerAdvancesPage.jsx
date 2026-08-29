@@ -7,64 +7,27 @@ import { formatCzk, getLocalDateKey, resolveLocale } from '../../app/formatters.
 import { useCreateManagerAdvanceMutation, useDeleteManagerAdvanceMutation, useGetManagerAdvancesQuery } from '../../features/worktrack/worktrackApi.js';
 import './ManagerAdvancesPage.css';
 
-const COPY = {
-  uk: { title:'Залоги',subtitle:'Виплати працівникам наперед',month:'Місяць',add:'Додати залог',employee:'Працівник',amount:'Сума',date:'Дата',note:'Примітка',notePlaceholder:'Наприклад: готівкою',save:'Зберегти',saving:'Збереження…',received:'Видано за місяць',payments:'виплат',history:'Історія залогів',empty:'За цей місяць залогів немає',delete:'Видалити',confirmDelete:'Видалити цей залог?',chooseEmployee:'Оберіть працівника' },
-  cs: { title:'Zálohy',subtitle:'Zálohy vyplacené zaměstnancům',month:'Měsíc',add:'Přidat zálohu',employee:'Zaměstnanec',amount:'Částka',date:'Datum',note:'Poznámka',notePlaceholder:'Např. hotově',save:'Uložit',saving:'Ukládání…',received:'Vyplaceno za měsíc',payments:'plateb',history:'Historie záloh',empty:'V tomto měsíci nejsou žádné zálohy',delete:'Smazat',confirmDelete:'Smazat tuto zálohu?',chooseEmployee:'Vyberte zaměstnance' },
-  en: { title:'Advances',subtitle:'Salary advances paid to employees',month:'Month',add:'Add advance',employee:'Employee',amount:'Amount',date:'Date',note:'Note',notePlaceholder:'For example: cash',save:'Save',saving:'Saving…',received:'Paid this month',payments:'payments',history:'Advance history',empty:'No advances for this month',delete:'Delete',confirmDelete:'Delete this advance?',chooseEmployee:'Choose employee' },
+const COPY={
+ uk:{title:'Залоги',subtitle:'Залоги віднімаються від чистої зарплати працівника.',month:'Місяць',add:'Додати залог',employee:'Працівник',allEmployees:'Всі працівники',amount:'Сума',date:'Дата',note:'Примітка',notePlaceholder:'Наприклад: видано на карту',save:'Зберегти',saving:'Збереження…',received:'Видано за місяць',count:'Кількість залогів',active:'Активних залогів',payments:'виплат',history:'Історія залогів',empty:'За цей місяць залогів немає',delete:'Видалити',confirmDelete:'Видалити цей залог?',chooseEmployee:'Оберіть працівника',status:'Статус',activeStatus:'Активний',balance:'Залишок',impact:'Впливає на чисту зарплату',impactText:'Ця сума буде віднята від майбутніх виплат працівнику.'},
+ cs:{title:'Zálohy',subtitle:'Zálohy se odečítají od čisté mzdy zaměstnance.',month:'Měsíc',add:'Přidat zálohu',employee:'Zaměstnanec',allEmployees:'Všichni zaměstnanci',amount:'Částka',date:'Datum',note:'Poznámka',notePlaceholder:'Např. vyplaceno na kartu',save:'Uložit',saving:'Ukládání…',received:'Vyplaceno za měsíc',count:'Počet záloh',active:'Aktivní zálohy',payments:'plateb',history:'Historie záloh',empty:'V tomto měsíci nejsou žádné zálohy',delete:'Smazat',confirmDelete:'Smazat tuto zálohu?',chooseEmployee:'Vyberte zaměstnance',status:'Stav',activeStatus:'Aktivní',balance:'Zůstatek',impact:'Ovlivňuje čistou mzdu',impactText:'Tato částka bude odečtena od budoucích výplat zaměstnance.'},
+ en:{title:'Advances',subtitle:'Advances are deducted from the employee’s net salary.',month:'Month',add:'Add advance',employee:'Employee',allEmployees:'All employees',amount:'Amount',date:'Date',note:'Note',notePlaceholder:'For example: paid to card',save:'Save',saving:'Saving…',received:'Paid this month',count:'Number of advances',active:'Active advances',payments:'payments',history:'Advance history',empty:'No advances for this month',delete:'Delete',confirmDelete:'Delete this advance?',chooseEmployee:'Choose employee',status:'Status',activeStatus:'Active',balance:'Balance',impact:'Affects net salary',impactText:'This amount will be deducted from the employee’s future payments.'}
 };
-
-function monthKey(dateKey) { return String(dateKey || getLocalDateKey()).slice(0, 7); }
-
-export function ManagerAdvancesPage({ embedded = false }) {
-  const { language } = useI18n();
-  const copy = COPY[language] || COPY.uk;
-  const locale = resolveLocale(language);
-  const [month, setMonth] = useState(monthKey(getLocalDateKey()));
-  const [formOpen, setFormOpen] = useState(false);
-  const [employeeMembershipId, setEmployeeMembershipId] = useState('');
-  const [amountCzk, setAmountCzk] = useState('');
-  const [paidAt, setPaidAt] = useState(getLocalDateKey());
-  const [note, setNote] = useState('');
-  const query = useGetManagerAdvancesQuery({ month });
-  const [createAdvance, createState] = useCreateManagerAdvanceMutation();
-  const [deleteAdvance, deleteState] = useDeleteManagerAdvanceMutation();
-  const employees = query.data?.employees || [];
-  const advances = query.data?.advances || [];
-  const total = Number(query.data?.summary?.totalCzk || 0);
-  const error = query.error || createState.error || deleteState.error;
-  const canSubmit = employeeMembershipId && Number(String(amountCzk).replace(',', '.')) > 0 && paidAt && !createState.isLoading;
-
-  const grouped = useMemo(() => {
-    const map = new Map();
-    advances.forEach(item => {
-      const key = item.paidAt;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key).push(item);
-    });
-    return [...map.entries()];
-  }, [advances]);
-
-  async function handleSubmit(event) {
-    event.preventDefault();
-    if (!canSubmit) return;
-    await createAdvance({ employeeMembershipId, amountCzk: String(amountCzk).replace(',', '.'), paidAt, note }).unwrap();
-    setAmountCzk(''); setNote(''); setFormOpen(false);
-  }
-
-  async function handleDelete(id) {
-    if (!window.confirm(copy.confirmDelete)) return;
-    await deleteAdvance(id).unwrap();
-  }
-
-  return <section className={`managerAdvancesPage pageStack${embedded?' is-embedded':''}`}>
-    <header className="managerAdvances-header"><div><h1>{copy.title}</h1>{!embedded?<p>{copy.subtitle}</p>:null}</div><button type="button" className="managerAdvances-addButton" onClick={()=>setFormOpen(value=>!value)}>＋ <span>{copy.add}</span></button></header>
-
-    <section className="managerAdvances-monthCard"><label><span>{copy.month}</span><input type="month" value={month} onChange={event=>setMonth(event.target.value || monthKey(getLocalDateKey()))}/></label><div><span>{copy.received}</span><strong>{formatCzk(total, locale)}</strong><small>{advances.length} {copy.payments}</small></div></section>
-
-    {formOpen?<form className="managerAdvances-form" onSubmit={handleSubmit}><h2>{copy.add}</h2><label><span>{copy.employee}</span><select value={employeeMembershipId} onChange={event=>setEmployeeMembershipId(event.target.value)} required><option value="">{copy.chooseEmployee}</option>{employees.map(employee=><option key={employee.id} value={employee.id}>{employee.name}</option>)}</select></label><div className="managerAdvances-formGrid"><label><span>{copy.amount}</span><div className="managerAdvances-moneyInput"><input inputMode="decimal" value={amountCzk} onChange={event=>setAmountCzk(event.target.value)} placeholder="0" required/><b>Kč</b></div></label><label><span>{copy.date}</span><input type="date" value={paidAt} onChange={event=>setPaidAt(event.target.value)} required/></label></div><label><span>{copy.note}</span><input value={note} maxLength={500} onChange={event=>setNote(event.target.value)} placeholder={copy.notePlaceholder}/></label><button className="managerAdvances-saveButton" type="submit" disabled={!canSubmit}>{createState.isLoading?copy.saving:copy.save}</button></form>:null}
-
-    {error?<p className="statusNote is-error">{getApiErrorMessage(error)}</p>:null}
-    {query.isLoading?<RequestLoadingState label={copy.history}/>:null}
-    {!query.isLoading?<section className="managerAdvances-history"><div className="managerAdvances-sectionTitle"><h2>{copy.history}</h2><span>{advances.length}</span></div>{grouped.length?grouped.map(([date, items])=><div className="managerAdvances-day" key={date}><div className="managerAdvances-date">{new Intl.DateTimeFormat(locale,{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(`${date}T00:00:00Z`))}</div>{items.map(item=><article className="managerAdvances-row" key={item.id}><div className="managerAdvances-avatar">{(item.employee?.name||'?').trim().charAt(0).toUpperCase()}</div><div className="managerAdvances-rowText"><strong>{item.employee?.name || '—'}</strong>{item.note?<span>{item.note}</span>:<span>{item.employee?.email || ''}</span>}</div><div className="managerAdvances-rowAmount"><strong>− {formatCzk(item.amountCzk, locale)}</strong><button type="button" disabled={deleteState.isLoading} onClick={()=>handleDelete(item.id)}>{copy.delete}</button></div></article>)}</div>):<div className="managerAdvances-empty">{copy.empty}</div>}</section>:null}
-  </section>;
+function monthKey(dateKey){return String(dateKey||getLocalDateKey()).slice(0,7)}
+export function ManagerAdvancesPage(){
+ const {language}=useI18n(); const copy=COPY[language]||COPY.uk; const locale=resolveLocale(language);
+ const [month,setMonth]=useState(monthKey(getLocalDateKey())); const [filterEmployee,setFilterEmployee]=useState(''); const [formOpen,setFormOpen]=useState(false); const [employeeMembershipId,setEmployeeMembershipId]=useState(''); const [amountCzk,setAmountCzk]=useState(''); const [paidAt,setPaidAt]=useState(getLocalDateKey()); const [note,setNote]=useState('');
+ const query=useGetManagerAdvancesQuery({month}); const [createAdvance,createState]=useCreateManagerAdvanceMutation(); const [deleteAdvance,deleteState]=useDeleteManagerAdvanceMutation();
+ const employees=query.data?.employees||[]; const advances=query.data?.advances||[]; const total=Number(query.data?.summary?.totalCzk||0); const error=query.error||createState.error||deleteState.error; const canSubmit=employeeMembershipId&&Number(String(amountCzk).replace(',','.'))>0&&paidAt&&!createState.isLoading;
+ const visible=useMemo(()=>filterEmployee?advances.filter(item=>String(item.employee?.id||item.employeeMembershipId||'')===filterEmployee):advances,[advances,filterEmployee]);
+ const grouped=useMemo(()=>{const map=new Map();visible.forEach(item=>{const key=item.paidAt;if(!map.has(key))map.set(key,[]);map.get(key).push(item)});return [...map.entries()]},[visible]);
+ async function handleSubmit(e){e.preventDefault();if(!canSubmit)return;await createAdvance({employeeMembershipId,amountCzk:String(amountCzk).replace(',','.'),paidAt,note}).unwrap();setAmountCzk('');setNote('');setFormOpen(false)}
+ async function handleDelete(id){if(!window.confirm(copy.confirmDelete))return;await deleteAdvance(id).unwrap()}
+ return <section className="managerAdvancesPage pageStack">
+  <header className="managerAdvances-header"><div><h1>{copy.title}</h1><p>{copy.subtitle}</p></div><button type="button" className="managerAdvances-addButton" onClick={()=>setFormOpen(v=>!v)}><b>＋</b><span>{copy.add}</span></button></header>
+  <section className="managerAdvances-stats"><div><i>↓</i><span>{copy.received}</span><strong>{formatCzk(total,locale)}</strong><small>{advances.length} {copy.payments}</small></div><div><i>▣</i><span>{copy.count}</span><strong>{advances.length}</strong><small>{new Intl.DateTimeFormat(locale,{month:'long',timeZone:'UTC'}).format(new Date(`${month}-01T00:00:00Z`))}</small></div><div><i>▤</i><span>{copy.active}</span><strong>{advances.length}</strong><small>{copy.activeStatus}</small></div></section>
+  <section className="managerAdvances-filters"><label><span>{copy.month}</span><input type="month" value={month} onChange={e=>setMonth(e.target.value||monthKey(getLocalDateKey()))}/></label><label><span>{copy.employee}</span><select value={filterEmployee} onChange={e=>setFilterEmployee(e.target.value)}><option value="">{copy.allEmployees}</option>{employees.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select></label></section>
+  {formOpen?<form className="managerAdvances-form" onSubmit={handleSubmit}><h2>{copy.add}</h2><label><span>{copy.employee}</span><select value={employeeMembershipId} onChange={e=>setEmployeeMembershipId(e.target.value)} required><option value="">{copy.chooseEmployee}</option>{employees.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select></label><div className="managerAdvances-formGrid"><label><span>{copy.amount}</span><div className="managerAdvances-moneyInput"><input inputMode="decimal" value={amountCzk} onChange={e=>setAmountCzk(e.target.value)} placeholder="0" required/><b>Kč</b></div></label><label><span>{copy.date}</span><input type="date" value={paidAt} onChange={e=>setPaidAt(e.target.value)} required/></label></div><label><span>{copy.note}</span><input value={note} maxLength={500} onChange={e=>setNote(e.target.value)} placeholder={copy.notePlaceholder}/></label><button className="managerAdvances-saveButton" type="submit" disabled={!canSubmit}>{createState.isLoading?copy.saving:copy.save}</button></form>:null}
+  {error?<p className="statusNote is-error">{getApiErrorMessage(error)}</p>:null}{query.isLoading?<RequestLoadingState label={copy.history}/>:null}
+  {!query.isLoading?<section className="managerAdvances-history"><div className="managerAdvances-sectionTitle"><h2>{copy.history}</h2><span>{visible.length}</span></div>{grouped.length?grouped.map(([date,items])=><div className="managerAdvances-day" key={date}>{items.map(item=><article className="managerAdvances-record" key={item.id}><div className="managerAdvances-recordTop"><span className="managerAdvances-date">▣ {new Intl.DateTimeFormat(locale,{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(`${date}T00:00:00Z`))}</span><strong>− {formatCzk(item.amountCzk,locale)}</strong></div><div className="managerAdvances-person"><div className="managerAdvances-avatar">{(item.employee?.name||'?').trim().charAt(0).toUpperCase()}</div><div><strong>{item.employee?.name||'—'}</strong><span>{item.note||item.employee?.email||''}</span></div><button type="button" disabled={deleteState.isLoading} onClick={()=>handleDelete(item.id)}>•••<small>{copy.delete}</small></button></div><div className="managerAdvances-details"><div><span>{copy.amount}</span><strong>{formatCzk(item.amountCzk,locale)}</strong></div><div><span>{copy.status}</span><b>{copy.activeStatus}</b></div><div><span>{copy.balance}</span><strong>{formatCzk(item.amountCzk,locale)}</strong></div></div><div className="managerAdvances-impact"><i>i</i><div><strong>{copy.impact}</strong><span>{copy.impactText}</span></div></div></article>)}</div>):<div className="managerAdvances-empty">{copy.empty}</div>}</section>:null}
+ </section>
 }
