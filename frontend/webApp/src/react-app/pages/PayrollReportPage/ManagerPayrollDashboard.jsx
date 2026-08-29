@@ -2,6 +2,17 @@ import { useMemo, useState } from 'react';
 
 import { formatCzk, formatHours } from '../../app/formatters.js';
 
+const COPY = {
+  uk: { accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати' },
+  cs: { accrued: 'Nárok', advances: 'Zálohy', netPay: 'K výplatě' },
+  en: { accrued: 'Accrued', advances: 'Advances', netPay: 'Net pay' },
+};
+
+function copyForLocale(locale = '') {
+  const key = String(locale).toLowerCase().startsWith('cs') ? 'cs' : String(locale).toLowerCase().startsWith('en') ? 'en' : 'uk';
+  return COPY[key];
+}
+
 function initials(name = '') {
   return String(name)
     .trim()
@@ -42,9 +53,12 @@ export function ManagerPayrollDashboard({
     [employees, selectedEmployeeId],
   );
   const visibleSummary = selectedEmployee?.summary || summary;
+  const copy = copyForLocale(locale);
   const confirmed = Number(visibleSummary?.confirmedSalaryCzk || 0);
-  const expected = Number(visibleSummary?.predictedSalaryCzk || 0);
-  const pending = selectedEmployee ? expected : Math.max(expected - confirmed, 0);
+  const accrued = Number(visibleSummary?.predictedSalaryCzk || 0);
+  const advances = Number(visibleSummary?.advancesCzk || 0);
+  const netPay = Number(visibleSummary?.netPayCzk ?? Math.max(accrued - advances, 0));
+  const pending = Math.max(accrued - confirmed, 0);
   const approvedHours = visibleSummary?.approvedHours || 0;
   const pendingHours = visibleSummary?.pendingHours || 0;
 
@@ -80,16 +94,17 @@ export function ManagerPayrollDashboard({
       <section className="managerPayrollMobile-hero">
         <div className="managerPayrollMobile-wallet"><WalletIcon /></div>
         <span className="managerPayrollMobile-eyebrow">
-          {selectedEmployee ? `${t('payroll.predictedPayroll')} · ${selectedEmployee.name}` : t('payroll.predictedPayroll')}
+          {selectedEmployee ? `${copy.netPay} · ${selectedEmployee.name}` : copy.netPay}
         </span>
-        <strong className="managerPayrollMobile-total">{formatCzk(expected, locale)}</strong>
-        <div className="managerPayrollMobile-moneyGrid">
-          <div><span>{t('payroll.confirmed')}</span><strong>{formatCzk(confirmed, locale)}</strong></div>
-          <div><span>{t('payroll.pending')}</span><strong>{formatCzk(pending, locale)}</strong></div>
+        <strong className="managerPayrollMobile-total">{formatCzk(netPay, locale)}</strong>
+        <div className="managerPayrollMobile-moneyGrid is-net-pay">
+          <div><span>{copy.accrued}</span><strong>{formatCzk(accrued, locale)}</strong></div>
+          <div className="is-advance"><span>{copy.advances}</span><strong>− {formatCzk(advances, locale)}</strong></div>
+          <div className="is-net"><span>{copy.netPay}</span><strong>{formatCzk(netPay, locale)}</strong></div>
         </div>
         <div className="managerPayrollMobile-hours">
           <span><i className="is-confirmed" /> <b>{formatHours(approvedHours, locale)}</b> {t('payroll.confirmed').toLowerCase()}</span>
-          <span><i className="is-pending" /> <b>{formatHours(pendingHours, locale)}</b> {t('payroll.pending').toLowerCase()}</span>
+          <span><i className="is-pending" /> <b>{formatHours(pendingHours, locale)}</b> {t('payroll.pending').toLowerCase()} · {formatCzk(pending, locale)}</span>
         </div>
       </section>
 
@@ -115,9 +130,10 @@ export function ManagerPayrollDashboard({
                   <span>{employee.mixedRates ? '—' : `${formatCzk(employee.effectiveRateCzk ?? employee.hourlyRateCzk, locale)}/год`}</span>
                 </div>
                 <span className="managerPayrollMobile-chevron" aria-hidden="true">{isSelected ? '⌃' : '›'}</span>
-                <div className="managerPayrollMobile-employeeAmounts">
-                  <div className="is-confirmed"><span>● {t('payroll.confirmed')}</span><strong>{formatCzk(employee.summary?.confirmedSalaryCzk, locale)}</strong></div>
-                  <div className="is-pending"><span>◷ {t('payroll.pending')}</span><strong>{formatCzk(employee.summary?.predictedSalaryCzk, locale)}</strong></div>
+                <div className="managerPayrollMobile-employeeAmounts is-net-pay">
+                  <div><span>{copy.accrued}</span><strong>{formatCzk(employee.summary?.predictedSalaryCzk, locale)}</strong></div>
+                  <div className="is-advance"><span>{copy.advances}</span><strong>− {formatCzk(employee.summary?.advancesCzk, locale)}</strong></div>
+                  <div className="is-net"><span>{copy.netPay}</span><strong>{formatCzk(employee.summary?.netPayCzk, locale)}</strong></div>
                 </div>
               </button>
             );
