@@ -15,7 +15,7 @@ const COPY = {
 
 function monthKey(dateKey) { return String(dateKey || getLocalDateKey()).slice(0, 7); }
 
-export function ManagerAdvancesPage() {
+export function ManagerAdvancesPage({ embedded = false }) {
   const { language } = useI18n();
   const copy = COPY[language] || COPY.uk;
   const locale = resolveLocale(language);
@@ -56,8 +56,8 @@ export function ManagerAdvancesPage() {
     await deleteAdvance(id).unwrap();
   }
 
-  return <section className="managerAdvancesPage pageStack">
-    <header className="managerAdvances-header"><div><h1>{copy.title}</h1><p>{copy.subtitle}</p></div><button type="button" className="managerAdvances-addButton" onClick={()=>setFormOpen(value=>!value)}>＋ <span>{copy.add}</span></button></header>
+  return <section className={`managerAdvancesPage pageStack${embedded?' is-embedded':''}`}>
+    <header className="managerAdvances-header"><div><h1>{copy.title}</h1>{!embedded?<p>{copy.subtitle}</p>:null}</div><button type="button" className="managerAdvances-addButton" onClick={()=>setFormOpen(value=>!value)}>＋ <span>{copy.add}</span></button></header>
 
     <section className="managerAdvances-monthCard"><label><span>{copy.month}</span><input type="month" value={month} onChange={event=>setMonth(event.target.value || monthKey(getLocalDateKey()))}/></label><div><span>{copy.received}</span><strong>{formatCzk(total, locale)}</strong><small>{advances.length} {copy.payments}</small></div></section>
 
