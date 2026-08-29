@@ -1,6 +1,9 @@
+export const MANAGER_TIMESHEET_TAG = { type: 'WorkEntries', id: 'MANAGER_TIMESHEET' };
+
 export const WORK_TOTAL_TAGS = [
   { type: 'WorkEntries', id: 'SUMMARY' },
   { type: 'WorkEntries', id: 'PAYROLL' },
+  MANAGER_TIMESHEET_TAG,
 ];
 
 export const WORK_ENTRY_TAGS = [
