@@ -5,8 +5,9 @@ import { notificationMessages } from './notificationMessages.js';
 import { authMessages } from './authMessages.js';
 import { teamMessages } from './teamMessages.js';
 import { navigationMessages } from './navigationMessages.js';
+import { profileUiMessages } from './profileUiMessages.js';
 
-const SOURCES = [messages, worktrackMessages, pageMessages, notificationMessages, authMessages, teamMessages, navigationMessages];
+const SOURCES = [messages, worktrackMessages, pageMessages, notificationMessages, authMessages, teamMessages, navigationMessages, profileUiMessages];
 const SUPPORTED_LANGUAGES = ['uk', 'cs', 'en'];
 
 function resolvePath(object, key) {
