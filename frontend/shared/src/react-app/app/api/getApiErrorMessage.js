@@ -30,7 +30,7 @@ const ERROR_COPY = {
   },
   en: {
     fallback: 'Request failed.', fetch: 'Could not connect to the server.', timeout: 'The server response timed out.', parsing: 'The server returned an invalid response.',
-    'Project has work history and cannot be deleted. Deactivate it instead.': 'This project already has work-hour history and cannot be deleted. Deactivate it instead so the history stays محفوظed.',
+    'Project has work history and cannot be deleted. Deactivate it instead.': 'This project already has work-hour history and cannot be deleted. Deactivate it instead so the history stays preserved.',
   },
 };
 
