@@ -44,6 +44,25 @@ function employeeName(membership) {
   return String(user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Employee');
 }
 
+function preferSubmittedEntries(entries) {
+  const groups = new Map();
+
+  for (const entry of entries) {
+    const key = `${entry.employeeMembershipId}:${isoDate(entry.workDate)}`;
+    const list = groups.get(key) || [];
+    list.push(entry);
+    groups.set(key, list);
+  }
+
+  const result = [];
+  for (const dayEntries of groups.values()) {
+    const submitted = dayEntries.filter(entry => entry.weeklySubmissionId);
+    result.push(...(submitted.length ? submitted : dayEntries));
+  }
+
+  return result;
+}
+
 export async function getManagerTimesheet(client, context, { month }) {
   const period = parseMonth(month);
   const manager = context.activeMembership || context.membership || context;
@@ -70,6 +89,7 @@ export async function getManagerTimesheet(client, context, { month }) {
       select: {
         id: true,
         employeeMembershipId: true,
+        weeklySubmissionId: true,
         workDate: true,
         hours: true,
         grossHours: true,
@@ -102,7 +122,9 @@ export async function getManagerTimesheet(client, context, { month }) {
   ]);
 
   const activeEmployeeIds = new Set(employees.map(employee => employee.id));
-  const visibleWorkEntries = workEntries.filter(entry => activeEmployeeIds.has(entry.employeeMembershipId));
+  const visibleWorkEntries = preferSubmittedEntries(
+    workEntries.filter(entry => activeEmployeeIds.has(entry.employeeMembershipId))
+  );
   const visibleManagerEntries = managerEntries.filter(entry => activeEmployeeIds.has(entry.employeeMembershipId));
 
   const defaultBreakMinutes = Number(company?.breakMinutes || 0);
