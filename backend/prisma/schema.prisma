@@ -247,11 +247,14 @@ model CompanyExpense {
   employeeMembershipId String?
   managerMembershipId  String
   amountCzk            Decimal  @db.Decimal(12, 2)
-  spentAt               DateTime @db.Date
-  category              String
-  note                  String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  spentAt              DateTime @db.Date
+  category             String
+  note                 String?
+  receiptData          Bytes?
+  receiptMimeType      String?
+  receiptFileName      String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
   company            Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   employeeMembership CompanyMembership? @relation("EmployeeCompanyExpenses", fields: [employeeMembershipId], references: [id], onDelete: SetNull)
