@@ -14,12 +14,6 @@
 .fastWeekBar strong{font-size:16px}
 .fastWeekBar span{min-height:13px;font-size:10px}
 
-.fastProjectCard{grid-template-columns:42px minmax(0,1fr) 42px;gap:9px;padding:9px 11px;border-radius:17px}
-.fastProjectIcon{width:38px;height:38px;border-radius:12px;font-size:21px}
-.fastProjectCard strong{font-size:14px}
-.fastProjectCard small{font-size:10px}
-.fastProjectCard>button{width:38px;height:38px;border-radius:12px}
-
 .fastDaysCard{border-radius:18px}
 .fastDayRow{grid-template-columns:96px minmax(0,1fr) minmax(106px,auto);min-height:62px}
 .fastDayDate{gap:2px;padding:8px 12px}
@@ -57,7 +51,6 @@
   .fastWeekBar{grid-template-columns:44px minmax(0,1fr) 44px}
   .fastWeekBar button{width:42px;height:42px}
   .fastWeekBar strong{font-size:15px}
-  .fastProjectCard{padding:8px 10px}
   .fastDayRow{grid-template-columns:78px minmax(0,1fr) 88px;min-height:58px}
   .fastDayDate{padding:7px 9px}
   .fastDayShift{padding:6px 9px}
@@ -75,8 +68,6 @@
   .fastHeroTotal{font-size:22px}
   .fastWeekBar button{width:40px;height:40px}
   .fastWeekBar strong{font-size:14px}
-  .fastProjectCard{grid-template-columns:38px minmax(0,1fr) 38px}
-  .fastProjectIcon,.fastProjectCard>button{width:34px;height:34px}
   .fastDayRow{grid-template-columns:70px minmax(0,1fr) 78px;min-height:55px}
   .fastDayDate{padding:6px 8px}
   .fastDayDate strong{font-size:12px}
