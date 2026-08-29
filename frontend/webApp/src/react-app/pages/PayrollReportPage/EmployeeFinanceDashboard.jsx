@@ -9,9 +9,9 @@ import {
 } from '../../app/formatters.js';
 
 const FINANCE_COPY = {
-  uk: { finance:'Фінанси',week:'Тиждень',month:'Місяць',thisWeek:'Цей тиждень',thisMonth:'Цей місяць',expected:'Очікувана зарплата',remaining:'Залишилось',norm:'год норми',details:'Деталі',calculation:'Розрахунок',confirmed:'Підтверджено',pending:'Очікує підтвердження',overtime:'Понаднормові',total:'Всього',rate:'Ставка',hourlyRate:'Поточна погодинна ставка',mixedRates:'Кілька ставок',periodRate:'Ефективна ставка за період',taxNote:'Податки та відрахування не враховано',download:'Завантажити звіт PDF',share:'Поділитися',help:'Довідка' },
-  cs: { finance:'Finance',week:'Týden',month:'Měsíc',thisWeek:'Tento týden',thisMonth:'Tento měsíc',expected:'Očekávaná mzda',remaining:'Zbývá',norm:'h normy',details:'Detaily',calculation:'Výpočet',confirmed:'Potvrzeno',pending:'Čeká na potvrzení',overtime:'Přesčas',total:'Celkem',rate:'Sazba',hourlyRate:'Aktuální hodinová sazba',mixedRates:'Více sazeb',periodRate:'Efektivní sazba za období',taxNote:'Daně a odvody nejsou zahrnuty',download:'Stáhnout PDF report',share:'Sdílet',help:'Nápověda' },
-  en: { finance:'Finance',week:'Week',month:'Month',thisWeek:'This week',thisMonth:'This month',expected:'Expected salary',remaining:'Remaining',norm:'h target',details:'Details',calculation:'Calculation',confirmed:'Confirmed',pending:'Pending confirmation',overtime:'Overtime',total:'Total',rate:'Rate',hourlyRate:'Current hourly rate',mixedRates:'Multiple rates',periodRate:'Effective period rate',taxNote:'Taxes and deductions are not included',download:'Download PDF report',share:'Share',help:'Help' },
+  uk: { finance:'Фінанси',week:'Тиждень',month:'Місяць',thisWeek:'Цей тиждень',thisMonth:'Цей місяць',expected:'До виплати',grossExpected:'Нараховано',advances:'Залоги',advanceReceived:'Отримано залогів',remaining:'Залишилось',norm:'год норми',details:'Деталі',calculation:'Розрахунок',confirmed:'Підтверджено',pending:'Очікує підтвердження',overtime:'Понаднормові',total:'Нараховано',netTotal:'Чиста зарплата',rate:'Ставка',hourlyRate:'Поточна погодинна ставка',mixedRates:'Кілька ставок',periodRate:'Ефективна ставка за період',taxNote:'Податки та інші відрахування не враховано',download:'Завантажити звіт PDF',share:'Поділитися',help:'Довідка' },
+  cs: { finance:'Finance',week:'Týden',month:'Měsíc',thisWeek:'Tento týden',thisMonth:'Tento měsíc',expected:'K výplatě',grossExpected:'Nárok',advances:'Zálohy',advanceReceived:'Vyplacené zálohy',remaining:'Zbývá',norm:'h normy',details:'Detaily',calculation:'Výpočet',confirmed:'Potvrzeno',pending:'Čeká na potvrzení',overtime:'Přesčas',total:'Nárok',netTotal:'Čistě k výplatě',rate:'Sazba',hourlyRate:'Aktuální hodinová sazba',mixedRates:'Více sazeb',periodRate:'Efektivní sazba za období',taxNote:'Daně a další odvody nejsou zahrnuty',download:'Stáhnout PDF report',share:'Sdílet',help:'Nápověda' },
+  en: { finance:'Finance',week:'Week',month:'Month',thisWeek:'This week',thisMonth:'This month',expected:'Net payable',grossExpected:'Earned',advances:'Advances',advanceReceived:'Advances received',remaining:'Remaining',norm:'h target',details:'Details',calculation:'Calculation',confirmed:'Confirmed',pending:'Pending confirmation',overtime:'Overtime',total:'Earned',netTotal:'Net salary',rate:'Rate',hourlyRate:'Current hourly rate',mixedRates:'Multiple rates',periodRate:'Effective period rate',taxNote:'Taxes and other deductions are not included',download:'Download PDF report',share:'Share',help:'Help' },
 };
 
 function employeeName(user) {
@@ -19,7 +19,19 @@ function employeeName(user) {
   return fullName || user?.name || user?.email || '—';
 }
 
-export function EmployeeFinanceDashboard({ companyName, hourlyRate, language, locale, localizedStatus, monthData, onChangePeriod, onPeriodChange, period, submission, summary, user, week, workRules }) {
+function advancesForPeriod(advances, period, monthData, week) {
+  const list = Array.isArray(advances) ? advances : [];
+  if (period === 'month') {
+    const month = monthData?.month;
+    return month ? list.filter(item => String(item.paidAt || '').startsWith(month)) : [];
+  }
+  const start = week?.weekStart;
+  const end = week?.weekEnd;
+  if (!start || !end) return [];
+  return list.filter(item => item.paidAt >= start && item.paidAt <= end);
+}
+
+export function EmployeeFinanceDashboard({ advances, companyName, hourlyRate, language, locale, localizedStatus, monthData, onChangePeriod, onPeriodChange, period, submission, summary, user, week, workRules }) {
   const navigate = useNavigate();
   const copy = FINANCE_COPY[language] || FINANCE_COPY.uk;
   const sourceSummary = period === 'month' ? (monthData?.summary || {}) : summary;
@@ -28,9 +40,12 @@ export function EmployeeFinanceDashboard({ companyName, hourlyRate, language, lo
   const pendingHours = Number(sourceSummary.pendingHours || 0);
   const confirmedSalary = Number(period === 'month' ? sourceSummary.approvedAmountCzk : sourceSummary.confirmedSalaryCzk || 0);
   const pendingSalary = Number(period === 'month' ? sourceSummary.pendingAmountCzk : sourceSummary.predictedSalaryCzk || 0);
-  const expectedSalary = confirmedSalary + pendingSalary;
+  const earnedSalary = confirmedSalary + pendingSalary;
+  const periodAdvances = advancesForPeriod(advances, period, monthData, week);
+  const advanceAmount = periodAdvances.reduce((sum, item) => sum + Number(item.amountCzk || 0), 0);
+  const expectedSalary = earnedSalary - advanceAmount;
   const currentRate = Number(hourlyRate || 0);
-  const effectiveRate = totalHours > 0 ? expectedSalary / totalHours : currentRate;
+  const effectiveRate = totalHours > 0 ? earnedSalary / totalHours : currentRate;
   const hasMixedRates = totalHours > 0 && Math.abs(effectiveRate - currentRate) >= 0.01;
   const overtimeHours = period === 'month' ? 0 : Number(sourceSummary.overtimeHours || 0);
   const overtimeSalary = overtimeHours * effectiveRate;
@@ -60,7 +75,7 @@ export function EmployeeFinanceDashboard({ companyName, hourlyRate, language, lo
     <section className="employeeFinance-periodNav" aria-label={period==='month'?copy.month:copy.week}><button type="button" onClick={()=>onChangePeriod(-1)} aria-label="Previous period">‹</button><div><strong>{periodLabel}</strong><span>{period==='month'?copy.thisMonth:copy.thisWeek}</span></div><button type="button" onClick={()=>onChangePeriod(1)} aria-label="Next period">›</button></section>
     <section className="employeeFinance-hero"><div className="employeeFinance-heroTop"><div><span>{copy.expected}</span><strong>{formatCzk(expectedSalary,locale)}</strong><small>{heroRateText}</small></div><span className="employeeFinance-status"><i />{status}</span></div><div className="employeeFinance-progress" aria-label={`${formatHours(totalHours,locale)} / ${formatHours(targetHours,locale)}`}><span style={{width:`${progress}%`}} /></div><div className="employeeFinance-progressMeta"><span>{formatHours(totalHours,locale)} / {formatHours(targetHours,locale)} {copy.norm}</span><span>{copy.remaining} {formatHours(remainingHours,locale)}</span></div></section>
     <section className="employeeFinance-companyCard"><div className="employeeFinance-icon" aria-hidden="true">▦</div><div className="employeeFinance-companyText"><strong>{companyName}</strong><span>{employeeName(user)} · {formatCzk(currentRate,locale)}/год</span></div><button className="employeeFinance-detailsButton" type="button" onClick={()=>navigate('/profile')}>{copy.details}<span aria-hidden="true">›</span></button></section>
-    <section className="employeeFinance-card employeeFinance-calculationCard"><h2>{copy.calculation}</h2><div className="employeeFinance-breakdownRow is-confirmed"><span><i />{copy.confirmed}</span><strong>{formatHours(approvedHours,locale)}</strong><b>{formatCzk(confirmedSalary,locale)}</b></div><div className="employeeFinance-breakdownRow is-pending"><span><i />{copy.pending}</span><strong>{formatHours(pendingHours,locale)}</strong><b>{formatCzk(pendingSalary,locale)}</b></div>{period==='week'?<div className="employeeFinance-breakdownRow is-overtime"><span><i />{copy.overtime}</span><strong>{formatHours(overtimeHours,locale)}</strong><b>{formatCzk(overtimeSalary,locale)}</b></div>:null}<div className="employeeFinance-totalRow"><span>{copy.total}</span><strong>{formatHours(totalHours,locale)}</strong><b>{formatCzk(expectedSalary,locale)}</b></div></section>
+    <section className="employeeFinance-card employeeFinance-calculationCard"><h2>{copy.calculation}</h2><div className="employeeFinance-breakdownRow is-confirmed"><span><i />{copy.confirmed}</span><strong>{formatHours(approvedHours,locale)}</strong><b>{formatCzk(confirmedSalary,locale)}</b></div><div className="employeeFinance-breakdownRow is-pending"><span><i />{copy.pending}</span><strong>{formatHours(pendingHours,locale)}</strong><b>{formatCzk(pendingSalary,locale)}</b></div>{period==='week'?<div className="employeeFinance-breakdownRow is-overtime"><span><i />{copy.overtime}</span><strong>{formatHours(overtimeHours,locale)}</strong><b>{formatCzk(overtimeSalary,locale)}</b></div>:null}<div className="employeeFinance-totalRow"><span>{copy.total}</span><strong>{formatHours(totalHours,locale)}</strong><b>{formatCzk(earnedSalary,locale)}</b></div><div className="employeeFinance-breakdownRow is-advance"><span><i />{copy.advances}</span><strong>{periodAdvances.length}</strong><b>− {formatCzk(advanceAmount,locale)}</b></div><div className="employeeFinance-totalRow is-net"><span>{copy.netTotal}</span><strong>{copy.advanceReceived}</strong><b>{formatCzk(expectedSalary,locale)}</b></div></section>
     <section className="employeeFinance-card employeeFinance-rateCard"><div className="employeeFinance-rateLine"><div className="employeeFinance-rateIcon" aria-hidden="true">₭</div><div><strong>{copy.rate}</strong><span>{hasMixedRates ? copy.periodRate : copy.hourlyRate}</span></div><b>{hasMixedRates ? formatCzk(effectiveRate,locale) : formatCzk(currentRate,locale)}/год</b></div><div className="employeeFinance-taxNote"><span aria-hidden="true">ⓘ</span>{copy.taxNote}</div></section>
     <div className="employeeFinance-actions"><button className="employeeFinance-primaryAction" type="button" onClick={()=>window.print()}><span aria-hidden="true">⇩</span>{copy.download}</button><button className="employeeFinance-secondaryAction" type="button" onClick={handleShare}><span aria-hidden="true">⇧</span>{copy.share}</button></div>
   </div>;
