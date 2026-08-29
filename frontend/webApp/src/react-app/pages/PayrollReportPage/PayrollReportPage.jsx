@@ -10,6 +10,7 @@ import { hasManagerAccess } from '@shared/features/auth/authAccess.js';
 import { useGetMonthlyHoursQuery } from '../../features/worktrack/monthlyHoursApi.js';
 import { useGetManagerPayrollQuery, useGetWorkSummaryQuery } from '../../features/worktrack/worktrackApi.js';
 import './PayrollReportPage.css';
+import './ManagerPayrollMobile.css';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const STATUS_KEYS = { DRAFT: 'draft', SUBMITTED: 'submitted', APPROVED: 'approved', REJECTED: 'rejected' };
@@ -59,6 +60,10 @@ function getLocalDateKey() {
   return `${year}-${month}-${day}`;
 }
 
+function monthKeyFromAnchor(anchor) {
+  return String(anchor || getLocalDateKey()).slice(0, 7);
+}
+
 function shiftAnchor(anchor, period, direction) {
   const source = new Date(`${anchor}T00:00:00.000Z`);
   if (period === 'month') return new Date(Date.UTC(source.getUTCFullYear(), source.getUTCMonth() + direction, 1)).toISOString().slice(0, 10);
@@ -77,32 +82,33 @@ function formatPeriod(start, end, locale) {
   return `${formatter.format(startDate)} – ${formatter.format(endDate)}`;
 }
 
-function formatMonth(anchor, locale) {
-  const date = new Date(`${anchor.slice(0, 7)}-01T00:00:00.000Z`);
-  return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(date);
+function formatMonthPeriod(month, locale) {
+  if (!month) return '—';
+  const [year, monthNumber] = month.split('-').map(Number);
+  return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(year, monthNumber - 1, 1)));
 }
 
 function ReportRow({ label, value, emphasize = false }) {
   return <div className={`payrollReport-row${emphasize ? ' is-emphasized' : ''}`}><span>{label}</span><strong>{value}</strong></div>;
 }
 
-function EmployeeFinanceDashboard({ anchor, companyName, hourlyRate, language, locale, localizedStatus, onChangeAnchor, onChangePeriod, period, submission, summary, user, week, workRules }) {
+function EmployeeFinanceDashboard({ companyName, hourlyRate, language, locale, localizedStatus, monthData, onChangePeriod, onPeriodChange, period, submission, summary, user, week }) {
   const navigate = useNavigate();
   const copy = FINANCE_COPY[language] || FINANCE_COPY.uk;
-  const totalHours = Number(summary.totalHours || 0);
-  const approvedHours = Number(summary.approvedHours || 0);
-  const pendingHours = Number(summary.pendingHours || 0);
-  const confirmedSalary = Number(summary.confirmedSalaryCzk || 0);
-  const pendingSalary = Number(summary.predictedSalaryCzk || 0);
+  const sourceSummary = period === 'month' ? (monthData?.summary || {}) : summary;
+  const totalHours = Number(sourceSummary.totalHours || 0);
+  const approvedHours = Number(sourceSummary.approvedHours || 0);
+  const pendingHours = Number(sourceSummary.pendingHours || 0);
+  const confirmedSalary = Number(period === 'month' ? sourceSummary.approvedAmountCzk : sourceSummary.confirmedSalaryCzk || 0);
+  const pendingSalary = Number(period === 'month' ? sourceSummary.pendingAmountCzk : sourceSummary.predictedSalaryCzk || 0);
   const expectedSalary = confirmedSalary + pendingSalary;
-  const overtimeHours = period === 'week' ? Number(summary.overtimeHours || 0) : 0;
+  const overtimeHours = period === 'month' ? 0 : Number(sourceSummary.overtimeHours || 0);
   const overtimeSalary = overtimeHours * Number(hourlyRate || 0);
-  const status = localizedStatus(submission?.status);
-  const dailyTarget = Number(workRules?.standardDailyHours || 8);
-  const targetHours = Math.max(0.25, Number.isFinite(dailyTarget) ? dailyTarget : 8) * 5;
+  const status = period === 'month' ? copy.thisMonth : localizedStatus(submission?.status);
+  const targetHours = period === 'month' ? 160 : 40;
   const remainingHours = Math.max(targetHours - totalHours, 0);
   const progress = Math.min((totalHours / targetHours) * 100, 100);
-  const periodLabel = period === 'month' ? formatMonth(anchor, locale) : formatPeriod(week?.weekStart, week?.weekEnd, locale);
+  const periodLabel = period === 'month' ? formatMonthPeriod(monthData?.month, locale) : formatPeriod(week?.weekStart, week?.weekEnd, locale);
 
   const handleShare = async () => {
     const payload = { title: copy.finance, text: `${companyName}: ${formatCzk(expectedSalary, locale)}`, url: window.location.href };
@@ -121,17 +127,17 @@ function EmployeeFinanceDashboard({ anchor, companyName, hourlyRate, language, l
       </header>
 
       <div className="employeeFinance-tabs" role="tablist" aria-label={copy.finance}>
-        <button className={period === 'week' ? 'is-active' : ''} type="button" role="tab" aria-selected={period === 'week'} onClick={() => onChangePeriod('week')}>{copy.week}</button>
-        <button className={period === 'month' ? 'is-active' : ''} type="button" role="tab" aria-selected={period === 'month'} onClick={() => onChangePeriod('month')}>{copy.month}</button>
+        <button className={period === 'week' ? 'is-active' : ''} type="button" role="tab" aria-selected={period === 'week'} onClick={() => onPeriodChange('week')}>{copy.week}</button>
+        <button className={period === 'month' ? 'is-active' : ''} type="button" role="tab" aria-selected={period === 'month'} onClick={() => onPeriodChange('month')}>{copy.month}</button>
       </div>
 
       <section className="employeeFinance-periodNav" aria-label={period === 'month' ? copy.month : copy.week}>
-        <button type="button" onClick={() => onChangeAnchor(-1)} aria-label="Previous period">‹</button>
+        <button type="button" onClick={() => onChangePeriod(-1)} aria-label="Previous period">‹</button>
         <div>
           <strong>{periodLabel}</strong>
           <span>{period === 'month' ? copy.thisMonth : copy.thisWeek}</span>
         </div>
-        <button type="button" onClick={() => onChangeAnchor(1)} aria-label="Next period">›</button>
+        <button type="button" onClick={() => onChangePeriod(1)} aria-label="Next period">›</button>
       </section>
 
       <section className="employeeFinance-hero">
@@ -141,19 +147,15 @@ function EmployeeFinanceDashboard({ anchor, companyName, hourlyRate, language, l
             <strong>{formatCzk(expectedSalary, locale)}</strong>
             <small>{formatHours(totalHours, locale)} × {formatCzk(hourlyRate, locale)}</small>
           </div>
-          {period === 'week' ? <span className="employeeFinance-status"><i />{status}</span> : null}
+          <span className="employeeFinance-status"><i />{status}</span>
         </div>
-        {period === 'week' ? (
-          <>
-            <div className="employeeFinance-progress" aria-label={`${formatHours(totalHours, locale)} / ${formatHours(targetHours, locale)}`}>
-              <span style={{ width: `${progress}%` }} />
-            </div>
-            <div className="employeeFinance-progressMeta">
-              <span>{formatHours(totalHours, locale)} / {formatHours(targetHours, locale)} {copy.norm}</span>
-              <span>{copy.remaining} {formatHours(remainingHours, locale)}</span>
-            </div>
-          </>
-        ) : null}
+        <div className="employeeFinance-progress" aria-label={`${formatHours(totalHours, locale)} / ${formatHours(targetHours, locale)}`}>
+          <span style={{ width: `${progress}%` }} />
+        </div>
+        <div className="employeeFinance-progressMeta">
+          <span>{formatHours(totalHours, locale)} / {targetHours} {copy.norm}</span>
+          <span>{copy.remaining} {formatHours(remainingHours, locale)}</span>
+        </div>
       </section>
 
       <section className="employeeFinance-companyCard">
@@ -167,36 +169,14 @@ function EmployeeFinanceDashboard({ anchor, companyName, hourlyRate, language, l
 
       <section className="employeeFinance-card employeeFinance-calculationCard">
         <h2>{copy.calculation}</h2>
-        <div className="employeeFinance-breakdownRow is-confirmed">
-          <span><i />{copy.confirmed}</span>
-          <strong>{formatHours(approvedHours, locale)}</strong>
-          <b>{formatCzk(confirmedSalary, locale)}</b>
-        </div>
-        <div className="employeeFinance-breakdownRow is-pending">
-          <span><i />{copy.pending}</span>
-          <strong>{formatHours(pendingHours, locale)}</strong>
-          <b>{formatCzk(pendingSalary, locale)}</b>
-        </div>
-        {period === 'week' ? (
-          <div className="employeeFinance-breakdownRow is-overtime">
-            <span><i />{copy.overtime}</span>
-            <strong>{formatHours(overtimeHours, locale)}</strong>
-            <b>{formatCzk(overtimeSalary, locale)}</b>
-          </div>
-        ) : null}
-        <div className="employeeFinance-totalRow">
-          <span>{copy.total}</span>
-          <strong>{formatHours(totalHours, locale)}</strong>
-          <b>{formatCzk(expectedSalary, locale)}</b>
-        </div>
+        <div className="employeeFinance-breakdownRow is-confirmed"><span><i />{copy.confirmed}</span><strong>{formatHours(approvedHours, locale)}</strong><b>{formatCzk(confirmedSalary, locale)}</b></div>
+        <div className="employeeFinance-breakdownRow is-pending"><span><i />{copy.pending}</span><strong>{formatHours(pendingHours, locale)}</strong><b>{formatCzk(pendingSalary, locale)}</b></div>
+        {period === 'week' ? <div className="employeeFinance-breakdownRow is-overtime"><span><i />{copy.overtime}</span><strong>{formatHours(overtimeHours, locale)}</strong><b>{formatCzk(overtimeSalary, locale)}</b></div> : null}
+        <div className="employeeFinance-totalRow"><span>{copy.total}</span><strong>{formatHours(totalHours, locale)}</strong><b>{formatCzk(expectedSalary, locale)}</b></div>
       </section>
 
       <section className="employeeFinance-card employeeFinance-rateCard">
-        <div className="employeeFinance-rateLine">
-          <div className="employeeFinance-rateIcon" aria-hidden="true">₭</div>
-          <div><strong>{copy.rate}</strong><span>{copy.hourlyRate}</span></div>
-          <b>{formatCzk(hourlyRate, locale)}/год</b>
-        </div>
+        <div className="employeeFinance-rateLine"><div className="employeeFinance-rateIcon" aria-hidden="true">₭</div><div><strong>{copy.rate}</strong><span>{copy.hourlyRate}</span></div><b>{formatCzk(hourlyRate, locale)}/год</b></div>
         <div className="employeeFinance-taxNote"><span aria-hidden="true">ⓘ</span>{copy.taxNote}</div>
       </section>
 
@@ -217,28 +197,17 @@ export function PayrollReportPage() {
   const [managerAnchor, setManagerAnchor] = useState(getLocalDateKey);
   const [employeePeriod, setEmployeePeriod] = useState('week');
   const [employeeAnchor, setEmployeeAnchor] = useState(getLocalDateKey);
-  const employeeMonth = employeeAnchor.slice(0, 7);
-
   const workSummaryQuery = useGetWorkSummaryQuery({ weekStart: employeeAnchor }, { skip: isManager || employeePeriod !== 'week' });
-  const monthlyHoursQuery = useGetMonthlyHoursQuery(employeeMonth, { skip: isManager || employeePeriod !== 'month' });
+  const monthlyHoursQuery = useGetMonthlyHoursQuery(monthKeyFromAnchor(employeeAnchor), { skip: isManager || employeePeriod !== 'month' });
   const managerPayrollQuery = useGetManagerPayrollQuery({ period: managerPeriod, anchor: managerAnchor }, { skip: !isManager });
   const activeQuery = isManager ? managerPayrollQuery : employeePeriod === 'month' ? monthlyHoursQuery : workSummaryQuery;
   const data = activeQuery.data;
   const error = activeQuery.error;
   const isLoading = activeQuery.isLoading || activeQuery.isFetching;
-  const rawSummary = data?.summary || {};
-  const summary = !isManager && employeePeriod === 'month'
-    ? {
-        totalHours: rawSummary.totalHours || '0.00',
-        approvedHours: rawSummary.approvedHours || '0.00',
-        pendingHours: rawSummary.pendingHours || '0.00',
-        confirmedSalaryCzk: rawSummary.approvedAmountCzk || '0.00',
-        predictedSalaryCzk: rawSummary.pendingAmountCzk || '0.00',
-      }
-    : rawSummary;
+  const summary = data?.summary || {};
   const companyName = data?.company?.name || user?.activeCompany?.name || 'WorkTrack';
-  const week = data?.week || null;
-  const submission = data?.submission || null;
+  const week = employeePeriod === 'week' ? data?.week || null : null;
+  const submission = employeePeriod === 'week' ? data?.submission || null : null;
   const hourlyRate = data?.hourlyRateCzk || user?.activeMembership?.hourlyRateCzk || '0.00';
   const managerEmployees = Array.isArray(data?.employees) ? data.employees : [];
   const managerPeriodLabel = useMemo(() => {
@@ -256,107 +225,17 @@ export function PayrollReportPage() {
     <section className="payrollReportPage pageStack">
       {isManager ? (
         <>
-          <header className="payrollReport-toolbar screenCard noPrint">
-            <div className="compactHeader"><h1>{t('payroll.title')}</h1><p>{t('payroll.printCopy')}</p></div>
-            <div className="payrollReport-actions"><Link to="/dashboard">{t('payroll.back')}</Link><button type="button" onClick={() => window.print()} disabled={isLoading || Boolean(error)}>{t('payroll.print')}</button></div>
-          </header>
-          <section className="payrollReport-filters screenCard noPrint" aria-label={t('payroll.period')}>
-            <div className="payrollPeriodToggle" role="group" aria-label={t('payroll.periodType')}>
-              <button className={managerPeriod === 'week' ? 'is-active' : ''} type="button" disabled={isLoading} onClick={() => setManagerPeriod('week')}>{t('payroll.week')}</button>
-              <button className={managerPeriod === 'month' ? 'is-active' : ''} type="button" disabled={isLoading} onClick={() => setManagerPeriod('month')}>{t('payroll.month')}</button>
-            </div>
-            <div className="payrollPeriodNavigation">
-              <button type="button" disabled={isLoading} onClick={() => setManagerAnchor(current => shiftAnchor(current, managerPeriod, -1))}>{t('payroll.previous')}</button>
-              <label className="payrollPeriodDate"><span>{t('payroll.periodDate')}</span><input type="date" value={managerAnchor} disabled={isLoading} onChange={event => setManagerAnchor(event.target.value || getLocalDateKey())} /></label>
-              <button type="button" disabled={isLoading} onClick={() => setManagerAnchor(current => shiftAnchor(current, managerPeriod, 1))}>{t('payroll.next')}</button>
-              <button type="button" disabled={isLoading} onClick={() => setManagerAnchor(getLocalDateKey())}>{t('payroll.today')}</button>
-            </div>
-          </section>
+          <header className="payrollReport-toolbar screenCard noPrint"><div className="compactHeader"><h1>{t('payroll.title')}</h1><p>{t('payroll.printCopy')}</p></div><div className="payrollReport-actions"><Link to="/dashboard">{t('payroll.back')}</Link><button type="button" onClick={() => window.print()} disabled={isLoading || Boolean(error)}>{t('payroll.print')}</button></div></header>
+          <section className="payrollReport-filters screenCard noPrint" aria-label={t('payroll.period')}><div className="payrollPeriodToggle" role="group" aria-label={t('payroll.periodType')}><button className={managerPeriod === 'week' ? 'is-active' : ''} type="button" disabled={isLoading} onClick={() => setManagerPeriod('week')}>{t('payroll.week')}</button><button className={managerPeriod === 'month' ? 'is-active' : ''} type="button" disabled={isLoading} onClick={() => setManagerPeriod('month')}>{t('payroll.month')}</button></div><div className="payrollPeriodNavigation"><button type="button" disabled={isLoading} onClick={() => setManagerAnchor(current => shiftAnchor(current, managerPeriod, -1))}>{t('payroll.previous')}</button><label className="payrollPeriodDate"><span>{t('payroll.periodDate')}</span><input type="date" value={managerAnchor} disabled={isLoading} onChange={event => setManagerAnchor(event.target.value || getLocalDateKey())} /></label><button type="button" disabled={isLoading} onClick={() => setManagerAnchor(current => shiftAnchor(current, managerPeriod, 1))}>{t('payroll.next')}</button><button type="button" disabled={isLoading} onClick={() => setManagerAnchor(getLocalDateKey())}>{t('payroll.today')}</button></div></section>
         </>
       ) : null}
 
       {isLoading ? <RequestLoadingState label={t('payroll.preparing')} /> : null}
       {error ? <p className="statusNote is-error noPrint">{getApiErrorMessage(error)}</p> : null}
 
-      {!isLoading && !error && !isManager ? (
-        <EmployeeFinanceDashboard
-          anchor={employeeAnchor}
-          companyName={companyName}
-          hourlyRate={hourlyRate}
-          language={language}
-          locale={locale}
-          localizedStatus={localizedStatus}
-          onChangeAnchor={direction => setEmployeeAnchor(current => shiftAnchor(current, employeePeriod, direction))}
-          onChangePeriod={nextPeriod => {
-            setEmployeePeriod(nextPeriod);
-            if (nextPeriod === 'month') setEmployeeAnchor(current => `${current.slice(0, 7)}-01`);
-          }}
-          period={employeePeriod}
-          submission={submission}
-          summary={summary}
-          user={user}
-          week={week}
-          workRules={data?.workRules}
-        />
-      ) : null}
+      {!isLoading && !error && !isManager ? <EmployeeFinanceDashboard companyName={companyName} hourlyRate={hourlyRate} language={language} locale={locale} localizedStatus={localizedStatus} monthData={employeePeriod === 'month' ? data : null} onChangePeriod={direction => setEmployeeAnchor(current => shiftAnchor(current, employeePeriod, direction))} onPeriodChange={next => { setEmployeePeriod(next); setEmployeeAnchor(current => next === 'month' ? `${monthKeyFromAnchor(current)}-01` : current); }} period={employeePeriod} submission={submission} summary={summary} user={user} week={week} /> : null}
 
-      {!isLoading && !error ? (
-        <article className={`payrollReport-sheet${!isManager ? ' is-employee-print' : ''}`}>
-          <header className="payrollReport-header">
-            <div><p className="payrollReport-brand">WorkTrack</p><h2>{isManager ? t('payroll.companyReport') : t('payroll.employeeStatement')}</h2></div>
-            <div className="payrollReport-company"><strong>{companyName}</strong><span>{isManager ? t('payroll.managerReport') : getEmployeeName(user)}</span></div>
-          </header>
-          <section className="payrollReport-meta">
-            {!isManager && employeePeriod === 'week' && week ? (
-              <>
-                <ReportRow label={t('payroll.weekStart')} value={week.weekStart || '-'} />
-                <ReportRow label={t('payroll.weekEnd')} value={week.weekEnd || '-'} />
-                <ReportRow label={t('payroll.weekStatus')} value={localizedStatus(submission?.status)} />
-                <ReportRow label={t('payroll.hourlyRate')} value={formatCzk(hourlyRate, locale)} />
-              </>
-            ) : !isManager ? (
-              <>
-                <ReportRow label={t('payroll.periodType')} value={t('payroll.month')} />
-                <ReportRow label={t('payroll.period')} value={formatMonth(employeeAnchor, locale)} />
-                <ReportRow label={t('payroll.hourlyRate')} value={formatCzk(hourlyRate, locale)} />
-              </>
-            ) : (
-              <>
-                <ReportRow label={t('payroll.periodType')} value={data?.period?.type === 'month' ? t('payroll.month') : t('payroll.week')} />
-                <ReportRow label={t('payroll.period')} value={managerPeriodLabel} />
-                <ReportRow label={t('payroll.employees')} value={String(summary.employeeCount || 0)} />
-                <ReportRow label={t('payroll.employeesWithHours')} value={String(summary.employeesWithHours || 0)} />
-              </>
-            )}
-          </section>
-          <section className="payrollReport-summary">
-            <h3>{isManager ? t('payroll.payrollTotals') : t('payroll.hoursSalary')}</h3>
-            {isManager ? (
-              <>
-                <ReportRow label={t('payroll.approvedHours')} value={formatHours(summary.approvedHours, locale)} />
-                <ReportRow label={t('payroll.pendingHours')} value={formatHours(summary.pendingHours, locale)} />
-                <ReportRow label={t('payroll.confirmedPayroll')} value={formatCzk(summary.confirmedSalaryCzk, locale)} emphasize />
-                <ReportRow label={t('payroll.predictedPayroll')} value={formatCzk(summary.predictedSalaryCzk, locale)} />
-              </>
-            ) : (
-              <>
-                <ReportRow label={t('payroll.totalSavedHours')} value={formatHours(summary.totalHours, locale)} />
-                <ReportRow label={t('payroll.approvedHours')} value={formatHours(summary.approvedHours, locale)} />
-                <ReportRow label={t('payroll.pendingHours')} value={formatHours(summary.pendingHours, locale)} />
-                <ReportRow label={t('payroll.confirmedSalary')} value={formatCzk(summary.confirmedSalaryCzk, locale)} emphasize />
-                <ReportRow label={t('payroll.predictedSalary')} value={formatCzk(summary.predictedSalaryCzk, locale)} />
-              </>
-            )}
-          </section>
-          {isManager ? (
-            <section className="payrollReport-employeeSection">
-              <div className="payrollReport-sectionHeader"><h3>{t('payroll.breakdown')}</h3><span>{managerEmployees.length} {t('payroll.employees').toLowerCase()}</span></div>
-              <div className="payrollReport-tableWrap"><table className="payrollReport-table"><thead><tr><th>{t('payroll.employee')}</th><th>{t('payroll.status')}</th><th>{t('payroll.rate')}</th><th>{t('payroll.approved')}</th><th>{t('payroll.pending')}</th><th>{t('payroll.confirmed')}</th><th>{t('payroll.predicted')}</th></tr></thead><tbody>{managerEmployees.map(employee => <tr key={employee.id}><td><strong>{employee.name}</strong><span>{employee.email}</span></td><td>{localizedEmployeeStatus(employee.status)}</td><td>{employee.mixedRates ? (MIXED_RATE_LABELS[language] || MIXED_RATE_LABELS.uk) : formatCzk(employee.effectiveRateCzk || employee.hourlyRateCzk, locale)}</td><td>{formatHours(employee.summary?.approvedHours, locale)}</td><td>{formatHours(employee.summary?.pendingHours, locale)}</td><td>{formatCzk(employee.summary?.confirmedSalaryCzk, locale)}</td><td>{formatCzk(employee.summary?.predictedSalaryCzk, locale)}</td></tr>)}</tbody></table></div>
-            </section>
-          ) : null}
-          <footer className="payrollReport-footer"><p>{t('payroll.footer')}</p><span>{t('payroll.generated')}</span></footer>
-        </article>
-      ) : null}
+      {!isLoading && !error ? <article className={`payrollReport-sheet${!isManager ? ' is-employee-print' : ''}`}><header className="payrollReport-header"><div><p className="payrollReport-brand">WorkTrack</p><h2>{isManager ? t('payroll.companyReport') : t('payroll.employeeStatement')}</h2></div><div className="payrollReport-company"><strong>{companyName}</strong><span>{isManager ? t('payroll.managerReport') : getEmployeeName(user)}</span></div></header><section className="payrollReport-meta">{!isManager && week ? <><ReportRow label={t('payroll.weekStart')} value={week.weekStart || '-'} /><ReportRow label={t('payroll.weekEnd')} value={week.weekEnd || '-'} /><ReportRow label={t('payroll.weekStatus')} value={localizedStatus(submission?.status)} /><ReportRow label={t('payroll.hourlyRate')} value={formatCzk(hourlyRate, locale)} /></> : isManager ? <><ReportRow label={t('payroll.periodType')} value={data?.period?.type === 'month' ? t('payroll.month') : t('payroll.week')} /><ReportRow label={t('payroll.period')} value={managerPeriodLabel} /><ReportRow label={t('payroll.employees')} value={String(summary.employeeCount || 0)} /><ReportRow label={t('payroll.employeesWithHours')} value={String(summary.employeesWithHours || 0)} /></> : <><ReportRow label={t('payroll.periodType')} value={t('payroll.month')} /><ReportRow label={t('payroll.period')} value={formatMonthPeriod(data?.month, locale)} /><ReportRow label={t('payroll.hourlyRate')} value={formatCzk(hourlyRate, locale)} /></>}</section><section className="payrollReport-summary"><h3>{isManager ? t('payroll.payrollTotals') : t('payroll.hoursSalary')}</h3>{isManager ? <><ReportRow label={t('payroll.approvedHours')} value={formatHours(summary.approvedHours, locale)} /><ReportRow label={t('payroll.pendingHours')} value={formatHours(summary.pendingHours, locale)} /><ReportRow label={t('payroll.confirmedPayroll')} value={formatCzk(summary.confirmedSalaryCzk, locale)} emphasize /><ReportRow label={t('payroll.predictedPayroll')} value={formatCzk(summary.predictedSalaryCzk, locale)} /></> : employeePeriod === 'month' ? <><ReportRow label={t('payroll.totalSavedHours')} value={formatHours(summary.totalHours, locale)} /><ReportRow label={t('payroll.approvedHours')} value={formatHours(summary.approvedHours, locale)} /><ReportRow label={t('payroll.pendingHours')} value={formatHours(summary.pendingHours, locale)} /><ReportRow label={t('payroll.confirmedSalary')} value={formatCzk(summary.approvedAmountCzk, locale)} emphasize /><ReportRow label={t('payroll.predictedSalary')} value={formatCzk(summary.pendingAmountCzk, locale)} /></> : <><ReportRow label={t('payroll.totalSavedHours')} value={formatHours(summary.totalHours, locale)} /><ReportRow label={t('payroll.approvedHours')} value={formatHours(summary.approvedHours, locale)} /><ReportRow label={t('payroll.pendingHours')} value={formatHours(summary.pendingHours, locale)} /><ReportRow label={t('payroll.confirmedSalary')} value={formatCzk(summary.confirmedSalaryCzk, locale)} emphasize /><ReportRow label={t('payroll.predictedSalary')} value={formatCzk(summary.predictedSalaryCzk, locale)} /></>}</section>{isManager ? <section className="payrollReport-employeeSection"><div className="payrollReport-sectionHeader"><h3>{t('payroll.breakdown')}</h3><span>{managerEmployees.length} {t('payroll.employees').toLowerCase()}</span></div><div className="payrollReport-tableWrap"><table className="payrollReport-table"><thead><tr><th>{t('payroll.employee')}</th><th>{t('payroll.status')}</th><th>{t('payroll.rate')}</th><th>{t('payroll.approved')}</th><th>{t('payroll.pending')}</th><th>{t('payroll.confirmed')}</th><th>{t('payroll.predicted')}</th></tr></thead><tbody>{managerEmployees.map(employee => <tr key={employee.id}><td><strong>{employee.name}</strong><span>{employee.email}</span></td><td>{localizedEmployeeStatus(employee.status)}</td><td>{employee.hasMixedRates ? (MIXED_RATE_LABELS[language] || MIXED_RATE_LABELS.uk) : formatCzk(employee.hourlyRateCzk, locale)}</td><td>{formatHours(employee.summary?.approvedHours, locale)}</td><td>{formatHours(employee.summary?.pendingHours, locale)}</td><td>{formatCzk(employee.summary?.confirmedSalaryCzk, locale)}</td><td>{formatCzk(employee.summary?.predictedSalaryCzk, locale)}</td></tr>)}</tbody></table></div></section> : null}<footer className="payrollReport-footer"><p>{t('payroll.footer')}</p><span>{t('payroll.generated')}</span></footer></article> : null}
     </section>
   );
 }
