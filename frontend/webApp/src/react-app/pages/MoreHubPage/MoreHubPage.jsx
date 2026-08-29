@@ -6,48 +6,91 @@ import './MoreHubPage.css';
 const COPY = {
   uk: {
     title: 'Налаштування',
-    copy: 'Оберіть, що саме хочете налаштувати.',
-    company: 'Компанія',
-    companyCopy: 'Налаштування роботодавця',
-    companyItems: ['Дані компанії', 'Робочий час', 'Реквізити'],
-    account: 'Акаунт',
-    accountCopy: 'Ваші особисті налаштування',
-    accountItems: ['Особисті дані', 'Мова', 'Безпека'],
+    copy: 'Усі параметри компанії та акаунта в одному місці.',
+    companyGroup: 'Компанія',
+    identity: 'Дані компанії',
+    identityCopy: 'Назва та системні дані',
+    billing: 'Реквізити',
+    billingCopy: 'IČO, DIČ, адреса та email',
+    workGroup: 'Робота',
+    work: 'Робочий час',
+    workCopy: 'Обід і денна норма',
+    accountGroup: 'Акаунт',
+    personal: 'Особисті дані',
+    personalCopy: 'Імʼя, телефон і фото',
+    workInfo: 'Робочі дані',
+    workInfoCopy: 'Роль, компанія та ставка',
+    language: 'Мова',
+    languageCopy: 'Мова інтерфейсу',
+    securityGroup: 'Безпека',
+    security: 'Пароль',
+    securityCopy: 'Зміна пароля та захист акаунта',
   },
   cs: {
     title: 'Nastavení',
-    copy: 'Vyberte, co chcete nastavit.',
-    company: 'Společnost',
-    companyCopy: 'Nastavení zaměstnavatele',
-    companyItems: ['Údaje společnosti', 'Pracovní doba', 'Fakturační údaje'],
-    account: 'Účet',
-    accountCopy: 'Vaše osobní nastavení',
-    accountItems: ['Osobní údaje', 'Jazyk', 'Zabezpečení'],
+    copy: 'Všechna nastavení společnosti a účtu na jednom místě.',
+    companyGroup: 'Společnost',
+    identity: 'Údaje společnosti',
+    identityCopy: 'Název a systémové údaje',
+    billing: 'Fakturační údaje',
+    billingCopy: 'IČO, DIČ, adresa a e-mail',
+    workGroup: 'Práce',
+    work: 'Pracovní doba',
+    workCopy: 'Přestávka a denní norma',
+    accountGroup: 'Účet',
+    personal: 'Osobní údaje',
+    personalCopy: 'Jméno, telefon a fotografie',
+    workInfo: 'Pracovní údaje',
+    workInfoCopy: 'Role, společnost a sazba',
+    language: 'Jazyk',
+    languageCopy: 'Jazyk rozhraní',
+    securityGroup: 'Zabezpečení',
+    security: 'Heslo',
+    securityCopy: 'Změna hesla a zabezpečení účtu',
   },
   en: {
     title: 'Settings',
-    copy: 'Choose what you want to configure.',
-    company: 'Company',
-    companyCopy: 'Employer settings',
-    companyItems: ['Company details', 'Working time', 'Billing details'],
-    account: 'Account',
-    accountCopy: 'Your personal settings',
-    accountItems: ['Personal details', 'Language', 'Security'],
+    copy: 'All company and account settings in one place.',
+    companyGroup: 'Company',
+    identity: 'Company details',
+    identityCopy: 'Name and system details',
+    billing: 'Billing details',
+    billingCopy: 'Company ID, VAT ID, address and email',
+    workGroup: 'Work',
+    work: 'Working time',
+    workCopy: 'Lunch deduction and daily standard',
+    accountGroup: 'Account',
+    personal: 'Personal details',
+    personalCopy: 'Name, phone and photo',
+    workInfo: 'Work details',
+    workInfoCopy: 'Role, company and rate',
+    language: 'Language',
+    languageCopy: 'Interface language',
+    securityGroup: 'Security',
+    security: 'Password',
+    securityCopy: 'Change password and protect account',
   },
 };
 
-function SettingsLink({ to, icon, title, copy, items }) {
+function SettingsRow({ to, icon, title, copy }) {
   return (
-    <Link to={to} className="moreHubSectionLink">
+    <Link to={to} className="moreHubRow">
       <span className="moreHubIcon"><SvgIcon name={icon} /></span>
-      <span className="moreHubContent">
-        <span className="moreHubTitleRow"><strong>{title}</strong><small>{copy}</small></span>
-        <span className="moreHubDetails" aria-label={items.join(', ')}>
-          {items.map(item => <span key={item}>{item}</span>)}
-        </span>
+      <span className="moreHubRowText">
+        <strong>{title}</strong>
+        <small>{copy}</small>
       </span>
       <b aria-hidden="true">›</b>
     </Link>
+  );
+}
+
+function SettingsGroup({ title, children }) {
+  return (
+    <section className="moreHubGroup">
+      <h2>{title}</h2>
+      <div className="moreHubMenu screenCard">{children}</div>
+    </section>
   );
 }
 
@@ -64,22 +107,24 @@ export function MoreHubPage() {
         </div>
       </header>
 
-      <section className="moreHubMenu screenCard">
-        <SettingsLink
-          to="/company-settings"
-          icon="location"
-          title={c.company}
-          copy={c.companyCopy}
-          items={c.companyItems}
-        />
-        <SettingsLink
-          to="/profile"
-          icon="profile"
-          title={c.account}
-          copy={c.accountCopy}
-          items={c.accountItems}
-        />
-      </section>
+      <SettingsGroup title={c.companyGroup}>
+        <SettingsRow to="/company-settings?section=identity" icon="location" title={c.identity} copy={c.identityCopy} />
+        <SettingsRow to="/company-settings?section=billing" icon="file" title={c.billing} copy={c.billingCopy} />
+      </SettingsGroup>
+
+      <SettingsGroup title={c.workGroup}>
+        <SettingsRow to="/company-settings?section=work" icon="clock" title={c.work} copy={c.workCopy} />
+      </SettingsGroup>
+
+      <SettingsGroup title={c.accountGroup}>
+        <SettingsRow to="/profile?section=personal" icon="profile" title={c.personal} copy={c.personalCopy} />
+        <SettingsRow to="/profile?section=work" icon="briefcase" title={c.workInfo} copy={c.workInfoCopy} />
+        <SettingsRow to="/profile?section=language" icon="monitor" title={c.language} copy={c.languageCopy} />
+      </SettingsGroup>
+
+      <SettingsGroup title={c.securityGroup}>
+        <SettingsRow to="/profile?section=password" icon="lock" title={c.security} copy={c.securityCopy} />
+      </SettingsGroup>
     </section>
   );
 }
