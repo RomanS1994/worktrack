@@ -5,6 +5,10 @@ export const worktrackApi = baseApi.injectEndpoints({
   endpoints: builder => ({
     getWorkSummary: builder.query({ query:(query={})=>({url:'/work-summary',params:query}), providesTags:[{type:'WorkEntries',id:'SUMMARY'}] }),
     getManagerPayroll: builder.query({ query:(query={})=>({url:'/manager/payroll',params:query}), providesTags:[{type:'WorkEntries',id:'PAYROLL'}] }),
+    getManagerAdvances: builder.query({ query:(query={})=>({url:'/manager/advances',params:query}), providesTags:[{type:'WorkEntries',id:'ADVANCES'}] }),
+    createManagerAdvance: builder.mutation({ query:body=>({url:'/manager/advances',method:'POST',body}), invalidatesTags:[{type:'WorkEntries',id:'ADVANCES'},{type:'WorkEntries',id:'PAYROLL'},{type:'WorkEntries',id:'SUMMARY'}] }),
+    deleteManagerAdvance: builder.mutation({ query:advanceId=>({url:`/manager/advances/${advanceId}`,method:'DELETE'}), invalidatesTags:[{type:'WorkEntries',id:'ADVANCES'},{type:'WorkEntries',id:'PAYROLL'},{type:'WorkEntries',id:'SUMMARY'}] }),
+    getEmployeeAdvances: builder.query({ query:(query={})=>({url:'/advances',params:query}), providesTags:[{type:'WorkEntries',id:'ADVANCES'}] }),
     getNotifications: builder.query({ query:()=>'/notifications', providesTags:[{type:'Notifications',id:'LIST'}] }),
     markNotificationRead: builder.mutation({ query:notificationId=>({url:`/notifications/${notificationId}/read`,method:'POST'}), invalidatesTags:[{type:'Notifications',id:'LIST'}] }),
     markAllNotificationsRead: builder.mutation({ query:()=>({url:'/notifications/read-all',method:'POST'}), invalidatesTags:[{type:'Notifications',id:'LIST'}] }),
@@ -37,7 +41,7 @@ export const worktrackApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useGetWorkSummaryQuery,useGetManagerPayrollQuery,useGetNotificationsQuery,useMarkNotificationReadMutation,useMarkAllNotificationsReadMutation,
+  useGetWorkSummaryQuery,useGetManagerPayrollQuery,useGetManagerAdvancesQuery,useCreateManagerAdvanceMutation,useDeleteManagerAdvanceMutation,useGetEmployeeAdvancesQuery,useGetNotificationsQuery,useMarkNotificationReadMutation,useMarkAllNotificationsReadMutation,
   useGetProjectsQuery,useGetDefaultProjectQuery,useUpdateDefaultProjectMutation,useCreateProjectMutation,useUpdateProjectMutation,useDeactivateProjectMutation,useGetCompanySettingsQuery,useUpdateCompanySettingsMutation,
   useGetWorkRulesQuery,useUpdateWorkRulesMutation,
   useGetWeekEntriesQuery,useCreateWorkEntryMutation,useUpdateWorkEntryMutation,useDeleteWorkEntryMutation,useSubmitWeekMutation,
