@@ -9,6 +9,7 @@ export const navigationMessages = {
       finance: 'Фінанси',
     },
     common: {
+      back: 'Назад',
       share: 'Поділитися',
     },
   },
@@ -22,6 +23,7 @@ export const navigationMessages = {
       finance: 'Finance',
     },
     common: {
+      back: 'Zpět',
       share: 'Sdílet',
     },
   },
@@ -35,6 +37,7 @@ export const navigationMessages = {
       finance: 'Finance',
     },
     common: {
+      back: 'Back',
       share: 'Share',
     },
   },
