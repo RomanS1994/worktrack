@@ -21,6 +21,9 @@ function client() {
     company: {
       findUnique: async () => ({ breakMinutes: 0, standardDailyHours: '8.00' }),
     },
+    salaryAdvance: {
+      findMany: async () => [],
+    },
     project: {
       count: async query => {
         assert.deepEqual(query.where, { companyId: 'company-1', isActive: true });
