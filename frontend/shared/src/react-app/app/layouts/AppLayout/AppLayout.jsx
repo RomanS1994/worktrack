@@ -8,6 +8,7 @@ import { SessionNotice } from '../../components/SessionNotice/SessionNotice.jsx'
 import { selectToken, selectUser } from '../../../features/auth/authSlice.js';
 import { hasActiveCompanyAccess } from '../../../features/auth/authAccess.js';
 import './AppLayout.css';
+import './BackgroundRedesign.css';
 
 export function AppLayout({ children }) {
   const token = useSelector(selectToken);
