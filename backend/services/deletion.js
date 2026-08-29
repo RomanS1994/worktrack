@@ -35,7 +35,6 @@ export async function deleteManagerEmployee(client, context, employeeMembershipI
     throw new Error('Employee not found');
   }
 
-  const targetUserId = employee.userId;
   const before = {
     id: employee.id,
     companyId: employee.companyId,
@@ -47,57 +46,38 @@ export async function deleteManagerEmployee(client, context, employeeMembershipI
     name: employee.user?.name || employee.user?.email || '',
   };
 
-  // Invoice items restrict work-entry deletion, so remove invoice data first.
-  await client.invoiceItem.deleteMany({
-    where: {
-      invoice: {
-        employeeMembershipId: employee.id,
-      },
-    },
-  });
-  await client.invoice.deleteMany({
-    where: {
-      companyId: managerMembership.companyId,
-      employeeMembershipId: employee.id,
-    },
-  });
-
-  await client.companyMembership.delete({
-    where: {
-      id: employee.id,
-    },
-  });
-
-  const remainingMemberships = await client.companyMembership.count({
-    where: {
-      userId: targetUserId,
-    },
-  });
-
-  if (remainingMemberships === 0) {
-    await client.user.delete({
-      where: {
-        id: targetUserId,
-      },
-    });
-  }
+  // Employee deletion is intentionally a soft delete. Work entries, submissions,
+  // invoices, salary advances and manager timesheet history all reference the
+  // membership with cascading relations, so physically deleting it would erase
+  // financial history. INACTIVE immediately revokes company access because auth
+  // only loads ACTIVE memberships.
+  const archived = employee.status === 'INACTIVE'
+    ? employee
+    : await client.companyMembership.update({
+        where: { id: employee.id },
+        data: { status: 'INACTIVE' },
+        include: { user: true },
+      });
 
   await createAuditLog(client, {
     action: 'employee.deleted',
     actorUserId: managerMembership.userId,
-    targetUserId,
+    targetUserId: employee.userId,
     entityType: 'company_membership',
     entityId: employee.id,
     before,
     after: {
       deleted: true,
+      softDeleted: true,
       companyId: managerMembership.companyId,
+      status: archived.status,
     },
   });
 
   return {
     ok: true,
     employeeId: employee.id,
+    archived: true,
   };
 }
 
