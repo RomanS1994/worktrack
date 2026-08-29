@@ -49,9 +49,9 @@ export async function getManagerTimesheet(client, context, { month }) {
   const manager = context.activeMembership || context.membership || context;
   const companyId = manager.companyId;
 
-  const [employees, workEntries, projects, managerEntries, company] = await Promise.all([
+  const [employeeMemberships, workEntries, projects, managerEntries, company] = await Promise.all([
     client.companyMembership.findMany({
-      where: { companyId, role: 'EMPLOYEE', status: 'ACTIVE' },
+      where: { companyId, role: 'EMPLOYEE' },
       include: { user: true },
       orderBy: { createdAt: 'asc' },
     }),
@@ -90,6 +90,14 @@ export async function getManagerTimesheet(client, context, { month }) {
       select: { breakMinutes: true },
     }),
   ]);
+
+  const employeeIdsWithHistory = new Set([
+    ...workEntries.map(entry => entry.employeeMembershipId),
+    ...managerEntries.map(entry => entry.employeeMembershipId),
+  ]);
+  const employees = employeeMemberships.filter(
+    membership => membership.status === 'ACTIVE' || employeeIdsWithHistory.has(membership.id)
+  );
 
   const defaultBreakMinutes = Number(company?.breakMinutes || 0);
   const normalizedWorkEntries = calculateNetWorkEntries(workEntries, { breakMinutes: defaultBreakMinutes });
@@ -189,6 +197,7 @@ export async function getManagerTimesheet(client, context, { month }) {
     return {
       employeeId: employee.id,
       name: employeeName(employee),
+      status: employee.status,
       employeeTotal: round2(employeeTotal),
       managerTotal: round2(managerTotal),
       difference: round2(managerTotal - employeeTotal),
