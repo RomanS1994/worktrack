@@ -71,16 +71,33 @@ function generatePrismaClient() {
   runChecked(npmCommand, ['--prefix', 'backend', 'run', 'db:generate']);
 }
 
+function migrationEnvironment() {
+  if (!process.env.DIRECT_DATABASE_URL) {
+    return process.env;
+  }
+
+  return {
+    ...process.env,
+    DATABASE_URL: process.env.DIRECT_DATABASE_URL,
+  };
+}
+
 function deployPrismaMigrations() {
   if (!hasDatabaseConfiguration()) {
     return;
   }
 
   const maxAttempts = 5;
+  const usingDirectDatabase = Boolean(process.env.DIRECT_DATABASE_URL);
+  console.log(
+    `Prisma migrations will use the ${usingDirectDatabase ? 'direct' : 'primary'} database connection.`,
+  );
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     console.log(`Applying pending Prisma migrations (attempt ${attempt}/${maxAttempts})...`);
-    const result = runCommand(npmCommand, ['--prefix', 'backend', 'run', 'db:migrate:deploy']);
+    const result = runCommand(npmCommand, ['--prefix', 'backend', 'run', 'db:migrate:deploy'], {
+      env: migrationEnvironment(),
+    });
 
     if (result.error) {
       throw result.error;
