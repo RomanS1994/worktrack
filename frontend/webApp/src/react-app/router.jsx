@@ -18,6 +18,8 @@ import { InvoiceDocumentPage } from './pages/InvoiceDocumentPage/InvoiceDocument
 import { InvoicesPage } from './pages/InvoicesPage/InvoicesPage.jsx';
 import { ManagerAdvanceCreatePage } from './pages/ManagerAdvancesPage/ManagerAdvanceCreatePage.jsx';
 import { ManagerAdvancesPage } from './pages/ManagerAdvancesPage/ManagerAdvancesPage.jsx';
+import { ManagerExpenseCreatePage } from './pages/ManagerExpensesPage/ManagerExpenseCreatePage.jsx';
+import { ManagerExpensesPage } from './pages/ManagerExpensesPage/ManagerExpensesPage.jsx';
 import { ManagerInvoicesPage } from './pages/ManagerInvoicesPage/ManagerInvoicesPage.jsx';
 import { ManagerTimesheetPage } from './pages/ManagerTimesheetPage/ManagerTimesheetPage.jsx';
 import { MoreHubPage } from './pages/MoreHubPage/MoreHubPage.jsx';
@@ -55,10 +57,12 @@ export const router = createBrowserRouter([
           { path: 'invoices', element: <ProtectedRoute requireEmployee><InvoicesPage /></ProtectedRoute> },
           { path: 'tax-information', element: <ProtectedRoute requireEmployee><TaxInformationPage /></ProtectedRoute> },
           { path: 'manager/advances', element: <ProtectedRoute requireManager><ManagerAdvancesPage /></ProtectedRoute> },
+          { path: 'manager/expenses', element: <ProtectedRoute requireManager><ManagerExpensesPage /></ProtectedRoute> },
           { path: 'manager/invoices', element: <ProtectedRoute requireManager><ManagerInvoicesPage /></ProtectedRoute> },
         ],
       },
       { path: 'manager/advances/new', element: <ProtectedRoute requireManager><ManagerAdvanceCreatePage /></ProtectedRoute> },
+      { path: 'manager/expenses/new', element: <ProtectedRoute requireManager><ManagerExpenseCreatePage /></ProtectedRoute> },
       { path: 'invoices/:invoiceId', element: <ProtectedRoute requireEmployee><InvoiceDocumentPage /></ProtectedRoute> },
       { path: 'manager/invoices/:invoiceId', element: <ProtectedRoute requireManager><InvoiceDocumentPage managerMode /></ProtectedRoute> },
       {
