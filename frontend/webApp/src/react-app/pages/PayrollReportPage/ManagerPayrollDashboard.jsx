@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 
 import { formatCzk, formatHours } from '../../app/formatters.js';
+import './ManagerPayrollAdvances.css';
 
 const COPY = {
   uk: { accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати' },
