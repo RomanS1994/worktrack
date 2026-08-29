@@ -18,6 +18,110 @@ function ensureManagerContext(context) {
   return membership;
 }
 
+function normalizeEmail(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function normalizeRate(value) {
+  const raw = String(value ?? '').trim().replace(',', '.');
+  if (!/^\d+(\.\d{1,2})?$/.test(raw)) throw new Error('Invalid hourly rate');
+  const amount = Number(raw);
+  if (!Number.isFinite(amount) || amount < 0) throw new Error('Invalid hourly rate');
+  return amount.toFixed(2);
+}
+
+function restoredEmployeePayload(membership, user) {
+  return {
+    id: membership.id,
+    userId: membership.userId,
+    companyId: membership.companyId,
+    role: membership.role,
+    status: membership.status,
+    hourlyRateCzk: membership.hourlyRateCzk == null ? '0.00' : String(membership.hourlyRateCzk),
+    pendingSubmissions: 0,
+    user: {
+      id: user?.id || membership.userId,
+      email: user?.email || '',
+      firstName: user?.firstName || '',
+      lastName: user?.lastName || '',
+      name: user?.name || '',
+      phone: user?.phone || '',
+    },
+    email: user?.email || '',
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    name: user?.name || user?.email || '',
+    summary: {
+      totalHours: '0.00',
+      approvedHours: '0.00',
+      pendingHours: '0.00',
+      confirmedSalaryCzk: '0.00',
+      predictedSalaryCzk: '0.00',
+    },
+  };
+}
+
+export async function restoreDeletedManagerEmployee(client, context, payload = {}) {
+  const managerMembership = ensureManagerContext(context);
+  const email = normalizeEmail(payload.email);
+  if (!email) return null;
+
+  const user = await client.user.findUnique({ where: { email } });
+  if (!user || user.deletedAt) return null;
+
+  const membership = await client.companyMembership.findUnique({
+    where: {
+      companyId_userId: {
+        companyId: managerMembership.companyId,
+        userId: user.id,
+      },
+    },
+  });
+  if (!membership?.deletedAt) return null;
+
+  const firstName = String(payload.firstName || '').trim();
+  const lastName = String(payload.lastName || '').trim();
+  const hourlyRateCzk = normalizeRate(payload.hourlyRateCzk);
+  const updatedUser = await client.user.update({
+    where: { id: user.id },
+    data: {
+      ...(firstName ? { firstName } : {}),
+      ...(lastName ? { lastName } : {}),
+      ...(firstName || lastName
+        ? { name: [firstName || user.firstName, lastName || user.lastName].filter(Boolean).join(' ') }
+        : {}),
+    },
+  });
+  const restored = await client.companyMembership.update({
+    where: { id: membership.id },
+    data: {
+      status: 'ACTIVE',
+      deletedAt: null,
+      hourlyRateCzk,
+    },
+  });
+
+  await createAuditLog(client, {
+    action: 'employee.restored',
+    actorUserId: managerMembership.userId,
+    targetUserId: restored.userId,
+    entityType: 'company_membership',
+    entityId: restored.id,
+    before: {
+      status: membership.status,
+      deletedAt: membership.deletedAt,
+      hourlyRateCzk: membership.hourlyRateCzk == null ? '0.00' : String(membership.hourlyRateCzk),
+    },
+    after: {
+      status: restored.status,
+      deletedAt: null,
+      hourlyRateCzk: restored.hourlyRateCzk == null ? '0.00' : String(restored.hourlyRateCzk),
+    },
+  });
+
+  return restoredEmployeePayload(restored, updatedUser);
+}
+
 export async function deleteManagerEmployee(client, context, employeeMembershipId) {
   const managerMembership = ensureManagerContext(context);
   const employee = await client.companyMembership.findFirst({
@@ -47,9 +151,6 @@ export async function deleteManagerEmployee(client, context, employeeMembershipI
     name: employee.user?.name || employee.user?.email || '',
   };
 
-  // Employee deletion is intentionally a membership soft delete. Work entries,
-  // submissions, invoices, salary advances and manager timesheet history all keep
-  // their original membership foreign key. Auth and Team queries exclude deletedAt.
   const deletedAt = employee.deletedAt || new Date();
   const archived = employee.deletedAt
     ? employee
