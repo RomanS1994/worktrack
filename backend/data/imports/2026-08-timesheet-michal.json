@@ -2,13 +2,13 @@
   "month": "2026-08",
   "managerEmail": "rstrizhko1994@gmail.com",
   "projectName": "Імпорт Шихтовка 2026-08",
-  "note": "Імпорт Michal Strizhka з перевіреного файлу Шихтовка_2026(2).xlsm; підтверджені денні години по 25 серпня",
+  "note": "Імпорт Michal Strizhka з файлу Шихтовка_2026 norm.xlsm",
   "employees": [
     {
       "name": "Michal Strizhka",
       "aliases": ["Michal Strizhka", "Michal", "Mihál", "Міша"],
       "hourlyRateCzk": 350,
-      "expectedTotalHours": 237,
+      "expectedTotalHours": 273.5,
       "days": {
         "1": 8.5,
         "3": 10.5,
@@ -30,7 +30,10 @@
         "21": 11.5,
         "22": 9.5,
         "24": 13.5,
-        "25": 11
+        "25": 11,
+        "26": 11,
+        "27": 12,
+        "28": 13.5
       }
     }
   ]
