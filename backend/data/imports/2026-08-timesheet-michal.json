@@ -2,7 +2,8 @@
   "month": "2026-08",
   "managerEmail": "rstrizhko1994@gmail.com",
   "projectName": "Імпорт Шихтовка 2026-08",
-  "note": "Імпорт Michal Strizhka з файлу Шихтовка_2026 norm.xlsm",
+  "note": "Імпортовано менеджером з Шихтовка_2026 norm.xlsm",
+  "cleanupWorkerImports": true,
   "employees": [
     {
       "name": "Michal Strizhka",
