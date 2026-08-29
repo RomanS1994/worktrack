@@ -11,6 +11,7 @@ function context() {
       userId: 'manager-user-1',
       role: 'MANAGER',
       status: 'ACTIVE',
+      deletedAt: null,
     },
   };
 }
@@ -22,6 +23,7 @@ function employee(id = 'employee-1') {
     companyId: 'company-1',
     role: 'EMPLOYEE',
     status: 'ACTIVE',
+    deletedAt: null,
     hourlyRateCzk: '300.00',
     createdAt: new Date('2026-08-01T00:00:00.000Z'),
     user: {
@@ -46,11 +48,9 @@ test('manager employee list uses company break rules for weekly summaries', asyn
     companyMembership: {
       findMany: async query => {
         assert.equal(query.where.companyId, 'company-1');
+        assert.equal(query.where.deletedAt, null);
         return [employee()];
       },
-    },
-    auditLog: {
-      findMany: async () => [],
     },
   };
 
@@ -64,23 +64,23 @@ test('manager employee list uses company break rules for weekly summaries', asyn
   assert.equal(payload.employees[0].pendingSubmissions, 1);
 });
 
-test('manager employee list hides memberships archived by delete action', async () => {
+test('manager employee list excludes deleted memberships at the database query', async () => {
+  let where = null;
   const client = {
     company: {
       findUnique: async () => ({ breakMinutes: 0, standardDailyHours: '8.00' }),
     },
     companyMembership: {
-      findMany: async () => [employee('employee-visible'), employee('employee-deleted')],
-    },
-    auditLog: {
       findMany: async query => {
-        assert.equal(query.where.action, 'employee.deleted');
-        return [{ entityId: 'employee-deleted' }];
+        where = query.where;
+        return [employee('employee-visible')];
       },
     },
   };
 
   const payload = await getManagerEmployees(client, context(), new Date('2026-08-26T12:00:00.000Z'));
 
+  assert.equal(where.deletedAt, null);
+  assert.equal(where.user.is.deletedAt, null);
   assert.deepEqual(payload.employees.map(item => item.id), ['employee-visible']);
 });
