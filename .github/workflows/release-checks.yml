@@ -1,0 +1,96 @@
+name: Release Checks
+
+on:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: worktrack
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d worktrack"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/worktrack?schema=public
+      DIRECT_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/worktrack?schema=public
+      AUTH_TOKEN_SECRET: ci-only-worktrack-auth-secret-2026-at-least-32-chars
+      BACKEND_PORT: 3000
+      VITE_API_BASE_URL: http://127.0.0.1:3000/api
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        run: npm --prefix backend ci
+
+      - name: Generate Prisma client
+        run: npm --prefix backend run db:generate
+
+      - name: Apply integration database migrations
+        run: npm --prefix backend run db:migrate:deploy
+
+      - name: Run backend tests
+        run: npm --prefix backend test
+
+      - name: Start integration backend
+        run: |
+          npm --prefix backend start > /tmp/worktrack-backend.log 2>&1 &
+          echo $! > /tmp/worktrack-backend.pid
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:3000/api/health > /tmp/worktrack-health.json; then
+              cat /tmp/worktrack-health.json
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/worktrack-backend.log
+          exit 1
+
+      - name: Run real API integration E2E
+        run: node tools/integration-e2e.js
+
+      - name: Run finance consistency E2E
+        run: node tools/integration-finance-e2e.js
+
+      - name: Build frontend
+        run: npm run build:web
+
+      - name: Install Playwright smoke runner
+        run: npm install --no-save --no-package-lock @playwright/test@1.55.0
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser smoke tests
+        run: npx playwright test
+
+      - name: Audit production runtime dependencies
+        run: node tools/audit-production.js
+
+      - name: Scan tracked files for secrets
+        run: npm run secrets:check
+
+      - name: Show backend logs on failure
+        if: failure()
+        run: cat /tmp/worktrack-backend.log || true
