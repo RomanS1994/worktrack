@@ -75,6 +75,15 @@ function reply(route, body, status = 200) {
   return route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
 }
 
+function shiftHours(startTime, endTime, breakMinutes = 30) {
+  const [startHour, startMinute] = String(startTime || '07:00').split(':').map(Number);
+  const [endHour, endMinute] = String(endTime || '15:30').split(':').map(Number);
+  const start = startHour * 60 + startMinute;
+  let end = endHour * 60 + endMinute;
+  if (end <= start) end += 24 * 60;
+  return Math.max(0, (end - start - breakMinutes) / 60);
+}
+
 async function mockApi(page, state, role, unexpected) {
   await page.route(API_PATTERN, async route => {
     const request = route.request();
@@ -84,6 +93,14 @@ async function mockApi(page, state, role, unexpected) {
 
     if (method === 'GET' && path === '/projects') {
       return reply(route, { projects: [{ id: 'project-1', companyId: 'company-1', name: 'Test Project', isActive: true }] });
+    }
+
+    if (method === 'GET' && path === '/work-rules') {
+      return reply(route, { workRules: { standardDailyHours: '8.00', breakMinutes: 30 } });
+    }
+
+    if (method === 'GET' && path === '/default-project') {
+      return reply(route, { projectId: 'project-1' });
     }
 
     if (method === 'GET' && path === '/work-entries') {
@@ -96,10 +113,24 @@ async function mockApi(page, state, role, unexpected) {
 
     if (method === 'POST' && path === '/work-entries') {
       const body = request.postDataJSON();
+      const hours = shiftHours(body.startTime, body.endTime, 30);
       const entry = {
-        id: `entry-${state.entries.length + 1}`, companyId: 'company-1', employeeMembershipId: 'employee-membership-1', employeeId: 'employee-user-1',
-        projectId: body.projectId, project: { id: 'project-1', name: 'Test Project', isActive: true }, weeklySubmissionId: '',
-        workDate: body.workDate, hours: Number(body.hours).toFixed(2), status: 'DRAFT', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+        id: `entry-${state.entries.length + 1}`,
+        companyId: 'company-1',
+        employeeMembershipId: 'employee-membership-1',
+        employeeId: 'employee-user-1',
+        projectId: body.projectId,
+        project: { id: 'project-1', name: 'Test Project', isActive: true },
+        weeklySubmissionId: '',
+        workDate: body.workDate,
+        hours: hours.toFixed(2),
+        startTime: body.startTime,
+        endTime: body.endTime,
+        breakMinutes: 30,
+        note: body.note || '',
+        status: 'DRAFT',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
       state.entries = [...state.entries.filter(item => !(item.workDate === entry.workDate && item.projectId === entry.projectId)), entry];
       return reply(route, { entry }, 201);
@@ -108,7 +139,19 @@ async function mockApi(page, state, role, unexpected) {
     if (method === 'PATCH' && path.startsWith('/work-entries/')) {
       const entryId = path.split('/').pop();
       const body = request.postDataJSON();
-      state.entries = state.entries.map(entry => entry.id === entryId ? { ...entry, hours: Number(body.hours).toFixed(2), projectId: body.projectId || entry.projectId } : entry);
+      state.entries = state.entries.map(entry => {
+        if (entry.id !== entryId) return entry;
+        const startTime = body.startTime || entry.startTime;
+        const endTime = body.endTime || entry.endTime;
+        return {
+          ...entry,
+          startTime,
+          endTime,
+          hours: shiftHours(startTime, endTime, 30).toFixed(2),
+          projectId: body.projectId || entry.projectId,
+          note: body.note ?? entry.note,
+        };
+      });
       return reply(route, { entry: state.entries.find(entry => entry.id === entryId) });
     }
 
@@ -171,10 +214,16 @@ test('employee submit -> manager approve -> employee sees approved', async ({ br
   await seedSession(employeePage, 'EMPLOYEE');
   await mockApi(employeePage, state, 'EMPLOYEE', unexpected);
   await employeePage.goto('/hours');
-  await employeePage.locator('.fastDay input[type="number"]').first().fill('8');
-  await employeePage.getByRole('button', { name: 'Зберегти тиждень' }).click();
-  await expect(employeePage.locator('.fastTotal')).toContainText('8.00 h');
-  await employeePage.getByRole('button', { name: /Відправити менеджеру/ }).click();
+
+  await employeePage.locator('.fastQuickTrigger').click();
+  const quickDays = employeePage.locator('.fastQuickDays button');
+  for (let index = 1; index < 5; index += 1) {
+    await quickDays.nth(index).click();
+  }
+  await employeePage.locator('.fastQuickApply').click();
+  await expect(employeePage.locator('.fastHeroTotal')).toContainText('8 год');
+
+  await employeePage.locator('.fastSend').click();
   await expect(employeePage.locator('.fastHoursStatus')).toContainText('Відправлено');
   await employee.close();
 
@@ -194,7 +243,7 @@ test('employee submit -> manager approve -> employee sees approved', async ({ br
   await mockApi(approvedPage, state, 'EMPLOYEE', unexpected);
   await approvedPage.goto(`/hours?date=${state.weekStart}`);
   await expect(approvedPage.locator('.fastHoursStatus')).toContainText('Погоджено');
-  await expect(approvedPage.locator('.fastDay input[type="number"]').first()).toHaveValue(/^8(?:\.0+)?$/);
+  await expect(approvedPage.locator('.fastDayHours').first()).toContainText('8 год');
   await approved.close();
 
   expect(unexpected).toEqual([]);
