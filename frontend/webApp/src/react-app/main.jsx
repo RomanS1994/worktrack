@@ -4,6 +4,7 @@ import { hideStartupSplash } from '@shared/app/startupSplash.js';
 
 import { AppProviders } from './app/providers/AppProviders.jsx';
 import './pages/FastHoursPage/FastHoursPage.compact.css';
+import './pages/ApprovalsPage/ApprovalsRedesign.css';
 import './app/AppVisualConsistency.css';
 
 const rootElement = document.getElementById('react-root');
