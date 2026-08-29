@@ -38,6 +38,7 @@ async function loadMembershipContext(client, userId, requestedCompanyId = '') {
     where: {
       userId,
       status: 'ACTIVE',
+      deletedAt: null,
     },
     include: {
       company: true,
