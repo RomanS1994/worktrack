@@ -6,9 +6,9 @@ import { hasManagerAccess } from '@shared/features/auth/authAccess.js';
 import './SectionTabs.css';
 
 const COPY={
- uk:{time:'Години',week:'Тиждень',calendar:'Календар',history:'Історія',team:'Команда',employees:'Працівники',projects:'Об’єкти',timesheet:'Табель',approvals:'Погодження',advances:'Залоги',finance:'Зарплата',overview:'Звіт',payrollReport:'Звіт по зарплаті',invoices:'Фактури',details:'Реквізити'},
- cs:{time:'Hodiny',week:'Týden',calendar:'Kalendář',history:'Historie',team:'Tým',employees:'Zaměstnanci',projects:'Objekty',timesheet:'Výkaz',approvals:'Schválení',advances:'Zálohy',finance:'Mzda',overview:'Přehled',payrollReport:'Mzdový report',invoices:'Faktury',details:'Údaje'},
- en:{time:'Hours',week:'Week',calendar:'Calendar',history:'History',team:'Team',employees:'Employees',projects:'Projects',timesheet:'Timesheet',approvals:'Approvals',advances:'Advances',finance:'Payroll',overview:'Report',payrollReport:'Payroll report',invoices:'Invoices',details:'Billing details'}
+ uk:{time:'Години',week:'Тиждень',calendar:'Календар',history:'Історія',team:'Команда',employees:'Працівники',projects:'Об’єкти',timesheet:'Табель',approvals:'Погодження',finance:'Зарплата',overview:'Звіт',payrollReport:'Звіт по зарплаті',invoices:'Фактури',details:'Реквізити'},
+ cs:{time:'Hodiny',week:'Týden',calendar:'Kalendář',history:'Historie',team:'Tým',employees:'Zaměstnanci',projects:'Objekty',timesheet:'Výkaz',approvals:'Schválení',finance:'Mzda',overview:'Přehled',payrollReport:'Mzdový report',invoices:'Faktury',details:'Údaje'},
+ en:{time:'Hours',week:'Week',calendar:'Calendar',history:'History',team:'Team',employees:'Employees',projects:'Projects',timesheet:'Timesheet',approvals:'Approvals',finance:'Payroll',overview:'Report',payrollReport:'Payroll report',invoices:'Invoices',details:'Billing details'}
 };
 
 const CONFIG={
@@ -20,7 +20,6 @@ const CONFIG={
  managerTime:c=>[
   {to:'/manager/timesheet',label:c.timesheet},
   {to:'/approvals',label:c.approvals},
-  {to:'/manager/advances',label:c.advances},
  ],
  team:c=>[
   {to:'/employees',label:c.employees},
