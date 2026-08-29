@@ -14,7 +14,7 @@ function context() {
   };
 }
 
-function employee() {
+function employee(overrides = {}) {
   return {
     id: 'employee-1',
     companyId: 'company-1',
@@ -22,12 +22,13 @@ function employee() {
     status: 'ACTIVE',
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     user: { name: 'Dima Worker', email: 'dima@example.com' },
+    ...overrides,
   };
 }
 
-function readClient({ workEntries = [], managerEntries = [], breakMinutes = 0 } = {}) {
+function readClient({ workEntries = [], managerEntries = [], breakMinutes = 0, employees = [employee()] } = {}) {
   return {
-    companyMembership: { findMany: async () => [employee()] },
+    companyMembership: { findMany: async () => employees },
     workEntry: { findMany: async () => workEntries },
     project: {
       findMany: async () => [
@@ -135,6 +136,33 @@ test('manager timesheet distinguishes which side is missing', async () => {
     { month: '2026-08' }
   );
   assert.equal(missingEmployee.rows[0].days[9].status, 'MISSING_EMPLOYEE');
+});
+
+test('historical timesheet keeps an inactive employee when the selected month has data', async () => {
+  const payload = await getManagerTimesheet(
+    readClient({
+      employees: [employee({ status: 'INACTIVE' })],
+      workEntries: [workEntry()],
+    }),
+    context(),
+    { month: '2026-08' }
+  );
+
+  assert.equal(payload.rows.length, 1);
+  assert.equal(payload.rows[0].employeeId, 'employee-1');
+  assert.equal(payload.rows[0].status, 'INACTIVE');
+  assert.equal(payload.rows[0].employeeTotal, 8);
+});
+
+test('historical timesheet hides an inactive employee with no data in the selected month', async () => {
+  const payload = await getManagerTimesheet(
+    readClient({ employees: [employee({ status: 'INACTIVE' })] }),
+    context(),
+    { month: '2026-08' }
+  );
+
+  assert.equal(payload.rows.length, 0);
+  assert.equal(payload.summary.employees, 0);
 });
 
 test('manager timesheet rejects non-numeric hour input instead of deleting a cell', async () => {
