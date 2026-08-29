@@ -14,12 +14,13 @@
 .bottomTab.is-active { background:var(--accent-soft); }
 .bottomTab.is-active .bottomTab-icon,.bottomTab.is-active .bottomTab-label { color:var(--accent); }
 .bottomTab.is-active .bottomTab-icon svg { stroke-width:2.1; }
-.bottomTab-primary { flex:1.08 1 0; overflow:visible; }
-.bottomTab-primary .bottomTab-icon { width:42px; height:42px; margin-top:-18px; margin-bottom:1px; border-radius:14px; background:var(--accent); color:#fff; box-shadow:0 8px 18px rgba(22,163,74,.24); }
-.bottomTab-primary .bottomTab-icon svg { width:23px; height:23px; stroke-width:2.1; }
-.bottomTab-primary .bottomTab-label { color:#475569; font-weight:800; }
-.bottomTab-primary.is-active { background:transparent; }
-.bottomTab-primary.is-active .bottomTab-icon { color:#fff; background:var(--accent); box-shadow:0 9px 22px rgba(22,163,74,.3); }
+.bottomTab-primary { flex:1 1 0; overflow:hidden; }
+.bottomTab-primary .bottomTab-icon { width:25px; height:25px; margin:0; border-radius:0; background:transparent; color:#7b8794; box-shadow:none; }
+.bottomTab-primary .bottomTab-icon svg { width:24px; height:24px; stroke-width:1.9; }
+.bottomTab-primary .bottomTab-label { color:#7b8794; font-weight:700; }
+.bottomTab-primary.is-active { background:var(--accent-soft); }
+.bottomTab-primary.is-active .bottomTab-icon { color:var(--accent); background:transparent; box-shadow:none; }
+.bottomTab-primary.is-active .bottomTab-icon svg { stroke-width:2.1; }
 .bottomTab-primary.is-active .bottomTab-label { color:var(--accent); }
 .bottomTab-desktopOnly { display:none; }
 
@@ -37,9 +38,8 @@
 
 @media (max-width:480px) {
   .bottomTabs { left:8px; right:8px; bottom:10px; padding:4px; border-radius:20px; }
-  .bottomTab { min-height:50px; padding:4px 1px; border-radius:14px; }
-  .bottomTab-icon { width:24px; height:24px; }
-  .bottomTab-icon svg { width:23px; height:23px; }
-  .bottomTab-label { font-size:9px; }
-  .bottomTab-primary .bottomTab-icon { width:40px; height:40px; margin-top:-17px; }
+  .bottomTab,.bottomTab-primary { min-height:50px; padding:4px 1px; border-radius:14px; }
+  .bottomTab-icon,.bottomTab-primary .bottomTab-icon { width:24px; height:24px; margin:0; }
+  .bottomTab-icon svg,.bottomTab-primary .bottomTab-icon svg { width:23px; height:23px; }
+  .bottomTab-label,.bottomTab-primary .bottomTab-label { font-size:9px; }
 }
