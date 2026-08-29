@@ -79,8 +79,8 @@ export function ManagerPayrollDashboard({
 
       <section className="managerPayrollMobile-controls" aria-label={t('payroll.period')}>
         <div className="managerPayrollMobile-toggle" role="group" aria-label={t('payroll.periodType')}>
-          <button type="button" className={period === 'week' ? 'is-active' : ''} disabled={isLoading} onClick={() => onPeriodChange('week')}>{t('payroll.week')}</button>
           <button type="button" className={period === 'month' ? 'is-active' : ''} disabled={isLoading} onClick={() => onPeriodChange('month')}>{t('payroll.month')}</button>
+          <button type="button" className={period === 'week' ? 'is-active' : ''} disabled={isLoading} onClick={() => onPeriodChange('week')}>{t('payroll.week')}</button>
         </div>
         <div className="managerPayrollMobile-dateNav">
           <button type="button" className="managerPayrollMobile-arrow" disabled={isLoading} onClick={() => onShift(-1)} aria-label={t('payroll.previous')}>‹</button>
