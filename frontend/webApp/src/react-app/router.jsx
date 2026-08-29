@@ -16,6 +16,7 @@ import { HomePage } from './pages/HomePage/HomePage.jsx';
 import { HoursTablePage } from './pages/HoursTablePage/HoursTablePage.jsx';
 import { InvoiceDocumentPage } from './pages/InvoiceDocumentPage/InvoiceDocumentPage.jsx';
 import { InvoicesPage } from './pages/InvoicesPage/InvoicesPage.jsx';
+import { ManagerAdvancesPage } from './pages/ManagerAdvancesPage/ManagerAdvancesPage.jsx';
 import { ManagerInvoicesPage } from './pages/ManagerInvoicesPage/ManagerInvoicesPage.jsx';
 import { ManagerTimesheetPage } from './pages/ManagerTimesheetPage/ManagerTimesheetPage.jsx';
 import { MoreHubPage } from './pages/MoreHubPage/MoreHubPage.jsx';
@@ -52,6 +53,7 @@ export const router = createBrowserRouter([
           { path: 'finance', element: <Navigate to="/payroll-report" replace /> },
           { path: 'invoices', element: <ProtectedRoute requireEmployee><InvoicesPage /></ProtectedRoute> },
           { path: 'tax-information', element: <ProtectedRoute requireEmployee><TaxInformationPage /></ProtectedRoute> },
+          { path: 'manager/advances', element: <ProtectedRoute requireManager><ManagerAdvancesPage /></ProtectedRoute> },
           { path: 'manager/invoices', element: <ProtectedRoute requireManager><ManagerInvoicesPage /></ProtectedRoute> },
         ],
       },
@@ -71,7 +73,6 @@ export const router = createBrowserRouter([
           { path: 'approvals', element: <ApprovalsPage /> },
         ],
       },
-      { path: 'manager/advances', element: <ProtectedRoute requireManager><Navigate to="/payroll-report" replace /></ProtectedRoute> },
       { path: 'company-settings', element: <ProtectedRoute requireManager><CompanySettingsPage /></ProtectedRoute> },
       { path: 'more', element: <ProtectedRoute requireManager><MoreHubPage /></ProtectedRoute> },
       { path: 'notifications', element: <ProtectedRoute><NotificationsPage /></ProtectedRoute> },
