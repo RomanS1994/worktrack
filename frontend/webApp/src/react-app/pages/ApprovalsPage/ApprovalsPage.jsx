@@ -13,6 +13,7 @@ import {
   useRejectSubmissionMutation,
 } from '../../features/worktrack/worktrackApi.js';
 import './ApprovalsPage.css';
+import './ApprovalsRedesign.css';
 
 const LOCALES = { uk: 'uk-UA', en: 'en-GB', cs: 'cs-CZ' };
 const CLEAR_COPY = {
