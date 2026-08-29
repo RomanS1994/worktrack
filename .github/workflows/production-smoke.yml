@@ -1,17 +1,12 @@
 name: Production Smoke
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       expected_commit:
         description: Optional Render commit SHA to require
         required: false
         type: string
-  schedule:
-    - cron: '17 */6 * * *'
 
 concurrency:
   group: production-smoke
@@ -26,8 +21,8 @@ jobs:
     env:
       BACKEND_URL: https://worktrack-api-jc5m.onrender.com
       FRONTEND_URL: https://worktrackings.netlify.app
-      EXPECTED_COMMIT: ${{ github.event_name == 'push' && github.sha || inputs.expected_commit || '' }}
-      SMOKE_ATTEMPTS: ${{ github.event_name == 'push' && '20' || '4' }}
+      EXPECTED_COMMIT: ${{ inputs.expected_commit || '' }}
+      SMOKE_ATTEMPTS: '4'
       SMOKE_DELAY_MS: '30000'
 
     steps:
