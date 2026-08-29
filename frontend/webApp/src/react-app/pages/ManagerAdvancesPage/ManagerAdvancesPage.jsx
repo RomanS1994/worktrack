@@ -15,7 +15,7 @@ const COPY={
 };
 function monthKey(dateKey){return String(dateKey||getLocalDateKey()).slice(0,7)}
 function AdvanceIcon({type}){if(type==='calendar')return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4.5 9h15M6 5h12a2 2 0 0 1 2 2v12H4V7a2 2 0 0 1 2-2Z"/></svg>;if(type==='wallet')return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.5h12.5A2.5 2.5 0 0 1 20 9v9H5a2 2 0 0 1-2-2V6.5h2Zm0 0V5a2 2 0 0 1 2-2h9M15 11h5v4h-5a2 2 0 1 1 0-4Z"/></svg>;return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v13m0 0-4-4m4 4 4-4M5 20h14"/></svg>}
-export function ManagerAdvancesPage(){
+export function ManagerAdvancesPage({embedded=false}){
  const navigate=useNavigate(); const {language}=useI18n(); const copy=COPY[language]||COPY.uk; const locale=resolveLocale(language);
  const [month,setMonth]=useState(monthKey(getLocalDateKey())); const [filterEmployee,setFilterEmployee]=useState('');
  const query=useGetManagerAdvancesQuery({month}); const [deleteAdvance,deleteState]=useDeleteManagerAdvanceMutation();
@@ -23,6 +23,7 @@ export function ManagerAdvancesPage(){
  const visible=useMemo(()=>filterEmployee?advances.filter(item=>String(item.employee?.id||item.employeeMembershipId||'')===filterEmployee):advances,[advances,filterEmployee]);
  const grouped=useMemo(()=>{const map=new Map();visible.forEach(item=>{const key=item.paidAt;if(!map.has(key))map.set(key,[]);map.get(key).push(item)});return [...map.entries()]},[visible]);
  async function handleDelete(id){if(!window.confirm(copy.confirmDelete))return;await deleteAdvance(id).unwrap()}
+ if(embedded)return null;
  return <section className="managerAdvancesPage pageStack">
   <header className="managerAdvances-header"><div><h1>{copy.title}</h1><p>{copy.subtitle}</p></div><button type="button" className="managerAdvances-addButton" onClick={()=>navigate('/manager/advances/new')} aria-label={copy.add}><b>＋</b><span>{copy.add}</span></button></header>
   <section className="managerAdvances-stats"><div><i><AdvanceIcon type="down"/></i><span>{copy.received}</span><strong>{formatCzk(total,locale)}</strong><small>{advances.length} {copy.payments}</small></div><div><i><AdvanceIcon type="calendar"/></i><span>{copy.count}</span><strong>{advances.length}</strong><small>{new Intl.DateTimeFormat(locale,{month:'long',timeZone:'UTC'}).format(new Date(`${month}-01T00:00:00Z`))}</small></div><div><i><AdvanceIcon type="wallet"/></i><span>{copy.active}</span><strong>{advances.length}</strong></div></section>
