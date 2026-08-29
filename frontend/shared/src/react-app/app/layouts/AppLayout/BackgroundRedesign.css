@@ -1,46 +1,39 @@
 /*
- * WorkTrack background redesign — Layered Neutral + subtle section accents.
- * This layer intentionally changes only visual surfaces/background hierarchy.
- * Existing layout, density, component sizing and business logic stay untouched.
+ * WorkTrack surface redesign.
+ * The application canvas intentionally stays pure white.
+ * Separation comes from section surfaces, borders and restrained accents.
  */
 
 :root {
-  --wt-canvas-top: #f7faf8;
-  --wt-canvas-bottom: #eef3f0;
-  --wt-section: #f5f8f6;
-  --wt-section-strong: #eef3f0;
+  --wt-canvas: #ffffff;
+  --wt-section: #f7f9f8;
+  --wt-section-strong: #f3f6f4;
   --wt-card: #ffffff;
-  --wt-card-soft: #fbfdfc;
   --wt-time-tint: #eef8f1;
   --wt-finance-tint: #f0f7f5;
   --wt-team-tint: #f6f4f0;
-  --wt-settings-tint: #f2f6f4;
   --wt-border: rgba(17, 24, 39, 0.105);
   --wt-border-soft: rgba(17, 24, 39, 0.075);
-  --wt-shadow: 0 8px 24px rgba(20, 40, 28, 0.055);
+  --wt-shadow: 0 6px 20px rgba(20, 40, 28, 0.05);
 }
 
-/* 1. App canvas — clearly different from white cards. */
-.appLayout--workspace {
-  background:
-    radial-gradient(circle at 8% -6%, rgba(22, 163, 74, 0.075), transparent 28rem),
-    radial-gradient(circle at 96% 8%, rgba(15, 118, 110, 0.035), transparent 24rem),
-    linear-gradient(180deg, var(--wt-canvas-top) 0%, var(--wt-canvas-bottom) 100%);
-  background-attachment: fixed;
+/* The global application background stays white on every screen. */
+.appLayout--workspace,
+.appLayout--workspace:has(.profilePage),
+.appLayout--workspace:has(.companySettingsPage),
+.appLayout--workspace:has(.moreHubPage),
+.appLayout--workspace:has(.notificationsPage),
+.appLayout--workspace:has(.invoiceDocumentPage) {
+  background: var(--wt-canvas);
 }
 
-.appLayout--workspace .appLayout-workspaceBody {
-  position: relative;
-}
-
-/* Keep content itself transparent so the canvas remains visible around cards. */
 .appLayout--workspace .appLayout-main,
 .appLayout--workspace .pageStack,
 .appLayout--workspace .sectionShell {
   background: transparent;
 }
 
-/* 2. Universal card hierarchy — white content on muted canvas. */
+/* Cards remain white; slightly clearer borders create hierarchy without tinting the page. */
 .appLayout--workspace .screenCard,
 .appLayout--workspace .dashboardCard,
 .appLayout--workspace .fastHours-form,
@@ -63,24 +56,24 @@
 .appLayout--workspace .managerInvoicesCard,
 .appLayout--workspace .employeeFinance-card,
 .appLayout--workspace .employeeFinance-companyCard {
-  border-color: var(--wt-border-soft);
+  border-color: var(--wt-border);
   background: var(--wt-card);
   box-shadow: var(--wt-shadow);
 }
 
-/* 3. Section tabs become the secondary layer rather than another white card. */
+/* Section navigation is the main secondary layer. */
 .appLayout--workspace .sectionTabs {
   border-color: var(--wt-border-soft);
   background: var(--wt-section-strong);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .appLayout--workspace .sectionTabs-item.is-active {
-  background: #fff;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.075);
+  background: #ffffff;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.07);
 }
 
-/* Time — light green family. */
+/* Time */
 .appLayout--workspace .sectionShell:has(.fastHoursPage) .sectionTabs,
 .appLayout--workspace .sectionShell:has(.calendarPage) .sectionTabs,
 .appLayout--workspace .sectionShell:has(.hoursTablePage) .sectionTabs,
@@ -90,7 +83,7 @@
   border-color: rgba(22, 163, 74, 0.12);
 }
 
-/* Finance — cooler neutral/mint. */
+/* Finance */
 .appLayout--workspace .sectionShell:has(.payrollReportPage) .sectionTabs,
 .appLayout--workspace .sectionShell:has(.invoicesPage) .sectionTabs,
 .appLayout--workspace .sectionShell:has(.taxInformationPage) .sectionTabs,
@@ -101,14 +94,14 @@
   border-color: rgba(15, 118, 110, 0.11);
 }
 
-/* Team — warm neutral so it is immediately distinct from Time/Finance. */
+/* Team */
 .appLayout--workspace .sectionShell:has(.managerEmployeesPage) .sectionTabs,
 .appLayout--workspace .sectionShell:has(.managerProjectsPage) .sectionTabs {
   background: var(--wt-team-tint);
   border-color: rgba(120, 113, 108, 0.11);
 }
 
-/* 4. Dashboard: keep important content slightly accented, secondary content pure white. */
+/* Dashboard accents remain inside cards only. */
 .appLayout--workspace .dashboardFocusCard {
   border-color: rgba(22, 163, 74, 0.18);
   background: linear-gradient(145deg, #eef8f1 0%, #ffffff 72%);
@@ -121,11 +114,11 @@
 
 .appLayout--workspace .dashboardMiniStat,
 .appLayout--workspace .dashboardShortcut {
-  border-color: var(--wt-border-soft);
+  border-color: var(--wt-border);
   background: #ffffff;
 }
 
-/* 5. Time / Week: preserve the existing layout, increase layer separation only. */
+/* Time / Week internal surfaces. */
 .appLayout--workspace .fastHoursPage .fastDayDate {
   background: #f7faf8;
 }
@@ -139,7 +132,7 @@
   background: #eef3f0;
 }
 
-/* 6. Tables and filter areas read as a secondary surface inside the white sheet. */
+/* Table headers create structure while the page itself remains white. */
 .appLayout--workspace .hoursTablePage thead,
 .appLayout--workspace .managerTimesheetPage thead,
 .appLayout--workspace .payrollReportPage thead,
@@ -148,31 +141,15 @@
   background: #f6f8f7;
 }
 
-/* 7. Settings / profile / utility screens get a calm neutral backdrop around cards. */
-.appLayout--workspace:has(.profilePage),
-.appLayout--workspace:has(.companySettingsPage),
-.appLayout--workspace:has(.moreHubPage),
-.appLayout--workspace:has(.notificationsPage) {
-  background:
-    radial-gradient(circle at 92% -5%, rgba(22, 163, 74, 0.05), transparent 25rem),
-    linear-gradient(180deg, #f7faf8 0%, var(--wt-settings-tint) 100%);
-}
-
-/* 8. Document screens: paper stays white; only the surrounding canvas changes. */
-.appLayout--workspace:has(.invoiceDocumentPage) {
-  background: #e9eeeb;
-}
-
+/* Documents remain pure white as well. */
 .appLayout--workspace .invoiceDocumentPage {
   background: #ffffff;
-  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
 }
 
 @media (max-width: 760px) {
   .appLayout--workspace {
-    background:
-      radial-gradient(circle at 0 -4%, rgba(22, 163, 74, 0.065), transparent 18rem),
-      linear-gradient(180deg, #f7faf8 0%, #edf2ef 100%);
+    background: #ffffff;
   }
 }
 
