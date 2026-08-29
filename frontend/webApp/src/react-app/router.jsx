@@ -7,6 +7,7 @@ import { RouterError } from '@shared/app/components/RouterError/RouterError.jsx'
 import { SectionShell } from './components/SectionTabs/SectionShell.jsx';
 import { ApprovalsPage } from './pages/ApprovalsPage/ApprovalsPage.jsx';
 import './pages/ApprovalsPage/ApprovalsMobile.css';
+import './pages/ApprovalsPage/ApprovalsRedesign.css';
 import { CalendarPage } from './pages/CalendarPage/CalendarPage.jsx';
 import { CompanySettingsPage } from './pages/CompanySettingsPage/CompanySettingsPage.jsx';
 import { DashboardPage } from './pages/DashboardPage/DashboardPage.jsx';
@@ -79,11 +80,9 @@ export const router = createBrowserRouter([
           { path: 'approvals', element: <ApprovalsPage /> },
         ],
       },
-      { path: 'company-settings', element: <ProtectedRoute requireManager><CompanySettingsPage /></ProtectedRoute> },
-      { path: 'more', element: <ProtectedRoute requireManager><MoreHubPage /></ProtectedRoute> },
       { path: 'notifications', element: <ProtectedRoute><NotificationsPage /></ProtectedRoute> },
       { path: 'profile', element: <ProtectedRoute><ProfilePage /></ProtectedRoute> },
-      { path: '*', element: <Navigate to='/' replace /> },
+      { path: 'more', element: <ProtectedRoute><MoreHubPage /></ProtectedRoute> },
     ],
   },
 ]);
