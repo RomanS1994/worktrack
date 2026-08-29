@@ -64,6 +64,7 @@ function workEntry(overrides = {}) {
     id: 'work-1',
     companyId: 'company-1',
     employeeMembershipId: 'employee-1',
+    weeklySubmissionId: 'submission-1',
     workDate: new Date('2026-08-10T00:00:00.000Z'),
     hours: '8.00',
     grossHours: null,
@@ -139,6 +140,42 @@ test('manager timesheet ignores draft entries when comparing submitted worker ho
   assert.equal(day.managerHours, 10.5);
   assert.equal(day.status, 'MATCH');
   assert.deepEqual(day.reasons, []);
+});
+
+test('manager timesheet prefers weekly submitted entries over orphan approved imports for the same day', async () => {
+  const payload = await getManagerTimesheet(
+    readClient({
+      workEntries: [
+        workEntry({
+          id: 'live-submitted-entry',
+          weeklySubmissionId: 'submission-1',
+          hours: '11.00',
+          grossHours: '11.00',
+          breakMinutes: 30,
+          status: 'SUBMITTED',
+        }),
+        workEntry({
+          id: 'orphan-import-entry',
+          weeklySubmissionId: null,
+          projectId: 'project-b',
+          project: { name: 'Brno' },
+          hours: '0.24',
+          grossHours: '0.24',
+          breakMinutes: 0,
+          status: 'APPROVED',
+        }),
+      ],
+      managerEntries: [managerEntry({ hours: '10.50', breakMinutes: 30 })],
+    }),
+    context(),
+    { month: '2026-08' }
+  );
+
+  const day = payload.rows[0].days[9];
+  assert.equal(day.employeeHours, 10.5);
+  assert.equal(day.managerHours, 10.5);
+  assert.equal(day.status, 'MATCH');
+  assert.deepEqual(day.employeeProjects, ['Praha 5']);
 });
 
 test('manager timesheet pinpoints a half-hour mismatch', async () => {
