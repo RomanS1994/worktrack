@@ -24,7 +24,6 @@
   --wt-primary-shadow: 0 10px 28px rgba(22, 163, 74, 0.14);
 }
 
-/* The global application background stays white on every screen. */
 .appLayout--workspace,
 .appLayout--workspace:has(.profilePage),
 .appLayout--workspace:has(.companySettingsPage),
@@ -36,11 +35,8 @@
 
 .appLayout--workspace .appLayout-main,
 .appLayout--workspace .pageStack,
-.appLayout--workspace .sectionShell {
-  background: transparent;
-}
+.appLayout--workspace .sectionShell { background: transparent; }
 
-/* Standard cards stay white unless promoted below. */
 .appLayout--workspace .screenCard,
 .appLayout--workspace .dashboardCard,
 .appLayout--workspace .fastHours-form,
@@ -69,238 +65,136 @@
   box-shadow: var(--wt-shadow);
 }
 
-/* Section navigation is the secondary layer. */
 .appLayout--workspace .sectionTabs {
   border-color: var(--wt-border-soft);
   background: var(--wt-section-strong);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
 }
+.appLayout--workspace .sectionTabs-item.is-active { background:#fff; box-shadow:0 3px 12px rgba(15,23,42,.07); }
 
-.appLayout--workspace .sectionTabs-item.is-active {
-  background: #ffffff;
-  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.07);
-}
-
-/* Time */
 .appLayout--workspace .sectionShell:has(.fastHoursPage) .sectionTabs,
 .appLayout--workspace .sectionShell:has(.calendarPage) .sectionTabs,
 .appLayout--workspace .sectionShell:has(.hoursTablePage) .sectionTabs,
 .appLayout--workspace .sectionShell:has(.managerTimesheetPage) .sectionTabs,
 .appLayout--workspace .sectionShell:has(.managerApprovalsPage) .sectionTabs {
-  background: var(--wt-time-tint);
-  border-color: rgba(22, 163, 74, 0.24);
+  background:var(--wt-time-tint); border-color:rgba(22,163,74,.24);
 }
 
-/* Finance */
 .appLayout--workspace .sectionShell:has(.payrollReportPage) .sectionTabs,
 .appLayout--workspace .sectionShell:has(.invoicesPage) .sectionTabs,
 .appLayout--workspace .sectionShell:has(.taxInformationPage) .sectionTabs,
 .appLayout--workspace .sectionShell:has(.managerAdvancesPage) .sectionTabs,
 .appLayout--workspace .sectionShell:has(.managerExpensesPage) .sectionTabs,
 .appLayout--workspace .sectionShell:has(.managerInvoicesPage) .sectionTabs {
-  background: var(--wt-finance-tint);
-  border-color: rgba(22, 163, 74, 0.23);
+  background:var(--wt-finance-tint); border-color:rgba(22,163,74,.23);
 }
 
-/* Team */
 .appLayout--workspace .sectionShell:has(.employeesPage) .sectionTabs,
 .appLayout--workspace .sectionShell:has(.projectsPage) .sectionTabs {
-  background: var(--wt-team-tint);
-  border-color: rgba(22, 163, 74, 0.21);
+  background:var(--wt-team-tint); border-color:rgba(22,163,74,.21);
 }
 
-/* PRIMARY VISUAL HIERARCHY -------------------------------------------------- */
-
-/* Dashboard — attention card is unmistakably the first focal point. */
 .appLayout--workspace .dashboardFocusCard {
-  border-color: var(--wt-primary-border);
-  background: linear-gradient(145deg, var(--wt-primary-tint-strong) 0%, #dcf5e4 62%, #f4fcf6 100%);
-  box-shadow: var(--wt-primary-shadow);
+  border-color:var(--wt-primary-border);
+  background:linear-gradient(145deg,var(--wt-primary-tint-strong) 0%,#dcf5e4 62%,#f4fcf6 100%);
+  box-shadow:var(--wt-primary-shadow);
 }
-
 .appLayout--workspace .dashboardFocusCard--warning {
-  border-color: rgba(217, 119, 6, 0.24);
-  background: linear-gradient(145deg, #fff4dd 0%, #fffaf0 58%, #ffffff 100%);
-  box-shadow: 0 10px 28px rgba(217, 119, 6, 0.08);
+  border-color:rgba(217,119,6,.24);
+  background:linear-gradient(145deg,#fff4dd 0%,#fffaf0 58%,#fff 100%);
+  box-shadow:0 10px 28px rgba(217,119,6,.08);
 }
+.appLayout--workspace .dashboardMiniStat { border-color:var(--wt-card-green-border); background:#f3fbf5; box-shadow:none; }
+.appLayout--workspace .dashboardShortcut { border-color:var(--wt-card-green-border); background:var(--wt-card-tint); box-shadow:none; }
 
-.appLayout--workspace .dashboardMiniStat {
-  border-color: var(--wt-card-green-border);
-  background: #f3fbf5;
-  box-shadow: none;
-}
-
-.appLayout--workspace .dashboardShortcut {
-  border-color: var(--wt-card-green-border);
-  background: var(--wt-card-tint);
-  box-shadow: none;
-}
-
-/* Team — top employee action block is promoted, list remains readable but greener. */
 .appLayout--workspace .employeesHeader {
-  border: 1px solid var(--wt-primary-border) !important;
-  border-radius: 18px;
-  background: linear-gradient(145deg, var(--wt-primary-tint) 0%, #e9f8ee 100%) !important;
-  box-shadow: var(--wt-primary-shadow) !important;
+  border:1px solid var(--wt-primary-border)!important;
+  border-radius:18px;
+  background:linear-gradient(145deg,var(--wt-primary-tint) 0%,#e9f8ee 100%)!important;
+  box-shadow:var(--wt-primary-shadow)!important;
 }
+.appLayout--workspace .employeesPanel { border-color:var(--wt-card-green-border); background:#f5fbf7; box-shadow:0 4px 16px rgba(15,23,42,.035); }
+.appLayout--workspace .employeeCard { border-color:rgba(22,163,74,.16); background:var(--wt-card-tint); }
 
-.appLayout--workspace .employeesPanel {
-  border-color: var(--wt-card-green-border);
-  background: #f5fbf7;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035);
-}
-
-.appLayout--workspace .employeeCard {
-  border-color: rgba(22, 163, 74, 0.16);
-  background: var(--wt-card-tint);
-}
-
-/* Timesheet — period selector is the principal control, stats are quieter. */
 .appLayout--workspace .managerTimesheetToolbar {
-  border-color: var(--wt-primary-border) !important;
-  background: linear-gradient(145deg, var(--wt-primary-tint) 0%, #ebf9ef 100%) !important;
-  box-shadow: var(--wt-primary-shadow) !important;
+  border-color:var(--wt-primary-border)!important;
+  background:linear-gradient(145deg,var(--wt-primary-tint) 0%,#ebf9ef 100%)!important;
+  box-shadow:var(--wt-primary-shadow)!important;
 }
-
-.appLayout--workspace .managerTimesheetSummary article {
-  border-color: var(--wt-card-green-border);
-  background: var(--wt-card-tint);
-  box-shadow: none;
-}
-
+.appLayout--workspace .managerTimesheetSummary article { border-color:var(--wt-card-green-border); background:var(--wt-card-tint); box-shadow:none; }
 .appLayout--workspace .managerTimesheetMobile,
-.appLayout--workspace .managerTimesheetDesktop {
-  border-color: rgba(22, 163, 74, 0.16);
-  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.04);
-}
+.appLayout--workspace .managerTimesheetDesktop { border-color:rgba(22,163,74,.16); box-shadow:0 5px 18px rgba(15,23,42,.04); }
 
-/* Finance — payout summary gets the strongest visual priority. */
+/* Finance: only the main payout summary is strongly green. */
 .appLayout--workspace .payrollReport-summary,
 .appLayout--workspace .employeeFinance-hero,
 .appLayout--workspace .employeeFinance-card:first-of-type,
 .appLayout--workspace .managerPayrollMobile-hero {
-  border-color: var(--wt-primary-border) !important;
-  background: linear-gradient(145deg, var(--wt-primary-tint-strong) 0%, #dcf5e4 64%, #f3fcf6 100%) !important;
-  box-shadow: var(--wt-primary-shadow) !important;
+  border-color:var(--wt-primary-border)!important;
+  background:linear-gradient(145deg,var(--wt-primary-tint-strong) 0%,#dcf5e4 64%,#f3fcf6 100%)!important;
+  box-shadow:var(--wt-primary-shadow)!important;
 }
 
 .appLayout--workspace .payrollReport-filters,
 .appLayout--workspace .payrollReport-toolbar,
 .appLayout--workspace .managerPayrollMobile-controls {
-  border-color: var(--wt-card-green-border) !important;
-  background: var(--wt-card-tint) !important;
+  border-color:var(--wt-card-green-border)!important;
+  background:var(--wt-card-tint)!important;
 }
 
-/* Finance employee cards should visibly belong to the finance section. */
-.appLayout--workspace .managerPayrollMobile-employee {
-  border-color: var(--wt-card-green-border) !important;
-  background: linear-gradient(145deg, var(--wt-card-tint) 0%, #f6fcf8 100%) !important;
-  box-shadow: 0 6px 18px rgba(22, 163, 74, 0.06) !important;
-}
-
+/* Employee payroll cards intentionally remain neutral white. */
+.appLayout--workspace .managerPayrollMobile-employee,
 .appLayout--workspace .managerPayrollMobile-employee.is-selected {
-  border-color: var(--wt-primary-border) !important;
-  background: linear-gradient(145deg, var(--wt-card-tint-strong) 0%, #edf9f1 100%) !important;
-  box-shadow: 0 8px 22px rgba(22, 163, 74, 0.10) !important;
+  background:#fff!important;
+  border-color:var(--wt-border)!important;
+  box-shadow:0 6px 18px rgba(15,23,42,.035)!important;
 }
+.appLayout--workspace .managerPayrollMobile-employee.is-selected { border-color:rgba(22,163,74,.28)!important; }
+.appLayout--workspace .managerPayrollMobile-employees > header > span { background:#f1f5f9; color:#64748b; }
 
-.appLayout--workspace .managerPayrollMobile-employees > header > span {
-  background: #e5f5ea;
-  color: #3d6f4e;
-}
-
-/* Settings — profile is the hero; groups also receive a green family tint. */
 .appLayout--workspace .moreHubProfile {
-  border-color: var(--wt-primary-border) !important;
-  background: linear-gradient(145deg, var(--wt-primary-tint) 0%, #eaf9ee 100%) !important;
-  box-shadow: var(--wt-primary-shadow) !important;
+  border-color:var(--wt-primary-border)!important;
+  background:linear-gradient(145deg,var(--wt-primary-tint) 0%,#eaf9ee 100%)!important;
+  box-shadow:var(--wt-primary-shadow)!important;
 }
+.appLayout--workspace .moreHubMenu { border-color:var(--wt-card-green-border); background:var(--wt-card-tint); box-shadow:0 4px 16px rgba(15,23,42,.035); }
+.appLayout--workspace .moreHubRow { background:rgba(255,255,255,.78); }
 
-.appLayout--workspace .moreHubMenu {
-  border-color: var(--wt-card-green-border);
-  background: var(--wt-card-tint);
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035);
-}
-
-.appLayout--workspace .moreHubRow {
-  background: rgba(255, 255, 255, 0.78);
-}
-
-/* Projects, advances and invoices use a clearly visible green section surface. */
 .appLayout--workspace .projectsPage .screenCard,
 .appLayout--workspace .managerAdvancesPage .screenCard,
 .appLayout--workspace .managerExpensesPage .screenCard,
 .appLayout--workspace .invoicesPage .screenCard,
 .appLayout--workspace .managerInvoicesPage .screenCard {
-  border-color: var(--wt-card-green-border);
-  background: var(--wt-card-tint);
+  border-color:var(--wt-card-green-border); background:var(--wt-card-tint);
 }
 
-/* Time / Week internal surfaces. */
-.appLayout--workspace .fastHoursPage .fastDayDate {
-  background: #edf8f0;
-}
+.appLayout--workspace .fastHoursPage .fastDayDate { background:#edf8f0; }
+.appLayout--workspace .fastHoursPage .fastHours-quickSection { border-color:rgba(22,163,74,.20); background:#e3f5e8; }
+.appLayout--workspace .fastHoursPage .fastHours-quickButton { background:#daf0e1; }
 
-.appLayout--workspace .fastHoursPage .fastHours-quickSection {
-  border-color: rgba(22, 163, 74, 0.20);
-  background: #e3f5e8;
-}
-
-.appLayout--workspace .fastHoursPage .fastHours-quickButton {
-  background: #daf0e1;
-}
-
-/* Table headers create structure while the page itself remains white. */
 .appLayout--workspace .hoursTablePage thead,
 .appLayout--workspace .managerTimesheetPage thead,
 .appLayout--workspace .payrollReportPage thead,
 .appLayout--workspace .invoicesPage thead,
-.appLayout--workspace .managerInvoicesPage thead {
-  background: #e7f5eb;
-}
+.appLayout--workspace .managerInvoicesPage thead { background:#e7f5eb; }
 
-/* Documents remain pure white. */
-.appLayout--workspace .invoiceDocumentPage {
-  background: #ffffff;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
-}
+.appLayout--workspace .invoiceDocumentPage { background:#fff; box-shadow:0 10px 30px rgba(15,23,42,.07); }
 
-@media (max-width: 760px) {
-  .appLayout--workspace {
-    background: #ffffff;
-  }
-
-  .appLayout--workspace .employeesHeader {
-    min-height: auto;
-    padding: 12px 14px !important;
-    border-radius: 16px;
-  }
-
-  .appLayout--workspace .managerTimesheetToolbar {
-    border-radius: 13px !important;
-  }
-
+@media(max-width:760px){
+  .appLayout--workspace{background:#fff}
+  .appLayout--workspace .employeesHeader{min-height:auto;padding:12px 14px!important;border-radius:16px}
+  .appLayout--workspace .managerTimesheetToolbar{border-radius:13px!important}
   .appLayout--workspace .dashboardFocusCard,
   .appLayout--workspace .moreHubProfile,
   .appLayout--workspace .payrollReport-summary,
   .appLayout--workspace .employeeFinance-hero,
   .appLayout--workspace .employeeFinance-card:first-of-type,
-  .appLayout--workspace .managerPayrollMobile-hero {
-    box-shadow: 0 7px 22px rgba(22, 163, 74, 0.12) !important;
-  }
-
-  .appLayout--workspace .employeeCard {
-    background: #edf9f1 !important;
-  }
+  .appLayout--workspace .managerPayrollMobile-hero{box-shadow:0 7px 22px rgba(22,163,74,.12)!important}
+  .appLayout--workspace .employeeCard{background:#edf9f1!important}
 }
 
-@media print {
+@media print{
   .appLayout--workspace,
-  .appLayout--workspace:has(.invoiceDocumentPage) {
-    background: #ffffff !important;
-  }
-
-  .appLayout--workspace .invoiceDocumentPage {
-    box-shadow: none !important;
-  }
+  .appLayout--workspace:has(.invoiceDocumentPage){background:#fff!important}
+  .appLayout--workspace .invoiceDocumentPage{box-shadow:none!important}
 }
