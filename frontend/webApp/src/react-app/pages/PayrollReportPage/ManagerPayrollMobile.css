@@ -6,10 +6,16 @@
  .payrollReportPage:has(.payrollReport-toolbar) .payrollReport-row{min-height:34px!important;padding:5px 0!important}
  .payrollReportPage:has(.payrollReport-toolbar) .payrollReport-row.is-emphasized{margin-top:4px!important;padding:9px 10px!important}
  .payrollReportPage:has(.payrollReport-toolbar) .payrollReport-employeeSection{margin-top:12px!important}
- .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodNavigation{display:grid!important;grid-template-columns:42px minmax(0,1fr) 42px!important;align-items:center!important;gap:12px!important;width:100%!important}
- .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodNavigation button{width:42px!important;min-width:42px!important;min-height:42px!important;padding:0!important;border-radius:12px!important}
+ .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodNavigation{display:grid!important;grid-template-columns:44px minmax(0,220px) 44px!important;align-items:center!important;justify-content:start!important;column-gap:14px!important;row-gap:0!important;width:100%!important;max-width:100%!important;overflow:hidden!important}
+ .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodNavigation button{position:relative!important;z-index:2!important;width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;padding:0!important;border-radius:13px!important;background:#fff!important}
  .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodNavigation button:first-of-type{grid-column:1!important;grid-row:1!important}
  .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodNavigation button:nth-of-type(2){grid-column:3!important;grid-row:1!important}
- .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodDate{grid-column:2!important;grid-row:1!important;width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;overflow:hidden!important}
- .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodDate input{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;min-height:42px!important;padding:0 8px!important;text-align:center!important;border-radius:12px!important}
+ .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodDate{position:relative!important;z-index:1!important;grid-column:2!important;grid-row:1!important;display:block!important;width:100%!important;min-width:0!important;max-width:220px!important;margin:0!important;overflow:hidden!important;border-radius:13px!important}
+ .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodDate input{display:block!important;box-sizing:border-box!important;inline-size:100%!important;width:100%!important;min-inline-size:0!important;min-width:0!important;max-inline-size:100%!important;max-width:100%!important;height:44px!important;min-height:44px!important;margin:0!important;padding:0 10px!important;overflow:hidden!important;text-align:center!important;border-radius:13px!important;-webkit-appearance:none!important;appearance:none!important}
+}
+@media(max-width:390px){
+ .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodNavigation{grid-template-columns:42px minmax(0,1fr) 42px!important;column-gap:10px!important}
+ .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodNavigation button{width:42px!important;min-width:42px!important;height:42px!important;min-height:42px!important}
+ .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodDate{max-width:none!important}
+ .payrollReportPage:has(.payrollReport-toolbar) .payrollPeriodDate input{height:42px!important;min-height:42px!important;padding-inline:6px!important}
 }
