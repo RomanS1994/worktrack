@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
 import { SvgIcon } from '@shared/app/components/SvgIcon/SvgIcon.jsx';
+import { selectUser } from '@shared/features/auth/authSlice.js';
 import './MoreHubPage.css';
 
 const COPY = {
@@ -22,6 +24,8 @@ const COPY = {
     workInfoCopy: 'Роль, компанія та ставка',
     language: 'Мова',
     languageCopy: 'Мова інтерфейсу',
+    tax: 'Податкова інформація',
+    taxCopy: 'Податкові дані працівника',
     securityGroup: 'Безпека',
     security: 'Пароль',
     securityCopy: 'Зміна пароля та захист акаунта',
@@ -46,6 +50,8 @@ const COPY = {
     workInfoCopy: 'Role, společnost a sazba',
     language: 'Jazyk',
     languageCopy: 'Jazyk rozhraní',
+    tax: 'Daňové údaje',
+    taxCopy: 'Daňové údaje pracovníka',
     securityGroup: 'Zabezpečení',
     security: 'Heslo',
     securityCopy: 'Změna hesla a zabezpečení účtu',
@@ -70,6 +76,8 @@ const COPY = {
     workInfoCopy: 'Role, company and rate',
     language: 'Language',
     languageCopy: 'Interface language',
+    tax: 'Tax information',
+    taxCopy: 'Employee tax details',
     securityGroup: 'Security',
     security: 'Password',
     securityCopy: 'Change password and protect account',
@@ -102,7 +110,9 @@ function SettingsGroup({ title, children }) {
 
 export function MoreHubPage() {
   const { language } = useI18n();
+  const user = useSelector(selectUser);
   const c = COPY[language] || COPY.uk;
+  const isEmployee = user?.activeMembership?.role === 'EMPLOYEE';
 
   return (
     <section className="moreHub pageStack">
@@ -126,6 +136,7 @@ export function MoreHubPage() {
         <SettingsRow to="/profile?section=personal" icon="user" title={c.personal} copy={c.personalCopy} />
         <SettingsRow to="/profile?section=work" icon="wallet" title={c.workInfo} copy={c.workInfoCopy} />
         <SettingsRow to="/profile?section=language" icon="monitor" title={c.language} copy={c.languageCopy} />
+        {isEmployee ? <SettingsRow to="/tax-information" icon="file" title={c.tax} copy={c.taxCopy} /> : null}
       </SettingsGroup>
 
       <SettingsGroup title={c.securityGroup}>
