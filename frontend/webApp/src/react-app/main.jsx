@@ -6,6 +6,7 @@ import { AppProviders } from './app/providers/AppProviders.jsx';
 import './pages/FastHoursPage/FastHoursPage.compact.css';
 import './pages/ApprovalsPage/ApprovalsRedesign.css';
 import './app/AppVisualConsistency.css';
+import './pages/ApprovalsPage/ApprovalsFinalMobile.css';
 
 const rootElement = document.getElementById('react-root');
 
