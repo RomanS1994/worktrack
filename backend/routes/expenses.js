@@ -28,14 +28,28 @@ function money(value) {
   return normalized.toFixed(2);
 }
 
+function employeeName(membership) {
+  if (!membership) return '';
+  return [membership.user?.firstName, membership.user?.lastName].filter(Boolean).join(' ').trim()
+    || membership.user?.name
+    || membership.user?.email
+    || '';
+}
+
 function serialize(row) {
   return {
     id: row.id,
+    employeeMembershipId: row.employeeMembershipId || '',
     amountCzk: String(row.amountCzk),
     spentAt: row.spentAt.toISOString().slice(0, 10),
     category: row.category,
     note: row.note || '',
     createdAt: row.createdAt.toISOString(),
+    employee: row.employeeMembership ? {
+      id: row.employeeMembership.id,
+      name: employeeName(row.employeeMembership),
+      email: row.employeeMembership.user?.email || '',
+    } : null,
   };
 }
 
@@ -50,6 +64,7 @@ export async function handleExpenseRoutes(request, response, { pathName, url }) 
         ...(month ? { spentAt: { gte: month.start, lt: month.end } } : {}),
         ...(category && CATEGORIES.has(category) ? { category } : {}),
       },
+      include: { employeeMembership: { include: { user: true } } },
       orderBy: [{ spentAt: 'desc' }, { createdAt: 'desc' }],
     }) });
     const totalCzk = expenses.reduce((sum, item) => sum + Number(item.amountCzk || 0), 0).toFixed(2);
@@ -60,22 +75,38 @@ export async function handleExpenseRoutes(request, response, { pathName, url }) 
   if (request.method === 'POST' && pathName === '/api/manager/expenses') {
     const context = await requireManager(request, response); if (!context) return true;
     const body = await readJsonBody(request);
+    const employeeMembershipId = String(body?.employeeMembershipId || '').trim();
     const amountCzk = money(body?.amountCzk);
     const spentAt = parseDate(body?.spentAt);
     const category = String(body?.category || '').trim().toUpperCase();
     if (!CATEGORIES.has(category)) throw new Error('Invalid expense category');
+    if (!employeeMembershipId) throw new Error('Employee is required');
     const note = String(body?.note || '').trim().slice(0, 500);
-    const expense = await runStoreTransaction({ prisma: client => client.companyExpense.create({
-      data: {
-        id: randomUUID(),
-        companyId: context.activeMembership.companyId,
-        managerMembershipId: context.activeMembership.id,
-        amountCzk,
-        spentAt,
-        category,
-        note: note || null,
-      },
-    }) });
+    const expense = await runStoreTransaction({ prisma: async client => {
+      const employee = await client.companyMembership.findFirst({
+        where: {
+          id: employeeMembershipId,
+          companyId: context.activeMembership.companyId,
+          role: 'EMPLOYEE',
+          status: 'ACTIVE',
+          deletedAt: null,
+        },
+      });
+      if (!employee) throw new Error('Employee not found');
+      return client.companyExpense.create({
+        data: {
+          id: randomUUID(),
+          companyId: context.activeMembership.companyId,
+          employeeMembershipId,
+          managerMembershipId: context.activeMembership.id,
+          amountCzk,
+          spentAt,
+          category,
+          note: note || null,
+        },
+        include: { employeeMembership: { include: { user: true } } },
+      });
+    } });
     sendJson(response, 201, { expense: serialize(expense) });
     return true;
   }
