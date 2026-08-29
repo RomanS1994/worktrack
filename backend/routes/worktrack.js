@@ -1,6 +1,7 @@
 import { getAuthContext, requireEmployee } from '../auth/context.js';
 import { runStoreRead, runStoreTransaction } from '../db/store.js';
 import { readJsonBody, sendJson } from '../lib/http.js';
+import { deleteProject } from '../services/deletion.js';
 import { getManagerDashboard } from '../services/manager-dashboard.js';
 import { notifyManagersAboutSubmission } from '../services/notifications.js';
 import { calculateDailyOvertime, calculateNetWorkEntries, calculateNetWorkSummary } from '../services/work-time-calculation.js';
@@ -180,6 +181,14 @@ export async function handleWorkTrackRoutes(request, response, { pathName, url }
     const body = await readJsonBody(request);
     const project = await runStoreTransaction({ prisma: client => updateProject(client, context, projectMatch[1], body) });
     sendJson(response, 200, { project });
+    return true;
+  }
+
+  if (request.method === 'DELETE' && projectMatch) {
+    const context = await getAuthenticatedContext(request, response);
+    if (!context) return true;
+    const payload = await runStoreTransaction({ prisma: client => deleteProject(client, context, projectMatch[1]) });
+    sendJson(response, 200, payload);
     return true;
   }
 
