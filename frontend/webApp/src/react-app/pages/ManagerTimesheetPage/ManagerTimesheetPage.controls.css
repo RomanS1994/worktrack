@@ -1,24 +1,30 @@
-/* Month navigation controls: keep arrows and label in one compact row. */
+/* Month navigation controls: keep arrows and label in one compact horizontal row. */
 #react-root .managerTimesheetPage .managerTimesheetToolbar.screenCard {
-  display: grid !important;
-  grid-template-columns: 36px minmax(170px, auto) 36px;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 12px !important;
   width: 100%;
   min-height: 64px !important;
-  height: auto !important;
+  height: 64px !important;
   padding: 10px 14px !important;
   border-radius: 16px !important;
 }
 
 #react-root .managerTimesheetPage .managerTimesheetToolbar button {
-  display: grid;
-  place-items: center;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 36px !important;
   width: 36px !important;
   min-width: 36px !important;
+  max-width: 36px !important;
   height: 36px !important;
   min-height: 36px !important;
+  max-height: 36px !important;
+  margin: 0 !important;
   padding: 0 !important;
   border: 1px solid rgba(15, 23, 42, 0.10) !important;
   border-radius: 10px !important;
@@ -37,23 +43,26 @@
 }
 
 #react-root .managerTimesheetPage .managerTimesheetToolbar button:disabled {
-  opacity: 0.32 !important;
-  background: rgba(255, 255, 255, 0.72) !important;
+  opacity: 0.28 !important;
+  background: rgba(255, 255, 255, 0.70) !important;
   box-shadow: none !important;
 }
 
 #react-root .managerTimesheetPage .managerTimesheetToolbar strong {
-  min-width: 170px !important;
-  margin: 0;
-  text-align: center;
+  display: block !important;
+  flex: 0 0 180px !important;
+  width: 180px !important;
+  min-width: 180px !important;
+  margin: 0 !important;
+  text-align: center !important;
   font-size: 15px !important;
-  line-height: 1.2;
-  font-weight: 800;
+  line-height: 1.2 !important;
+  font-weight: 800 !important;
+  white-space: nowrap;
 }
 
 @media (max-width: 760px) {
   #react-root .managerTimesheetPage .managerTimesheetToolbar.screenCard {
-    grid-template-columns: 32px minmax(140px, 180px) 32px;
     gap: 8px !important;
     min-height: 44px !important;
     height: 44px !important;
@@ -62,16 +71,21 @@
   }
 
   #react-root .managerTimesheetPage .managerTimesheetToolbar button {
+    flex-basis: 32px !important;
     width: 32px !important;
     min-width: 32px !important;
+    max-width: 32px !important;
     height: 32px !important;
     min-height: 32px !important;
+    max-height: 32px !important;
     border-radius: 9px !important;
     font-size: 17px !important;
   }
 
   #react-root .managerTimesheetPage .managerTimesheetToolbar strong {
-    min-width: 0 !important;
+    flex-basis: 150px !important;
+    width: 150px !important;
+    min-width: 150px !important;
     font-size: 14px !important;
   }
 }
