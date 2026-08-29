@@ -32,16 +32,32 @@ async function enrichSubmissionHours(client, context, submissions) {
   const storedEntries = entryIds.length
     ? await client.workEntry.findMany({
         where: { id: { in: entryIds }, companyId: context.activeMembership.companyId },
-        select: { id: true, grossHours: true },
+        select: {
+          id: true,
+          grossHours: true,
+          breakMinutes: true,
+          hourlyRateCzk: true,
+          startTime: true,
+          endTime: true,
+          note: true,
+        },
       })
     : [];
   const storedById = new Map(storedEntries.map(entry => [entry.id, entry]));
 
   return list.map(submission => {
-    const sourceEntries = (submission.entries || []).map(entry => ({
-      ...entry,
-      grossHours: storedById.get(entry.id)?.grossHours == null ? null : String(storedById.get(entry.id).grossHours),
-    }));
+    const sourceEntries = (submission.entries || []).map(entry => {
+      const stored = storedById.get(entry.id);
+      return {
+        ...entry,
+        grossHours: stored?.grossHours == null ? null : String(stored.grossHours),
+        breakMinutes: stored?.breakMinutes == null ? null : Number(stored.breakMinutes),
+        hourlyRateCzk: stored?.hourlyRateCzk == null ? null : String(stored.hourlyRateCzk),
+        startTime: stored?.startTime || null,
+        endTime: stored?.endTime || null,
+        note: stored?.note || '',
+      };
+    });
     const normalizedEntries = calculateNetWorkEntries(sourceEntries, rules);
     const summary = calculateNetWorkSummary(
       sourceEntries,
@@ -50,7 +66,11 @@ async function enrichSubmissionHours(client, context, submissions) {
     );
     return {
       ...submission,
-      entries: normalizedEntries.map(entry => ({ ...entry, hours: entry.netHours })),
+      entries: normalizedEntries.map(entry => ({
+        ...entry,
+        hours: entry.netHours,
+        netHours: entry.netHours,
+      })),
       summary,
       workRules: {
         breakMinutes: rules.breakMinutes,
