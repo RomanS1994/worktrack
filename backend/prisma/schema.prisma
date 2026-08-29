@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 enum UserRole {
@@ -228,8 +229,8 @@ model SalaryAdvance {
   amountCzk            Decimal  @db.Decimal(12, 2)
   paidAt               DateTime @db.Date
   note                 String?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   company            Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
   employeeMembership CompanyMembership @relation("EmployeeSalaryAdvances", fields: [employeeMembershipId], references: [id], onDelete: Cascade)
@@ -249,12 +250,12 @@ model CompanyExpense {
   amountCzk            Decimal  @db.Decimal(12, 2)
   spentAt              DateTime @db.Date
   category             String
-  note                 String?
+  note                  String?
   receiptData          Bytes?
   receiptMimeType      String?
   receiptFileName      String?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   company            Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   employeeMembership CompanyMembership? @relation("EmployeeCompanyExpenses", fields: [employeeMembershipId], references: [id], onDelete: SetNull)
