@@ -74,7 +74,12 @@ export async function getManagerPayroll(client, context, query = {}) {
   const period = resolvePeriod(query.period, query.anchor);
   const [membershipRows, companyRules, advanceRows] = await Promise.all([
     client.companyMembership.findMany({
-      where: { companyId: managerMembership.companyId, role: 'EMPLOYEE', user: { is: { deletedAt: null } } },
+      where: {
+        companyId: managerMembership.companyId,
+        role: 'EMPLOYEE',
+        deletedAt: null,
+        user: { is: { deletedAt: null } },
+      },
       include: {
         user: true,
         workEntries: {
