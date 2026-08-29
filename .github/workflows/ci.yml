@@ -2,6 +2,9 @@ name: CI
 
 on:
   pull_request:
+  push:
+    branches:
+      - refactor/frontend-stabilization
   workflow_dispatch:
 
 jobs:
