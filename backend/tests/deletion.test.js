@@ -11,11 +11,12 @@ function managerContext() {
       companyId: 'company-1',
       role: 'MANAGER',
       status: 'ACTIVE',
+      deletedAt: null,
     },
   };
 }
 
-test('employee delete archives membership instead of deleting financial history', async () => {
+test('employee delete tombstones membership instead of deleting financial history', async () => {
   const calls = [];
   const employee = {
     id: 'employee-1',
@@ -23,6 +24,7 @@ test('employee delete archives membership instead of deleting financial history'
     userId: 'employee-user-1',
     role: 'EMPLOYEE',
     status: 'ACTIVE',
+    deletedAt: null,
     hourlyRateCzk: '300.00',
     user: { email: 'employee@example.com', name: 'Employee One' },
   };
@@ -66,11 +68,41 @@ test('employee delete archives membership instead of deleting financial history'
   assert.deepEqual(result, { ok: true, employeeId: 'employee-1', archived: true });
   assert.equal(calls[0][0], 'membership.update');
   assert.equal(calls[0][1].id, 'employee-1');
-  assert.deepEqual(calls[0][2], { status: 'INACTIVE' });
+  assert.equal(calls[0][2].status, 'INACTIVE');
+  assert.ok(calls[0][2].deletedAt instanceof Date);
 });
 
-test('employee delete is idempotent for an already inactive membership', async () => {
+test('employee delete marks a previously deactivated membership as deleted', async () => {
+  let updateData = null;
+  const employee = {
+    id: 'employee-1',
+    companyId: 'company-1',
+    userId: 'employee-user-1',
+    role: 'EMPLOYEE',
+    status: 'INACTIVE',
+    deletedAt: null,
+    hourlyRateCzk: '300.00',
+    user: { email: 'employee@example.com', name: 'Employee One' },
+  };
+  const client = {
+    companyMembership: {
+      findFirst: async () => employee,
+      update: async ({ data }) => {
+        updateData = data;
+        return { ...employee, ...data };
+      },
+    },
+    auditLog: { create: async payload => payload },
+  };
+
+  await deleteManagerEmployee(client, managerContext(), 'employee-1');
+  assert.equal(updateData.status, 'INACTIVE');
+  assert.ok(updateData.deletedAt instanceof Date);
+});
+
+test('employee delete is idempotent once deletedAt is present', async () => {
   let updates = 0;
+  const deletedAt = new Date('2026-08-29T10:00:00.000Z');
   const client = {
     companyMembership: {
       findFirst: async () => ({
@@ -79,6 +111,7 @@ test('employee delete is idempotent for an already inactive membership', async (
         userId: 'employee-user-1',
         role: 'EMPLOYEE',
         status: 'INACTIVE',
+        deletedAt,
         hourlyRateCzk: '300.00',
         user: { email: 'employee@example.com', name: 'Employee One' },
       }),
