@@ -1,3 +1,6 @@
+const PDFMAKE_URL = 'https://cdn.jsdelivr.net/npm/pdfmake@0.3.11/build/pdfmake.min.js';
+const PDFMAKE_VFS_URL = 'https://cdn.jsdelivr.net/npm/pdfmake@0.3.11/build/vfs_fonts.js';
+
 function money(value, currency = 'CZK') {
   return `${Number(value || 0).toLocaleString('cs-CZ', {
     minimumFractionDigits: 2,
@@ -35,7 +38,6 @@ function buildDocument(invoice) {
   const seller = invoice.seller || {};
   const buyer = invoice.buyer || {};
   const rateText = mixedRates ? 'Více sazeb' : `${money(invoice.hourlyRate, invoice.currency)} / h`;
-
   const itemRows = [
     [
       { text: 'Datum', style: 'tableHead' },
@@ -127,13 +129,11 @@ function buildDocument(invoice) {
       {
         table: {
           widths: ['*', 100, 120],
-          body: [
-            [
-              { text: 'Poskytnuté práce dle přiloženého výkazu hodin', style: 'serviceText' },
-              { text: `${invoice.totalHours || '0.00'} h`, style: 'serviceValue', alignment: 'right' },
-              { text: rateText, style: 'serviceValue', alignment: 'right' },
-            ],
-          ],
+          body: [[
+            { text: 'Poskytnuté práce dle přiloženého výkazu hodin', style: 'serviceText' },
+            { text: `${invoice.totalHours || '0.00'} h`, style: 'serviceValue', alignment: 'right' },
+            { text: rateText, style: 'serviceValue', alignment: 'right' },
+          ]],
         },
         layout: {
           fillColor: '#f7f9fc',
@@ -158,11 +158,7 @@ function buildDocument(invoice) {
           },
         ],
       },
-      {
-        text: 'PŘÍLOHA K FAKTUŘE',
-        style: 'appendixKicker',
-        pageBreak: 'before',
-      },
+      { text: 'PŘÍLOHA K FAKTUŘE', style: 'appendixKicker', pageBreak: 'before' },
       {
         columns: [
           { stack: [{ text: 'Výkaz odpracovaných hodin', style: 'appendixTitle' }, { text: `${invoice.periodStart || '—'} — ${invoice.periodEnd || '—'}`, style: 'muted', margin: [0, 5, 0, 0] }] },
@@ -171,12 +167,7 @@ function buildDocument(invoice) {
         margin: [0, 5, 0, 18],
       },
       {
-        table: {
-          headerRows: 1,
-          widths: [70, '*', 55, 78, 82],
-          body: itemRows,
-          dontBreakRows: true,
-        },
+        table: { headerRows: 1, widths: [70, '*', 55, 78, 82], body: itemRows, dontBreakRows: true },
         layout: {
           fillColor: rowIndex => (rowIndex === 0 ? '#eef2f7' : null),
           hLineColor: '#dfe4ec',
@@ -223,13 +214,33 @@ function buildDocument(invoice) {
   };
 }
 
+function loadScript(id, src) {
+  return new Promise((resolve, reject) => {
+    const existing = document.getElementById(id);
+    if (existing) {
+      if (existing.dataset.loaded === 'true') resolve();
+      else {
+        existing.addEventListener('load', resolve, { once: true });
+        existing.addEventListener('error', reject, { once: true });
+      }
+      return;
+    }
+    const script = document.createElement('script');
+    script.id = id;
+    script.src = src;
+    script.async = true;
+    script.crossOrigin = 'anonymous';
+    script.addEventListener('load', () => { script.dataset.loaded = 'true'; resolve(); }, { once: true });
+    script.addEventListener('error', reject, { once: true });
+    document.head.appendChild(script);
+  });
+}
+
 async function getPdfMake() {
-  const [{ default: pdfMake }, { default: pdfFonts }] = await Promise.all([
-    import('pdfmake/build/pdfmake'),
-    import('pdfmake/build/vfs_fonts'),
-  ]);
-  pdfMake.addVirtualFileSystem(pdfFonts);
-  return pdfMake;
+  if (!window.pdfMake) await loadScript('worktrack-pdfmake', PDFMAKE_URL);
+  await loadScript('worktrack-pdfmake-fonts', PDFMAKE_VFS_URL);
+  if (!window.pdfMake?.createPdf) throw new Error('PDF engine is unavailable');
+  return window.pdfMake;
 }
 
 export function invoicePdfFileName(invoice) {
@@ -241,30 +252,7 @@ export async function createInvoicePdfBlob(invoice) {
   return pdfMake.createPdf(buildDocument(invoice)).getBlob();
 }
 
-export async function downloadInvoicePdf(invoice) {
-  const blob = await createInvoicePdfBlob(invoice);
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = invoicePdfFileName(invoice);
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1500);
-}
-
-export async function shareInvoicePdf(invoice) {
-  const blob = await createInvoicePdfBlob(invoice);
-  const fileName = invoicePdfFileName(invoice);
-  const file = new File([blob], fileName, { type: 'application/pdf' });
-  if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
-    await navigator.share({
-      files: [file],
-      title: invoice.invoiceNumber || 'Faktura',
-      text: `Faktura ${invoice.invoiceNumber || ''}`.trim(),
-    });
-    return { shared: true };
-  }
+function downloadBlob(blob, fileName) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -273,5 +261,21 @@ export async function shareInvoicePdf(invoice) {
   link.click();
   link.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+export async function downloadInvoicePdf(invoice) {
+  const blob = await createInvoicePdfBlob(invoice);
+  downloadBlob(blob, invoicePdfFileName(invoice));
+}
+
+export async function shareInvoicePdf(invoice) {
+  const blob = await createInvoicePdfBlob(invoice);
+  const fileName = invoicePdfFileName(invoice);
+  const file = new File([blob], fileName, { type: 'application/pdf' });
+  if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+    await navigator.share({ files: [file], title: invoice.invoiceNumber || 'Faktura', text: `Faktura ${invoice.invoiceNumber || ''}`.trim() });
+    return { shared: true };
+  }
+  downloadBlob(blob, fileName);
   return { shared: false };
 }
