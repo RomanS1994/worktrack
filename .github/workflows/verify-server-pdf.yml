@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
     paths:
+      - backend/services/invoice-pdf.js
+      - backend/routes/invoice-pdf.js
+      - frontend/webApp/src/react-app/features/worktrack/invoicePdf.js
+      - frontend/webApp/src/react-app/features/worktrack/billingApi.js
+      - frontend/webApp/src/react-app/pages/InvoiceDocumentPage/InvoiceDocumentPage.jsx
       - .github/workflows/verify-server-pdf.yml
 
 jobs:
