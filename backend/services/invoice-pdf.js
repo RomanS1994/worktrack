@@ -66,17 +66,6 @@ function buildDocument(invoice) {
       subject: 'Faktura a výkaz odpracovaných hodin',
       keywords: 'faktura, výkaz hodin, WorkTrack',
     },
-    background(currentPage, pageSize) {
-      return {
-        canvas: [
-          { type: 'rect', x: 0, y: 0, w: pageSize.width, h: pageSize.height, color: '#fbfcfb' },
-          { type: 'rect', x: 0, y: 0, w: pageSize.width, h: 12, color: '#159447' },
-          { type: 'ellipse', x: pageSize.width - 48, y: 64, r1: 112, r2: 112, color: '#edf7f0' },
-          { type: 'ellipse', x: -34, y: pageSize.height - 24, r1: 92, r2: 92, color: '#f2f6f3' },
-          ...(currentPage > 1 ? [{ type: 'rect', x: 0, y: 12, w: 7, h: pageSize.height - 12, color: '#e5f3e9' }] : []),
-        ],
-      };
-    },
     footer(currentPage, pageCount) {
       return {
         columns: [
