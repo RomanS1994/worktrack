@@ -1,7 +1,5 @@
 import { randomUUID } from 'node:crypto';
 
-import { calculateNetWorkEntries } from './work-time-calculation.js';
-
 function parseMonth(value) {
   const raw = String(value || '').trim();
   if (!/^\d{4}-\d{2}$/.test(raw)) throw new Error('Invalid month');
@@ -123,12 +121,9 @@ export async function getManagerTimesheet(client, context, { month }) {
 
   const activeEmployeeIds = new Set(employees.map(employee => employee.id));
   const defaultBreakMinutes = Number(company?.breakMinutes || 0);
-  const visibleWorkEntries = calculateNetWorkEntries(
-    preferSubmittedEntries(
-      workEntries.filter(entry => activeEmployeeIds.has(entry.employeeMembershipId))
-    ),
-    { breakMinutes: defaultBreakMinutes }
-  ).map(entry => ({ ...entry, hours: entry.netHours }));
+  const visibleWorkEntries = preferSubmittedEntries(
+    workEntries.filter(entry => activeEmployeeIds.has(entry.employeeMembershipId))
+  );
   const visibleManagerEntries = managerEntries.filter(entry => activeEmployeeIds.has(entry.employeeMembershipId));
 
   const employeeDayMap = new Map();
