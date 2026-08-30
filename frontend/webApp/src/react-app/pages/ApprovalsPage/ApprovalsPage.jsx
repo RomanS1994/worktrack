@@ -42,6 +42,11 @@ const COPY = {
     rejected: 'Тиждень повернено працівнику.',
     reject: 'Відхилити',
     approve: hours => `Погодити ${hours}`,
+    earlyApproveTitle: 'Тиждень ще не закінчився',
+    earlyApproveText: 'Працівник відправив години до завершення тижня. Якщо погодити їх зараз, будуть зафіксовані лише вже подані години, а працівник не зможе додати години за решту цього тижня.',
+    earlyApproveQuestion: 'Дійсно погодити години зараз?',
+    earlyApproveConfirm: 'Все одно погодити',
+    earlyApproveCancel: 'Ще не погоджувати',
     mismatchTitle: 'Невідповідність із табелем',
     approvalEntry: 'Запис у погодженні',
     timesheetEntry: 'У табелі',
@@ -83,10 +88,10 @@ const COPY = {
     processing: 'Зачекайте…',
   },
   cs: {
-    back: 'Zpět na seznam', workEntries: 'Pracovní záznamy', totalHours: 'Celkem hodin', comparisonLoading: 'Porovnáváme záznamy s výkazem…', comparisonFailed: 'Záznamy se nepodařilo porovnat s výkazem.', mismatchHint: 'Před schválením zkontrolujte záznamy', mismatchWithTimesheet: 'Nesrovnalost s výkazem', editEntry: 'Upravit záznam', viewMismatch: 'Zobrazit nesrovnalost', deleteEntry: 'Smazat záznam', deleteConfirm: 'Smazat tento záznam zaměstnance? Tuto akci nelze vrátit zpět.', clearWeek: 'Vymazat týden', clearConfirm: 'Vymazat celý týden zaměstnance? Všechny záznamy a odeslání ke schválení budou odstraněny.', deleted: 'Záznam byl smazán.', cleared: 'Týden byl vymazán.', saved: 'Změny byly uloženy.', approved: 'Týden byl schválen.', rejected: 'Týden byl vrácen zaměstnanci.', reject: 'Zamítnout', approve: hours => `Schválit ${hours}`, mismatchTitle: 'Nesrovnalost s výkazem', approvalEntry: 'Záznam ke schválení', timesheetEntry: 'Ve výkazu', difference: 'Rozdíl', mismatchReason: 'Důvod nesrovnalosti', whatToDo: 'Co udělat?', whatToDoText: 'Upravte záznam nebo podle potřeby změňte počet hodin ve výkazu.', close: 'Zavřít', openTimesheet: 'Otevřít výkaz', hoursDiffer: 'Počet hodin se neshoduje', breakDiffers: 'Délka přestávky se neshoduje', projectDiffers: 'Objekt se neshoduje', missingManager: 'Ve výkazu pro tento den není záznam', missingEmployee: 'Ke schválení pro tento den není záznam', moreInApproval: 'více ke schválení', moreInTimesheet: 'více ve výkazu', editTitle: 'Upravit pracovní záznam', project: 'Objekt', from: 'Od', to: 'Do', hours: 'Hodiny', netHours: 'Po přestávce', note: 'Poznámka', notePlaceholder: 'Např. montáž, servis, vícepráce…', save: 'Uložit změny', saving: 'Ukládání…', noProjects: 'Žádné aktivní objekty', invalidTime: 'Zkontrolujte čas začátku a konce.', invalidHours: 'Zadejte počet hodin od 0.01 do 24.', rejectTitle: 'Zamítnout týden?', rejectText: 'Napište zaměstnanci, co má před dalším odesláním opravit.', rejectionReason: 'Důvod zamítnutí', rejectionPlaceholder: 'Např. opravte čtvrteční hodiny a odešlete týden znovu.', confirmReject: 'Zamítnout a odeslat', managerOnlyProject: 'Chybí záznam ke schválení', minutes: 'min', weekActions: 'Akce s týdnem', entryActions: 'Akce se záznamem', processing: 'Čekejte…',
+    back: 'Zpět na seznam', workEntries: 'Pracovní záznamy', totalHours: 'Celkem hodin', comparisonLoading: 'Porovnáváme záznamy s výkazem…', comparisonFailed: 'Záznamy se nepodařilo porovnat s výkazem.', mismatchHint: 'Před schválením zkontrolujte záznamy', mismatchWithTimesheet: 'Nesrovnalost s výkazem', editEntry: 'Upravit záznam', viewMismatch: 'Zobrazit nesrovnalost', deleteEntry: 'Smazat záznam', deleteConfirm: 'Smazat tento záznam zaměstnance? Tuto akci nelze vrátit zpět.', clearWeek: 'Vymazat týden', clearConfirm: 'Vymazat celý týden zaměstnance? Všechny záznamy a odeslání ke schválení budou odstraněny.', deleted: 'Záznam byl smazán.', cleared: 'Týden byl vymazán.', saved: 'Změny byly uloženy.', approved: 'Týden byl schválen.', rejected: 'Týden byl vrácen zaměstnanci.', reject: 'Zamítnout', approve: hours => `Schválit ${hours}`, earlyApproveTitle: 'Týden ještě neskončil', earlyApproveText: 'Zaměstnanec odeslal hodiny před koncem týdne. Pokud je schválíte nyní, uloží se pouze již odeslané hodiny a zaměstnanec nebude moci doplnit hodiny za zbytek tohoto týdne.', earlyApproveQuestion: 'Opravdu chcete hodiny schválit už nyní?', earlyApproveConfirm: 'Přesto schválit', earlyApproveCancel: 'Zatím neschvalovat', mismatchTitle: 'Nesrovnalost s výkazem', approvalEntry: 'Záznam ke schválení', timesheetEntry: 'Ve výkazu', difference: 'Rozdíl', mismatchReason: 'Důvod nesrovnalosti', whatToDo: 'Co udělat?', whatToDoText: 'Upravte záznam nebo podle potřeby změňte počet hodin ve výkazu.', close: 'Zavřít', openTimesheet: 'Otevřít výkaz', hoursDiffer: 'Počet hodin se neshoduje', breakDiffers: 'Délka přestávky se neshoduje', projectDiffers: 'Objekt se neshoduje', missingManager: 'Ve výkazu pro tento den není záznam', missingEmployee: 'Ke schválení pro tento den není záznam', moreInApproval: 'více ke schválení', moreInTimesheet: 'více ve výkazu', editTitle: 'Upravit pracovní záznam', project: 'Objekt', from: 'Od', to: 'Do', hours: 'Hodiny', netHours: 'Po přestávce', note: 'Poznámka', notePlaceholder: 'Např. montáž, servis, vícepráce…', save: 'Uložit změny', saving: 'Ukládání…', noProjects: 'Žádné aktivní objekty', invalidTime: 'Zkontrolujte čas začátku a konce.', invalidHours: 'Zadejte počet hodin od 0.01 do 24.', rejectTitle: 'Zamítnout týden?', rejectText: 'Napište zaměstnanci, co má před dalším odesláním opravit.', rejectionReason: 'Důvod zamítnutí', rejectionPlaceholder: 'Např. opravte čtvrteční hodiny a odešlete týden znovu.', confirmReject: 'Zamítnout a odeslat', managerOnlyProject: 'Chybí záznam ke schválení', minutes: 'min', weekActions: 'Akce s týdnem', entryActions: 'Akce se záznamem', processing: 'Čekejte…',
   },
   en: {
-    back: 'Back to list', workEntries: 'Work entries', totalHours: 'Total hours', comparisonLoading: 'Comparing entries with the timesheet…', comparisonFailed: 'The entries could not be compared with the timesheet.', mismatchHint: 'Check the entries before approval', mismatchWithTimesheet: 'Timesheet mismatch', editEntry: 'Edit entry', viewMismatch: 'Review mismatch', deleteEntry: 'Delete entry', deleteConfirm: 'Delete this employee entry? This action cannot be undone.', clearWeek: 'Clear week', clearConfirm: 'Clear this employee week? All entries and the submitted week will be deleted.', deleted: 'Entry deleted.', cleared: 'Week cleared.', saved: 'Changes saved.', approved: 'Week approved.', rejected: 'Week returned to the employee.', reject: 'Reject', approve: hours => `Approve ${hours}`, mismatchTitle: 'Timesheet mismatch', approvalEntry: 'Approval entry', timesheetEntry: 'In timesheet', difference: 'Difference', mismatchReason: 'Reason for mismatch', whatToDo: 'What should I do?', whatToDoText: 'Edit the entry or change the hours in the timesheet if needed.', close: 'Close', openTimesheet: 'Open timesheet', hoursDiffer: 'The number of hours does not match', breakDiffers: 'The lunch break does not match', projectDiffers: 'The project does not match', missingManager: 'There is no timesheet entry for this day', missingEmployee: 'There is no approval entry for this day', moreInApproval: 'more in approval', moreInTimesheet: 'more in timesheet', editTitle: 'Edit work entry', project: 'Project / site', from: 'From', to: 'To', hours: 'Hours', netHours: 'After lunch', note: 'Note', notePlaceholder: 'For example: installation, service, extra work…', save: 'Save changes', saving: 'Saving…', noProjects: 'No active projects', invalidTime: 'Check the start and end time.', invalidHours: 'Enter hours between 0.01 and 24.', rejectTitle: 'Reject this week?', rejectText: 'Tell the employee what needs to be corrected before resubmitting.', rejectionReason: 'Reason for rejection', rejectionPlaceholder: "For example: correct Thursday's hours and resubmit the week.", confirmReject: 'Reject and send', managerOnlyProject: 'Missing approval entry', minutes: 'min', weekActions: 'Week actions', entryActions: 'Entry actions', processing: 'Please wait…',
+    back: 'Back to list', workEntries: 'Work entries', totalHours: 'Total hours', comparisonLoading: 'Comparing entries with the timesheet…', comparisonFailed: 'The entries could not be compared with the timesheet.', mismatchHint: 'Check the entries before approval', mismatchWithTimesheet: 'Timesheet mismatch', editEntry: 'Edit entry', viewMismatch: 'Review mismatch', deleteEntry: 'Delete entry', deleteConfirm: 'Delete this employee entry? This action cannot be undone.', clearWeek: 'Clear week', clearConfirm: 'Clear this employee week? All entries and the submitted week will be deleted.', deleted: 'Entry deleted.', cleared: 'Week cleared.', saved: 'Changes saved.', approved: 'Week approved.', rejected: 'Week returned to the employee.', reject: 'Reject', approve: hours => `Approve ${hours}`, earlyApproveTitle: 'This week is not finished yet', earlyApproveText: 'The employee submitted hours before the end of the week. If you approve them now, only the hours already submitted will be locked and the employee will not be able to add hours for the rest of this week.', earlyApproveQuestion: 'Do you really want to approve the hours now?', earlyApproveConfirm: 'Approve anyway', earlyApproveCancel: 'Not yet', mismatchTitle: 'Timesheet mismatch', approvalEntry: 'Approval entry', timesheetEntry: 'In timesheet', difference: 'Difference', mismatchReason: 'Reason for mismatch', whatToDo: 'What should I do?', whatToDoText: 'Edit the entry or change the hours in the timesheet if needed.', close: 'Close', openTimesheet: 'Open timesheet', hoursDiffer: 'The number of hours does not match', breakDiffers: 'The lunch break does not match', projectDiffers: 'The project does not match', missingManager: 'There is no timesheet entry for this day', missingEmployee: 'There is no approval entry for this day', moreInApproval: 'more in approval', moreInTimesheet: 'more in timesheet', editTitle: 'Edit work entry', project: 'Project / site', from: 'From', to: 'To', hours: 'Hours', netHours: 'After lunch', note: 'Note', notePlaceholder: 'For example: installation, service, extra work…', save: 'Save changes', saving: 'Saving…', noProjects: 'No active projects', invalidTime: 'Check the start and end time.', invalidHours: 'Enter hours between 0.01 and 24.', rejectTitle: 'Reject this week?', rejectText: 'Tell the employee what needs to be corrected before resubmitting.', rejectionReason: 'Reason for rejection', rejectionPlaceholder: "For example: correct Thursday's hours and resubmit the week.", confirmReject: 'Reject and send', managerOnlyProject: 'Missing approval entry', minutes: 'min', weekActions: 'Week actions', entryActions: 'Entry actions', processing: 'Please wait…',
   },
 };
 
@@ -97,6 +102,18 @@ function getEmployeeName(submission, fallback) {
 
 function parseDate(value) {
   return value ? new Date(`${value}T00:00:00.000Z`) : null;
+}
+
+function getLocalDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function isWeekStillOpen(submission) {
+  const weekEnd = String(submission?.weekEnd || '');
+  return /^\d{4}-\d{2}-\d{2}$/.test(weekEnd) && getLocalDateKey() <= weekEnd;
 }
 
 function cleanFormattedDate(value, locale) {
@@ -241,6 +258,7 @@ export function ApprovalsPage() {
   const [mismatchDate, setMismatchDate] = useState('');
   const [editorDraft, setEditorDraft] = useState(null);
   const [rejectOpen, setRejectOpen] = useState(false);
+  const [earlyApproveOpen, setEarlyApproveOpen] = useState(false);
   const selectedFromList = submissions.find(submission => submission.id === selectedId);
   const detailQuery = useGetManagerSubmissionQuery(selectedId, { skip: !selectedId || Boolean(error) });
   const detail = detailQuery.data?.submission || selectedFromList || null;
@@ -344,7 +362,7 @@ export function ApprovalsPage() {
   const editorNetHours = editorDraft?.usesTimes
     ? calculateShiftHours(editorDraft.startTime, editorDraft.endTime, breakMinutes)
     : Number(editorDraft?.hours || 0);
-  const overlayOpen = Boolean(actionEntryId || weekMenuOpen || mismatchDate || editorDraft || rejectOpen);
+  const overlayOpen = Boolean(actionEntryId || weekMenuOpen || mismatchDate || editorDraft || rejectOpen || earlyApproveOpen);
 
   useEffect(() => {
     setHiddenSubmissionIds(current => current.filter(id => rawSubmissions.some(submission => submission.id === id)));
@@ -369,6 +387,7 @@ export function ApprovalsPage() {
     setMismatchDate('');
     setEditorDraft(null);
     setRejectOpen(false);
+    setEarlyApproveOpen(false);
   }, [selectedId]);
 
   useEffect(() => {
@@ -381,6 +400,7 @@ export function ApprovalsPage() {
       setMismatchDate('');
       setEditorDraft(null);
       setRejectOpen(false);
+      setEarlyApproveOpen(false);
     };
     document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', handleKeyDown);
@@ -409,6 +429,7 @@ export function ApprovalsPage() {
     setMismatchDate('');
     setEditorDraft(null);
     setRejectOpen(false);
+    setEarlyApproveOpen(false);
   }
 
   function openEditor(entry) {
@@ -429,6 +450,16 @@ export function ApprovalsPage() {
     });
   }
 
+  function requestApproval() {
+    if (!hasQueue || !detail?.id || isReviewing) return;
+    setActionError('');
+    if (isWeekStillOpen(detail)) {
+      setEarlyApproveOpen(true);
+      return;
+    }
+    review('approve');
+  }
+
   async function review(decision) {
     if (!hasQueue || !detail?.id || isReviewing) return;
     setActionError('');
@@ -444,6 +475,7 @@ export function ApprovalsPage() {
       setActionMessage(decision === 'approve' ? copy.approved : copy.rejected);
       setRejectionReason('');
       setRejectOpen(false);
+      setEarlyApproveOpen(false);
       hideReviewedSubmission(reviewedId);
     } catch (mutationError) {
       setActionError(getApiErrorMessage(mutationError));
@@ -618,7 +650,7 @@ export function ApprovalsPage() {
               setActionError('');
               setRejectOpen(true);
             }}><span aria-hidden="true">×</span>{copy.reject}</button>
-            <button className="approvalApproveButton" type="button" disabled={isReviewing} onClick={() => review('approve')}>
+            <button className="approvalApproveButton" type="button" disabled={isReviewing} onClick={requestApproval}>
               <SvgIcon name="check-circle" />{isReviewing ? copy.processing : copy.approve(formatHours(detail.summary?.totalHours))}
             </button>
           </section>
@@ -689,6 +721,26 @@ export function ApprovalsPage() {
           <button className="approvalSheetPrimary" type="submit" disabled={isReviewing || !projects.length}>{updateState.isLoading ? copy.saving : copy.save}</button>
           <button className="approvalSheetSecondary" type="button" disabled={isReviewing} onClick={() => setEditorDraft(null)}>{copy.close}</button>
         </form>
+      </section>
+    </ModalBackdrop> : null}
+
+    {earlyApproveOpen ? <ModalBackdrop className="approvalSheetBackdrop" onClose={() => setEarlyApproveOpen(false)}>
+      <section className="approvalBottomSheet approvalEarlyApproveSheet" role="dialog" aria-modal="true" aria-labelledby="approval-early-title">
+        <span className="approvalSheetHandle" aria-hidden="true" />
+        <header>
+          <div><h2 id="approval-early-title">{copy.earlyApproveTitle}</h2><p>{detail ? formatPeriod(detail, locale) : ''}</p></div>
+          <button type="button" aria-label={copy.close} onClick={() => setEarlyApproveOpen(false)}>×</button>
+        </header>
+        <section className="approvalMismatchHelp">
+          <h3>{copy.earlyApproveQuestion}</h3>
+          <p>{copy.earlyApproveText}</p>
+        </section>
+        {actionError ? <p className="statusNote is-error">{actionError}</p> : null}
+        <button className="approvalSheetPrimary" type="button" disabled={isReviewing} onClick={() => {
+          setEarlyApproveOpen(false);
+          review('approve');
+        }}>{approveState.isLoading ? copy.processing : copy.earlyApproveConfirm}</button>
+        <button className="approvalSheetSecondary" type="button" disabled={isReviewing} onClick={() => setEarlyApproveOpen(false)}>{copy.earlyApproveCancel}</button>
       </section>
     </ModalBackdrop> : null}
 
