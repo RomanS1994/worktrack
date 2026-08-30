@@ -6,6 +6,11 @@ function employeeName(user) {
   return fullName || user?.name || user?.email || '';
 }
 
+function employeeAvatar(user) {
+  const profile = user?.profile && typeof user.profile === 'object' ? user.profile : {};
+  return profile.avatarDataUrl || profile.avatarUrl || profile.avatar || '';
+}
+
 function serializeUser(user) {
   return {
     id: user?.id || '',
@@ -14,6 +19,7 @@ function serializeUser(user) {
     lastName: user?.lastName || '',
     name: user?.name || '',
     phone: user?.phone || '',
+    avatarDataUrl: employeeAvatar(user),
   };
 }
 
@@ -77,6 +83,7 @@ export async function getManagerEmployees(client, context, now = new Date()) {
       firstName: employee.user?.firstName || '',
       lastName: employee.user?.lastName || '',
       name: employeeName(employee.user),
+      avatarDataUrl: employeeAvatar(employee.user),
       summary: calculateNetWorkSummary(employee.workEntries || [], employee.hourlyRateCzk || 0, rules),
     })),
   };
