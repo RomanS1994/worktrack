@@ -5,6 +5,16 @@ function toNumber(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function toHundredths(value) {
+  return Math.round((toNumber(value) + Number.EPSILON) * 100);
+}
+
+function formatHundredths(value) {
+  const sign = value < 0 ? '-' : '';
+  const absolute = Math.abs(Math.trunc(value));
+  return `${sign}${Math.floor(absolute / 100)}.${String(absolute % 100).padStart(2, '0')}`;
+}
+
 function toDateKey(entry) {
   const value = entry?.workDate ?? entry?.date;
   if (!value) return '';
@@ -13,46 +23,71 @@ function toDateKey(entry) {
   return raw.length >= 10 ? raw.slice(0, 10) : raw;
 }
 
-function sourceHours(entry) {
-  return entry?.grossHours == null ? toNumber(entry?.hours) : toNumber(entry.grossHours);
+function sourceHourHundredths(entry) {
+  const value = entry?.grossHours == null ? entry?.hours : entry.grossHours;
+  return Math.max(0, toHundredths(value));
 }
 
-function entryRate(entry, fallbackRate) {
-  return entry?.hourlyRateCzk == null ? toNumber(fallbackRate) : toNumber(entry.hourlyRateCzk);
+function entryRateHundredths(entry, fallbackRate) {
+  const value = entry?.hourlyRateCzk == null ? fallbackRate : entry.hourlyRateCzk;
+  return Math.max(0, toHundredths(value));
 }
 
-function round2(value) {
-  return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+function salaryHundredths(hourHundredths, rateHundredths) {
+  return Math.round((hourHundredths * rateHundredths) / 100);
 }
 
-function format2(value) {
-  return round2(value).toFixed(2);
-}
-
-function dailyBreakHours(dayEntries, fallbackBreakMinutes) {
+function dailyBreakHourHundredths(dayEntries, fallbackBreakMinutes) {
   const hasSnapshot = dayEntries.some(entry => entry?.breakMinutes !== undefined && entry?.breakMinutes !== null);
-  if (!hasSnapshot) return Math.max(0, toNumber(fallbackBreakMinutes)) / 60;
-  const minutes = dayEntries.reduce(
-    (max, entry) => Math.max(max, Math.max(0, toNumber(entry.breakMinutes))),
-    0
-  );
-  return minutes / 60;
+  const minutes = hasSnapshot
+    ? dayEntries.reduce((max, entry) => Math.max(max, Math.max(0, toNumber(entry.breakMinutes))), 0)
+    : Math.max(0, toNumber(fallbackBreakMinutes));
+  return Math.max(0, Math.round((minutes * 100) / 60));
 }
 
-function distributeDayNetHours(dayEntries, netTotal, grossTotal) {
+function allocationKey(entry, index) {
+  return [
+    entry?.id || '',
+    entry?.projectId || '',
+    entry?.employeeMembershipId || '',
+    toDateKey(entry),
+    String(entry?.hours ?? entry?.grossHours ?? ''),
+    String(entry?.hourlyRateCzk ?? ''),
+    String(index),
+  ].join('|');
+}
+
+function distributeDayNetHourHundredths(dayEntries, netTotal, grossTotal) {
   if (grossTotal <= 0 || netTotal <= 0) {
-    return dayEntries.map(entry => ({ ...entry, netHours: 0 }));
+    return dayEntries.map(entry => ({ ...entry, netHourHundredths: 0 }));
   }
 
-  let assigned = 0;
-  return dayEntries.map((entry, index) => {
-    const gross = Math.max(0, sourceHours(entry));
-    const netHours = index === dayEntries.length - 1
-      ? Math.max(0, round2(netTotal - assigned))
-      : Math.max(0, round2((gross / grossTotal) * netTotal));
-    assigned = round2(assigned + netHours);
-    return { ...entry, netHours };
+  const allocations = dayEntries.map((entry, index) => {
+    const gross = sourceHourHundredths(entry);
+    const numerator = gross * netTotal;
+    return {
+      index,
+      key: allocationKey(entry, index),
+      assigned: Math.floor(numerator / grossTotal),
+      remainder: numerator % grossTotal,
+    };
   });
+
+  let assignedTotal = allocations.reduce((sum, item) => sum + item.assigned, 0);
+  let remaining = Math.max(0, netTotal - assignedTotal);
+  const priority = [...allocations].sort((a, b) =>
+    b.remainder - a.remainder || a.key.localeCompare(b.key)
+  );
+
+  for (let index = 0; index < remaining; index += 1) {
+    priority[index % priority.length].assigned += 1;
+    assignedTotal += 1;
+  }
+
+  return dayEntries.map((entry, index) => ({
+    ...entry,
+    netHourHundredths: allocations[index].assigned,
+  }));
 }
 
 function applyDailyBreak(entries, breakMinutes) {
@@ -66,19 +101,19 @@ function applyDailyBreak(entries, breakMinutes) {
 
   const result = [];
   for (const dayEntries of byDay.values()) {
-    const deductionHours = dailyBreakHours(dayEntries, breakMinutes);
-    const grossTotal = dayEntries.reduce((sum, entry) => sum + Math.max(0, sourceHours(entry)), 0);
-    const netTotal = Math.max(0, round2(grossTotal - deductionHours));
-    result.push(...distributeDayNetHours(dayEntries, netTotal, grossTotal));
+    const deduction = dailyBreakHourHundredths(dayEntries, breakMinutes);
+    const grossTotal = dayEntries.reduce((sum, entry) => sum + sourceHourHundredths(entry), 0);
+    const netTotal = Math.max(0, grossTotal - deduction);
+    result.push(...distributeDayNetHourHundredths(dayEntries, netTotal, grossTotal));
   }
 
   return result;
 }
 
 export function calculateNetWorkEntries(entries = [], rules = {}) {
-  return applyDailyBreak(entries, rules.breakMinutes || 0).map(entry => ({
+  return applyDailyBreak(entries, rules.breakMinutes || 0).map(({ netHourHundredths, ...entry }) => ({
     ...entry,
-    netHours: format2(entry.netHours),
+    netHours: formatHundredths(netHourHundredths),
   }));
 }
 
@@ -91,38 +126,38 @@ export function calculateNetWorkSummary(entries = [], hourlyRateCzk = 0, rules =
   let predictedSalary = 0;
 
   for (const entry of normalized) {
-    const hours = toNumber(entry.netHours);
-    const rate = entryRate(entry, hourlyRateCzk);
+    const hours = entry.netHourHundredths;
+    const rate = entryRateHundredths(entry, hourlyRateCzk);
     totalHours += hours;
     if (entry.status === 'APPROVED') {
       approvedHours += hours;
-      confirmedSalary += hours * rate;
+      confirmedSalary += salaryHundredths(hours, rate);
     } else if (PENDING_STATUSES.has(entry.status)) {
       pendingHours += hours;
-      predictedSalary += hours * rate;
+      predictedSalary += salaryHundredths(hours, rate);
     }
   }
 
   return {
-    totalHours: format2(totalHours),
-    approvedHours: format2(approvedHours),
-    pendingHours: format2(pendingHours),
-    confirmedSalaryCzk: format2(confirmedSalary),
-    predictedSalaryCzk: format2(predictedSalary),
+    totalHours: formatHundredths(totalHours),
+    approvedHours: formatHundredths(approvedHours),
+    pendingHours: formatHundredths(pendingHours),
+    confirmedSalaryCzk: formatHundredths(confirmedSalary),
+    predictedSalaryCzk: formatHundredths(predictedSalary),
   };
 }
 
 export function calculateDailyOvertime(entries = [], rules = {}) {
-  const standardDailyHours = Math.max(0, toNumber(rules.standardDailyHours || 8));
+  const standardDailyHourHundredths = Math.max(0, toHundredths(rules.standardDailyHours || 8));
   const normalized = applyDailyBreak(entries, rules.breakMinutes || 0);
   const totals = new Map();
 
   for (const entry of normalized) {
     const key = toDateKey(entry) || `__entry__${entry.id || totals.size}`;
-    totals.set(key, (totals.get(key) || 0) + toNumber(entry.netHours));
+    totals.set(key, (totals.get(key) || 0) + entry.netHourHundredths);
   }
 
   let overtime = 0;
-  for (const hours of totals.values()) overtime += Math.max(0, hours - standardDailyHours);
-  return format2(overtime);
+  for (const hours of totals.values()) overtime += Math.max(0, hours - standardDailyHourHundredths);
+  return formatHundredths(overtime);
 }
