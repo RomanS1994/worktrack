@@ -4,6 +4,7 @@ import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
 import {
   useGetInvoiceHistoryQuery,
+  useGetInvoicePdfMutation,
   useGetInvoiceQuery,
   useGetManagerInvoiceHistoryQuery,
   useGetManagerInvoiceQuery,
@@ -19,7 +20,6 @@ const UI_COPY={
  en:{back:'Back to invoices',download:'Download PDF',share:'Share PDF',preparing:'Creating PDF…',send:'Send to employer',sending:'Sending…',sendConfirm:'Send this invoice to your employer? It will become visible to the manager.',loading:'Loading invoice…',missing:'Invoice not found.',copy:'Copy payment details',copied:'Copied',history:'Invoice history',pdfError:'Could not create the PDF. Please try again.',created:'Draft created',sent:'Sent to employer',viewed:'Viewed by employer',paid:'Marked as paid',cancelled:'Cancelled'}
 };
 
-// The invoice/PDF preview itself is intentionally always Czech. UI controls may follow the app language.
 const PDF_COPY={
  invoice:'FAKTURA',supplier:'Dodavatel',customer:'Odběratel',ico:'IČO',dic:'DIČ',account:'Účet / IBAN',issue:'Datum vystavení',due:'Datum splatnosti',paidDate:'Datum úhrady',period:'Období prací',payment:'Platební údaje',variableSymbol:'Variabilní symbol',amount:'Částka',total:'Celkem k úhradě',spayd:'QR Platba / SPAYD',scan:'Naskenujte pro platbu',service:'Poskytnuté práce dle přiloženého výkazu hodin',hours:'Hodiny',rate:'Sazba',appendix:'PŘÍLOHA K FAKTUŘE',timesheet:'Výkaz odpracovaných hodin',date:'Datum',description:'Popis práce',itemAmount:'Částka',mixedRates:'Více sazeb',draftStatus:'Koncept',sentStatus:'Odesláno',viewedStatus:'Zobrazeno',paidStatus:'Zaplaceno',cancelledStatus:'Zrušeno',overdueStatus:'Po splatnosti'
 };
@@ -45,6 +45,7 @@ export function InvoiceDocumentPage({managerMode=false}){
  const managerQuery=useGetManagerInvoiceQuery(invoiceId,{skip:!managerMode||!invoiceId});
  const employeeHistory=useGetInvoiceHistoryQuery(invoiceId,{skip:managerMode||!invoiceId});
  const managerHistory=useGetManagerInvoiceHistoryQuery(invoiceId,{skip:!managerMode||!invoiceId});
+ const [getInvoicePdf]=useGetInvoicePdfMutation();
  const [markViewed]=useMarkInvoiceViewedMutation();
  const [sendInvoice,sendState]=useSendInvoiceMutation();
  const activeQuery=managerMode?managerQuery:employeeQuery;
@@ -65,8 +66,9 @@ export function InvoiceDocumentPage({managerMode=false}){
  },[invoice?.invoiceNumber]);
 
  async function copyPayment(){if(!invoice?.paymentDescriptor)return;try{await navigator.clipboard.writeText(invoice.paymentDescriptor);setCopied(true);window.setTimeout(()=>setCopied(false),1800)}catch{/* Clipboard may be unavailable on some embedded browsers. */}}
- async function downloadPdf(){if(!invoice||pdfAction)return;setActionError('');setPdfAction('download');try{await downloadInvoicePdf(invoice)}catch{setActionError(c.pdfError)}finally{setPdfAction('')}}
- async function sharePdf(){if(!invoice||pdfAction)return;setActionError('');setPdfAction('share');try{await shareInvoicePdf(invoice)}catch(error){if(error?.name!=='AbortError')setActionError(c.pdfError)}finally{setPdfAction('')}}
+ async function loadPdf(){return getInvoicePdf({invoiceId:invoice.id,managerMode}).unwrap()}
+ async function downloadPdf(){if(!invoice||pdfAction)return;setActionError('');setPdfAction('download');try{const blob=await loadPdf();downloadInvoicePdf(blob,invoice)}catch(error){setActionError(getApiErrorMessage(error)||c.pdfError)}finally{setPdfAction('')}}
+ async function sharePdf(){if(!invoice||pdfAction)return;setActionError('');setPdfAction('share');try{const blob=await loadPdf();await shareInvoicePdf(blob,invoice)}catch(error){if(error?.name!=='AbortError')setActionError(getApiErrorMessage(error)||c.pdfError)}finally{setPdfAction('')}}
  async function send(){if(!invoice?.id||managerMode||invoice.status!=='DRAFT'||!window.confirm(c.sendConfirm))return;setActionError('');try{await sendInvoice(invoice.id).unwrap();await Promise.all([activeQuery.refetch(),historyQuery.refetch()])}catch(error){setActionError(getApiErrorMessage(error))}}
 
  if(activeQuery.isLoading)return <section className="invoiceDocState screenCard">{c.loading}</section>;
