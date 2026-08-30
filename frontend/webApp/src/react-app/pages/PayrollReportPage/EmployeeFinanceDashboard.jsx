@@ -1,5 +1,3 @@
-import { useNavigate } from 'react-router-dom';
-
 import {
   businessDaysInMonth,
   formatCzk,
@@ -14,11 +12,6 @@ const FINANCE_COPY = {
   en: { finance:'Finance',week:'Week',month:'Month',thisWeek:'This week',thisMonth:'This month',expected:'Net payable',grossExpected:'Earned',advances:'Advances',advanceReceived:'Advances received',remaining:'Remaining',norm:'h target',details:'Details',calculation:'Calculation',confirmed:'Confirmed',pending:'Pending confirmation',overtime:'Overtime',total:'Earned',netTotal:'Net salary',rate:'Rate',hourlyRate:'Current hourly rate',mixedRates:'Multiple rates',periodRate:'Effective period rate',taxNote:'Taxes and other deductions are not included',download:'Download PDF report',share:'Share',help:'Help' },
 };
 
-function employeeName(user) {
-  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim();
-  return fullName || user?.name || user?.email || '—';
-}
-
 function advancesForPeriod(advances, period, monthData, week) {
   const list = Array.isArray(advances) ? advances : [];
   if (period === 'month') {
@@ -31,8 +24,7 @@ function advancesForPeriod(advances, period, monthData, week) {
   return list.filter(item => item.paidAt >= start && item.paidAt <= end);
 }
 
-export function EmployeeFinanceDashboard({ advances, companyName, hourlyRate, language, locale, localizedStatus, monthData, onChangePeriod, onPeriodChange, period, submission, summary, user, week, workRules }) {
-  const navigate = useNavigate();
+export function EmployeeFinanceDashboard({ advances, companyName, hourlyRate, language, locale, localizedStatus, monthData, onChangePeriod, onPeriodChange, period, submission, summary, week, workRules }) {
   const copy = FINANCE_COPY[language] || FINANCE_COPY.uk;
   const sourceSummary = period === 'month' ? (monthData?.summary || {}) : summary;
   const totalHours = Number(sourceSummary.totalHours || 0);
@@ -74,9 +66,8 @@ export function EmployeeFinanceDashboard({ advances, companyName, hourlyRate, la
     <div className="employeeFinance-tabs" role="tablist" aria-label={copy.finance}><button className={period==='month'?'is-active':''} type="button" role="tab" aria-selected={period==='month'} onClick={()=>onPeriodChange('month')}>{copy.month}</button><button className={period==='week'?'is-active':''} type="button" role="tab" aria-selected={period==='week'} onClick={()=>onPeriodChange('week')}>{copy.week}</button></div>
     <section className="employeeFinance-periodNav" aria-label={period==='month'?copy.month:copy.week}><button type="button" onClick={()=>onChangePeriod(-1)} aria-label="Previous period">‹</button><div><strong>{periodLabel}</strong><span>{period==='month'?copy.thisMonth:copy.thisWeek}</span></div><button type="button" onClick={()=>onChangePeriod(1)} aria-label="Next period">›</button></section>
     <section className="employeeFinance-hero"><div className="employeeFinance-heroTop"><div><span>{copy.expected}</span><strong>{formatCzk(expectedSalary,locale)}</strong><small>{heroRateText}</small></div><span className="employeeFinance-status"><i />{status}</span></div><div className="employeeFinance-progress" aria-label={`${formatHours(totalHours,locale)} / ${formatHours(targetHours,locale)}`}><span style={{width:`${progress}%`}} /></div><div className="employeeFinance-progressMeta"><span>{formatHours(totalHours,locale)} / {formatHours(targetHours,locale)} {copy.norm}</span><span>{copy.remaining} {formatHours(remainingHours,locale)}</span></div></section>
-    <section className="employeeFinance-companyCard"><div className="employeeFinance-icon" aria-hidden="true">▦</div><div className="employeeFinance-companyText"><strong>{companyName}</strong><span>{employeeName(user)} · {formatCzk(currentRate,locale)}/год</span></div><button className="employeeFinance-detailsButton" type="button" onClick={()=>navigate('/profile')}>{copy.details}<span aria-hidden="true">›</span></button></section>
-    <section className="employeeFinance-card employeeFinance-calculationCard"><h2>{copy.calculation}</h2><div className="employeeFinance-breakdownRow is-confirmed"><span><i />{copy.confirmed}</span><strong>{formatHours(approvedHours,locale)}</strong><b>{formatCzk(confirmedSalary,locale)}</b></div><div className="employeeFinance-breakdownRow is-pending"><span><i />{copy.pending}</span><strong>{formatHours(pendingHours,locale)}</strong><b>{formatCzk(pendingSalary,locale)}</b></div>{period==='week'?<div className="employeeFinance-breakdownRow is-overtime"><span><i />{copy.overtime}</span><strong>{formatHours(overtimeHours,locale)}</strong><b>{formatCzk(overtimeSalary,locale)}</b></div>:null}<div className="employeeFinance-totalRow"><span>{copy.total}</span><strong>{formatHours(totalHours,locale)}</strong><b>{formatCzk(earnedSalary,locale)}</b></div><div className="employeeFinance-breakdownRow is-advance"><span><i />{copy.advances}</span><strong>{periodAdvances.length}</strong><b>− {formatCzk(advanceAmount,locale)}</b></div><div className="employeeFinance-totalRow is-net"><span>{copy.netTotal}</span><strong>{copy.advanceReceived}</strong><b>{formatCzk(expectedSalary,locale)}</b></div></section>
-    <section className="employeeFinance-card employeeFinance-rateCard"><div className="employeeFinance-rateLine"><div className="employeeFinance-rateIcon" aria-hidden="true">₭</div><div><strong>{copy.rate}</strong><span>{hasMixedRates ? copy.periodRate : copy.hourlyRate}</span></div><b>{hasMixedRates ? formatCzk(effectiveRate,locale) : formatCzk(currentRate,locale)}/год</b></div><div className="employeeFinance-taxNote"><span aria-hidden="true">ⓘ</span>{copy.taxNote}</div></section>
+    <section className="employeeFinance-card employeeFinance-calculationCard"><h2>{copy.calculation}</h2><div className="employeeFinance-breakdownRow is-confirmed"><span><i />{copy.confirmed}</span><strong>{formatHours(approvedHours,locale)}</strong><b>{formatCzk(confirmedSalary,locale)}</b></div><div className="employeeFinance-breakdownRow is-pending"><span><i />{copy.pending}</span><strong>{formatHours(pendingHours,locale)}</strong><b>{formatCzk(pendingSalary,locale)}</b></div>{period==='week'&&overtimeHours>0?<div className="employeeFinance-breakdownRow is-overtime"><span><i />{copy.overtime}</span><strong>{formatHours(overtimeHours,locale)}</strong><b>{formatCzk(overtimeSalary,locale)}</b></div>:null}<div className="employeeFinance-breakdownRow is-advance"><span>{copy.advances}</span><strong></strong><b>− {formatCzk(advanceAmount,locale)}</b></div><div className="employeeFinance-totalRow is-net"><span>{copy.netTotal}</span><strong></strong><b>{formatCzk(expectedSalary,locale)}</b></div></section>
+    <section className="employeeFinance-card employeeFinance-rateCard"><div className="employeeFinance-taxNote"><span aria-hidden="true">ⓘ</span>{copy.taxNote}</div></section>
     <div className="employeeFinance-actions"><button className="employeeFinance-primaryAction" type="button" onClick={()=>window.print()}><span aria-hidden="true">⇩</span>{copy.download}</button><button className="employeeFinance-secondaryAction" type="button" onClick={handleShare}><span aria-hidden="true">⇧</span>{copy.share}</button></div>
   </div>;
 }
