@@ -7,9 +7,9 @@ import { hasManagerAccess } from '../../../features/auth/authAccess.js';
 import './BottomTabs.css';
 
 const COPY={
- uk:{home:'Головна',time:'Години',payroll:'Фінанси',profile:'Профіль',team:'Команда',approvals:'Погодження',more:'Ще'},
- cs:{home:'Domů',time:'Hodiny',payroll:'Finance',profile:'Profil',team:'Tým',approvals:'Schválení',more:'Více'},
- en:{home:'Home',time:'Hours',payroll:'Finances',profile:'Profile',team:'Team',approvals:'Approvals',more:'More'}
+ uk:{home:'Головна',time:'Години',payroll:'Фінанси',profile:'Профіль',team:'Команда',approvals:'Погодження',more:'Налаштування'},
+ cs:{home:'Domů',time:'Hodiny',payroll:'Finance',profile:'Profil',team:'Tým',approvals:'Schválení',more:'Nastavení'},
+ en:{home:'Home',time:'Hours',payroll:'Finances',profile:'Profile',team:'Team',approvals:'Approvals',more:'Settings'}
 };
 
 function TaskTab({to,label,icon,activePaths=[],primary=false}){

@@ -65,7 +65,7 @@ export function PayrollReportPage() {
   const localizedStatus = status => t(`common.${STATUS_KEYS[String(status||'DRAFT').toUpperCase()]||'draft'}`);
   const localizedEmployeeStatus = status => String(status||'').toUpperCase()==='ACTIVE'?t('projects.active'):t('projects.inactive');
 
-  const advanceLabel = language==='cs'?'Zálohy':language==='en'?'Advances':'Аванси';
+  const advanceLabel = language==='cs'?'Zálohy':language==='en'?'Advances':'Залоги';
   const netLabel = language==='cs'?'Čistě k výplatě':language==='en'?'Net payable':'Чиста зарплата';
 
   return <section className="payrollReportPage pageStack">

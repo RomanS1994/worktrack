@@ -1,5 +1,5 @@
-const DEFAULT_MIN_DURATION_MS = 700;
-const DEFAULT_FADE_DURATION_MS = 180;
+const DEFAULT_MIN_DURATION_MS = 2300;
+const DEFAULT_FADE_DURATION_MS = 520;
 
 let isHidingStartupSplash = false;
 

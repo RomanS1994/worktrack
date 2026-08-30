@@ -8,7 +8,7 @@ import { useCreateManagerAdvanceMutation, useGetManagerAdvancesQuery } from '../
 import './ManagerAdvanceCreatePage.css';
 
 const COPY={
- uk:{title:'Новий аванс',subtitle:'Додайте виплату працівнику',back:'Назад',employee:'Працівник',chooseEmployee:'Оберіть працівника',amount:'Сума авансу',amountHint:'Вкажіть суму виплати працівнику',date:'Дата виплати',note:'Примітка',optional:'необов’язково',notePlaceholder:'Наприклад: видано на карту',save:'Зберегти аванс',saving:'Збереження…',hint:'Аванс буде віднято від чистої зарплати працівника.'},
+ uk:{title:'Новий залог',subtitle:'Додайте виплату працівнику',back:'Назад',employee:'Працівник',chooseEmployee:'Оберіть працівника',amount:'Сума залогу',amountHint:'Вкажіть суму виплати працівнику',date:'Дата виплати',note:'Примітка',optional:'необов’язково',notePlaceholder:'Наприклад: видано на карту',save:'Зберегти залог',saving:'Збереження…',hint:'Залог буде віднято від чистої зарплати працівника.'},
  cs:{title:'Nová záloha',subtitle:'Přidejte platbu zaměstnanci',back:'Zpět',employee:'Zaměstnanec',chooseEmployee:'Vyberte zaměstnance',amount:'Částka zálohy',amountHint:'Zadejte částku platby zaměstnanci',date:'Datum výplaty',note:'Poznámka',optional:'nepovinné',notePlaceholder:'Např. vyplaceno na kartu',save:'Uložit zálohu',saving:'Ukládání…',hint:'Záloha bude odečtena od čisté mzdy zaměstnance.'},
  en:{title:'New advance',subtitle:'Add a payment for an employee',back:'Back',employee:'Employee',chooseEmployee:'Choose employee',amount:'Advance amount',amountHint:'Enter the amount paid to the employee',date:'Payment date',note:'Note',optional:'optional',notePlaceholder:'For example: paid to card',save:'Save advance',saving:'Saving…',hint:'The advance will be deducted from the employee’s net salary.'}
 };

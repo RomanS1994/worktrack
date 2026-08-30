@@ -4,7 +4,7 @@ import { formatCzk, formatHours } from '../../app/formatters.js';
 import './ManagerPayrollAdvances.css';
 
 const COPY = {
-  uk: { accrued: 'Нараховано', advances: 'Аванси', netPay: 'До виплати' },
+  uk: { accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати' },
   cs: { accrued: 'Nárok', advances: 'Zálohy', netPay: 'K výplatě' },
   en: { accrued: 'Accrued', advances: 'Advances', netPay: 'Net pay' },
 };

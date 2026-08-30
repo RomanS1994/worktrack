@@ -6,7 +6,7 @@ import { hasManagerAccess } from '@shared/features/auth/authAccess.js';
 import './SectionTabs.css';
 
 const COPY={
- uk:{time:'Години',week:'Тиждень',calendar:'Календар',history:'Історія',team:'Команда',employees:'Працівники',projects:'Об’єкти',timesheet:'Табель',approvals:'Погодження',advances:'Аванси',expenses:'Витрати',finance:'Зарплата',overview:'Звіт',payrollReport:'Звіт',invoices:'Фактури',details:'Реквізити'},
+ uk:{time:'Години',week:'Тиждень',calendar:'Календар',history:'Історія',team:'Команда',employees:'Працівники',projects:'Об’єкти',timesheet:'Табель',approvals:'Погодження',advances:'Залоги',expenses:'Витрати',finance:'Зарплата',overview:'Звіт',payrollReport:'Звіт',invoices:'Фактури',details:'Реквізити'},
  cs:{time:'Hodiny',week:'Týden',calendar:'Kalendář',history:'Historie',team:'Tým',employees:'Zaměstnanci',projects:'Objekty',timesheet:'Výkaz',approvals:'Schválení',advances:'Zálohy',expenses:'Výdaje',finance:'Mzda',overview:'Přehled',payrollReport:'Přehled',invoices:'Faktury',details:'Údaje'},
  en:{time:'Hours',week:'Week',calendar:'Calendar',history:'History',team:'Team',employees:'Employees',projects:'Projects',timesheet:'Timesheet',approvals:'Approvals',advances:'Advances',expenses:'Expenses',finance:'Payroll',overview:'Report',payrollReport:'Report',invoices:'Invoices',details:'Billing details'}
 };

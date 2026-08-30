@@ -34,7 +34,7 @@ function fmtWeekRange(days,language){if(!days.length)return '';const options={da
 function fmtDayParts(value,language){const date=new Date(`${value}T00:00:00Z`);return {weekday:new Intl.DateTimeFormat(localeFor(language),{weekday:'short',timeZone:'UTC'}).format(date).replace('.',''),date:new Intl.DateTimeFormat(localeFor(language),{day:'numeric',month:'short',timeZone:'UTC'}).format(date).replace('.','')}}
 function timeToMinutes(value){if(!/^\d{2}:\d{2}$/.test(value||''))return null;const [h,m]=value.split(':').map(Number);if(h>23||m>59)return null;return h*60+m}
 function calculateHours(start,end){const startMinutes=timeToMinutes(start);let endMinutes=timeToMinutes(end);if(startMinutes==null||endMinutes==null)return 0;if(endMinutes<=startMinutes)endMinutes+=1440;return Math.round(((endMinutes-startMinutes)/60)*100)/100}
-function formatHours(value,language){const minutes=Math.round((Number(value)||0)*60);const hours=Math.floor(minutes/60);const mins=minutes%60;if(language==='uk')return `${hours} год ${String(mins).padStart(2,'0')} хв`;if(language==='cs')return `${hours} h ${String(mins).padStart(2,'0')} min`;return `${hours}h ${String(mins).padStart(2,'0')}m`}
+function formatHours(value){const minutes=Math.round((Number(value)||0)*60);return `${Math.floor(minutes/60)}h ${String(minutes%60).padStart(2,'0')}m`}
 function formatHoursShort(value,language){const minutes=Math.round((Number(value)||0)*60);const hours=Math.floor(minutes/60);const mins=minutes%60;if(language==='uk')return mins?`${hours} год ${mins} хв`:`${hours} год`;if(language==='cs')return mins?`${hours} h ${mins} min`:`${hours} h`;return mins?`${hours}h ${mins}m`:`${hours}h`}
 function formatBreak(minutes,language){const value=Number(minutes||0);if(language==='uk')return value===60?'1 год':`${value} хв`;if(language==='cs')return value===60?'1 h':`${value} min`;return value===60?'1h':`${value}m`}
 function dayEntries(entries,date){return entries.filter(entry=>entry.workDate===date).sort((a,b)=>String(a.startTime||'').localeCompare(String(b.startTime||'')))}
@@ -176,7 +176,7 @@ export function FastHoursPage(){
         <label><span>{c.project}</span><select value={selectedQuickProject} onChange={e=>setQuickProject(e.target.value)}>{projects.map(project=><option value={project.id} key={project.id}>{project.name}</option>)}</select></label>
         <div className="fastQuickTimes"><label><span>{c.from}</span><input type="time" value={quickStart} onChange={e=>setQuickStart(e.target.value)}/></label><label><span>{c.to}</span><input type="time" value={quickEnd} onChange={e=>setQuickEnd(e.target.value)}/></label></div>
         <div className="fastQuickDays">{days.map((day,index)=><button type="button" className={selectedDays.includes(index)?'is-active':''} onClick={()=>toggleDay(index)} key={day.date}>{new Intl.DateTimeFormat(localeFor(language),{weekday:'short',timeZone:'UTC'}).format(new Date(`${day.date}T00:00:00Z`)).replace('.','')}</button>)}</div>
-        <div className="fastQuickSummary"><span>{c.gross} {formatHours(quickGross,language)} · −{formatBreak(quickBreak,language)} {c.break}</span><strong>{c.net}: {formatHours(quickNet,language)}</strong></div>
+        <div className="fastQuickSummary"><span>{c.gross} {formatHours(quickGross)} · −{formatBreak(quickBreak,language)} {c.break}</span><strong>{c.net}: {formatHours(quickNet)}</strong></div>
         <button className="fastQuickApply" type="button" disabled={busy||locked} onClick={applyQuickFill}>{c.apply}</button>
       </div>:null}
     </section>
@@ -190,7 +190,7 @@ export function FastHoursPage(){
       <form className="fastEditorBody" onSubmit={saveShift}>
         <label><span>{c.project}</span><select value={selectedProject} disabled={busy||locked} onChange={e=>setProjectId(e.target.value)}>{projects.map(project=><option value={project.id} key={project.id}>{project.name}</option>)}</select></label>
         <div className="fastEditorTimes"><label><span>{c.from}</span><input type="time" value={startTime} disabled={busy||locked} onChange={e=>setStartTime(e.target.value)}/></label><label><span>{c.to}</span><input type="time" value={endTime} disabled={busy||locked} onChange={e=>setEndTime(e.target.value)}/></label></div>
-        <div className="fastEditorTotal"><div><span>{c.gross}</span><strong>{formatHours(calculatedGross,language)}</strong></div>{calculatedBreak>0?<div><span>{c.break}</span><strong>−{formatBreak(calculatedBreak,language)}</strong></div>:null}<div><span>{c.net}</span><strong>{formatHours(calculatedNet,language)}</strong></div></div>
+        <div className="fastEditorTotal"><div><span>{c.gross}</span><strong>{formatHours(calculatedGross)}</strong></div>{calculatedBreak>0?<div><span>{c.break}</span><strong>−{formatBreak(calculatedBreak,language)}</strong></div>:null}<div><span>{c.net}</span><strong>{formatHours(calculatedNet)}</strong></div></div>
         <label><span>{c.note}</span><textarea value={note} disabled={busy||locked} placeholder={c.notePlaceholder} onChange={e=>setNote(e.target.value)}/></label>
         <button className="fastEditorSave" type="submit" disabled={busy||locked||calculatedGross<=0}>{c.saveShift}</button>
         {editingId?<button className="fastEditorDelete" type="button" disabled={busy||locked} onClick={removeShift}>{c.deleteShift}</button>:null}
