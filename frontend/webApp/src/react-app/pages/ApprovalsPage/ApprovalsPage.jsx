@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { RequestLoadingState } from '@shared/app/components/RequestLoader/RequestLoader.jsx';
@@ -14,6 +15,7 @@ import {
 } from '../../features/worktrack/worktrackApi.js';
 import './ApprovalsPage.css';
 import './ApprovalsRedesign.css';
+import './ApprovalsActions.css';
 
 const LOCALES = { uk: 'uk-UA', en: 'en-GB', cs: 'cs-CZ' };
 const CLEAR_COPY = {
@@ -28,6 +30,7 @@ const CLEAR_COPY = {
     mismatchFound: count => `Є невідповідності у ${count} ${count === 1 ? 'записі' : 'записах'}`,
     reviewMismatch: 'Перевірте записи перед погодженням',
     viewMismatch: 'Переглянути невідповідність',
+    editTimesheet: 'Редагувати в табелі',
     mismatchWithTimesheet: 'Невідповідність із табелем',
     employeeSubmission: 'Запис у погодженні',
     managerTimesheet: 'У табелі',
@@ -51,6 +54,7 @@ const CLEAR_COPY = {
     mismatchFound: count => `Nalezené nesrovnalosti: ${count}`,
     reviewMismatch: 'Před schválením zkontrolujte záznamy',
     viewMismatch: 'Zobrazit nesrovnalost',
+    editTimesheet: 'Upravit ve výkazu',
     mismatchWithTimesheet: 'Nesrovnalost s výkazem',
     employeeSubmission: 'Záznam ke schválení',
     managerTimesheet: 'Ve výkazu',
@@ -74,6 +78,7 @@ const CLEAR_COPY = {
     mismatchFound: count => `${count} ${count === 1 ? 'mismatch' : 'mismatches'} found`,
     reviewMismatch: 'Review the entries before approval',
     viewMismatch: 'View mismatch',
+    editTimesheet: 'Edit in timesheet',
     mismatchWithTimesheet: 'Timesheet mismatch',
     employeeSubmission: 'Submitted entry',
     managerTimesheet: 'Manager timesheet',
@@ -105,6 +110,7 @@ function isComparisonProblem(comparison) { return comparison && !['EMPTY', 'MATC
 function formatHours(value) { return value == null ? '—' : `${Number(value).toFixed(2)} h`; }
 
 export function ApprovalsPage() {
+  const navigate = useNavigate();
   const { language, t } = useI18n();
   const locale = LOCALES[language] || LOCALES.uk;
   const clearCopy = CLEAR_COPY[language] || CLEAR_COPY.uk;
@@ -153,6 +159,14 @@ export function ApprovalsPage() {
     setActionMessage('');
     setSelectedId(id);
     setMobileDetailOpen(true);
+  }
+
+  function editInTimesheet(comparison) {
+    if (!comparison?.date || !detail?.employeeMembershipId) return;
+    setOpenEntryMenuId('');
+    setSelectedComparison(null);
+    const params = new URLSearchParams({ employee: detail.employeeMembershipId, date: comparison.date, from: 'approvals' });
+    navigate(`/manager/timesheet?${params.toString()}`);
   }
 
   async function review(decision) {
@@ -241,6 +255,7 @@ export function ApprovalsPage() {
                   <button className="approvalEntryMore" type="button" aria-label="Actions" aria-expanded={menuOpen} onClick={() => { setOpenEntryMenuId(menuOpen ? '' : entry.id); setSectionMenuOpen(false); }}>⋮</button>
                   {menuOpen ? <span className="approvalEntryMenu">
                     {hasMismatch ? <button type="button" className="is-warning" onClick={() => { setSelectedComparison(comparison); setOpenEntryMenuId(''); }}>⚠ {clearCopy.viewMismatch}</button> : null}
+                    {hasMismatch ? <button type="button" className="is-edit" onClick={() => editInTimesheet(comparison)}>✎ {clearCopy.editTimesheet}</button> : null}
                     <button type="button" className="is-danger" disabled={isReviewing} onClick={() => removeEntry(entry.id)}>⌫ {clearCopy.deleteEntry}</button>
                   </span> : null}
                 </span>
@@ -258,7 +273,10 @@ export function ApprovalsPage() {
                 {selectedComparison.difference != null ? <div className="is-difference"><span>{clearCopy.difference}</span><strong>{selectedComparison.difference > 0 ? '+' : ''}{Number(selectedComparison.difference).toFixed(2)} h</strong></div> : null}
               </div>
               <div className="approvalMismatchReasons"><span>{clearCopy.reasons}</span>{(selectedComparison.reasons || []).map(reason => <p key={reason}>⚠ {getReasonText(reason)}</p>)}</div>
-              <button className="approvalMismatchClose" type="button" onClick={() => setSelectedComparison(null)}>{clearCopy.close}</button>
+              <div className="approvalMismatchSheetActions">
+                <button className="approvalMismatchEdit" type="button" onClick={() => editInTimesheet(selectedComparison)}>✎ {clearCopy.editTimesheet}</button>
+                <button className="approvalMismatchClose" type="button" onClick={() => setSelectedComparison(null)}>{clearCopy.close}</button>
+              </div>
             </section>
           </div> : null}
         </> : null}
