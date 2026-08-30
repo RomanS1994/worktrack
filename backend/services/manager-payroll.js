@@ -130,13 +130,15 @@ export async function getManagerPayroll(client, context, query = {}) {
     const baseSummary = calculateNetWorkSummary(entries, membership.hourlyRateCzk ?? '0', rules);
     const rates = rateMeta(entries, membership.hourlyRateCzk ?? '0', rules);
     const employeeAdvances = advanceByEmployee.get(membership.id) || 0;
+    const employeeConfirmed = toHundredths(baseSummary.confirmedSalaryCzk);
     const employeePredicted = toHundredths(baseSummary.predictedSalaryCzk);
-    const employeeNetPay = Math.max(employeePredicted - employeeAdvances, 0);
+    const employeeAccrued = employeeConfirmed + employeePredicted;
+    const employeeNetPay = Math.max(employeeAccrued - employeeAdvances, 0);
 
     if (toHundredths(baseSummary.totalHours) > 0) employeesWithHours += 1;
     approvedHours += toHundredths(baseSummary.approvedHours);
     pendingHours += toHundredths(baseSummary.pendingHours);
-    confirmedSalary += toHundredths(baseSummary.confirmedSalaryCzk);
+    confirmedSalary += employeeConfirmed;
     predictedSalary += employeePredicted;
     advances += employeeAdvances;
 
@@ -151,11 +153,14 @@ export async function getManagerPayroll(client, context, query = {}) {
       mixedRates: rates.mixedRates,
       summary: {
         ...baseSummary,
+        accruedSalaryCzk: formatHundredths(employeeAccrued),
         advancesCzk: formatHundredths(employeeAdvances),
         netPayCzk: formatHundredths(employeeNetPay),
       },
     };
   });
+
+  const accruedSalary = confirmedSalary + predictedSalary;
 
   return {
     role: 'MANAGER',
@@ -170,8 +175,9 @@ export async function getManagerPayroll(client, context, query = {}) {
       pendingHours: formatHundredths(pendingHours),
       confirmedSalaryCzk: formatHundredths(confirmedSalary),
       predictedSalaryCzk: formatHundredths(predictedSalary),
+      accruedSalaryCzk: formatHundredths(accruedSalary),
       advancesCzk: formatHundredths(advances),
-      netPayCzk: formatHundredths(Math.max(predictedSalary - advances, 0)),
+      netPayCzk: formatHundredths(Math.max(accruedSalary - advances, 0)),
     },
   };
 }
