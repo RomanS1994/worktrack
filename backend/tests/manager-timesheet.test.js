@@ -89,10 +89,10 @@ function managerEntry(overrides = {}) {
   };
 }
 
-test('manager timesheet compares against net hours after lunch deduction', async () => {
+test('manager timesheet preserves submitted net hours instead of deducting lunch again', async () => {
   const payload = await getManagerTimesheet(
     readClient({
-      workEntries: [workEntry({ hours: '8.50', grossHours: '8.50', breakMinutes: 30 })],
+      workEntries: [workEntry({ hours: '8.00', grossHours: '8.50', breakMinutes: 30 })],
       managerEntries: [managerEntry({ hours: '8.00', breakMinutes: 30 })],
     }),
     context(),
@@ -108,13 +108,30 @@ test('manager timesheet compares against net hours after lunch deduction', async
   assert.equal(payload.summary.problems, 0);
 });
 
+test('manager timesheet does not add a quarter hour when a submitted entry has a 15 minute break snapshot', async () => {
+  const payload = await getManagerTimesheet(
+    readClient({
+      workEntries: [workEntry({ hours: '10.25', grossHours: '10.50', breakMinutes: 15 })],
+      managerEntries: [managerEntry({ hours: '10.25', breakMinutes: 15 })],
+    }),
+    context(),
+    { month: '2026-08' }
+  );
+
+  const day = payload.rows[0].days[9];
+  assert.equal(day.employeeHours, 10.25);
+  assert.equal(day.managerHours, 10.25);
+  assert.equal(day.difference, 0);
+  assert.equal(day.status, 'MATCH');
+});
+
 test('manager timesheet ignores draft entries when comparing submitted worker hours', async () => {
   const payload = await getManagerTimesheet(
     readClient({
       workEntries: [
         workEntry({
           id: 'submitted-entry',
-          hours: '11.00',
+          hours: '10.50',
           grossHours: '11.00',
           breakMinutes: 30,
           status: 'SUBMITTED',
@@ -149,7 +166,7 @@ test('manager timesheet prefers weekly submitted entries over orphan approved im
         workEntry({
           id: 'live-submitted-entry',
           weeklySubmissionId: 'submission-1',
-          hours: '11.00',
+          hours: '10.50',
           grossHours: '11.00',
           breakMinutes: 30,
           status: 'SUBMITTED',
@@ -198,7 +215,7 @@ test('manager timesheet pinpoints a half-hour mismatch', async () => {
 test('manager timesheet reports lunch and project differences separately', async () => {
   const payload = await getManagerTimesheet(
     readClient({
-      workEntries: [workEntry({ hours: '8.50', grossHours: '8.50', breakMinutes: 30 })],
+      workEntries: [workEntry({ hours: '8.00', grossHours: '8.50', breakMinutes: 30 })],
       managerEntries: [managerEntry({ hours: '8.00', breakMinutes: 60, projectId: 'project-b' })],
     }),
     context(),
