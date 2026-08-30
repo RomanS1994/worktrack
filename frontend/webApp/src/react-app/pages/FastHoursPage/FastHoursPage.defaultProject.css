@@ -1,3 +1,5 @@
+@import './FastHoursPage.shared.css';
+
 .fastHoursPage{position:relative}
 
 /* Primary project selector follows the same compact language as Time / Week. */
