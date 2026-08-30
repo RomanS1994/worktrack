@@ -10,15 +10,16 @@ import {
   useMarkInvoiceViewedMutation,
   useSendInvoiceMutation,
 } from '../../features/worktrack/billingApi.js';
+import { downloadInvoicePdf, shareInvoicePdf } from '../../features/worktrack/invoicePdf.js';
 import './InvoiceDocumentPage.css';
 
 const UI_COPY={
- uk:{back:'Назад до фактур',print:'Зберегти PDF',send:'Відправити роботодавцю',sending:'Відправлення…',sendConfirm:'Відправити цю фактуру роботодавцю? Після відправлення вона стане доступною менеджеру.',loading:'Завантаження фактури…',missing:'Фактуру не знайдено.',copy:'Копіювати платіжні дані',copied:'Скопійовано',history:'Історія фактури',created:'Створено чернетку',sent:'Відправлено роботодавцю',viewed:'Переглянуто роботодавцем',paid:'Позначено оплачено',cancelled:'Скасовано'},
- cs:{back:'Zpět na faktury',print:'Uložit PDF',send:'Odeslat zaměstnavateli',sending:'Odesílání…',sendConfirm:'Odeslat tuto fakturu zaměstnavateli? Po odeslání bude dostupná manažerovi.',loading:'Načítání faktury…',missing:'Faktura nebyla nalezena.',copy:'Kopírovat platební údaje',copied:'Zkopírováno',history:'Historie faktury',created:'Vytvořen koncept',sent:'Odesláno zaměstnavateli',viewed:'Zobrazeno zaměstnavatelem',paid:'Označeno jako zaplacené',cancelled:'Zrušeno'},
- en:{back:'Back to invoices',print:'Save PDF',send:'Send to employer',sending:'Sending…',sendConfirm:'Send this invoice to your employer? It will become visible to the manager.',loading:'Loading invoice…',missing:'Invoice not found.',copy:'Copy payment details',copied:'Copied',history:'Invoice history',created:'Draft created',sent:'Sent to employer',viewed:'Viewed by employer',paid:'Marked as paid',cancelled:'Cancelled'}
+ uk:{back:'Назад до фактур',download:'Завантажити PDF',share:'Поділитися PDF',preparing:'Формування PDF…',send:'Відправити роботодавцю',sending:'Відправлення…',sendConfirm:'Відправити цю фактуру роботодавцю? Після відправлення вона стане доступною менеджеру.',loading:'Завантаження фактури…',missing:'Фактуру не знайдено.',copy:'Копіювати платіжні дані',copied:'Скопійовано',history:'Історія фактури',pdfError:'Не вдалося сформувати PDF. Спробуйте ще раз.',created:'Створено чернетку',sent:'Відправлено роботодавцю',viewed:'Переглянуто роботодавцем',paid:'Позначено оплачено',cancelled:'Скасовано'},
+ cs:{back:'Zpět na faktury',download:'Stáhnout PDF',share:'Sdílet PDF',preparing:'Vytváření PDF…',send:'Odeslat zaměstnavateli',sending:'Odesílání…',sendConfirm:'Odeslat tuto fakturu zaměstnavateli? Po odeslání bude dostupná manažerovi.',loading:'Načítání faktury…',missing:'Faktura nebyla nalezena.',copy:'Kopírovat platební údaje',copied:'Zkopírováno',history:'Historie faktury',pdfError:'PDF se nepodařilo vytvořit. Zkuste to znovu.',created:'Vytvořen koncept',sent:'Odesláno zaměstnavateli',viewed:'Zobrazeno zaměstnavatelem',paid:'Označeno jako zaplacené',cancelled:'Zrušeno'},
+ en:{back:'Back to invoices',download:'Download PDF',share:'Share PDF',preparing:'Creating PDF…',send:'Send to employer',sending:'Sending…',sendConfirm:'Send this invoice to your employer? It will become visible to the manager.',loading:'Loading invoice…',missing:'Invoice not found.',copy:'Copy payment details',copied:'Copied',history:'Invoice history',pdfError:'Could not create the PDF. Please try again.',created:'Draft created',sent:'Sent to employer',viewed:'Viewed by employer',paid:'Marked as paid',cancelled:'Cancelled'}
 };
 
-// The invoice/PDF itself is intentionally always Czech. UI controls may follow the app language.
+// The invoice/PDF preview itself is intentionally always Czech. UI controls may follow the app language.
 const PDF_COPY={
  invoice:'FAKTURA',supplier:'Dodavatel',customer:'Odběratel',ico:'IČO',dic:'DIČ',account:'Účet / IBAN',issue:'Datum vystavení',due:'Datum splatnosti',paidDate:'Datum úhrady',period:'Období prací',payment:'Platební údaje',variableSymbol:'Variabilní symbol',amount:'Částka',total:'Celkem k úhradě',spayd:'QR Platba / SPAYD',scan:'Naskenujte pro platbu',service:'Poskytnuté práce dle přiloženého výkazu hodin',hours:'Hodiny',rate:'Sazba',appendix:'PŘÍLOHA K FAKTUŘE',timesheet:'Výkaz odpracovaných hodin',date:'Datum',description:'Popis práce',itemAmount:'Částka',mixedRates:'Více sazeb',draftStatus:'Koncept',sentStatus:'Odesláno',viewedStatus:'Zobrazeno',paidStatus:'Zaplaceno',cancelledStatus:'Zrušeno',overdueStatus:'Po splatnosti'
 };
@@ -39,6 +40,7 @@ export function InvoiceDocumentPage({managerMode=false}){
  const viewedRef=useRef('');
  const [copied,setCopied]=useState(false);
  const [actionError,setActionError]=useState('');
+ const [pdfAction,setPdfAction]=useState('');
  const employeeQuery=useGetInvoiceQuery(invoiceId,{skip:managerMode||!invoiceId});
  const managerQuery=useGetManagerInvoiceQuery(invoiceId,{skip:!managerMode||!invoiceId});
  const employeeHistory=useGetInvoiceHistoryQuery(invoiceId,{skip:managerMode||!invoiceId});
@@ -63,15 +65,16 @@ export function InvoiceDocumentPage({managerMode=false}){
  },[invoice?.invoiceNumber]);
 
  async function copyPayment(){if(!invoice?.paymentDescriptor)return;try{await navigator.clipboard.writeText(invoice.paymentDescriptor);setCopied(true);window.setTimeout(()=>setCopied(false),1800)}catch{/* Clipboard may be unavailable on some embedded browsers. */}}
- function printInvoice(){if(!invoice?.invoiceNumber)return;const previousTitle=document.title;document.title=`${invoice.invoiceNumber}`;window.print();window.setTimeout(()=>{document.title=previousTitle},0)}
+ async function downloadPdf(){if(!invoice||pdfAction)return;setActionError('');setPdfAction('download');try{await downloadInvoicePdf(invoice)}catch{setActionError(c.pdfError)}finally{setPdfAction('')}}
+ async function sharePdf(){if(!invoice||pdfAction)return;setActionError('');setPdfAction('share');try{await shareInvoicePdf(invoice)}catch(error){if(error?.name!=='AbortError')setActionError(c.pdfError)}finally{setPdfAction('')}}
  async function send(){if(!invoice?.id||managerMode||invoice.status!=='DRAFT'||!window.confirm(c.sendConfirm))return;setActionError('');try{await sendInvoice(invoice.id).unwrap();await Promise.all([activeQuery.refetch(),historyQuery.refetch()])}catch(error){setActionError(getApiErrorMessage(error))}}
 
  if(activeQuery.isLoading)return <section className="invoiceDocState screenCard">{c.loading}</section>;
  if(activeQuery.error)return <section className="invoiceDocState screenCard statusNote is-error">{getApiErrorMessage(activeQuery.error)}</section>;
  if(!invoice)return <section className="invoiceDocState screenCard">{c.missing}</section>;
- const seller=invoice.seller||{};const buyer=invoice.buyer||{};const paymentQr=qrUrl(invoice.paymentDescriptor);const history=historyQuery.data?.history||[];const currentStatus=statusLabel(invoice);const mixedRates=hasMixedRates(invoice.items||[]);
+ const seller=invoice.seller||{};const buyer=invoice.buyer||{};const paymentQr=qrUrl(invoice.paymentDescriptor);const history=historyQuery.data?.history||[];const currentStatus=statusLabel(invoice);const mixedRates=hasMixedRates(invoice.items||[]);const pdfBusy=Boolean(pdfAction);
  return <section className="invoiceDocumentPage">
-  <div className="invoiceDocumentActions noPrint"><button type="button" onClick={()=>navigate(managerMode?'/manager/invoices':'/invoices')}>← {c.back}</button><div className="invoiceDocumentPrimaryActions"><button className="invoiceDocumentPrint" type="button" onClick={printInvoice}>{c.print}</button>{!managerMode&&invoice.status==='DRAFT'?<button className="invoiceDocumentSend" type="button" onClick={send} disabled={sendState.isLoading}>{sendState.isLoading?c.sending:c.send}</button>:null}</div></div>
+  <div className="invoiceDocumentActions noPrint"><button type="button" onClick={()=>navigate(managerMode?'/manager/invoices':'/invoices')}>← {c.back}</button><div className="invoiceDocumentPrimaryActions"><button className="invoiceDocumentPrint" type="button" onClick={downloadPdf} disabled={pdfBusy}>{pdfAction==='download'?c.preparing:c.download}</button><button className="invoiceDocumentShare" type="button" onClick={sharePdf} disabled={pdfBusy}>{pdfAction==='share'?c.preparing:c.share}</button>{!managerMode&&invoice.status==='DRAFT'?<button className="invoiceDocumentSend" type="button" onClick={send} disabled={sendState.isLoading||pdfBusy}>{sendState.isLoading?c.sending:c.send}</button>:null}</div></div>
   {actionError?<div className="invoiceDocumentActionError statusNote is-error noPrint" role="alert">{actionError}</div>:null}
 
   <article className={`invoicePaper invoiceMainPage${invoice.isOverdue?' is-overdue':''}`} data-invoice-number={invoice.invoiceNumber} lang="cs">
