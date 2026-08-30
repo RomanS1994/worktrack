@@ -34,6 +34,11 @@ function WalletIcon() {
   );
 }
 
+function accruedAmount(summary) {
+  if (summary?.accruedSalaryCzk != null) return Number(summary.accruedSalaryCzk || 0);
+  return Number(summary?.confirmedSalaryCzk || 0) + Number(summary?.predictedSalaryCzk || 0);
+}
+
 export function ManagerPayrollDashboard({
   anchor,
   employees,
@@ -56,10 +61,10 @@ export function ManagerPayrollDashboard({
   const visibleSummary = selectedEmployee?.summary || summary;
   const copy = copyForLocale(locale);
   const confirmed = Number(visibleSummary?.confirmedSalaryCzk || 0);
-  const accrued = Number(visibleSummary?.predictedSalaryCzk || 0);
+  const accrued = accruedAmount(visibleSummary);
   const advances = Number(visibleSummary?.advancesCzk || 0);
   const netPay = Number(visibleSummary?.netPayCzk ?? Math.max(accrued - advances, 0));
-  const pending = Math.max(accrued - confirmed, 0);
+  const pending = Number(visibleSummary?.predictedSalaryCzk || 0);
   const approvedHours = visibleSummary?.approvedHours || 0;
   const pendingHours = visibleSummary?.pendingHours || 0;
 
@@ -117,6 +122,7 @@ export function ManagerPayrollDashboard({
         <div className="managerPayrollMobile-list">
           {employees.map(employee => {
             const isSelected = employee.id === selectedEmployeeId;
+            const employeeAccrued = accruedAmount(employee.summary);
             return (
               <button
                 type="button"
@@ -132,7 +138,7 @@ export function ManagerPayrollDashboard({
                 </div>
                 <span className="managerPayrollMobile-chevron" aria-hidden="true">{isSelected ? '⌃' : '›'}</span>
                 <div className="managerPayrollMobile-employeeAmounts is-net-pay">
-                  <div><span>{copy.accrued}</span><strong>{formatCzk(employee.summary?.predictedSalaryCzk, locale)}</strong></div>
+                  <div><span>{copy.accrued}</span><strong>{formatCzk(employeeAccrued, locale)}</strong></div>
                   <div className="is-advance"><span>{copy.advances}</span><strong>− {formatCzk(employee.summary?.advancesCzk, locale)}</strong></div>
                   <div className="is-net"><span>{copy.netPay}</span><strong>{formatCzk(employee.summary?.netPayCzk, locale)}</strong></div>
                 </div>
