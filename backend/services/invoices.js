@@ -26,7 +26,7 @@ function buildSpayd(invoice) {
   const iban = cleanIban(seller.iban);
   if (!iban) return '';
   const variableSymbol = variableSymbolFor(invoice.invoiceNumber);
-  const message = spaydValue(`Invoice ${invoice.invoiceNumber}`);
+  const message = spaydValue(`Faktura ${invoice.invoiceNumber}`);
   return [
     'SPD*1.0',
     `ACC:${iban}`,
@@ -133,6 +133,12 @@ function managerMembership(context) {
   return membership;
 }
 
+function invoiceItemDescription(entry) {
+  const project = clean(entry?.project?.name, 160) || 'Práce';
+  const note = clean(entry?.note, 1200);
+  return note ? `${project} — ${note}` : project;
+}
+
 function serialize(invoice) {
   return {
     id: invoice.id,
@@ -213,7 +219,7 @@ export async function previewInvoiceDraft(client, context, payload = {}) {
 export async function createInvoiceDraft(client, context, payload = {}) {
   const draft = await buildDraftContext(client, context, payload);
   const invoiceNumber = await nextInvoiceNumber(client, draft.membership.companyId, draft.tax.prefix, draft.range.year);
-  const invoice = await client.invoice.create({ data: { id: randomUUID(), companyId: draft.membership.companyId, employeeMembershipId: draft.membership.id, invoiceNumber, periodStart: draft.range.start, periodEnd: draft.range.end, issueDate: draft.issueDate, dueDate: draft.dueDate, currency: 'CZK', hourlyRate: money(draft.rate), totalHours: money(draft.totalHours), subtotal: money(draft.subtotal), status: 'DRAFT', sellerSnapshot: { ...draft.tax, email: draft.user.email, phone: draft.user.phone || '' }, buyerSnapshot: { ...draft.buyer, companyId: draft.company.id }, items: { create: draft.entries.map(entry => ({ id: randomUUID(), workEntryId: entry.id, description: entry.project?.name || 'Work', workDate: entry.workDate, hours: money(entry.invoiceHours), hourlyRate: money(entry.invoiceRate), amount: money(entry.invoiceAmount) })) } }, include: { items: { orderBy: { workDate: 'asc' } } } });
+  const invoice = await client.invoice.create({ data: { id: randomUUID(), companyId: draft.membership.companyId, employeeMembershipId: draft.membership.id, invoiceNumber, periodStart: draft.range.start, periodEnd: draft.range.end, issueDate: draft.issueDate, dueDate: draft.dueDate, currency: 'CZK', hourlyRate: money(draft.rate), totalHours: money(draft.totalHours), subtotal: money(draft.subtotal), status: 'DRAFT', sellerSnapshot: { ...draft.tax, email: draft.user.email, phone: draft.user.phone || '' }, buyerSnapshot: { ...draft.buyer, companyId: draft.company.id }, items: { create: draft.entries.map(entry => ({ id: randomUUID(), workEntryId: entry.id, description: invoiceItemDescription(entry), workDate: entry.workDate, hours: money(entry.invoiceHours), hourlyRate: money(entry.invoiceRate), amount: money(entry.invoiceAmount) })) } }, include: { items: { orderBy: { workDate: 'asc' } } } });
   return serialize(invoice);
 }
 
