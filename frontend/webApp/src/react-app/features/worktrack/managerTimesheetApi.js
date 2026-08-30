@@ -12,7 +12,10 @@ export const managerTimesheetApi = baseApi.injectEndpoints({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: [{ type: 'WorkEntries', id: 'MANAGER_TIMESHEET' }],
+      invalidatesTags: [
+        { type: 'WorkEntries', id: 'MANAGER_TIMESHEET' },
+        { type: 'WeeklySubmissions' },
+      ],
     }),
   }),
 });
