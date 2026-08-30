@@ -20,11 +20,11 @@ export function TaxInformationPage(){
    <div className="compactHeader"><h2>{t('tax.seller')}</h2><p>{t('tax.sellerCopy')}</p></div>
    {isLoading?<p className="statusNote">{t('tax.loading')}</p>:null}{error?<p className="statusNote is-error">{getApiErrorMessage(error)}</p>:null}
    {!isLoading&&!error?<div className="taxGrid">
-    <label><span>{t('tax.businessName')}</span><input value={form.businessName} onChange={e=>set('businessName',e.target.value)} /></label>
-    <label><span>{t('tax.ico')}</span><input inputMode="numeric" value={form.ico} onChange={e=>set('ico',e.target.value)} /></label>
+    <label><span>{t('tax.businessName')}</span><input value={form.businessName} onChange={e=>set('businessName',e.target.value)} required /></label>
+    <label><span>{t('tax.ico')}</span><input inputMode="numeric" value={form.ico} onChange={e=>set('ico',e.target.value)} required /></label>
     <label><span>{t('tax.dic')}</span><input value={form.dic} onChange={e=>set('dic',e.target.value)} /></label>
-    <label className="taxWide"><span>{t('tax.address')}</span><input autoComplete="street-address" value={form.address} onChange={e=>set('address',e.target.value)} /></label>
-    <label className="taxWide"><span>{t('tax.iban')}</span><input value={form.iban} onChange={e=>set('iban',e.target.value)} /></label>
+    <label className="taxWide"><span>{t('tax.address')}</span><input autoComplete="street-address" value={form.address} onChange={e=>set('address',e.target.value)} required /></label>
+    <label className="taxWide"><span>{t('tax.iban')}</span><input value={form.iban} onChange={e=>set('iban',e.target.value)} required /></label>
     <label><span>{t('tax.currency')}</span><input value="CZK" readOnly aria-readonly="true" /></label>
     <label><span>{t('tax.due')}</span><div className="taxInline"><input type="number" min="1" max="90" value={form.dueDays} onChange={e=>set('dueDays',e.target.value)} /><small>{t('tax.days')}</small></div></label>
     <label><span>{t('tax.prefix')}</span><input value={form.prefix} onChange={e=>set('prefix',e.target.value.toUpperCase())} /></label>

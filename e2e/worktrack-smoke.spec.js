@@ -88,7 +88,7 @@ async function seedSession(page, user) {
   );
 }
 
-async function installApiMocks(page, role) {
+async function installApiMocks(page, role, { invoicePreviewError = '' } = {}) {
   const unexpected = [];
   await page.route(API_PATTERN, async route => {
     const request = route.request();
@@ -206,6 +206,43 @@ async function installApiMocks(page, role) {
       });
     }
 
+    if (method === 'GET' && path === '/tax-information') {
+      return json(route, {
+        taxInformation: {
+          businessName: '',
+          ico: '',
+          dic: '',
+          address: '',
+          iban: '',
+          currency: 'CZK',
+          dueDays: 14,
+          prefix: 'WT',
+        },
+      });
+    }
+
+    if (method === 'GET' && path === '/invoices/preview') {
+      if (invoicePreviewError) {
+        return json(route, { error: invoicePreviewError, details: null }, 400);
+      }
+      return json(route, {
+        preview: {
+          month: url.searchParams.get('month'),
+          invoiceNumber: 'WT-2026-0001',
+          periodStart: '2026-08-01',
+          periodEnd: '2026-08-31',
+          issueDate: '2026-08-30',
+          dueDate: '2026-09-13',
+          currency: 'CZK',
+          hourlyRate: '250.00',
+          totalHours: '8.00',
+          subtotal: '2000.00',
+          seller: { businessName: 'Anna Employee', ico: '87654321' },
+          buyer: { name: 'WorkTrack QA', ico: '12345678' },
+        },
+      });
+    }
+
     if (method === 'GET' && path === '/invoices') {
       return json(route, { invoices: [] });
     }
@@ -301,6 +338,7 @@ test('employee can open every employee screen and is blocked from manager-only s
     '/hours',
     '/calendar',
     '/invoices',
+    '/tax-information',
     '/payroll-report',
     '/notifications',
     '/profile',
@@ -310,6 +348,24 @@ test('employee can open every employee screen and is blocked from manager-only s
 
   await page.goto('/employees');
   await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page.locator('h1').first()).toBeVisible();
+
+  expect(unexpected).toEqual([]);
+});
+
+test('employee sees the exact invoice prerequisite and can open tax details', async ({ page }) => {
+  await seedSession(page, employeeUser());
+  const unexpected = await installApiMocks(page, 'EMPLOYEE', {
+    invoicePreviewError: 'Complete tax information before creating an invoice',
+  });
+
+  await page.goto('/invoices');
+  await page.getByRole('button', { name: 'Перевірити фактуру' }).click();
+
+  const alert = page.getByRole('alert');
+  await expect(alert).toContainText('Заповніть податкові реквізити перед створенням фактури.');
+  await alert.getByRole('button', { name: 'Заповнити реквізити' }).click();
+  await expect(page).toHaveURL(/\/tax-information$/);
   await expect(page.locator('h1').first()).toBeVisible();
 
   expect(unexpected).toEqual([]);

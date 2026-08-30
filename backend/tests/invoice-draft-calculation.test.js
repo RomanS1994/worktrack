@@ -114,3 +114,55 @@ test('invoice items preserve each entry rate instead of current membership rate'
   assert.equal(invoice.items[1].amount, '2100.00');
   assert.equal(db.createdPayload.hourlyRate, '250.00');
 });
+
+test('invoice preview explains when employee tax information is incomplete', async () => {
+  const db = client();
+  db.user.findUnique = async () => ({
+    id: 'user-1',
+    email: 'worker@example.com',
+    phone: '',
+    profile: { taxInformation: {} },
+  });
+
+  await assert.rejects(
+    () => previewInvoiceDraft(db, context(), { month: '2026-08' }),
+    /Complete tax information before creating an invoice/,
+  );
+});
+
+test('invoice preview explains when employer billing information is incomplete', async () => {
+  const db = client();
+  db.company.findUnique = async () => ({
+    id: 'company-1',
+    name: 'Employer',
+    billingProfile: {},
+    breakMinutes: 60,
+    standardDailyHours: '8.00',
+  });
+
+  await assert.rejects(
+    () => previewInvoiceDraft(db, context(), { month: '2026-08' }),
+    /Employer billing information is incomplete/,
+  );
+});
+
+test('invoice preview explains when the employee hourly rate is missing', async () => {
+  const db = client();
+  const missingRateContext = context();
+  missingRateContext.activeMembership.hourlyRateCzk = '0.00';
+
+  await assert.rejects(
+    () => previewInvoiceDraft(db, missingRateContext, { month: '2026-08' }),
+    /Hourly rate must be greater than zero before creating an invoice/,
+  );
+});
+
+test('invoice preview explains when the month has no available approved hours', async () => {
+  const db = client();
+  db.workEntry.findMany = async () => [];
+
+  await assert.rejects(
+    () => previewInvoiceDraft(db, context(), { month: '2026-08' }),
+    /No uninvoiced approved hours for this month/,
+  );
+});

@@ -1,0 +1,32 @@
+.invoiceErrorPanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.invoiceErrorPanel span {
+  min-width: 0;
+}
+
+.invoiceErrorPanel button {
+  flex: none;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid #fecaca;
+  border-radius: 11px;
+  background: #fff;
+  color: #991b1b;
+  font-weight: 800;
+}
+
+@media (max-width: 640px) {
+  .invoiceErrorPanel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .invoiceErrorPanel button {
+    width: 100%;
+  }
+}

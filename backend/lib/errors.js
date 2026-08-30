@@ -72,6 +72,8 @@ const STATUS_BY_MESSAGE = new Map([
   ['Only draft invoices can be sent', 409],
   ['Invoice cannot be cancelled', 409],
   ['Invoice cannot be marked paid', 409],
+  ['Invalid payment date', 400],
+  ['Payment date cannot be in the future', 400],
 ]);
 
 export function resolveErrorStatus(error) {

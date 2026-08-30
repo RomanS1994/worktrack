@@ -3,9 +3,9 @@ import { baseApi } from '@shared/app/api/baseApi.js';
 export const billingApi = baseApi.injectEndpoints({
   endpoints: builder => ({
     getTaxInformation: builder.query({ query: () => '/tax-information' }),
-    updateTaxInformation: builder.mutation({ query: body => ({ url: '/tax-information', method: 'PATCH', body }) }),
+    updateTaxInformation: builder.mutation({ query: body => ({ url: '/tax-information', method: 'PATCH', body }), invalidatesTags: ['InvoicePreview'] }),
     getCompanyBilling: builder.query({ query: () => '/company-billing' }),
-    updateCompanyBilling: builder.mutation({ query: body => ({ url: '/company-billing', method: 'PATCH', body }) }),
+    updateCompanyBilling: builder.mutation({ query: body => ({ url: '/company-billing', method: 'PATCH', body }), invalidatesTags: ['InvoicePreview'] }),
     getInvoicePreview: builder.query({ query: month => `/invoices/preview?month=${encodeURIComponent(month)}`, providesTags: ['InvoicePreview'] }),
     getInvoices: builder.query({ query: () => '/invoices', providesTags: ['Invoices'] }),
     getInvoice: builder.query({ query: invoiceId => `/invoices/${invoiceId}`, providesTags: ['Invoices'] }),
