@@ -16,6 +16,32 @@ import {
   updateEmployeeMembership,
 } from '../../services/worktrack.js';
 
+function isoDate(value) {
+  if (!value) return '';
+  return new Date(value).toISOString().slice(0, 10);
+}
+
+function round2(value) {
+  return Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100;
+}
+
+function sameNumber(first, second) {
+  if (first == null || second == null) return first == null && second == null;
+  return Math.abs(Number(first) - Number(second)) < 0.001;
+}
+
+function eachDate(startValue, endValue) {
+  if (!startValue || !endValue) return [];
+  const start = new Date(`${String(startValue).slice(0, 10)}T00:00:00.000Z`);
+  const end = new Date(`${String(endValue).slice(0, 10)}T00:00:00.000Z`);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return [];
+  const result = [];
+  for (let cursor = start; cursor <= end; cursor = new Date(cursor.getTime() + 86400000)) {
+    result.push(cursor.toISOString().slice(0, 10));
+  }
+  return result;
+}
+
 async function enrichSubmissionHours(client, context, submissions) {
   const list = Array.isArray(submissions) ? submissions : [submissions].filter(Boolean);
   if (!list.length) return list;
@@ -45,6 +71,34 @@ async function enrichSubmissionHours(client, context, submissions) {
     : [];
   const storedById = new Map(storedEntries.map(entry => [entry.id, entry]));
 
+  const employeeMembershipIds = [...new Set(list.map(submission => submission.employeeMembershipId).filter(Boolean))];
+  const dateValues = list.flatMap(submission => [submission.weekStart, submission.weekEnd]).filter(Boolean).map(isoDate).filter(Boolean);
+  const minDate = dateValues.length ? [...dateValues].sort()[0] : '';
+  const maxDate = dateValues.length ? [...dateValues].sort().at(-1) : '';
+  const managerEntries = employeeMembershipIds.length && minDate && maxDate
+    ? await client.managerTimesheetEntry.findMany({
+        where: {
+          companyId: context.activeMembership.companyId,
+          employeeMembershipId: { in: employeeMembershipIds },
+          workDate: {
+            gte: new Date(`${minDate}T00:00:00.000Z`),
+            lte: new Date(`${maxDate}T00:00:00.000Z`),
+          },
+        },
+        select: {
+          employeeMembershipId: true,
+          workDate: true,
+          hours: true,
+          breakMinutes: true,
+          projectId: true,
+          note: true,
+        },
+      })
+    : [];
+  const managerEntryByDay = new Map(
+    managerEntries.map(entry => [`${entry.employeeMembershipId}:${isoDate(entry.workDate)}`, entry])
+  );
+
   return list.map(submission => {
     const sourceEntries = (submission.entries || []).map(entry => {
       const stored = storedById.get(entry.id);
@@ -64,14 +118,83 @@ async function enrichSubmissionHours(client, context, submissions) {
       submission.employee?.hourlyRateCzk || 0,
       rules
     );
+
+    const employeeDayMap = new Map();
+    for (const entry of normalizedEntries) {
+      const date = isoDate(entry.workDate);
+      const current = employeeDayMap.get(date) || {
+        hours: 0,
+        breakMinutes: null,
+        projectIds: new Set(),
+        projectNames: new Set(),
+      };
+      current.hours += Number(entry.netHours || 0);
+      current.breakMinutes = Math.max(current.breakMinutes || 0, Number(entry.breakMinutes ?? rules.breakMinutes));
+      if (entry.projectId) current.projectIds.add(entry.projectId);
+      if (entry.project?.name) current.projectNames.add(entry.project.name);
+      employeeDayMap.set(date, current);
+    }
+
+    const comparisons = eachDate(submission.weekStart, submission.weekEnd).map(date => {
+      const employeeEntry = employeeDayMap.get(date);
+      const managerEntry = managerEntryByDay.get(`${submission.employeeMembershipId}:${date}`);
+      const employeeHours = employeeEntry ? round2(employeeEntry.hours) : null;
+      const managerHours = managerEntry?.hours == null ? null : round2(managerEntry.hours);
+      const employeeBreakMinutes = employeeEntry ? employeeEntry.breakMinutes : null;
+      const managerBreakMinutes = managerEntry?.breakMinutes == null ? null : Number(managerEntry.breakMinutes);
+      const employeeProjectIds = employeeEntry ? [...employeeEntry.projectIds] : [];
+      const employeeProjects = employeeEntry ? [...employeeEntry.projectNames] : [];
+      const managerProjectId = managerEntry?.projectId || null;
+      const reasons = [];
+      let status = 'EMPTY';
+
+      if (employeeHours == null && managerHours == null) {
+        status = 'EMPTY';
+      } else if (employeeHours == null) {
+        status = 'MISSING_EMPLOYEE';
+        reasons.push('missingEmployee');
+      } else if (managerHours == null) {
+        status = 'MISSING_MANAGER';
+        reasons.push('missingManager');
+      } else {
+        if (!sameNumber(employeeHours, managerHours)) reasons.push('hours');
+        if (managerBreakMinutes != null && employeeBreakMinutes != null && managerBreakMinutes !== employeeBreakMinutes) reasons.push('break');
+        if (managerProjectId && (employeeProjectIds.length !== 1 || employeeProjectIds[0] !== managerProjectId)) reasons.push('project');
+        status = reasons.length ? 'MISMATCH' : 'MATCH';
+      }
+
+      return {
+        date,
+        status,
+        reasons,
+        employeeHours,
+        managerHours,
+        difference: employeeHours == null || managerHours == null ? null : round2(managerHours - employeeHours),
+        employeeBreakMinutes,
+        managerBreakMinutes,
+        employeeProjects,
+        employeeProjectIds,
+        managerProjectId,
+        managerNote: managerEntry?.note || '',
+      };
+    });
+    const problemComparisons = comparisons.filter(item => !['EMPTY', 'MATCH'].includes(item.status));
+
     return {
       ...submission,
       entries: normalizedEntries.map(entry => ({
         ...entry,
         hours: entry.netHours,
         netHours: entry.netHours,
+        comparison: comparisons.find(item => item.date === isoDate(entry.workDate)) || null,
       })),
       summary,
+      comparisons,
+      comparisonSummary: {
+        problems: problemComparisons.length,
+        mismatches: problemComparisons.filter(item => item.status === 'MISMATCH').length,
+        missing: problemComparisons.filter(item => item.status === 'MISSING_EMPLOYEE' || item.status === 'MISSING_MANAGER').length,
+      },
       workRules: {
         breakMinutes: rules.breakMinutes,
         standardDailyHours: rules.standardDailyHours.toFixed(2),
