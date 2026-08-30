@@ -10,6 +10,13 @@ export const billingApi = baseApi.injectEndpoints({
     getInvoices: builder.query({ query: () => '/invoices', providesTags: ['Invoices'] }),
     getInvoice: builder.query({ query: invoiceId => `/invoices/${invoiceId}`, providesTags: ['Invoices'] }),
     getInvoiceHistory: builder.query({ query: invoiceId => `/invoices/${invoiceId}/history`, providesTags: ['Invoices'] }),
+    getInvoicePdf: builder.mutation({
+      query: ({ invoiceId, managerMode = false }) => ({
+        url: `${managerMode ? '/manager' : ''}/invoices/${invoiceId}/pdf`,
+        method: 'GET',
+        responseHandler: response => response.blob(),
+      }),
+    }),
     createInvoice: builder.mutation({ query: body => ({ url: '/invoices', method: 'POST', body }), invalidatesTags: ['Invoices', 'InvoicePreview'] }),
     sendInvoice: builder.mutation({ query: invoiceId => ({ url: `/invoices/${invoiceId}/send`, method: 'POST' }), invalidatesTags: ['Invoices'] }),
     deleteInvoice: builder.mutation({ query: invoiceId => ({ url: `/invoices/${invoiceId}`, method: 'DELETE' }), invalidatesTags: ['Invoices', 'InvoicePreview'] }),
@@ -31,6 +38,7 @@ export const {
   useGetInvoicesQuery,
   useGetInvoiceQuery,
   useGetInvoiceHistoryQuery,
+  useGetInvoicePdfMutation,
   useCreateInvoiceMutation,
   useSendInvoiceMutation,
   useDeleteInvoiceMutation,
