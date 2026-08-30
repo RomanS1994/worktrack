@@ -1,5 +1,7 @@
-const PDFMAKE_URL = 'https://cdn.jsdelivr.net/npm/pdfmake@0.3.11/build/pdfmake.min.js';
-const PDFMAKE_VFS_URL = 'https://cdn.jsdelivr.net/npm/pdfmake@0.3.11/build/vfs_fonts.js';
+import pdfMake from 'pdfmake/build/pdfmake.js';
+import pdfFonts from 'pdfmake/build/vfs_fonts.js';
+
+pdfMake.addVirtualFileSystem(pdfFonts);
 
 const STATUS_COPY = {
   DRAFT: 'Koncept',
@@ -261,41 +263,11 @@ function buildDocument(invoice) {
   };
 }
 
-function loadScript(id, src) {
-  return new Promise((resolve, reject) => {
-    const existing = document.getElementById(id);
-    if (existing) {
-      if (existing.dataset.loaded === 'true') resolve();
-      else {
-        existing.addEventListener('load', resolve, { once: true });
-        existing.addEventListener('error', reject, { once: true });
-      }
-      return;
-    }
-    const script = document.createElement('script');
-    script.id = id;
-    script.src = src;
-    script.async = true;
-    script.crossOrigin = 'anonymous';
-    script.addEventListener('load', () => { script.dataset.loaded = 'true'; resolve(); }, { once: true });
-    script.addEventListener('error', reject, { once: true });
-    document.head.appendChild(script);
-  });
-}
-
-async function getPdfMake() {
-  if (!window.pdfMake) await loadScript('worktrack-pdfmake', PDFMAKE_URL);
-  await loadScript('worktrack-pdfmake-fonts', PDFMAKE_VFS_URL);
-  if (!window.pdfMake?.createPdf) throw new Error('PDF engine is unavailable');
-  return window.pdfMake;
-}
-
 export function invoicePdfFileName(invoice) {
   return `${cleanFileName(invoice?.invoiceNumber || 'faktura')}.pdf`;
 }
 
 export async function createInvoicePdfBlob(invoice) {
-  const pdfMake = await getPdfMake();
   return pdfMake.createPdf(buildDocument(invoice)).getBlob();
 }
 
