@@ -16,192 +16,40 @@ import './FastHoursPage.css';
 import './FastHoursPage.compact.css';
 import './FastHoursPage.defaultProject.css';
 
-const DAY_MS = 86400000;
-const TIME_OPTIONS = Array.from({length:24*6},(_,index)=>{
-  const totalMinutes=index*10;
-  const hours=String(Math.floor(totalMinutes/60)).padStart(2,'0');
-  const minutes=String(totalMinutes%60).padStart(2,'0');
-  return `${hours}:${minutes}`;
-});
-const COPY = {
-  uk: { project:'Об’єкт / проєкт',addShift:'Додати зміну',editShift:'Редагувати зміну',from:'Від',to:'До',total:'Разом',note:'Нотатка',notePlaceholder:'Наприклад: монтаж, сервіс, додаткові роботи…',saveShift:'Зберегти зміну',deleteShift:'Видалити зміну',quickTitle:'Швидке заповнення тижня',quickCopy:'Заповнити робочі дні за графіком',apply:'Застосувати до вибраних днів',selectDays:'Виберіть хоча б один день',invalidTime:'Перевірте час початку та завершення',weekTotal:'Чисті години за тиждень',overtime:'Понаднормово',autoSaved:'Основний об’єкт',noShift:'Немає зміни',submit:'Відправити тиждень менеджеру',locked:'Тиждень уже відправлено або погоджено. Редагування заблоковано.',noProjects:'Немає активних об’єктів',saved:'Зміну збережено',quickSaved:'Тиждень оновлено',close:'Закрити',thisWeek:'Цей тиждень',previous:'Попередній',next:'Наступний',gross:'Фактично',break:'Обід',net:'Чистими',norm:'Норма',myHours:'Мої години',weeklyNorm:'год норми',choosePrimary:'Виберіть основний об’єкт',defaultSaved:'Основний об’єкт змінено',primary:'Основний',status:{DRAFT:'Чернетка',SUBMITTED:'Відправлено',APPROVED:'Погоджено',REJECTED:'Відхилено'} },
-  cs: { project:'Objekt / projekt',addShift:'Přidat směnu',editShift:'Upravit směnu',from:'Od',to:'Do',total:'Celkem',note:'Poznámka',notePlaceholder:'Např. montáž, servis, vícepráce…',saveShift:'Uložit směnu',deleteShift:'Smazat směnu',quickTitle:'Rychlé vyplnění týdne',quickCopy:'Vyplnit pracovní dny podle rozvrhu',apply:'Použít na vybrané dny',selectDays:'Vyberte alespoň jeden den',invalidTime:'Zkontrolujte čas začátku a konce',weekTotal:'Čisté hodiny za týden',overtime:'Přesčas',autoSaved:'Hlavní objekt',noShift:'Bez směny',submit:'Odeslat týden manažerovi',locked:'Týden už byl odeslán nebo schválen. Úpravy jsou uzamčeny.',noProjects:'Žádné aktivní objekty',saved:'Směna uložena',quickSaved:'Týden aktualizován',close:'Zavřít',thisWeek:'Tento týden',previous:'Předchozí',next:'Další',gross:'Skutečně',break:'Oběd',net:'Čisté',norm:'Norma',myHours:'Moje hodiny',weeklyNorm:'hod normy',choosePrimary:'Vyberte hlavní objekt',defaultSaved:'Hlavní objekt byl změněn',primary:'Hlavní',status:{DRAFT:'Koncept',SUBMITTED:'Odesláno',APPROVED:'Schváleno',REJECTED:'Zamítnuto'} },
-  en: { project:'Project / site',addShift:'Add shift',editShift:'Edit shift',from:'From',to:'To',total:'Total',note:'Note',notePlaceholder:'For example: installation, service, extra work…',saveShift:'Save shift',deleteShift:'Delete shift',quickTitle:'Quick fill week',quickCopy:'Fill workdays from a schedule',apply:'Apply to selected days',selectDays:'Select at least one day',invalidTime:'Check the start and end time',weekTotal:'Net hours this week',overtime:'Overtime',autoSaved:'Primary site',noShift:'No shift',submit:'Send week to manager',locked:'This week has already been submitted or approved. Editing is locked.',noProjects:'No active projects',saved:'Shift saved',quickSaved:'Week updated',close:'Close',thisWeek:'This week',previous:'Previous',next:'Next',gross:'Gross',break:'Lunch',net:'Net',norm:'Standard',myHours:'My hours',weeklyNorm:'h target',choosePrimary:'Choose primary site',defaultSaved:'Primary site updated',primary:'Primary',status:{DRAFT:'Draft',SUBMITTED:'Submitted',APPROVED:'Approved',REJECTED:'Rejected'} }
+const DAY_MS=86400000;
+const HOURS=Array.from({length:24},(_,i)=>String(i).padStart(2,'0'));
+const MINUTES=['00','10','20','30','40','50'];
+const COPY={
+ uk:{project:'Об’єкт / проєкт',addShift:'Додати зміну',editShift:'Редагувати зміну',from:'Від',to:'До',total:'Разом',note:'Нотатка',notePlaceholder:'Наприклад: монтаж, сервіс, додаткові роботи…',saveShift:'Зберегти зміну',deleteShift:'Видалити зміну',quickTitle:'Швидке заповнення тижня',quickCopy:'Заповнити робочі дні за графіком',apply:'Застосувати до вибраних днів',selectDays:'Виберіть хоча б один день',invalidTime:'Перевірте час початку та завершення',weekTotal:'Чисті години за тиждень',overtime:'Понаднормово',autoSaved:'Основний об’єкт',noShift:'Немає зміни',submit:'Відправити тиждень менеджеру',locked:'Тиждень уже відправлено або погоджено. Редагування заблоковано.',saved:'Зміну збережено',quickSaved:'Тиждень оновлено',close:'Закрити',thisWeek:'Цей тиждень',previous:'Попередній',next:'Наступний',gross:'Фактично',break:'Обід',net:'Чистими',myHours:'Мої години',weeklyNorm:'год норми',choosePrimary:'Виберіть основний об’єкт',defaultSaved:'Основний об’єкт змінено',primary:'Основний',status:{DRAFT:'Чернетка',SUBMITTED:'Відправлено',APPROVED:'Погоджено',REJECTED:'Відхилено'}},
+ cs:{project:'Objekt / projekt',addShift:'Přidat směnu',editShift:'Upravit směnu',from:'Od',to:'Do',note:'Poznámka',notePlaceholder:'Např. montáž, servis, vícepráce…',saveShift:'Uložit směnu',deleteShift:'Smazat směnu',quickTitle:'Rychlé vyplnění týdne',quickCopy:'Vyplnit pracovní dny podle rozvrhu',apply:'Použít na vybrané dny',selectDays:'Vyberte alespoň jeden den',invalidTime:'Zkontrolujte čas začátku a konce',weekTotal:'Čisté hodiny za týden',overtime:'Přesčas',autoSaved:'Hlavní objekt',noShift:'Bez směny',submit:'Odeslat týden manažerovi',locked:'Týden už byl odeslán nebo schválen. Úpravy jsou uzamčeny.',saved:'Směna uložena',quickSaved:'Týden aktualizován',close:'Zavřít',thisWeek:'Tento týden',previous:'Předchozí',next:'Další',gross:'Skutečně',break:'Oběd',net:'Čisté',myHours:'Moje hodiny',weeklyNorm:'hod normy',choosePrimary:'Vyberte hlavní objekt',defaultSaved:'Hlavní objekt byl změněn',primary:'Hlavní',status:{DRAFT:'Koncept',SUBMITTED:'Odesláno',APPROVED:'Schváleno',REJECTED:'Zamítnuto'}},
+ en:{project:'Project / site',addShift:'Add shift',editShift:'Edit shift',from:'From',to:'To',note:'Note',notePlaceholder:'For example: installation, service, extra work…',saveShift:'Save shift',deleteShift:'Delete shift',quickTitle:'Quick fill week',quickCopy:'Fill workdays from a schedule',apply:'Apply to selected days',selectDays:'Select at least one day',invalidTime:'Check the start and end time',weekTotal:'Net hours this week',overtime:'Overtime',autoSaved:'Primary site',noShift:'No shift',submit:'Send week to manager',locked:'This week has already been submitted or approved. Editing is locked.',saved:'Shift saved',quickSaved:'Week updated',close:'Close',thisWeek:'This week',previous:'Previous',next:'Next',gross:'Gross',break:'Lunch',net:'Net',myHours:'My hours',weeklyNorm:'h target',choosePrimary:'Choose primary site',defaultSaved:'Primary site updated',primary:'Primary',status:{DRAFT:'Draft',SUBMITTED:'Submitted',APPROVED:'Approved',REJECTED:'Rejected'}}
 };
-
 function dateKey(d){return new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())).toISOString().slice(0,10)}
 function weekStartNow(){const d=new Date();const day=d.getDay();d.setDate(d.getDate()+(day===0?-6:1-day));return dateKey(d)}
-function weekStartForDate(value){if(!/^\d{4}-\d{2}-\d{2}$/.test(String(value||'')))return '';const d=new Date(`${value}T00:00:00Z`);if(Number.isNaN(d.getTime()))return '';const day=d.getUTCDay();return new Date(d.getTime()+(day===0?-6:1-day)*DAY_MS).toISOString().slice(0,10)}
-function initialWeek(current){return weekStartForDate(new URLSearchParams(window.location.search).get('date'))||current}
-function shiftWeek(key,n){return new Date(new Date(`${key}T00:00:00Z`).getTime()+n*7*DAY_MS).toISOString().slice(0,10)}
-function localeFor(language){return language==='cs'?'cs-CZ':language==='en'?'en-GB':'uk-UA'}
-function fmtLong(value,language){return new Intl.DateTimeFormat(localeFor(language),{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(`${value}T00:00:00Z`))}
-function fmtWeekRange(days,language){if(!days.length)return '';const options={day:'numeric',month:'long',timeZone:'UTC'};const first=new Intl.DateTimeFormat(localeFor(language),options).format(new Date(`${days[0].date}T00:00:00Z`));const last=new Intl.DateTimeFormat(localeFor(language),options).format(new Date(`${days[days.length-1].date}T00:00:00Z`));return `${first} — ${last}`}
-function fmtDayParts(value,language){const date=new Date(`${value}T00:00:00Z`);return {weekday:new Intl.DateTimeFormat(localeFor(language),{weekday:'short',timeZone:'UTC'}).format(date).replace('.',''),date:new Intl.DateTimeFormat(localeFor(language),{day:'numeric',month:'short',timeZone:'UTC'}).format(date).replace('.','')}}
-function timeToMinutes(value){if(!/^\d{2}:\d{2}$/.test(value||''))return null;const [h,m]=value.split(':').map(Number);if(h>23||m>59)return null;return h*60+m}
-function calculateHours(start,end){const startMinutes=timeToMinutes(start);let endMinutes=timeToMinutes(end);if(startMinutes==null||endMinutes==null)return 0;if(endMinutes<=startMinutes)endMinutes+=1440;return Math.round(((endMinutes-startMinutes)/60)*100)/100}
-function formatHours(value){const minutes=Math.round((Number(value)||0)*60);return `${Math.floor(minutes/60)}h ${String(minutes%60).padStart(2,'0')}m`}
-function formatHoursShort(value,language){const minutes=Math.round((Number(value)||0)*60);const hours=Math.floor(minutes/60);const mins=minutes%60;if(language==='uk')return mins?`${hours} год ${mins} хв`:`${hours} год`;if(language==='cs')return mins?`${hours} h ${mins} min`:`${hours} h`;return mins?`${hours}h ${mins}m`:`${hours}h`}
-function formatBreak(minutes,language){const value=Number(minutes||0);if(language==='uk')return value===60?'1 год':`${value} хв`;if(language==='cs')return value===60?'1 h':`${value} min`;return value===60?'1h':`${value}m`}
-function dayEntries(entries,date){return entries.filter(entry=>entry.workDate===date).sort((a,b)=>String(a.startTime||'').localeCompare(String(b.startTime||'')))}
-function getDayTotal(entries,date){return dayEntries(entries,date).reduce((sum,entry)=>sum+(Number(entry.hours)||0),0)}
-function TimeSelect({value,onChange,disabled}){return <select value={value} disabled={disabled} onChange={event=>onChange(event.target.value)}>{TIME_OPTIONS.map(time=><option value={time} key={time}>{time}</option>)}</select>}
-
+function weekStartForDate(v){if(!/^\d{4}-\d{2}-\d{2}$/.test(String(v||'')))return '';const d=new Date(`${v}T00:00:00Z`),day=d.getUTCDay();return Number.isNaN(d.getTime())?'':new Date(d.getTime()+(day===0?-6:1-day)*DAY_MS).toISOString().slice(0,10)}
+function initialWeek(c){return weekStartForDate(new URLSearchParams(window.location.search).get('date'))||c}
+function shiftWeek(k,n){return new Date(new Date(`${k}T00:00:00Z`).getTime()+n*7*DAY_MS).toISOString().slice(0,10)}
+function localeFor(l){return l==='cs'?'cs-CZ':l==='en'?'en-GB':'uk-UA'}
+function fmtLong(v,l){return new Intl.DateTimeFormat(localeFor(l),{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(`${v}T00:00:00Z`))}
+function fmtWeekRange(d,l){if(!d.length)return '';const o={day:'numeric',month:'long',timeZone:'UTC'};return `${new Intl.DateTimeFormat(localeFor(l),o).format(new Date(`${d[0].date}T00:00:00Z`))} — ${new Intl.DateTimeFormat(localeFor(l),o).format(new Date(`${d[d.length-1].date}T00:00:00Z`))}`}
+function fmtDayParts(v,l){const d=new Date(`${v}T00:00:00Z`);return{weekday:new Intl.DateTimeFormat(localeFor(l),{weekday:'short',timeZone:'UTC'}).format(d).replace('.',''),date:new Intl.DateTimeFormat(localeFor(l),{day:'numeric',month:'short',timeZone:'UTC'}).format(d).replace('.','')}}
+function timeToMinutes(v){if(!/^\d{2}:\d{2}$/.test(v||''))return null;const[h,m]=v.split(':').map(Number);return h>23||m>59?null:h*60+m}
+function calculateHours(s,e){const a=timeToMinutes(s);let b=timeToMinutes(e);if(a==null||b==null)return 0;if(b<=a)b+=1440;return Math.round((b-a)/60*100)/100}
+function formatHours(v){const m=Math.round((Number(v)||0)*60);return `${Math.floor(m/60)}h ${String(m%60).padStart(2,'0')}m`}
+function formatHoursShort(v,l){const m=Math.round((Number(v)||0)*60),h=Math.floor(m/60),x=m%60;if(l==='uk')return x?`${h} год ${x} хв`:`${h} год`;if(l==='cs')return x?`${h} h ${x} min`:`${h} h`;return x?`${h}h ${x}m`:`${h}h`}
+function formatBreak(m,l){const v=Number(m||0);return l==='uk'?(v===60?'1 год':`${v} хв`):l==='cs'?(v===60?'1 h':`${v} min`):(v===60?'1h':`${v}m`)}
+function dayEntries(e,d){return e.filter(x=>x.workDate===d).sort((a,b)=>String(a.startTime||'').localeCompare(String(b.startTime||'')))}
+function getDayTotal(e,d){return dayEntries(e,d).reduce((s,x)=>s+(Number(x.hours)||0),0)}
+function SplitTimePicker({value,onChange,disabled}){const[h='00',raw='00']=(value||'00:00').split(':');const minute=MINUTES.includes(raw)?raw:MINUTES[Math.round(Number(raw||0)/10)%6];return <div className="splitTimePicker"><select aria-label="Hour" value={h} disabled={disabled} onChange={e=>onChange(`${e.target.value}:${minute}`)}>{HOURS.map(x=><option key={x} value={x}>{x}</option>)}</select><span>:</span><select aria-label="Minutes" value={minute} disabled={disabled} onChange={e=>onChange(`${h}:${e.target.value}`)}>{MINUTES.map(x=><option key={x} value={x}>{x}</option>)}</select></div>}
 export function FastHoursPage(){
-  const {language}=useI18n();
-  const c=COPY[language]||COPY.uk;
-  const current=useMemo(weekStartNow,[]);
-  const [weekStart,setWeekStart]=useState(()=>initialWeek(current));
-  const {data,error,isFetching}=useGetWeekEntriesQuery({weekStart});
-  const {data:rulesData}=useGetWorkRulesQuery();
-  const projectsQuery=useGetProjectsQuery();
-  const {data:defaultProjectData}=useGetDefaultProjectQuery();
-  const projects=(projectsQuery.data?.projects||[]).filter(project=>project.isActive);
-  const [updateDefaultProject,defaultProjectState]=useUpdateDefaultProjectMutation();
-  const [createEntry,createState]=useCreateWorkEntryMutation();
-  const [updateEntry,updateState]=useUpdateWorkEntryMutation();
-  const [deleteEntry,deleteState]=useDeleteWorkEntryMutation();
-  const [submitWeek,submitState]=useSubmitWeekMutation();
-  const [editorOpen,setEditorOpen]=useState(false);
-  const [editingId,setEditingId]=useState('');
-  const [editingDate,setEditingDate]=useState('');
-  const [projectId,setProjectId]=useState('');
-  const [startTime,setStartTime]=useState('07:00');
-  const [endTime,setEndTime]=useState('18:00');
-  const [note,setNote]=useState('');
-  const [quickOpen,setQuickOpen]=useState(false);
-  const [projectPickerOpen,setProjectPickerOpen]=useState(false);
-  const [quickProject,setQuickProject]=useState('');
-  const [quickStart,setQuickStart]=useState('07:00');
-  const [quickEnd,setQuickEnd]=useState('18:00');
-  const [selectedDays,setSelectedDays]=useState([0,1,2,3,4]);
-  const [message,setMessage]=useState('');
-  const [actionError,setActionError]=useState('');
-
-  const days=data?.week?.days||[];
-  const entries=data?.entries||[];
-  const status=data?.submission?.status||'DRAFT';
-  const locked=status==='SUBMITTED'||status==='APPROVED';
-  const busy=isFetching||defaultProjectState.isLoading||createState.isLoading||updateState.isLoading||deleteState.isLoading||submitState.isLoading;
-  const breakMinutes=Number(rulesData?.workRules?.breakMinutes||0);
-  const standardDailyHours=Number(rulesData?.workRules?.standardDailyHours||8);
-  const weeklyNorm=standardDailyHours*5;
-  const weekTotal=entries.reduce((sum,entry)=>sum+(Number(entry.hours)||0),0);
-  const overtime=days.reduce((sum,day)=>sum+Math.max(0,getDayTotal(entries,day.date)-standardDailyHours),0);
-  const progress=Math.max(0,Math.min(100,weeklyNorm?weekTotal/weeklyNorm*100:0));
-  const calculatedGross=calculateHours(startTime,endTime);
-  const calculatedBreak=calculatedGross>breakMinutes/60?breakMinutes:0;
-  const calculatedNet=Math.max(0,calculatedGross-calculatedBreak/60);
-  const quickGross=calculateHours(quickStart,quickEnd);
-  const quickBreak=quickGross>breakMinutes/60?breakMinutes:0;
-  const quickNet=Math.max(0,quickGross-quickBreak/60);
-  const configuredDefaultId=defaultProjectData?.projectId||'';
-  const primaryProject=projects.find(project=>project.id===configuredDefaultId)||projects[0];
-  const selectedProject=projectId||primaryProject?.id||'';
-  const selectedQuickProject=quickProject||primaryProject?.id||'';
-
-  function resetMessages(){setMessage('');setActionError('')}
-  function openNew(date){resetMessages();setEditingId('');setEditingDate(date);setProjectId(primaryProject?.id||'');setStartTime('07:00');setEndTime('18:00');setNote('');setEditorOpen(true)}
-  function openExisting(entry){resetMessages();setEditingId(entry.id);setEditingDate(entry.workDate);setProjectId(entry.projectId||entry.project?.id||'');setStartTime(entry.startTime||'07:00');setEndTime(entry.endTime||'18:00');setNote(entry.note||'');setEditorOpen(true)}
-  function changeWeek(amount){setEditorOpen(false);setQuickOpen(false);setProjectPickerOpen(false);setWeekStart(shiftWeek(weekStart,amount))}
-
-  async function chooseDefaultProject(nextProjectId){
-    resetMessages();
-    try{
-      await updateDefaultProject(nextProjectId).unwrap();
-      setProjectId('');
-      setQuickProject('');
-      setProjectPickerOpen(false);
-      setMessage(c.defaultSaved);
-    }catch(err){setActionError(getApiErrorMessage(err))}
-  }
-
-  async function saveShift(event){
-    event.preventDefault();
-    if(locked||!selectedProject||calculatedGross<=0){setActionError(c.invalidTime);return}
-    resetMessages();
-    const payload={projectId:selectedProject,startTime,endTime,note};
-    try{
-      if(editingId)await updateEntry({entryId:editingId,...payload}).unwrap();
-      else{
-        const sameProject=entries.find(entry=>entry.workDate===editingDate&&entry.projectId===selectedProject);
-        if(sameProject)await updateEntry({entryId:sameProject.id,...payload}).unwrap();
-        else await createEntry({workDate:editingDate,...payload}).unwrap();
-      }
-      setEditorOpen(false);setMessage(c.saved);
-    }catch(err){setActionError(getApiErrorMessage(err))}
-  }
-
-  async function removeShift(){if(!editingId||locked)return;resetMessages();try{await deleteEntry(editingId).unwrap();setEditorOpen(false);setMessage(c.saved)}catch(err){setActionError(getApiErrorMessage(err))}}
-  function toggleDay(index){setSelectedDays(currentDays=>currentDays.includes(index)?currentDays.filter(day=>day!==index):[...currentDays,index].sort())}
-
-  async function applyQuickFill(){
-    resetMessages();
-    if(!selectedDays.length){setActionError(c.selectDays);return}
-    if(!selectedQuickProject||quickGross<=0){setActionError(c.invalidTime);return}
-    try{
-      for(const index of selectedDays){
-        const day=days[index];if(!day)continue;
-        const payload={projectId:selectedQuickProject,startTime:quickStart,endTime:quickEnd,note:''};
-        const existing=entries.find(entry=>entry.workDate===day.date&&entry.projectId===selectedQuickProject);
-        if(existing)await updateEntry({entryId:existing.id,...payload}).unwrap();
-        else await createEntry({workDate:day.date,...payload}).unwrap();
-      }
-      setQuickOpen(false);setMessage(c.quickSaved);
-    }catch(err){setActionError(getApiErrorMessage(err))}
-  }
-
-  async function send(){resetMessages();try{await submitWeek({weekStart}).unwrap()}catch(err){setActionError(getApiErrorMessage(err))}}
-
-  return <section className="fastHoursPage pageStack">
-    <section className="fastHero screenCard">
-      <div className="fastHeroTop"><div><h1>{c.myHours}</h1><p>{fmtWeekRange(days,language)}</p></div><span className={`fastHoursStatus is-${status.toLowerCase()}`}><i/> {c.status[status]||status}</span></div>
-      <strong className="fastHeroTotal">{formatHoursShort(weekTotal,language)}</strong>
-      <p className="fastHeroNorm">{Number(weekTotal).toFixed(1)} / {weeklyNorm.toFixed(0)} {c.weeklyNorm}</p>
-      <div className="fastHeroProgress"><span style={{width:`${progress}%`}}/></div>
-    </section>
-
-    <section className="fastWeekBar"><button type="button" disabled={busy} aria-label={c.previous} onClick={()=>changeWeek(-1)}>‹</button><div><strong>{fmtWeekRange(days,language)||c.thisWeek}</strong><span>{weekStart===current?c.thisWeek:''}</span></div><button type="button" disabled={busy||weekStart>=current} aria-label={c.next} onClick={()=>changeWeek(1)}>›</button></section>
-
-    {error?<p className="statusNote is-error">{getApiErrorMessage(error)}</p>:null}{locked?<p className="statusNote">{c.locked}</p>:null}
-
-    <section className="fastProjectCard screenCard"><span className="fastProjectIcon">▦</span><div><strong>{primaryProject?.name||c.project}</strong><small>{c.autoSaved}</small></div><button type="button" disabled={busy||!projects.length} aria-label={c.choosePrimary} onClick={()=>setProjectPickerOpen(value=>!value)}>•••</button></section>
-
-    {projectPickerOpen?<section className="fastProjectPicker screenCard"><header><strong>{c.choosePrimary}</strong><button type="button" onClick={()=>setProjectPickerOpen(false)} aria-label={c.close}>×</button></header><div>{projects.map(project=><button type="button" className={project.id===primaryProject?.id?'is-active':''} disabled={defaultProjectState.isLoading} onClick={()=>chooseDefaultProject(project.id)} key={project.id}><span><strong>{project.name}</strong>{project.address?<small>{project.address}</small>:null}</span>{project.id===primaryProject?.id?<b>✓ {c.primary}</b>:<i>›</i>}</button>)}</div></section>:null}
-
-    <section className="fastDaysCard screenCard">
-      {days.map(day=>{const items=dayEntries(entries,day.date);const dayTotal=getDayTotal(entries,day.date);const parts=fmtDayParts(day.date,language);const first=items[0];const dayOvertime=Math.max(0,dayTotal-standardDailyHours);return <article className="fastDayRow" key={day.date}>
-        <div className="fastDayDate"><strong>{parts.weekday}</strong><span>{parts.date}</span></div>
-        <div className="fastDayShift">{items.length?<button type="button" className="fastDayMain" onClick={()=>openExisting(first)}><strong>{first.startTime&&first.endTime?`${first.startTime} – ${first.endTime}`:first.project?.name}</strong><small>{Number(first.breakMinutes)>0?`${c.break} ${formatBreak(first.breakMinutes,language)}`:first.project?.name}</small></button>:<div className="fastDayEmpty"><strong>—</strong><small>{c.noShift}</small></div>}</div>
-        <div className="fastDayAction">{items.length?<><button className="fastDayHours" type="button" onClick={()=>openExisting(first)}>{formatHoursShort(dayTotal,language)}</button>{dayOvertime>0?<small className="fastDayOvertime">● +{formatHoursShort(dayOvertime,language)} {c.overtime.toLowerCase()}</small>:null}<span className="fastDayChevron">›</span></>:<button className="fastDayPlus" type="button" disabled={locked||busy} onClick={()=>openNew(day.date)}>＋</button>}</div>
-      </article>})}
-    </section>
-
-    <section className={`fastQuickCard screenCard${quickOpen?' is-open':''}`}>
-      <button className="fastQuickTrigger" type="button" disabled={locked||busy||!projects.length} onClick={()=>setQuickOpen(value=>!value)}><span className="fastQuickBolt">ϟ</span><span><strong>{c.quickTitle}</strong><small>{c.quickCopy}</small></span><b>›</b></button>
-      {quickOpen?<div className="fastQuickFill">
-        <label><span>{c.project}</span><select value={selectedQuickProject} onChange={e=>setQuickProject(e.target.value)}>{projects.map(project=><option value={project.id} key={project.id}>{project.name}</option>)}</select></label>
-        <div className="fastQuickTimes"><label><span>{c.from}</span><TimeSelect value={quickStart} onChange={setQuickStart}/></label><label><span>{c.to}</span><TimeSelect value={quickEnd} onChange={setQuickEnd}/></label></div>
-        <div className="fastQuickDays">{days.map((day,index)=><button type="button" className={selectedDays.includes(index)?'is-active':''} onClick={()=>toggleDay(index)} key={day.date}>{new Intl.DateTimeFormat(localeFor(language),{weekday:'short',timeZone:'UTC'}).format(new Date(`${day.date}T00:00:00Z`)).replace('.','')}</button>)}</div>
-        <div className="fastQuickSummary"><span>{c.gross} {formatHours(quickGross)} · −{formatBreak(quickBreak,language)} {c.break}</span><strong>{c.net}: {formatHours(quickNet)}</strong></div>
-        <button className="fastQuickApply" type="button" disabled={busy||locked} onClick={applyQuickFill}>{c.apply}</button>
-      </div>:null}
-    </section>
-
-    <section className="fastBottomSummary"><div><span>{c.weekTotal}</span><strong>{formatHoursShort(weekTotal,language)}</strong></div><div><span>{c.overtime}</span><strong className={overtime>0?'is-overtime':''}>{formatHoursShort(overtime,language)}</strong></div></section>
-    {message?<p className="statusNote is-success">{message}</p>:null}{actionError?<p className="statusNote is-error">{actionError}</p>:null}
-    <button className="fastSend" type="button" disabled={locked||busy||!entries.length} onClick={send}>{c.submit} →</button>
-
-    {editorOpen?<div className="fastEditorBackdrop" onMouseDown={event=>{if(event.target===event.currentTarget)setEditorOpen(false)}}><section className="fastEditorSheet">
-      <header><div><span>{fmtLong(editingDate,language)}</span><h2>{editingId?c.editShift:c.addShift}</h2></div><button type="button" aria-label={c.close} onClick={()=>setEditorOpen(false)}>×</button></header>
-      <form className="fastEditorBody" onSubmit={saveShift}>
-        <label><span>{c.project}</span><select value={selectedProject} disabled={busy||locked} onChange={e=>setProjectId(e.target.value)}>{projects.map(project=><option value={project.id} key={project.id}>{project.name}</option>)}</select></label>
-        <div className="fastEditorTimes"><label><span>{c.from}</span><TimeSelect value={startTime} disabled={busy||locked} onChange={setStartTime}/></label><label><span>{c.to}</span><TimeSelect value={endTime} disabled={busy||locked} onChange={setEndTime}/></label></div>
-        <div className="fastEditorTotal"><div><span>{c.gross}</span><strong>{formatHours(calculatedGross)}</strong></div>{calculatedBreak>0?<div><span>{c.break}</span><strong>−{formatBreak(calculatedBreak,language)}</strong></div>:null}<div><span>{c.net}</span><strong>{formatHours(calculatedNet)}</strong></div></div>
-        <label><span>{c.note}</span><textarea value={note} disabled={busy||locked} placeholder={c.notePlaceholder} onChange={e=>setNote(e.target.value)}/></label>
-        <button className="fastEditorSave" type="submit" disabled={busy||locked||calculatedGross<=0}>{c.saveShift}</button>
-        {editingId?<button className="fastEditorDelete" type="button" disabled={busy||locked} onClick={removeShift}>{c.deleteShift}</button>:null}
-      </form>
-    </section></div>:null}
-  </section>;
+ const{language}=useI18n(),c=COPY[language]||COPY.uk,current=useMemo(weekStartNow,[]);const[weekStart,setWeekStart]=useState(()=>initialWeek(current));const{data,error,isFetching}=useGetWeekEntriesQuery({weekStart});const{data:rulesData}=useGetWorkRulesQuery();const projectsQuery=useGetProjectsQuery();const{data:defaultProjectData}=useGetDefaultProjectQuery();const projects=(projectsQuery.data?.projects||[]).filter(p=>p.isActive);const[updateDefaultProject,defaultProjectState]=useUpdateDefaultProjectMutation();const[createEntry,createState]=useCreateWorkEntryMutation();const[updateEntry,updateState]=useUpdateWorkEntryMutation();const[deleteEntry,deleteState]=useDeleteWorkEntryMutation();const[submitWeek,submitState]=useSubmitWeekMutation();
+ const[editorOpen,setEditorOpen]=useState(false),[editingId,setEditingId]=useState(''),[editingDate,setEditingDate]=useState(''),[projectId,setProjectId]=useState(''),[startTime,setStartTime]=useState('07:00'),[endTime,setEndTime]=useState('18:00'),[note,setNote]=useState(''),[quickOpen,setQuickOpen]=useState(false),[projectPickerOpen,setProjectPickerOpen]=useState(false),[quickProject,setQuickProject]=useState(''),[quickStart,setQuickStart]=useState('07:00'),[quickEnd,setQuickEnd]=useState('18:00'),[selectedDays,setSelectedDays]=useState([0,1,2,3,4]),[message,setMessage]=useState(''),[actionError,setActionError]=useState('');
+ const days=data?.week?.days||[],entries=data?.entries||[],status=data?.submission?.status||'DRAFT',locked=status==='SUBMITTED'||status==='APPROVED',busy=isFetching||defaultProjectState.isLoading||createState.isLoading||updateState.isLoading||deleteState.isLoading||submitState.isLoading,breakMinutes=Number(rulesData?.workRules?.breakMinutes||0),standardDailyHours=Number(rulesData?.workRules?.standardDailyHours||8),weeklyNorm=standardDailyHours*5,weekTotal=entries.reduce((s,e)=>s+(Number(e.hours)||0),0),overtime=days.reduce((s,d)=>s+Math.max(0,getDayTotal(entries,d.date)-standardDailyHours),0),progress=Math.max(0,Math.min(100,weeklyNorm?weekTotal/weeklyNorm*100:0)),calculatedGross=calculateHours(startTime,endTime),calculatedBreak=calculatedGross>breakMinutes/60?breakMinutes:0,calculatedNet=Math.max(0,calculatedGross-calculatedBreak/60),quickGross=calculateHours(quickStart,quickEnd),quickBreak=quickGross>breakMinutes/60?breakMinutes:0,quickNet=Math.max(0,quickGross-quickBreak/60),configuredDefaultId=defaultProjectData?.projectId||'',primaryProject=projects.find(p=>p.id===configuredDefaultId)||projects[0],selectedProject=projectId||primaryProject?.id||'',selectedQuickProject=quickProject||primaryProject?.id||'';
+ function resetMessages(){setMessage('');setActionError('')}function openNew(d){resetMessages();setEditingId('');setEditingDate(d);setProjectId(primaryProject?.id||'');setStartTime('07:00');setEndTime('18:00');setNote('');setEditorOpen(true)}function openExisting(e){resetMessages();setEditingId(e.id);setEditingDate(e.workDate);setProjectId(e.projectId||e.project?.id||'');setStartTime(e.startTime||'07:00');setEndTime(e.endTime||'18:00');setNote(e.note||'');setEditorOpen(true)}function changeWeek(a){setEditorOpen(false);setQuickOpen(false);setProjectPickerOpen(false);setWeekStart(shiftWeek(weekStart,a))}
+ async function chooseDefaultProject(id){resetMessages();try{await updateDefaultProject(id).unwrap();setProjectId('');setQuickProject('');setProjectPickerOpen(false);setMessage(c.defaultSaved)}catch(e){setActionError(getApiErrorMessage(e))}}
+ async function saveShift(e){e.preventDefault();if(locked||!selectedProject||calculatedGross<=0){setActionError(c.invalidTime);return}resetMessages();const p={projectId:selectedProject,startTime,endTime,note};try{if(editingId)await updateEntry({entryId:editingId,...p}).unwrap();else{const same=entries.find(x=>x.workDate===editingDate&&x.projectId===selectedProject);if(same)await updateEntry({entryId:same.id,...p}).unwrap();else await createEntry({workDate:editingDate,...p}).unwrap()}setEditorOpen(false);setMessage(c.saved)}catch(x){setActionError(getApiErrorMessage(x))}}
+ async function removeShift(){if(!editingId||locked)return;resetMessages();try{await deleteEntry(editingId).unwrap();setEditorOpen(false);setMessage(c.saved)}catch(e){setActionError(getApiErrorMessage(e))}}function toggleDay(i){setSelectedDays(a=>a.includes(i)?a.filter(x=>x!==i):[...a,i].sort())}
+ async function applyQuickFill(){resetMessages();if(!selectedDays.length){setActionError(c.selectDays);return}if(!selectedQuickProject||quickGross<=0){setActionError(c.invalidTime);return}try{for(const i of selectedDays){const d=days[i];if(!d)continue;const p={projectId:selectedQuickProject,startTime:quickStart,endTime:quickEnd,note:''},existing=entries.find(e=>e.workDate===d.date&&e.projectId===selectedQuickProject);if(existing)await updateEntry({entryId:existing.id,...p}).unwrap();else await createEntry({workDate:d.date,...p}).unwrap()}setQuickOpen(false);setMessage(c.quickSaved)}catch(e){setActionError(getApiErrorMessage(e))}}
+ async function send(){resetMessages();try{await submitWeek({weekStart}).unwrap()}catch(e){setActionError(getApiErrorMessage(e))}}
+ return <section className="fastHoursPage pageStack"><section className="fastHero screenCard"><div className="fastHeroTop"><div><h1>{c.myHours}</h1><p>{fmtWeekRange(days,language)}</p></div><span className={`fastHoursStatus is-${status.toLowerCase()}`}><i/> {c.status[status]||status}</span></div><strong className="fastHeroTotal">{formatHoursShort(weekTotal,language)}</strong><p className="fastHeroNorm">{Number(weekTotal).toFixed(1)} / {weeklyNorm.toFixed(0)} {c.weeklyNorm}</p><div className="fastHeroProgress"><span style={{width:`${progress}%`}}/></div></section><section className="fastWeekBar"><button type="button" disabled={busy} onClick={()=>changeWeek(-1)}>‹</button><div><strong>{fmtWeekRange(days,language)||c.thisWeek}</strong><span>{weekStart===current?c.thisWeek:''}</span></div><button type="button" disabled={busy||weekStart>=current} onClick={()=>changeWeek(1)}>›</button></section>{error?<p className="statusNote is-error">{getApiErrorMessage(error)}</p>:null}{locked?<p className="statusNote">{c.locked}</p>:null}<section className="fastProjectCard screenCard"><span className="fastProjectIcon">▦</span><div><strong>{primaryProject?.name||c.project}</strong><small>{c.autoSaved}</small></div><button type="button" disabled={busy||!projects.length} onClick={()=>setProjectPickerOpen(v=>!v)}>•••</button></section>{projectPickerOpen?<section className="fastProjectPicker screenCard"><header><strong>{c.choosePrimary}</strong><button type="button" onClick={()=>setProjectPickerOpen(false)}>×</button></header><div>{projects.map(p=><button type="button" className={p.id===primaryProject?.id?'is-active':''} onClick={()=>chooseDefaultProject(p.id)} key={p.id}><span><strong>{p.name}</strong>{p.address?<small>{p.address}</small>:null}</span>{p.id===primaryProject?.id?<b>✓ {c.primary}</b>:<i>›</i>}</button>)}</div></section>:null}<section className="fastDaysCard screenCard">{days.map(d=>{const items=dayEntries(entries,d.date),total=getDayTotal(entries,d.date),parts=fmtDayParts(d.date,language),first=items[0],over=Math.max(0,total-standardDailyHours);return <article className="fastDayRow" key={d.date}><div className="fastDayDate"><strong>{parts.weekday}</strong><span>{parts.date}</span></div><div className="fastDayShift">{items.length?<button type="button" className="fastDayMain" onClick={()=>openExisting(first)}><strong>{first.startTime&&first.endTime?`${first.startTime} – ${first.endTime}`:first.project?.name}</strong><small>{Number(first.breakMinutes)>0?`${c.break} ${formatBreak(first.breakMinutes,language)}`:first.project?.name}</small></button>:<div className="fastDayEmpty"><strong>—</strong><small>{c.noShift}</small></div>}</div><div className="fastDayAction">{items.length?<><button className="fastDayHours" type="button" onClick={()=>openExisting(first)}>{formatHoursShort(total,language)}</button>{over>0?<small className="fastDayOvertime">● +{formatHoursShort(over,language)} {c.overtime.toLowerCase()}</small>:null}<span className="fastDayChevron">›</span></>:<button className="fastDayPlus" type="button" disabled={locked||busy} onClick={()=>openNew(d.date)}>＋</button>}</div></article>})}</section><section className={`fastQuickCard screenCard${quickOpen?' is-open':''}`}><button className="fastQuickTrigger" type="button" onClick={()=>setQuickOpen(v=>!v)}><span className="fastQuickBolt">ϟ</span><span><strong>{c.quickTitle}</strong><small>{c.quickCopy}</small></span><b>›</b></button>{quickOpen?<div className="fastQuickFill"><label><span>{c.project}</span><select value={selectedQuickProject} onChange={e=>setQuickProject(e.target.value)}>{projects.map(p=><option value={p.id} key={p.id}>{p.name}</option>)}</select></label><div className="fastQuickTimes"><label><span>{c.from}</span><SplitTimePicker value={quickStart} onChange={setQuickStart}/></label><label><span>{c.to}</span><SplitTimePicker value={quickEnd} onChange={setQuickEnd}/></label></div><div className="fastQuickDays">{days.map((d,i)=><button type="button" className={selectedDays.includes(i)?'is-active':''} onClick={()=>toggleDay(i)} key={d.date}>{new Intl.DateTimeFormat(localeFor(language),{weekday:'short',timeZone:'UTC'}).format(new Date(`${d.date}T00:00:00Z`)).replace('.','')}</button>)}</div><div className="fastQuickSummary"><span>{c.gross} {formatHours(quickGross)} · −{formatBreak(quickBreak,language)} {c.break}</span><strong>{c.net}: {formatHours(quickNet)}</strong></div><button className="fastQuickApply" type="button" onClick={applyQuickFill}>{c.apply}</button></div>:null}</section><section className="fastBottomSummary"><div><span>{c.weekTotal}</span><strong>{formatHoursShort(weekTotal,language)}</strong></div><div><span>{c.overtime}</span><strong className={overtime>0?'is-overtime':''}>{formatHoursShort(overtime,language)}</strong></div></section>{message?<p className="statusNote is-success">{message}</p>:null}{actionError?<p className="statusNote is-error">{actionError}</p>:null}<button className="fastSend" type="button" disabled={locked||busy||!entries.length} onClick={send}>{c.submit} →</button>{editorOpen?<div className="fastEditorBackdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setEditorOpen(false)}}><section className="fastEditorSheet"><header><div><span>{fmtLong(editingDate,language)}</span><h2>{editingId?c.editShift:c.addShift}</h2></div><button type="button" onClick={()=>setEditorOpen(false)}>×</button></header><form className="fastEditorBody" onSubmit={saveShift}><label><span>{c.project}</span><select value={selectedProject} disabled={busy||locked} onChange={e=>setProjectId(e.target.value)}>{projects.map(p=><option value={p.id} key={p.id}>{p.name}</option>)}</select></label><div className="fastEditorTimes"><label><span>{c.from}</span><SplitTimePicker value={startTime} disabled={busy||locked} onChange={setStartTime}/></label><label><span>{c.to}</span><SplitTimePicker value={endTime} disabled={busy||locked} onChange={setEndTime}/></label></div><div className="fastEditorTotal"><div><span>{c.gross}</span><strong>{formatHours(calculatedGross)}</strong></div>{calculatedBreak>0?<div><span>{c.break}</span><strong>−{formatBreak(calculatedBreak,language)}</strong></div>:null}<div><span>{c.net}</span><strong>{formatHours(calculatedNet)}</strong></div></div><label><span>{c.note}</span><textarea value={note} disabled={busy||locked} placeholder={c.notePlaceholder} onChange={e=>setNote(e.target.value)}/></label><button className="fastEditorSave" type="submit" disabled={busy||locked||calculatedGross<=0}>{c.saveShift}</button>{editingId?<button className="fastEditorDelete" type="button" onClick={removeShift}>{c.deleteShift}</button>:null}</form></section></div>:null}</section>
 }
