@@ -1,6 +1,14 @@
 const PDFMAKE_URL = 'https://cdn.jsdelivr.net/npm/pdfmake@0.3.11/build/pdfmake.min.js';
 const PDFMAKE_VFS_URL = 'https://cdn.jsdelivr.net/npm/pdfmake@0.3.11/build/vfs_fonts.js';
 
+const STATUS_COPY = {
+  DRAFT: 'Koncept',
+  SENT: 'Odesláno',
+  VIEWED: 'Zobrazeno',
+  PAID: 'Zaplaceno',
+  CANCELLED: 'Zrušeno',
+};
+
 function money(value, currency = 'CZK') {
   return `${Number(value || 0).toLocaleString('cs-CZ', {
     minimumFractionDigits: 2,
@@ -64,6 +72,17 @@ function buildDocument(invoice) {
       subject: 'Faktura a výkaz odpracovaných hodin',
       keywords: 'faktura, výkaz hodin, WorkTrack',
     },
+    background(currentPage, pageSize) {
+      return {
+        canvas: [
+          { type: 'rect', x: 0, y: 0, w: pageSize.width, h: pageSize.height, color: '#fbfcfb' },
+          { type: 'rect', x: 0, y: 0, w: pageSize.width, h: 12, color: '#159447' },
+          { type: 'ellipse', x: pageSize.width - 48, y: 64, r1: 112, r2: 112, color: '#edf7f0' },
+          { type: 'ellipse', x: -34, y: pageSize.height - 24, r1: 92, r2: 92, color: '#f2f6f3' },
+          ...(currentPage > 1 ? [{ type: 'rect', x: 0, y: 12, w: 7, h: pageSize.height - 12, color: '#e5f3e9' }] : []),
+        ],
+      };
+    },
     footer(currentPage, pageCount) {
       return {
         columns: [
@@ -75,12 +94,26 @@ function buildDocument(invoice) {
     },
     content: [
       {
-        columns: [
-          { stack: [{ text: 'WorkTrack', style: 'brand' }, { text: 'FAKTURA', style: 'title', margin: [0, 6, 0, 0] }] },
-          { stack: [{ text: invoice.invoiceNumber || '—', style: 'invoiceNumber', alignment: 'right' }, { text: String(invoice.status || ''), style: 'status', alignment: 'right', margin: [0, 5, 0, 0] }], width: 190 },
-        ],
+        table: {
+          widths: ['*'],
+          body: [[{
+            columns: [
+              { stack: [{ text: 'WorkTrack', style: 'brand' }, { text: 'FAKTURA', style: 'title', margin: [0, 6, 0, 0] }] },
+              { stack: [{ text: invoice.invoiceNumber || '—', style: 'invoiceNumber', alignment: 'right' }, { text: STATUS_COPY[invoice.status] || 'Faktura', style: 'status', alignment: 'right', margin: [0, 5, 0, 0] }], width: 190 },
+            ],
+          }]],
+        },
+        layout: {
+          fillColor: '#f0f8f3',
+          hLineWidth: () => 0,
+          vLineWidth: () => 0,
+          paddingLeft: () => 18,
+          paddingRight: () => 18,
+          paddingTop: () => 16,
+          paddingBottom: () => 16,
+        },
+        margin: [0, 0, 0, 20],
       },
-      { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 511, y2: 0, lineWidth: 1.2, lineColor: '#d9dee7' }], margin: [0, 18, 0, 20] },
       {
         columns: [
           { ...partyBlock('DODAVATEL', seller, { showAccount: true }), width: '*' },
@@ -98,9 +131,9 @@ function buildDocument(invoice) {
           ],
         },
         layout: {
-          fillColor: rowIndex => (rowIndex % 2 ? '#ffffff' : '#f7f9fc'),
-          hLineColor: '#e4e8ef',
-          vLineColor: '#e4e8ef',
+          fillColor: rowIndex => (rowIndex % 2 ? '#ffffff' : '#f6faf7'),
+          hLineColor: '#e0e9e3',
+          vLineColor: '#e0e9e3',
           paddingLeft: () => 10,
           paddingRight: () => 10,
           paddingTop: () => 8,
@@ -109,21 +142,35 @@ function buildDocument(invoice) {
         margin: [0, 24, 0, 18],
       },
       {
-        columns: [
-          {
-            stack: [
-              { text: 'PLATEBNÍ ÚDAJE', style: 'sectionLabel' },
-              { text: `Účet / IBAN: ${seller.iban || '—'}`, style: 'paymentLine', margin: [0, 7, 0, 0] },
-              { text: `Variabilní symbol: ${invoice.variableSymbol || '—'}`, style: 'paymentLine', margin: [0, 4, 0, 0] },
-              { text: `Částka: ${money(invoice.subtotal, invoice.currency)}`, style: 'paymentLine', margin: [0, 4, 0, 0] },
+        table: {
+          widths: ['*'],
+          body: [[{
+            columns: [
+              {
+                stack: [
+                  { text: 'PLATEBNÍ ÚDAJE', style: 'sectionLabel' },
+                  { text: `Účet / IBAN: ${seller.iban || '—'}`, style: 'paymentLine', margin: [0, 7, 0, 0] },
+                  { text: `Variabilní symbol: ${invoice.variableSymbol || '—'}`, style: 'paymentLine', margin: [0, 4, 0, 0] },
+                  { text: `Částka: ${money(invoice.subtotal, invoice.currency)}`, style: 'paymentLine', margin: [0, 4, 0, 0] },
+                ],
+                width: '*',
+              },
+              invoice.paymentDescriptor
+                ? { stack: [{ qr: invoice.paymentDescriptor, fit: 94, alignment: 'right' }, { text: 'QR platba', style: 'qrCaption', alignment: 'right', margin: [0, 4, 0, 0] }], width: 120 }
+                : { text: '', width: 120 },
             ],
-            width: '*',
-          },
-          invoice.paymentDescriptor
-            ? { stack: [{ qr: invoice.paymentDescriptor, fit: 94, alignment: 'right' }, { text: 'QR platba', style: 'qrCaption', alignment: 'right', margin: [0, 4, 0, 0] }], width: 120 }
-            : { text: '', width: 120 },
-        ],
-        columnGap: 20,
+            columnGap: 20,
+          }]],
+        },
+        layout: {
+          fillColor: '#f4f9f6',
+          hLineColor: '#dbe9df',
+          vLineColor: '#dbe9df',
+          paddingLeft: () => 14,
+          paddingRight: () => 14,
+          paddingTop: () => 12,
+          paddingBottom: () => 12,
+        },
         margin: [0, 2, 0, 22],
       },
       {
@@ -136,9 +183,9 @@ function buildDocument(invoice) {
           ]],
         },
         layout: {
-          fillColor: '#f7f9fc',
-          hLineColor: '#e4e8ef',
-          vLineColor: '#e4e8ef',
+          fillColor: '#f7faf8',
+          hLineColor: '#e1e9e4',
+          vLineColor: '#e1e9e4',
           paddingLeft: () => 10,
           paddingRight: () => 10,
           paddingTop: () => 11,
@@ -169,9 +216,9 @@ function buildDocument(invoice) {
       {
         table: { headerRows: 1, widths: [70, '*', 55, 78, 82], body: itemRows, dontBreakRows: true },
         layout: {
-          fillColor: rowIndex => (rowIndex === 0 ? '#eef2f7' : null),
-          hLineColor: '#dfe4ec',
-          vLineColor: '#dfe4ec',
+          fillColor: rowIndex => (rowIndex === 0 ? '#eaf5ed' : rowIndex % 2 === 0 ? '#f9fbfa' : null),
+          hLineColor: '#dce6df',
+          vLineColor: '#dce6df',
           paddingLeft: () => 7,
           paddingRight: () => 7,
           paddingTop: () => 7,
@@ -191,7 +238,7 @@ function buildDocument(invoice) {
       title: { fontSize: 25, bold: true, color: '#111827' },
       invoiceNumber: { fontSize: 15, bold: true, color: '#111827' },
       invoiceNumberSmall: { fontSize: 11, bold: true, color: '#111827' },
-      status: { fontSize: 8, bold: true, color: '#667085' },
+      status: { fontSize: 8, bold: true, color: '#36754a' },
       sectionLabel: { fontSize: 8, bold: true, color: '#667085' },
       partyName: { fontSize: 12, bold: true, color: '#111827' },
       muted: { fontSize: 8.5, color: '#5f6b7a', lineHeight: 1.25 },
@@ -203,12 +250,12 @@ function buildDocument(invoice) {
       serviceValue: { fontSize: 9.5, bold: true, color: '#111827' },
       summaryMuted: { fontSize: 9, bold: true, color: '#667085' },
       totalLabel: { fontSize: 8.5, bold: true, color: '#667085' },
-      totalValue: { fontSize: 20, bold: true, color: '#111827' },
+      totalValue: { fontSize: 20, bold: true, color: '#0f5132' },
       appendixKicker: { fontSize: 8, bold: true, color: '#159447' },
       appendixTitle: { fontSize: 20, bold: true, color: '#111827' },
-      tableHead: { fontSize: 8, bold: true, color: '#4b5563' },
+      tableHead: { fontSize: 8, bold: true, color: '#355343' },
       tableCell: { fontSize: 8.5, color: '#263242' },
-      appendixTotal: { fontSize: 12, bold: true, color: '#111827' },
+      appendixTotal: { fontSize: 12, bold: true, color: '#0f5132' },
       footerText: { fontSize: 7.5, color: '#98a2b3' },
     },
   };
