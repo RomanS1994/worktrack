@@ -14,6 +14,7 @@ import {
   listManagerSubmissions,
   reviewWeeklySubmission,
   updateEmployeeMembership,
+  updateSubmittedWorkEntryByManager,
 } from '../../services/worktrack.js';
 
 function isoDate(value) {
@@ -274,19 +275,35 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
   }
 
   const managerEntryMatch = pathName.match(/^\/api\/manager\/work-entries\/([^/]+)$/);
+  if (request.method === 'PATCH' && managerEntryMatch) {
+    const context = await requireManager(request, response); if (!context) return true;
+    const body = await readJsonBody(request);
+    const entry = await runStoreTransaction({
+      prisma: client => updateSubmittedWorkEntryByManager(client, context, managerEntryMatch[1], body),
+    });
+    sendJson(response, 200, { entry }); return true;
+  }
+
   if (request.method === 'DELETE' && managerEntryMatch) {
     const context = await requireManager(request, response); if (!context) return true;
     const result = await runStoreTransaction({ prisma: async client => {
       const manager = context.activeMembership || context.membership || context;
       const entry = await client.workEntry.findFirst({ where: { id: managerEntryMatch[1], companyId: manager.companyId }, include: { weeklySubmission: true } });
       if (!entry) throw new Error('Work entry not found');
+      if (entry.status !== 'SUBMITTED' || entry.weeklySubmission?.status !== 'SUBMITTED') {
+        throw new Error('Work entry is not pending review');
+      }
       const submissionId = entry.weeklySubmissionId;
       await client.workEntry.delete({ where: { id: entry.id } });
+      let submissionDeleted = false;
       if (submissionId) {
         const remaining = await client.workEntry.count({ where: { weeklySubmissionId: submissionId } });
-        if (!remaining) await client.weeklySubmission.delete({ where: { id: submissionId } });
+        if (!remaining) {
+          await client.weeklySubmission.delete({ where: { id: submissionId } });
+          submissionDeleted = true;
+        }
       }
-      return { ok: true, submissionId };
+      return { ok: true, submissionId, submissionDeleted };
     } });
     sendJson(response, 200, result); return true;
   }
@@ -298,6 +315,7 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
       const manager = context.activeMembership || context.membership || context;
       const submission = await client.weeklySubmission.findFirst({ where: { id: clearSubmissionMatch[1], companyId: manager.companyId } });
       if (!submission) throw new Error('Weekly submission not found');
+      if (submission.status !== 'SUBMITTED') throw new Error('Weekly submission is not pending review');
       const deleted = await client.workEntry.deleteMany({ where: { companyId: manager.companyId, weeklySubmissionId: submission.id } });
       await client.weeklySubmission.delete({ where: { id: submission.id } });
       return { ok: true, deletedEntries: deleted.count };

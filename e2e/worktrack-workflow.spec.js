@@ -177,6 +177,37 @@ async function mockApi(page, state, role, unexpected) {
       return reply(route, { submissions: state.submission?.status === 'SUBMITTED' ? [submissionPayload(state)] : [] });
     }
     if (method === 'GET' && path === '/manager/submissions/submission-1') return reply(route, { submission: submissionPayload(state) });
+    if (method === 'GET' && path === '/manager/timesheet') {
+      const month = url.searchParams.get('month') || '2026-08';
+      const daysInMonth = new Date(`${month}-01T00:00:00.000Z`);
+      const count = new Date(Date.UTC(daysInMonth.getUTCFullYear(), daysInMonth.getUTCMonth() + 1, 0)).getUTCDate();
+      const days = Array.from({ length: count }, (_, index) => {
+        const date = `${month}-${String(index + 1).padStart(2, '0')}`;
+        const entries = state.entries.filter(entry => entry.workDate === date && entry.status === 'SUBMITTED');
+        const employeeHours = entries.length ? entries.reduce((total, entry) => total + Number(entry.hours || 0), 0) : null;
+        return {
+          date,
+          day: index + 1,
+          status: employeeHours == null ? 'EMPTY' : 'MATCH',
+          reasons: [],
+          employeeHours,
+          managerHours: employeeHours,
+          difference: employeeHours == null ? null : 0,
+          employeeBreakMinutes: employeeHours == null ? null : 30,
+          managerBreakMinutes: employeeHours == null ? null : 30,
+          employeeProjects: entries.length ? ['Test Project'] : [],
+          employeeProjectIds: entries.length ? ['project-1'] : [],
+          managerProjectId: entries.length ? 'project-1' : null,
+          note: '',
+        };
+      });
+      return reply(route, {
+        month,
+        projects: [{ id: 'project-1', name: 'Test Project' }],
+        summary: { employees: 1, matched: state.entries.length, mismatches: 0, missing: 0, problems: 0 },
+        rows: [{ employeeId: 'employee-membership-1', name: 'Anna Employee', status: 'ACTIVE', employeeTotal: 8, managerTotal: 8, difference: 0, problems: 0, days }],
+      });
+    }
     if (method === 'POST' && path === '/manager/submissions/submission-1/approve') {
       state.entries = state.entries.map(entry => ({ ...entry, status: 'APPROVED' }));
       state.submission = { ...state.submission, status: 'APPROVED', reviewedByMembershipId: 'manager-membership-1', reviewedAt: new Date().toISOString() };
@@ -233,7 +264,7 @@ test('employee submit -> manager approve -> employee sees approved', async ({ br
   await mockApi(managerPage, state, 'MANAGER', unexpected);
   await managerPage.goto('/approvals');
   await expect(managerPage.locator('.approvalItem')).toHaveCount(1);
-  await managerPage.locator('.approvalApprove').click();
+  await managerPage.locator('.approvalApproveButton').click();
   await expect(managerPage.locator('.approvalItem')).toHaveCount(0);
   await manager.close();
 

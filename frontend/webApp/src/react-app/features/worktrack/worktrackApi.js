@@ -38,6 +38,7 @@ export const worktrackApi = baseApi.injectEndpoints({
     resetManagerEmployeePassword: builder.mutation({ query:({employeeId,temporaryPassword})=>({url:`/manager/employees/${employeeId}/reset-password`,method:'POST',body:{temporaryPassword}}) }),
     getManagerSubmissions: builder.query({ query:(query={})=>({url:'/manager/submissions',params:query}), providesTags:result=>[{type:'WeeklySubmissions',id:'LIST'},...(Array.isArray(result?.submissions)?result.submissions:[]).map(submission=>({type:'WeeklySubmissions',id:submission.id}))] }),
     getManagerSubmission: builder.query({ query:submissionId=>`/manager/submissions/${submissionId}`, providesTags:(_r,_e,submissionId)=>[{type:'WeeklySubmissions',id:submissionId}] }),
+    updateManagerWorkEntry: builder.mutation({ query:({entryId,...body})=>({url:`/manager/work-entries/${entryId}`,method:'PATCH',body}), invalidatesTags:MANAGER_REVIEW_TAGS }),
     deleteManagerWorkEntry: builder.mutation({ query:entryId=>({url:`/manager/work-entries/${entryId}`,method:'DELETE'}), invalidatesTags:MANAGER_REVIEW_TAGS }),
     clearManagerSubmission: builder.mutation({ query:submissionId=>({url:`/manager/submissions/${submissionId}/clear`,method:'DELETE'}), invalidatesTags:MANAGER_REVIEW_TAGS }),
     approveSubmission: builder.mutation({ query:submissionId=>({url:`/manager/submissions/${submissionId}/approve`,method:'POST'}), invalidatesTags:(_r,_e,submissionId)=>withSubmission(submissionId,{notifications:true}) }),
@@ -51,5 +52,5 @@ export const {
   useGetWorkRulesQuery,useUpdateWorkRulesMutation,
   useGetWeekEntriesQuery,useCreateWorkEntryMutation,useUpdateWorkEntryMutation,useDeleteWorkEntryMutation,useSubmitWeekMutation,
   useGetManagerEmployeesQuery,useCreateManagerEmployeeMutation,useUpdateManagerEmployeeMutation,useDeleteManagerEmployeeMutation,useResetManagerEmployeePasswordMutation,
-  useGetManagerSubmissionsQuery,useGetManagerSubmissionQuery,useDeleteManagerWorkEntryMutation,useClearManagerSubmissionMutation,useApproveSubmissionMutation,useRejectSubmissionMutation,
+  useGetManagerSubmissionsQuery,useGetManagerSubmissionQuery,useUpdateManagerWorkEntryMutation,useDeleteManagerWorkEntryMutation,useClearManagerSubmissionMutation,useApproveSubmissionMutation,useRejectSubmissionMutation,
 } = worktrackApi;

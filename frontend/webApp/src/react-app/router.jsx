@@ -6,8 +6,6 @@ import { ProtectedRoute } from '@shared/app/components/ProtectedRoute/ProtectedR
 import { RouterError } from '@shared/app/components/RouterError/RouterError.jsx';
 import { SectionShell } from './components/SectionTabs/SectionShell.jsx';
 import { ApprovalsPage } from './pages/ApprovalsPage/ApprovalsPage.jsx';
-import './pages/ApprovalsPage/ApprovalsMobile.css';
-import './pages/ApprovalsPage/ApprovalsRedesign.css';
 import { CalendarPage } from './pages/CalendarPage/CalendarPage.jsx';
 import { CompanySettingsPage } from './pages/CompanySettingsPage/CompanySettingsPage.jsx';
 import { DashboardPage } from './pages/DashboardPage/DashboardPage.jsx';

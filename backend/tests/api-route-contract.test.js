@@ -53,6 +53,8 @@ const FRONTEND_API_CONTRACTS = [
   ['POST', '/api/manager/employees/membership-test/reset-password'],
   ['GET', '/api/manager/submissions?status=SUBMITTED'],
   ['GET', '/api/manager/submissions/submission-test'],
+  ['PATCH', '/api/manager/work-entries/entry-test'],
+  ['DELETE', '/api/manager/work-entries/entry-test'],
   ['POST', '/api/manager/submissions/submission-test/approve'],
   ['POST', '/api/manager/submissions/submission-test/reject'],
 ];

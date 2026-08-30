@@ -94,6 +94,24 @@ function normalizeHoursString(value) {
   return amount.toFixed(2);
 }
 
+function normalizeClockTime(value) {
+  const raw = normalizeText(value);
+  const match = /^(\d{2}):(\d{2})$/.exec(raw);
+
+  if (!match) {
+    throw new Error('Invalid work time');
+  }
+
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+
+  if (hour > 23 || minute > 59) {
+    throw new Error('Invalid work time');
+  }
+
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
 function normalizeMoneyString(value, { allowNull = false } = {}) {
   const raw = String(value ?? '').trim().replace(',', '.');
 
@@ -708,6 +726,151 @@ export async function updateEmployeeWorkEntry(client, context, entryId, payload 
   });
 
   return serializeWorkEntry(entry);
+}
+
+export async function updateSubmittedWorkEntryByManager(client, context, entryId, payload = {}) {
+  const managerMembership = ensureManagerContext(context);
+  const existing = await client.workEntry.findUnique({
+    where: {
+      id: entryId,
+    },
+    include: {
+      weeklySubmission: true,
+      project: true,
+      employeeMembership: {
+        select: {
+          userId: true,
+        },
+      },
+    },
+  });
+
+  if (!existing || existing.companyId !== managerMembership.companyId) {
+    throw new Error('Work entry not found');
+  }
+
+  if (
+    existing.status !== REVIEWABLE_STATUS ||
+    existing.weeklySubmission?.status !== REVIEWABLE_STATUS
+  ) {
+    throw new Error('Work entry is not pending review');
+  }
+
+  const projectId = Object.prototype.hasOwnProperty.call(payload, 'projectId')
+    ? (await findProjectInCompany(client, managerMembership.companyId, payload.projectId)).id
+    : existing.projectId;
+  const duplicate = await client.workEntry.findFirst({
+    where: {
+      companyId: managerMembership.companyId,
+      employeeMembershipId: existing.employeeMembershipId,
+      projectId,
+      workDate: existing.workDate,
+      id: {
+        not: existing.id,
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (duplicate) {
+    throw new Error('Work entry already exists');
+  }
+
+  const hasStartTime = Object.prototype.hasOwnProperty.call(payload, 'startTime');
+  const hasEndTime = Object.prototype.hasOwnProperty.call(payload, 'endTime');
+  const hasHours = Object.prototype.hasOwnProperty.call(payload, 'hours');
+  const data = {
+    projectId,
+    updatedAt: new Date(nowIso()),
+  };
+
+  if (hasStartTime !== hasEndTime) {
+    throw new Error('Start and end time are required');
+  }
+
+  if (hasStartTime && hasEndTime) {
+    const startTime = normalizeClockTime(payload.startTime);
+    const endTime = normalizeClockTime(payload.endTime);
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    const [endHour, endMinute] = endTime.split(':').map(Number);
+    const startMinutes = startHour * 60 + startMinute;
+    let endMinutes = endHour * 60 + endMinute;
+
+    if (endMinutes <= startMinutes) endMinutes += 24 * 60;
+
+    const grossMinutes = endMinutes - startMinutes;
+    if (grossMinutes <= 0 || grossMinutes > 24 * 60) {
+      throw new Error('Invalid work time range');
+    }
+
+    const company = await client.company.findUnique({
+      where: {
+        id: managerMembership.companyId,
+      },
+      select: {
+        breakMinutes: true,
+      },
+    });
+    const configuredBreakMinutes = Math.max(0, Number(company?.breakMinutes || 0));
+    const breakMinutes = grossMinutes > configuredBreakMinutes ? configuredBreakMinutes : 0;
+    const netMinutes = grossMinutes - breakMinutes;
+
+    if (netMinutes <= 0) {
+      throw new Error('Work time must be longer than the automatic break');
+    }
+
+    data.startTime = startTime;
+    data.endTime = endTime;
+    data.grossHours = (grossMinutes / 60).toFixed(2);
+    data.breakMinutes = breakMinutes;
+    data.hours = (netMinutes / 60).toFixed(2);
+  } else if (hasHours) {
+    data.hours = normalizeHoursString(payload.hours);
+    data.grossHours = null;
+    data.breakMinutes = 0;
+    data.startTime = null;
+    data.endTime = null;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(payload, 'note')) {
+    data.note = normalizeText(payload.note).slice(0, 1200) || null;
+  }
+
+  const entry = await client.workEntry.update({
+    where: {
+      id: existing.id,
+    },
+    data,
+    include: {
+      project: true,
+      employeeMembership: {
+        select: {
+          userId: true,
+        },
+      },
+    },
+  });
+
+  await createAuditLog(client, {
+    action: 'work_entry.manager_updated',
+    actorUserId: managerMembership.userId,
+    targetUserId: entry.employeeMembership?.userId || null,
+    entityType: 'work_entry',
+    entityId: entry.id,
+    before: serializeWorkEntry(existing),
+    after: serializeWorkEntry(entry),
+  });
+
+  return {
+    ...serializeWorkEntry(entry),
+    startTime: entry.startTime || null,
+    endTime: entry.endTime || null,
+    grossHours: entry.grossHours == null ? null : String(entry.grossHours),
+    breakMinutes: Number(entry.breakMinutes || 0),
+    note: entry.note || '',
+  };
 }
 
 export async function deleteEmployeeWorkEntry(client, context, entryId) {
