@@ -106,8 +106,9 @@ test('manager payroll calculates a selected week and employee breakdown', async 
     pendingHours: '6.00',
     confirmedSalaryCzk: '1600.00',
     predictedSalaryCzk: '1200.00',
+    accruedSalaryCzk: '2800.00',
     advancesCzk: '0.00',
-    netPayCzk: '1200.00',
+    netPayCzk: '2800.00',
   });
   assert.equal(payload.employees[1].status, 'INACTIVE');
   assert.deepEqual(payload.summary, {
@@ -117,8 +118,9 @@ test('manager payroll calculates a selected week and employee breakdown', async 
     pendingHours: '6.00',
     confirmedSalaryCzk: '3100.00',
     predictedSalaryCzk: '1200.00',
+    accruedSalaryCzk: '4300.00',
     advancesCzk: '0.00',
-    netPayCzk: '1200.00',
+    netPayCzk: '4300.00',
   });
 });
 
@@ -135,8 +137,9 @@ test('manager payroll deducts lunch once per employee work day', async () => {
     pendingHours: '5.00',
     confirmedSalaryCzk: '1400.00',
     predictedSalaryCzk: '1000.00',
+    accruedSalaryCzk: '2400.00',
     advancesCzk: '0.00',
-    netPayCzk: '1000.00',
+    netPayCzk: '2400.00',
   });
   assert.equal(payload.employees[1].summary.totalHours, '4.00');
   assert.equal(payload.workRules.breakMinutes, 60);
@@ -169,6 +172,37 @@ test('manager payroll uses the rate snapshot stored on each work entry', async (
 
   assert.equal(payload.summary.approvedHours, '16.00');
   assert.equal(payload.summary.confirmedSalaryCzk, '4000.00');
+  assert.equal(payload.summary.accruedSalaryCzk, '4000.00');
+  assert.equal(payload.summary.netPayCzk, '4000.00');
+});
+
+test('manager payroll keeps approved-only earnings payable', async () => {
+  const payload = await getManagerPayroll(
+    createClient({
+      memberships: [
+        {
+          id: 'employee-membership-1',
+          userId: 'employee-user-1',
+          companyId: 'company-1',
+          role: 'EMPLOYEE',
+          status: 'ACTIVE',
+          hourlyRateCzk: '350.00',
+          createdAt: new Date('2026-01-01T00:00:00.000Z'),
+          user: { firstName: 'Mykhailo', lastName: 'Stryzhka', email: 'mykhailo@example.com', deletedAt: null },
+          workEntries: [
+            { id: 'approved-only', workDate: new Date('2026-08-17T00:00:00.000Z'), status: 'APPROVED', hours: '8.00' },
+          ],
+        },
+      ],
+    }),
+    createManagerContext(),
+    { period: 'week', anchor: '2026-08-18' }
+  );
+
+  assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '2800.00');
+  assert.equal(payload.employees[0].summary.predictedSalaryCzk, '0.00');
+  assert.equal(payload.employees[0].summary.accruedSalaryCzk, '2800.00');
+  assert.equal(payload.employees[0].summary.netPayCzk, '2800.00');
 });
 
 test('manager payroll excludes inactive employees with no hours in the selected period', async () => {
@@ -203,9 +237,9 @@ test('manager payroll includes advances in the selected period', async () => {
   );
 
   assert.equal(payload.employees[0].summary.advancesCzk, '500.00');
-  assert.equal(payload.employees[0].summary.netPayCzk, '700.00');
+  assert.equal(payload.employees[0].summary.netPayCzk, '2300.00');
   assert.equal(payload.summary.advancesCzk, '500.00');
-  assert.equal(payload.summary.netPayCzk, '700.00');
+  assert.equal(payload.summary.netPayCzk, '3800.00');
 });
 
 test('manager payroll resolves a complete calendar month', async () => {
