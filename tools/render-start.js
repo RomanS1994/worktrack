@@ -46,14 +46,14 @@ function sleep(ms) {
 }
 
 function ensureBackendDependencies() {
-  const hasPrismaClient = canResolvePackage('@prisma/client');
-  const hasPrismaCli = canResolvePackage('prisma');
+  const requiredPackages = ['@prisma/client', 'prisma', 'pdfmake'];
+  const missingPackages = requiredPackages.filter(packageName => !canResolvePackage(packageName));
 
-  if (hasPrismaClient && hasPrismaCli) {
+  if (missingPackages.length === 0) {
     return;
   }
 
-  console.log('Installing backend dependencies required for Prisma runtime tasks...');
+  console.log(`Installing backend dependencies: ${missingPackages.join(', ')}...`);
   runChecked(npmCommand, ['install'], {
     cwd: backendDir,
   });
