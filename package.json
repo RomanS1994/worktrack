@@ -41,7 +41,6 @@
     "@prisma/client": "^6.19.3",
     "@reduxjs/toolkit": "^2.11.2",
     "lucide-static": "^1.14.0",
-    "pdfmake": "0.3.11",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-mobile-picker": "^1.2.0",
