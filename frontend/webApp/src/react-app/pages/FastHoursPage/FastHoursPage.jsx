@@ -17,6 +17,12 @@ import './FastHoursPage.compact.css';
 import './FastHoursPage.defaultProject.css';
 
 const DAY_MS = 86400000;
+const TIME_OPTIONS = Array.from({length:24*6},(_,index)=>{
+  const totalMinutes=index*10;
+  const hours=String(Math.floor(totalMinutes/60)).padStart(2,'0');
+  const minutes=String(totalMinutes%60).padStart(2,'0');
+  return `${hours}:${minutes}`;
+});
 const COPY = {
   uk: { project:'Об’єкт / проєкт',addShift:'Додати зміну',editShift:'Редагувати зміну',from:'Від',to:'До',total:'Разом',note:'Нотатка',notePlaceholder:'Наприклад: монтаж, сервіс, додаткові роботи…',saveShift:'Зберегти зміну',deleteShift:'Видалити зміну',quickTitle:'Швидке заповнення тижня',quickCopy:'Заповнити робочі дні за графіком',apply:'Застосувати до вибраних днів',selectDays:'Виберіть хоча б один день',invalidTime:'Перевірте час початку та завершення',weekTotal:'Чисті години за тиждень',overtime:'Понаднормово',autoSaved:'Основний об’єкт',noShift:'Немає зміни',submit:'Відправити тиждень менеджеру',locked:'Тиждень уже відправлено або погоджено. Редагування заблоковано.',noProjects:'Немає активних об’єктів',saved:'Зміну збережено',quickSaved:'Тиждень оновлено',close:'Закрити',thisWeek:'Цей тиждень',previous:'Попередній',next:'Наступний',gross:'Фактично',break:'Обід',net:'Чистими',norm:'Норма',myHours:'Мої години',weeklyNorm:'год норми',choosePrimary:'Виберіть основний об’єкт',defaultSaved:'Основний об’єкт змінено',primary:'Основний',status:{DRAFT:'Чернетка',SUBMITTED:'Відправлено',APPROVED:'Погоджено',REJECTED:'Відхилено'} },
   cs: { project:'Objekt / projekt',addShift:'Přidat směnu',editShift:'Upravit směnu',from:'Od',to:'Do',total:'Celkem',note:'Poznámka',notePlaceholder:'Např. montáž, servis, vícepráce…',saveShift:'Uložit směnu',deleteShift:'Smazat směnu',quickTitle:'Rychlé vyplnění týdne',quickCopy:'Vyplnit pracovní dny podle rozvrhu',apply:'Použít na vybrané dny',selectDays:'Vyberte alespoň jeden den',invalidTime:'Zkontrolujte čas začátku a konce',weekTotal:'Čisté hodiny za týden',overtime:'Přesčas',autoSaved:'Hlavní objekt',noShift:'Bez směny',submit:'Odeslat týden manažerovi',locked:'Týden už byl odeslán nebo schválen. Úpravy jsou uzamčeny.',noProjects:'Žádné aktivní objekty',saved:'Směna uložena',quickSaved:'Týden aktualizován',close:'Zavřít',thisWeek:'Tento týden',previous:'Předchozí',next:'Další',gross:'Skutečně',break:'Oběd',net:'Čisté',norm:'Norma',myHours:'Moje hodiny',weeklyNorm:'hod normy',choosePrimary:'Vyberte hlavní objekt',defaultSaved:'Hlavní objekt byl změněn',primary:'Hlavní',status:{DRAFT:'Koncept',SUBMITTED:'Odesláno',APPROVED:'Schváleno',REJECTED:'Zamítnuto'} },
@@ -39,6 +45,7 @@ function formatHoursShort(value,language){const minutes=Math.round((Number(value
 function formatBreak(minutes,language){const value=Number(minutes||0);if(language==='uk')return value===60?'1 год':`${value} хв`;if(language==='cs')return value===60?'1 h':`${value} min`;return value===60?'1h':`${value}m`}
 function dayEntries(entries,date){return entries.filter(entry=>entry.workDate===date).sort((a,b)=>String(a.startTime||'').localeCompare(String(b.startTime||'')))}
 function getDayTotal(entries,date){return dayEntries(entries,date).reduce((sum,entry)=>sum+(Number(entry.hours)||0),0)}
+function TimeSelect({value,onChange,disabled}){return <select value={value} disabled={disabled} onChange={event=>onChange(event.target.value)}>{TIME_OPTIONS.map(time=><option value={time} key={time}>{time}</option>)}</select>}
 
 export function FastHoursPage(){
   const {language}=useI18n();
@@ -98,23 +105,103 @@ export function FastHoursPage(){
   function openExisting(entry){resetMessages();setEditingId(entry.id);setEditingDate(entry.workDate);setProjectId(entry.projectId||entry.project?.id||'');setStartTime(entry.startTime||'07:00');setEndTime(entry.endTime||'18:00');setNote(entry.note||'');setEditorOpen(true)}
   function changeWeek(amount){setEditorOpen(false);setQuickOpen(false);setProjectPickerOpen(false);setWeekStart(shiftWeek(weekStart,amount))}
 
-  async function chooseDefaultProject(nextProjectId){resetMessages();try{await updateDefaultProject(nextProjectId).unwrap();setProjectId('');setQuickProject('');setProjectPickerOpen(false);setMessage(c.defaultSaved)}catch(err){setActionError(getApiErrorMessage(err))}}
-  async function saveShift(event){event.preventDefault();if(locked||!selectedProject||calculatedGross<=0){setActionError(c.invalidTime);return}resetMessages();const payload={projectId:selectedProject,startTime,endTime,note};try{if(editingId)await updateEntry({entryId:editingId,...payload}).unwrap();else{const sameProject=entries.find(entry=>entry.workDate===editingDate&&entry.projectId===selectedProject);if(sameProject)await updateEntry({entryId:sameProject.id,...payload}).unwrap();else await createEntry({workDate:editingDate,...payload}).unwrap()}setEditorOpen(false);setMessage(c.saved)}catch(err){setActionError(getApiErrorMessage(err))}}
+  async function chooseDefaultProject(nextProjectId){
+    resetMessages();
+    try{
+      await updateDefaultProject(nextProjectId).unwrap();
+      setProjectId('');
+      setQuickProject('');
+      setProjectPickerOpen(false);
+      setMessage(c.defaultSaved);
+    }catch(err){setActionError(getApiErrorMessage(err))}
+  }
+
+  async function saveShift(event){
+    event.preventDefault();
+    if(locked||!selectedProject||calculatedGross<=0){setActionError(c.invalidTime);return}
+    resetMessages();
+    const payload={projectId:selectedProject,startTime,endTime,note};
+    try{
+      if(editingId)await updateEntry({entryId:editingId,...payload}).unwrap();
+      else{
+        const sameProject=entries.find(entry=>entry.workDate===editingDate&&entry.projectId===selectedProject);
+        if(sameProject)await updateEntry({entryId:sameProject.id,...payload}).unwrap();
+        else await createEntry({workDate:editingDate,...payload}).unwrap();
+      }
+      setEditorOpen(false);setMessage(c.saved);
+    }catch(err){setActionError(getApiErrorMessage(err))}
+  }
+
   async function removeShift(){if(!editingId||locked)return;resetMessages();try{await deleteEntry(editingId).unwrap();setEditorOpen(false);setMessage(c.saved)}catch(err){setActionError(getApiErrorMessage(err))}}
   function toggleDay(index){setSelectedDays(currentDays=>currentDays.includes(index)?currentDays.filter(day=>day!==index):[...currentDays,index].sort())}
-  async function applyQuickFill(){resetMessages();if(!selectedDays.length){setActionError(c.selectDays);return}if(!selectedQuickProject||quickGross<=0){setActionError(c.invalidTime);return}try{for(const index of selectedDays){const day=days[index];if(!day)continue;const payload={projectId:selectedQuickProject,startTime:quickStart,endTime:quickEnd,note:''};const existing=entries.find(entry=>entry.workDate===day.date&&entry.projectId===selectedQuickProject);if(existing)await updateEntry({entryId:existing.id,...payload}).unwrap();else await createEntry({workDate:day.date,...payload}).unwrap()}setQuickOpen(false);setMessage(c.quickSaved)}catch(err){setActionError(getApiErrorMessage(err))}}
+
+  async function applyQuickFill(){
+    resetMessages();
+    if(!selectedDays.length){setActionError(c.selectDays);return}
+    if(!selectedQuickProject||quickGross<=0){setActionError(c.invalidTime);return}
+    try{
+      for(const index of selectedDays){
+        const day=days[index];if(!day)continue;
+        const payload={projectId:selectedQuickProject,startTime:quickStart,endTime:quickEnd,note:''};
+        const existing=entries.find(entry=>entry.workDate===day.date&&entry.projectId===selectedQuickProject);
+        if(existing)await updateEntry({entryId:existing.id,...payload}).unwrap();
+        else await createEntry({workDate:day.date,...payload}).unwrap();
+      }
+      setQuickOpen(false);setMessage(c.quickSaved);
+    }catch(err){setActionError(getApiErrorMessage(err))}
+  }
+
   async function send(){resetMessages();try{await submitWeek({weekStart}).unwrap()}catch(err){setActionError(getApiErrorMessage(err))}}
 
   return <section className="fastHoursPage pageStack">
-    <section className="fastHero screenCard"><div className="fastHeroTop"><div><h1>{c.myHours}</h1><p>{fmtWeekRange(days,language)}</p></div><span className={`fastHoursStatus is-${status.toLowerCase()}`}><i/> {c.status[status]||status}</span></div><strong className="fastHeroTotal">{formatHoursShort(weekTotal,language)}</strong><p className="fastHeroNorm">{Number(weekTotal).toFixed(1)} / {weeklyNorm.toFixed(0)} {c.weeklyNorm}</p><div className="fastHeroProgress"><span style={{width:`${progress}%`}}/></div></section>
+    <section className="fastHero screenCard">
+      <div className="fastHeroTop"><div><h1>{c.myHours}</h1><p>{fmtWeekRange(days,language)}</p></div><span className={`fastHoursStatus is-${status.toLowerCase()}`}><i/> {c.status[status]||status}</span></div>
+      <strong className="fastHeroTotal">{formatHoursShort(weekTotal,language)}</strong>
+      <p className="fastHeroNorm">{Number(weekTotal).toFixed(1)} / {weeklyNorm.toFixed(0)} {c.weeklyNorm}</p>
+      <div className="fastHeroProgress"><span style={{width:`${progress}%`}}/></div>
+    </section>
+
     <section className="fastWeekBar"><button type="button" disabled={busy} aria-label={c.previous} onClick={()=>changeWeek(-1)}>‹</button><div><strong>{fmtWeekRange(days,language)||c.thisWeek}</strong><span>{weekStart===current?c.thisWeek:''}</span></div><button type="button" disabled={busy||weekStart>=current} aria-label={c.next} onClick={()=>changeWeek(1)}>›</button></section>
+
     {error?<p className="statusNote is-error">{getApiErrorMessage(error)}</p>:null}{locked?<p className="statusNote">{c.locked}</p>:null}
+
     <section className="fastProjectCard screenCard"><span className="fastProjectIcon">▦</span><div><strong>{primaryProject?.name||c.project}</strong><small>{c.autoSaved}</small></div><button type="button" disabled={busy||!projects.length} aria-label={c.choosePrimary} onClick={()=>setProjectPickerOpen(value=>!value)}>•••</button></section>
+
     {projectPickerOpen?<section className="fastProjectPicker screenCard"><header><strong>{c.choosePrimary}</strong><button type="button" onClick={()=>setProjectPickerOpen(false)} aria-label={c.close}>×</button></header><div>{projects.map(project=><button type="button" className={project.id===primaryProject?.id?'is-active':''} disabled={defaultProjectState.isLoading} onClick={()=>chooseDefaultProject(project.id)} key={project.id}><span><strong>{project.name}</strong>{project.address?<small>{project.address}</small>:null}</span>{project.id===primaryProject?.id?<b>✓ {c.primary}</b>:<i>›</i>}</button>)}</div></section>:null}
-    <section className="fastDaysCard screenCard">{days.map(day=>{const items=dayEntries(entries,day.date);const dayTotal=getDayTotal(entries,day.date);const parts=fmtDayParts(day.date,language);const first=items[0];const dayOvertime=Math.max(0,dayTotal-standardDailyHours);return <article className="fastDayRow" key={day.date}><div className="fastDayDate"><strong>{parts.weekday}</strong><span>{parts.date}</span></div><div className="fastDayShift">{items.length?<button type="button" className="fastDayMain" onClick={()=>openExisting(first)}><strong>{first.startTime&&first.endTime?`${first.startTime} – ${first.endTime}`:first.project?.name}</strong><small>{Number(first.breakMinutes)>0?`${c.break} ${formatBreak(first.breakMinutes,language)}`:first.project?.name}</small></button>:<div className="fastDayEmpty"><strong>—</strong><small>{c.noShift}</small></div>}</div><div className="fastDayAction">{items.length?<><button className="fastDayHours" type="button" onClick={()=>openExisting(first)}>{formatHoursShort(dayTotal,language)}</button>{dayOvertime>0?<small className="fastDayOvertime">● +{formatHoursShort(dayOvertime,language)} {c.overtime.toLowerCase()}</small>:null}<span className="fastDayChevron">›</span></>:<button className="fastDayPlus" type="button" disabled={locked||busy} onClick={()=>openNew(day.date)}>＋</button>}</div></article>})}</section>
-    <section className={`fastQuickCard screenCard${quickOpen?' is-open':''}`}><button className="fastQuickTrigger" type="button" disabled={locked||busy||!projects.length} onClick={()=>setQuickOpen(value=>!value)}><span className="fastQuickBolt">ϟ</span><span><strong>{c.quickTitle}</strong><small>{c.quickCopy}</small></span><b>›</b></button>{quickOpen?<div className="fastQuickFill"><label><span>{c.project}</span><select value={selectedQuickProject} onChange={e=>setQuickProject(e.target.value)}>{projects.map(project=><option value={project.id} key={project.id}>{project.name}</option>)}</select></label><div className="fastQuickTimes"><label><span>{c.from}</span><input type="time" step="600" value={quickStart} onChange={e=>setQuickStart(e.target.value)}/></label><label><span>{c.to}</span><input type="time" step="600" value={quickEnd} onChange={e=>setQuickEnd(e.target.value)}/></label></div><div className="fastQuickDays">{days.map((day,index)=><button type="button" className={selectedDays.includes(index)?'is-active':''} onClick={()=>toggleDay(index)} key={day.date}>{new Intl.DateTimeFormat(localeFor(language),{weekday:'short',timeZone:'UTC'}).format(new Date(`${day.date}T00:00:00Z`)).replace('.','')}</button>)}</div><div className="fastQuickSummary"><span>{c.gross} {formatHours(quickGross)} · −{formatBreak(quickBreak,language)} {c.break}</span><strong>{c.net}: {formatHours(quickNet)}</strong></div><button className="fastQuickApply" type="button" disabled={busy||locked} onClick={applyQuickFill}>{c.apply}</button></div>:null}</section>
+
+    <section className="fastDaysCard screenCard">
+      {days.map(day=>{const items=dayEntries(entries,day.date);const dayTotal=getDayTotal(entries,day.date);const parts=fmtDayParts(day.date,language);const first=items[0];const dayOvertime=Math.max(0,dayTotal-standardDailyHours);return <article className="fastDayRow" key={day.date}>
+        <div className="fastDayDate"><strong>{parts.weekday}</strong><span>{parts.date}</span></div>
+        <div className="fastDayShift">{items.length?<button type="button" className="fastDayMain" onClick={()=>openExisting(first)}><strong>{first.startTime&&first.endTime?`${first.startTime} – ${first.endTime}`:first.project?.name}</strong><small>{Number(first.breakMinutes)>0?`${c.break} ${formatBreak(first.breakMinutes,language)}`:first.project?.name}</small></button>:<div className="fastDayEmpty"><strong>—</strong><small>{c.noShift}</small></div>}</div>
+        <div className="fastDayAction">{items.length?<><button className="fastDayHours" type="button" onClick={()=>openExisting(first)}>{formatHoursShort(dayTotal,language)}</button>{dayOvertime>0?<small className="fastDayOvertime">● +{formatHoursShort(dayOvertime,language)} {c.overtime.toLowerCase()}</small>:null}<span className="fastDayChevron">›</span></>:<button className="fastDayPlus" type="button" disabled={locked||busy} onClick={()=>openNew(day.date)}>＋</button>}</div>
+      </article>})}
+    </section>
+
+    <section className={`fastQuickCard screenCard${quickOpen?' is-open':''}`}>
+      <button className="fastQuickTrigger" type="button" disabled={locked||busy||!projects.length} onClick={()=>setQuickOpen(value=>!value)}><span className="fastQuickBolt">ϟ</span><span><strong>{c.quickTitle}</strong><small>{c.quickCopy}</small></span><b>›</b></button>
+      {quickOpen?<div className="fastQuickFill">
+        <label><span>{c.project}</span><select value={selectedQuickProject} onChange={e=>setQuickProject(e.target.value)}>{projects.map(project=><option value={project.id} key={project.id}>{project.name}</option>)}</select></label>
+        <div className="fastQuickTimes"><label><span>{c.from}</span><TimeSelect value={quickStart} onChange={setQuickStart}/></label><label><span>{c.to}</span><TimeSelect value={quickEnd} onChange={setQuickEnd}/></label></div>
+        <div className="fastQuickDays">{days.map((day,index)=><button type="button" className={selectedDays.includes(index)?'is-active':''} onClick={()=>toggleDay(index)} key={day.date}>{new Intl.DateTimeFormat(localeFor(language),{weekday:'short',timeZone:'UTC'}).format(new Date(`${day.date}T00:00:00Z`)).replace('.','')}</button>)}</div>
+        <div className="fastQuickSummary"><span>{c.gross} {formatHours(quickGross)} · −{formatBreak(quickBreak,language)} {c.break}</span><strong>{c.net}: {formatHours(quickNet)}</strong></div>
+        <button className="fastQuickApply" type="button" disabled={busy||locked} onClick={applyQuickFill}>{c.apply}</button>
+      </div>:null}
+    </section>
+
     <section className="fastBottomSummary"><div><span>{c.weekTotal}</span><strong>{formatHoursShort(weekTotal,language)}</strong></div><div><span>{c.overtime}</span><strong className={overtime>0?'is-overtime':''}>{formatHoursShort(overtime,language)}</strong></div></section>
-    {message?<p className="statusNote is-success">{message}</p>:null}{actionError?<p className="statusNote is-error">{actionError}</p>:null}<button className="fastSend" type="button" disabled={locked||busy||!entries.length} onClick={send}>{c.submit} →</button>
-    {editorOpen?<div className="fastEditorBackdrop" onMouseDown={event=>{if(event.target===event.currentTarget)setEditorOpen(false)}}><section className="fastEditorSheet"><header><div><span>{fmtLong(editingDate,language)}</span><h2>{editingId?c.editShift:c.addShift}</h2></div><button type="button" aria-label={c.close} onClick={()=>setEditorOpen(false)}>×</button></header><form className="fastEditorBody" onSubmit={saveShift}><label><span>{c.project}</span><select value={selectedProject} disabled={busy||locked} onChange={e=>setProjectId(e.target.value)}>{projects.map(project=><option value={project.id} key={project.id}>{project.name}</option>)}</select></label><div className="fastEditorTimes"><label><span>{c.from}</span><input type="time" step="600" value={startTime} disabled={busy||locked} onChange={e=>setStartTime(e.target.value)}/></label><label><span>{c.to}</span><input type="time" step="600" value={endTime} disabled={busy||locked} onChange={e=>setEndTime(e.target.value)}/></label></div><div className="fastEditorTotal"><div><span>{c.gross}</span><strong>{formatHours(calculatedGross)}</strong></div>{calculatedBreak>0?<div><span>{c.break}</span><strong>−{formatBreak(calculatedBreak,language)}</strong></div>:null}<div><span>{c.net}</span><strong>{formatHours(calculatedNet)}</strong></div></div><label><span>{c.note}</span><textarea value={note} disabled={busy||locked} placeholder={c.notePlaceholder} onChange={e=>setNote(e.target.value)}/></label><button className="fastEditorSave" type="submit" disabled={busy||locked||calculatedGross<=0}>{c.saveShift}</button>{editingId?<button className="fastEditorDelete" type="button" disabled={busy||locked} onClick={removeShift}>{c.deleteShift}</button>:null}</form></section></div>:null}
+    {message?<p className="statusNote is-success">{message}</p>:null}{actionError?<p className="statusNote is-error">{actionError}</p>:null}
+    <button className="fastSend" type="button" disabled={locked||busy||!entries.length} onClick={send}>{c.submit} →</button>
+
+    {editorOpen?<div className="fastEditorBackdrop" onMouseDown={event=>{if(event.target===event.currentTarget)setEditorOpen(false)}}><section className="fastEditorSheet">
+      <header><div><span>{fmtLong(editingDate,language)}</span><h2>{editingId?c.editShift:c.addShift}</h2></div><button type="button" aria-label={c.close} onClick={()=>setEditorOpen(false)}>×</button></header>
+      <form className="fastEditorBody" onSubmit={saveShift}>
+        <label><span>{c.project}</span><select value={selectedProject} disabled={busy||locked} onChange={e=>setProjectId(e.target.value)}>{projects.map(project=><option value={project.id} key={project.id}>{project.name}</option>)}</select></label>
+        <div className="fastEditorTimes"><label><span>{c.from}</span><TimeSelect value={startTime} disabled={busy||locked} onChange={setStartTime}/></label><label><span>{c.to}</span><TimeSelect value={endTime} disabled={busy||locked} onChange={setEndTime}/></label></div>
+        <div className="fastEditorTotal"><div><span>{c.gross}</span><strong>{formatHours(calculatedGross)}</strong></div>{calculatedBreak>0?<div><span>{c.break}</span><strong>−{formatBreak(calculatedBreak,language)}</strong></div>:null}<div><span>{c.net}</span><strong>{formatHours(calculatedNet)}</strong></div></div>
+        <label><span>{c.note}</span><textarea value={note} disabled={busy||locked} placeholder={c.notePlaceholder} onChange={e=>setNote(e.target.value)}/></label>
+        <button className="fastEditorSave" type="submit" disabled={busy||locked||calculatedGross<=0}>{c.saveShift}</button>
+        {editingId?<button className="fastEditorDelete" type="button" disabled={busy||locked} onClick={removeShift}>{c.deleteShift}</button>:null}
+      </form>
+    </section></div>:null}
   </section>;
 }
