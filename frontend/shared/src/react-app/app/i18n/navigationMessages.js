@@ -2,7 +2,7 @@ export const navigationMessages = {
   uk: {
     app: {
       calendar: 'Календар',
-      projects: 'Проєкти',
+      projects: 'Об’єкти',
       notifications: 'Сповіщення',
     },
     navigation: {

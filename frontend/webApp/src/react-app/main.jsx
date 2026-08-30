@@ -8,6 +8,7 @@ import './pages/ApprovalsPage/ApprovalsRedesign.css';
 import './app/AppVisualConsistency.css';
 import './pages/ApprovalsPage/ApprovalsFinalMobile.css';
 import './pages/ManagerTimesheetPage/ManagerTimesheetPage.controls.css';
+import './pages/ManagerTimesheetPage/ManagerTimesheetPage.mobileCards.css';
 
 const rootElement = document.getElementById('react-root');
 

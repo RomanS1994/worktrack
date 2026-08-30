@@ -1,5 +1,5 @@
 .bottomTabs {
-  position:fixed; left:10px; right:10px; bottom:14px; z-index:30; width:auto;
+  position:fixed; left:10px; right:10px; bottom:max(10px, env(safe-area-inset-bottom)); z-index:30; width:auto;
   display:flex; align-items:stretch; justify-content:space-between; gap:2px; padding:6px;
   border:1px solid rgba(255,255,255,.72); border-radius:24px;
   background:rgba(255,255,255,.86); box-shadow:0 14px 34px rgba(15,23,42,.12), inset 0 1px 0 rgba(255,255,255,.9);
@@ -10,7 +10,7 @@
 .bottomTab:active { transform:scale(.98); }
 .bottomTab-icon { display:grid; place-items:center; width:25px; height:25px; color:#7b8794; }
 .bottomTab-icon svg { width:24px; height:24px; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
-.bottomTab-label { font-size:9px; font-weight:700; line-height:1; color:#7b8794; }
+.bottomTab-label { font-size:10px; font-weight:700; line-height:1.05; color:#7b8794; }
 .bottomTab.is-active { background:var(--accent-soft); }
 .bottomTab.is-active .bottomTab-icon,.bottomTab.is-active .bottomTab-label { color:var(--accent); }
 .bottomTab.is-active .bottomTab-icon svg { stroke-width:2.1; }
@@ -37,9 +37,9 @@
 }
 
 @media (max-width:480px) {
-  .bottomTabs { left:8px; right:8px; bottom:10px; padding:4px; border-radius:20px; }
+  .bottomTabs { left:8px; right:8px; bottom:max(8px, env(safe-area-inset-bottom)); padding:4px; border-radius:20px; }
   .bottomTab,.bottomTab-primary { min-height:50px; padding:4px 1px; border-radius:14px; }
   .bottomTab-icon,.bottomTab-primary .bottomTab-icon { width:24px; height:24px; margin:0; }
   .bottomTab-icon svg,.bottomTab-primary .bottomTab-icon svg { width:23px; height:23px; }
-  .bottomTab-label,.bottomTab-primary .bottomTab-label { font-size:9px; }
+  .bottomTab-label,.bottomTab-primary .bottomTab-label { font-size:10px; }
 }

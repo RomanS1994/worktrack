@@ -73,6 +73,7 @@ function weekLabel(week) {
 export function ManagerTimesheetPage() {
   const [month, setMonth] = useState(currentMonth);
   const [weekIndex, setWeekIndex] = useState(0);
+  const [problemsOnly, setProblemsOnly] = useState(false);
   const [selected, setSelected] = useState(null);
   const [hours, setHours] = useState('');
   const [breakMinutes, setBreakMinutes] = useState('');
@@ -93,6 +94,7 @@ export function ManagerTimesheetPage() {
   }, [days]);
   const safeWeekIndex = Math.min(weekIndex, Math.max(weeks.length - 1, 0));
   const mobileWeek = weeks[safeWeekIndex] || [];
+  const mobileRows = problemsOnly ? rows.filter(row => Number(row.problems || 0) > 0) : rows;
 
   function changeMonth(amount) {
     setMonth(value => shiftMonth(value, amount));
@@ -167,26 +169,34 @@ export function ManagerTimesheetPage() {
 
       <section className="managerTimesheetMobile screenCard">
         <div className="managerTimesheetWeekNav">
-          <button type="button" onClick={() => setWeekIndex(i => Math.max(0, i - 1))} disabled={safeWeekIndex === 0}>‹</button>
+          <button type="button" aria-label="Попередній тиждень" onClick={() => setWeekIndex(i => Math.max(0, i - 1))} disabled={safeWeekIndex === 0}>‹</button>
           <strong>{weekLabel(mobileWeek)}</strong>
-          <button type="button" onClick={() => setWeekIndex(i => Math.min(weeks.length - 1, i + 1))} disabled={safeWeekIndex >= weeks.length - 1}>›</button>
+          <button type="button" aria-label="Наступний тиждень" onClick={() => setWeekIndex(i => Math.min(weeks.length - 1, i + 1))} disabled={safeWeekIndex >= weeks.length - 1}>›</button>
         </div>
 
-        <div className="managerTimesheetMobileTable">
-          <div className="managerTimesheetMobileHead">
-            <span>Працівник</span>
-            {mobileWeek.map(day => <span key={day.date}><b>{day.day}</b><small>{new Intl.DateTimeFormat('uk-UA', { weekday: 'short' }).format(new Date(`${day.date}T00:00:00`))}</small></span>)}
-            <span>Разом</span>
-          </div>
+        <div className="managerTimesheetMobileFilters" role="group" aria-label="Фільтр працівників">
+          <button type="button" className={!problemsOnly ? 'is-active' : ''} aria-pressed={!problemsOnly} onClick={() => setProblemsOnly(false)}>Усі · {rows.length}</button>
+          <button type="button" className={problemsOnly ? 'is-active is-warning' : ''} aria-pressed={problemsOnly} onClick={() => setProblemsOnly(true)}>Розбіжності · {rows.filter(row => Number(row.problems || 0) > 0).length}</button>
+        </div>
 
-          {rows.map(row => <div className="managerTimesheetMobileRow" key={row.employeeId}>
-            <div className="managerTimesheetMobileEmployee"><strong>{initials(row.name)}</strong><small className={row.problems ? 'hasProblems' : 'isOk'}>{row.problems ? `⚠ ${row.problems}` : '✓'}</small></div>
-            {mobileWeek.map(day => {
-              const entry = row.days.find(item => item.date === day.date) || day;
-              return <button type="button" key={day.date} className={cellClass(entry.status)} onClick={() => openCell(row, entry)} aria-label={`${row.name}, ${day.date}: ${problemLabel(entry)}`}>{entry.managerHours ?? '—'}</button>;
-            })}
-            <div className="managerTimesheetMobileTotal"><strong>{row.managerTotal}</strong><small>год</small></div>
-          </div>)}
+        <div className="managerTimesheetMobileCards">
+          {mobileRows.map(row => <article className={`managerTimesheetEmployeeCard${row.problems ? ' has-problems' : ''}`} key={row.employeeId}>
+            <header>
+              <span className="managerTimesheetEmployeeAvatar" aria-hidden="true">{initials(row.name)}</span>
+              <span className="managerTimesheetEmployeeIdentity"><strong>{row.name}</strong><small className={row.problems ? 'hasProblems' : 'isOk'}>{row.problems ? `⚠ Розбіжностей: ${row.problems}` : '✓ Усе сходиться'}</small></span>
+              <span className="managerTimesheetEmployeeTotal"><strong>{row.managerTotal}</strong><small>год</small></span>
+            </header>
+            <div className="managerTimesheetEmployeeDays">
+              {mobileWeek.map(day => {
+                const entry = row.days.find(item => item.date === day.date) || { date: day.date, day: day.day, status: 'EMPTY' };
+                const weekday = new Intl.DateTimeFormat('uk-UA', { weekday: 'short' }).format(new Date(`${day.date}T00:00:00`)).replace('.', '');
+                return <button type="button" key={day.date} className={`${cellClass(entry.status)} managerTimesheetDayButton`} onClick={() => openCell(row, entry)} aria-label={`${row.name}, ${day.date}: ${problemLabel(entry)}`}>
+                  <span>{weekday}</span><b>{day.day}</b><strong>{entry.managerHours ?? '—'}</strong>
+                </button>;
+              })}
+            </div>
+          </article>)}
+          {!mobileRows.length ? <p className="managerTimesheetMobileEmpty">Розбіжностей немає.</p> : null}
         </div>
       </section>
     </> : null}
