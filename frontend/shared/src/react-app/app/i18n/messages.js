@@ -2,6 +2,7 @@ export const messages = {
   uk: {
     common: {
       failed: 'Не вдалося завантажити.',
+      failedToLoad: 'Сторінку не вдалося відкрити. Спробуйте ще раз.',
       backToHome: 'Повернутися на головну',
       loading: 'Завантаження…',
       today: 'Сьогодні',
@@ -35,7 +36,7 @@ export const messages = {
     }
   },
   en: {
-    common: { failed: 'Failed to load.', backToHome: 'Back to home', loading: 'Loading…', today: 'Today', previous: 'Previous', next: 'Next', totalHours: 'Total hours', approved: 'Approved', submitted: 'Submitted', draft: 'Draft', rejected: 'Rejected', overtime: 'Overtime', project: 'Project', entries: 'entries' },
+    common: { failed: 'Failed to load.', failedToLoad: 'The page could not be opened. Please try again.', backToHome: 'Back to home', loading: 'Loading…', today: 'Today', previous: 'Previous', next: 'Next', totalHours: 'Total hours', approved: 'Approved', submitted: 'Submitted', draft: 'Draft', rejected: 'Rejected', overtime: 'Overtime', project: 'Project', entries: 'entries' },
     app: { dashboard: 'Dashboard', hours: 'Hours', employees: 'Employees', approvals: 'Approvals', profile: 'Profile' },
     auth: { email: 'Email', password: 'Password', login: 'Sign in', loginTitle: 'Sign in', loginFailed: 'Sign-in failed. Check your email and password.', loggingIn: 'Signing in...', showPassword: 'Show password', hidePassword: 'Hide password', sessionState: 'Session', sessionExpired: 'Session expired', sessionExpiredSignIn: 'Sign in again to continue working.', connectionLostKeepSession: 'Connection was lost. Your session is kept, try again.', sessionCheckFailedKeepSession: 'Session check failed. Try again.', goToSignIn: 'Go to sign in' },
     bottomTabs: { navLabel: 'Primary navigation' },
@@ -51,7 +52,7 @@ export const messages = {
     approvals: { eyebrow: 'Manager workspace', title: 'Approvals', intro: 'Review submitted work weeks and confirm payroll-ready hours.', pendingSummary: 'Pending approval summary', pendingWeeks: 'Pending weeks', hoursWaiting: 'Hours waiting', loading: 'Loading approvals', allCaughtUp: "You're all caught up", noPending: 'There are no submitted weeks waiting for review.', pending: 'Pending', selectWeek: 'Select a week to review its entries.', pendingSubmissions: 'Pending submissions', submittedStatus: 'Submitted', loadingDetails: 'Loading details', totalHours: 'Total hours', workEntries: 'Work entries', decision: 'Decision', decisionCopy: 'Approve the week, or leave a clear note explaining what needs to change.', rejectionReason: 'Reason for rejection', optionalUntilRejecting: 'optional until rejecting', rejectionPlaceholder: "Example: Please correct Friday's project and resubmit.", rejectWithNote: 'Reject with note', approveWeek: 'Approve week', reasonRequired: 'Add a reason before rejecting this week.', employeeFallback: 'Employee' }
   },
   cs: {
-    common: { failed: 'Nepodařilo se načíst.', backToHome: 'Zpět domů', loading: 'Načítání…', today: 'Dnes', previous: 'Předchozí', next: 'Další', totalHours: 'Celkem hodin', approved: 'Schváleno', submitted: 'Odesláno', draft: 'Koncept', rejected: 'Zamítnuto', overtime: 'Přesčas', project: 'Projekt', entries: 'záznamů' },
+    common: { failed: 'Nepodařilo se načíst.', failedToLoad: 'Stránku se nepodařilo otevřít. Zkuste to znovu.', backToHome: 'Zpět domů', loading: 'Načítání…', today: 'Dnes', previous: 'Předchozí', next: 'Další', totalHours: 'Celkem hodin', approved: 'Schváleno', submitted: 'Odesláno', draft: 'Koncept', rejected: 'Zamítnuto', overtime: 'Přesčas', project: 'Projekt', entries: 'záznamů' },
     app: { dashboard: 'Přehled', hours: 'Hodiny', employees: 'Zaměstnanci', approvals: 'Schvalování', profile: 'Profil' },
     auth: { email: 'E-mail', password: 'Heslo', login: 'Přihlásit se', loginTitle: 'Přihlášení', loginFailed: 'Přihlášení se nezdařilo. Zkontrolujte e-mail a heslo.', loggingIn: 'Přihlašování...', showPassword: 'Zobrazit heslo', hidePassword: 'Skrýt heslo', sessionState: 'Relace', sessionExpired: 'Relace vypršela', sessionExpiredSignIn: 'Pro pokračování se přihlaste znovu.', connectionLostKeepSession: 'Spojení bylo ztraceno. Relace zůstává uložená, zkuste to znovu.', sessionCheckFailedKeepSession: 'Kontrola relace se nezdařila. Zkuste to znovu.', goToSignIn: 'Přejít k přihlášení' },
     bottomTabs: { navLabel: 'Hlavní navigace' },

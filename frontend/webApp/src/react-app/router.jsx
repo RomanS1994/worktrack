@@ -79,6 +79,7 @@ export const router = createBrowserRouter([
         ],
       },
       { path: 'notifications', element: <ProtectedRoute><NotificationsPage /></ProtectedRoute> },
+      { path: 'company-settings', element: <ProtectedRoute requireManager><CompanySettingsPage /></ProtectedRoute> },
       { path: 'profile', element: <ProtectedRoute><ProfilePage /></ProtectedRoute> },
       { path: 'more', element: <ProtectedRoute><MoreHubPage /></ProtectedRoute> },
     ],

@@ -276,6 +276,9 @@ test('manager can open every manager screen and is blocked from employee-only sc
     '/payroll-report',
     '/notifications',
     '/company-settings',
+    '/company-settings?section=identity&from=settings',
+    '/company-settings?section=work&from=settings',
+    '/company-settings?section=billing&from=settings',
     '/manager/invoices',
     '/profile',
   ]) {
