@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { useGetManagerTimesheetQuery, useSaveManagerTimesheetCellMutation } from '../../features/worktrack/managerTimesheetApi.js';
 import './ManagerTimesheetPage.css';
@@ -71,7 +72,15 @@ function weekLabel(week) {
 }
 
 export function ManagerTimesheetPage() {
-  const [month, setMonth] = useState(currentMonth);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const targetEmployeeId = searchParams.get('employee') || '';
+  const targetDate = searchParams.get('date') || '';
+  const openedFromApprovals = searchParams.get('from') === 'approvals';
+  const targetMonth = /^\d{4}-\d{2}-\d{2}$/.test(targetDate) ? targetDate.slice(0, 7) : '';
+  const deepLinkHandled = useRef(false);
+
+  const [month, setMonth] = useState(targetMonth || currentMonth);
   const [weekIndex, setWeekIndex] = useState(0);
   const [selected, setSelected] = useState(null);
   const [hours, setHours] = useState('');
@@ -95,6 +104,7 @@ export function ManagerTimesheetPage() {
   const mobileWeek = weeks[safeWeekIndex] || [];
 
   function changeMonth(amount) {
+    deepLinkHandled.current = true;
     setMonth(value => shiftMonth(value, amount));
     setWeekIndex(0);
   }
@@ -105,6 +115,24 @@ export function ManagerTimesheetPage() {
     setBreakMinutes(day.managerBreakMinutes == null ? '' : String(day.managerBreakMinutes));
     setProjectId(day.managerProjectId || '');
   }
+
+  useEffect(() => {
+    if (deepLinkHandled.current || isFetching || !targetEmployeeId || !targetDate || !rows.length) return;
+    if (targetMonth && month !== targetMonth) {
+      setMonth(targetMonth);
+      setWeekIndex(0);
+      return;
+    }
+
+    const row = rows.find(item => item.employeeId === targetEmployeeId);
+    const day = row?.days?.find(item => item.date === targetDate);
+    if (!row || !day) return;
+
+    const targetWeek = weeks.findIndex(week => week.some(item => item.date === targetDate));
+    if (targetWeek >= 0) setWeekIndex(targetWeek);
+    openCell(row, day);
+    deepLinkHandled.current = true;
+  }, [isFetching, month, rows, targetDate, targetEmployeeId, targetMonth, weeks]);
 
   async function submitCell(event) {
     event.preventDefault();
@@ -117,6 +145,7 @@ export function ManagerTimesheetPage() {
       projectId,
     }).unwrap();
     setSelected(null);
+    if (openedFromApprovals) navigate('/approvals');
   }
 
   async function clearCell() {
@@ -129,12 +158,15 @@ export function ManagerTimesheetPage() {
       projectId: '',
     }).unwrap();
     setSelected(null);
+    if (openedFromApprovals) navigate('/approvals');
   }
 
   const selectedProblems = selected ? problemDetails(selected.day) : [];
   const selectedReasons = selected?.day?.reasons || [];
 
   return <section className="managerTimesheetPage pageStack">
+    {openedFromApprovals ? <button className="managerTimesheetApprovalBack" type="button" onClick={() => navigate('/approvals')}>‹ Назад до погодження</button> : null}
+
     <section className="managerTimesheetToolbar screenCard">
       <button type="button" onClick={() => changeMonth(-1)} aria-label="Попередній місяць">‹</button>
       <strong>{label}</strong>
@@ -218,7 +250,7 @@ export function ManagerTimesheetPage() {
           {selected.day.managerHours != null || selected.day.managerBreakMinutes != null || selected.day.managerProjectId ? <button type="button" className="dangerButton" onClick={clearCell} disabled={isSaving}>Очистити</button> : null}
           <span className="managerTimesheetModalActionSpacer" />
           <button type="button" className="secondaryButton" onClick={() => setSelected(null)}>Скасувати</button>
-          <button type="submit" className="primaryButton" disabled={isSaving}>{isSaving ? 'Збереження…' : 'Зберегти'}</button>
+          <button type="submit" className="primaryButton" disabled={isSaving}>{isSaving ? 'Збереження…' : openedFromApprovals ? 'Зберегти й повернутись' : 'Зберегти'}</button>
         </div>
       </form>
     </div> : null}
