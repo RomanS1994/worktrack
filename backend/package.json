@@ -14,7 +14,8 @@
     "postinstall": "node tools/prisma-postinstall.js"
   },
   "dependencies": {
-    "@prisma/client": "^6.19.3"
+    "@prisma/client": "^6.19.3",
+    "pdfmake": "0.3.11"
   },
   "devDependencies": {
     "prisma": "^6.19.3"
