@@ -11,3 +11,17 @@
 .timePickerConfirm{background:linear-gradient(180deg,#20b759,#159f48);box-shadow:0 8px 18px rgba(22,163,74,.22)}.timeWheelList button.is-active{background:#eaf8ee;color:#16a34a}.timePickerSheet>header>button:first-child{border-color:#e1e6eb;background:#fff}.timePickerSheet{border:1px solid rgba(15,23,42,.05)}
 @media(max-width:700px){.fastEditorSheet>header{padding:21px 22px 17px}.fastEditorBody{padding:20px 20px calc(24px + env(safe-area-inset-bottom))}.fastEditorSheet>header h2{font-size:27px}.fastEditorSheet>header>button{width:46px;height:46px}}
 @media(max-width:430px){.fastEditorTimes{gap:10px}.timeField{min-height:60px;padding:0 12px}.timeFieldIcon{width:32px;height:32px}.timeField strong{font-size:21px}.projectSelectControl{min-height:54px}.projectSelectControl select{font-size:16px}.fastEditorTotal div.shiftSummaryStat{min-height:78px}}
+
+/* Compact editor sizing */
+.fastEditorSheet>header{padding:18px 22px 15px}
+.fastEditorSheet>header span{font-size:12px;font-weight:650}
+.fastEditorSheet>header h2{font-size:24px;font-weight:750;letter-spacing:-.025em}
+.fastEditorSheet>header>button{width:42px;height:42px}
+.fastEditorBody{gap:14px;padding:18px 22px 22px}
+.fastEditorBody label>span,.fastQuickFill label>span{font-size:12px;font-weight:650}
+.projectSelectControl{min-height:50px;border-radius:16px}.projectSelectIcon{width:30px;height:30px;margin-left:9px;border-radius:10px}.projectSelectIcon svg{width:18px;height:18px}.projectSelectControl select{min-height:48px;font-size:15px}
+.timeField{min-height:54px;padding:0 12px;border-radius:16px;grid-template-columns:30px 1fr 20px}.timeFieldIcon{width:30px;height:30px}.timeFieldIcon svg{width:18px;height:18px}.timeField strong{font-size:19px;font-weight:700}.timeFieldChevron{font-size:18px}
+.fastEditorTotal{gap:8px}.fastEditorTotal div.shiftSummaryStat{grid-template-columns:42px minmax(0,1fr);gap:10px;min-height:68px;padding:10px 14px;border-radius:16px}.shiftSummaryIcon{width:36px;height:36px;border-radius:12px}.shiftSummaryIcon svg{width:20px;height:20px}.shiftSummaryText{gap:2px}.shiftSummaryText small{font-size:12px;font-weight:550}.shiftSummaryText strong{font-size:18px;font-weight:700}
+.fastEditorBody textarea{min-height:94px;border-radius:16px;font-size:15px}.fastEditorSave{min-height:52px;border-radius:16px;font-size:16px}
+.timePickerSheet>header>strong{font-size:17px}.timePickerConfirm{width:42px;height:42px;font-size:21px}.timeWheelLabel{font-size:11px;font-weight:700}.timeWheelList{height:204px;padding-top:76px;padding-bottom:76px}.timeWheelList button{height:44px;font-size:20px;font-weight:500}.timeWheelList button.is-active{font-size:21px;font-weight:750}.timePickerColon{font-size:25px}.timePickerSheet>p{font-size:11px}
+@media(max-width:430px){.fastEditorSheet>header{padding:17px 20px 14px}.fastEditorSheet>header h2{font-size:23px}.fastEditorBody{padding:16px 18px calc(20px + env(safe-area-inset-bottom));gap:12px}.timeField{min-height:52px}.timeField strong{font-size:18px}.fastEditorTotal div.shiftSummaryStat{min-height:64px}.shiftSummaryText strong{font-size:17px}.timeWheelList button{font-size:19px}.timeWheelList button.is-active{font-size:20px}}
