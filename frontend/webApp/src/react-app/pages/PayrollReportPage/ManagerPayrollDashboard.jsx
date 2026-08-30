@@ -60,7 +60,6 @@ export function ManagerPayrollDashboard({
   );
   const visibleSummary = selectedEmployee?.summary || summary;
   const copy = copyForLocale(locale);
-  const confirmed = Number(visibleSummary?.confirmedSalaryCzk || 0);
   const accrued = accruedAmount(visibleSummary);
   const advances = Number(visibleSummary?.advancesCzk || 0);
   const netPay = Number(visibleSummary?.netPayCzk ?? Math.max(accrued - advances, 0));
@@ -103,10 +102,9 @@ export function ManagerPayrollDashboard({
           {selectedEmployee ? `${copy.netPay} · ${selectedEmployee.name}` : copy.netPay}
         </span>
         <strong className="managerPayrollMobile-total">{formatCzk(netPay, locale)}</strong>
-        <div className="managerPayrollMobile-moneyGrid is-net-pay">
+        <div className="managerPayrollMobile-moneyGrid">
           <div><span>{copy.accrued}</span><strong>{formatCzk(accrued, locale)}</strong></div>
           <div className="is-advance"><span>{copy.advances}</span><strong>− {formatCzk(advances, locale)}</strong></div>
-          <div className="is-net"><span>{copy.netPay}</span><strong>{formatCzk(netPay, locale)}</strong></div>
         </div>
         <div className="managerPayrollMobile-hours">
           <span><i className="is-confirmed" /> <b>{formatHours(approvedHours, locale)}</b> {t('payroll.confirmed').toLowerCase()}</span>
