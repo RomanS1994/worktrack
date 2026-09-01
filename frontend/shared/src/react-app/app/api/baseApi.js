@@ -47,8 +47,25 @@ function getBackendErrorMessage(error) {
   return typeof error.data.error === 'string' ? error.data.error : '';
 }
 
+function getBackendErrorCode(error) {
+  if (!error?.data || typeof error.data !== 'object') return '';
+  return typeof error.data.errorCode === 'string' ? error.data.errorCode : '';
+}
+
 function isCompanyAccessError(error) {
   if (error?.status !== 403) return false;
+
+  const errorCode = getBackendErrorCode(error);
+  if (
+    new Set([
+      'COMPANY_ACCESS_REQUIRED',
+      'MANAGER_ACCESS_REQUIRED',
+      'EMPLOYEE_ACCESS_REQUIRED',
+    ]).has(errorCode)
+  ) {
+    return true;
+  }
+
   return new Set([
     'Company access is required',
     'Manager access is required',
