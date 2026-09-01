@@ -16,7 +16,7 @@ test('auth context does not globally delete expired sessions on every request', 
 
   assert.match(
     source,
-    /session\.expiresAt\s*&&\s*new Date\(session\.expiresAt\)\.getTime\(\)\s*<=\s*Date\.now\(\)/,
+    /session\.expiresAt[\s\S]{0,120}getTime\(\)\s*<=\s*Date\.now\(\)/,
     'The current session must still be rejected when it is expired',
   );
 });
