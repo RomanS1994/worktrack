@@ -1,5 +1,16 @@
 const REQUEST_CONTEXT = Symbol('requestContext');
 
+const ERROR_CODE_BY_MESSAGE = new Map([
+  ['Company access is required', 'COMPANY_ACCESS_REQUIRED'],
+  ['Manager access is required', 'MANAGER_ACCESS_REQUIRED'],
+  ['Employee access is required', 'EMPLOYEE_ACCESS_REQUIRED'],
+  ['Authorization token is required', 'AUTH_TOKEN_REQUIRED'],
+  ['Invalid or expired access token', 'ACCESS_TOKEN_INVALID'],
+  ['Invalid or expired session', 'SESSION_INVALID'],
+  ['User not found for session', 'SESSION_USER_NOT_FOUND'],
+  ['Invalid API key', 'API_KEY_INVALID'],
+]);
+
 function parseOrigin(value) {
   try {
     return new URL(value);
@@ -138,9 +149,15 @@ export function sendBuffer(
   response.end(buffer);
 }
 
+export function getErrorCode(message) {
+  return ERROR_CODE_BY_MESSAGE.get(String(message || '')) || '';
+}
+
 export function sendError(response, statusCode, message, details = null) {
+  const errorCode = getErrorCode(message);
   sendJson(response, statusCode, {
     error: message,
+    ...(errorCode ? { errorCode } : {}),
     details,
   });
 }
