@@ -90,14 +90,6 @@ export async function getAuthContext(request, response) {
 
   return runStoreRead({
     prisma: async client => {
-      await client.session.deleteMany({
-        where: {
-          expiresAt: {
-            lte: new Date(),
-          },
-        },
-      });
-
       const session = await client.session.findUnique({
         where: {
           id: tokenClaims.sessionId,
@@ -107,7 +99,12 @@ export async function getAuthContext(request, response) {
         },
       });
 
-      if (!session || session.userId !== tokenClaims.userId) {
+      if (
+        !session ||
+        session.userId !== tokenClaims.userId ||
+        !session.expiresAt ||
+        session.expiresAt.getTime() <= Date.now()
+      ) {
         sendError(response, 401, 'Invalid or expired session');
         return null;
       }
