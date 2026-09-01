@@ -3,12 +3,35 @@ import { randomUUID } from 'node:crypto';
 import { calculateNetWorkEntries } from './work-time-calculation.js';
 
 function clean(value, max = 300) { return String(value ?? '').trim().slice(0, max); }
-function money(value) { return Number(value || 0).toFixed(2); }
 function iso(value) { return value ? new Date(value).toISOString() : ''; }
 function dateOnly(value) { return new Date(value).toISOString().slice(0, 10); }
 function object(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
 function compactDate(value) { return dateOnly(value).replaceAll('-', ''); }
 function cleanIban(value) { return clean(value, 80).replace(/\s+/g, '').toUpperCase(); }
+
+function toHundredths(value) {
+  const raw = String(value ?? '0').trim().replace(',', '.');
+  const match = /^(-?)(\d+)(?:\.(\d+))?$/.exec(raw);
+  if (!match) return 0;
+
+  const sign = match[1] === '-' ? -1 : 1;
+  const whole = Number(match[2] || 0);
+  const fraction = `${match[3] || ''}000`;
+  let hundredths = whole * 100 + Number(fraction.slice(0, 2));
+  if (Number(fraction[2]) >= 5) hundredths += 1;
+  return sign * hundredths;
+}
+
+function formatHundredths(value) {
+  const amount = Math.trunc(value || 0);
+  const sign = amount < 0 ? '-' : '';
+  const absolute = Math.abs(amount);
+  return `${sign}${Math.floor(absolute / 100)}.${String(absolute % 100).padStart(2, '0')}`;
+}
+
+function money(value) {
+  return formatHundredths(toHundredths(value));
+}
 
 function variableSymbolFor(invoiceNumber) {
   const parts = String(invoiceNumber || '').match(/(\d{4}).*?(\d{1,6})$/);
@@ -53,31 +76,38 @@ function summarizeInvoices(invoices = []) {
     overdueCount: 0,
     paidCount: 0,
     cancelledCount: 0,
-    openAmount: 0,
-    overdueAmount: 0,
-    paidAmount: 0,
+    openAmountCents: 0,
+    overdueAmountCents: 0,
+    paidAmountCents: 0,
   };
+
   for (const invoice of invoices) {
-    const value = Number(invoice.subtotal || 0);
+    const valueCents = toHundredths(invoice.subtotal);
     if (['SENT', 'VIEWED'].includes(invoice.status)) {
       summary.openCount += 1;
-      summary.openAmount += value;
+      summary.openAmountCents += valueCents;
       if (invoice.isOverdue) {
         summary.overdueCount += 1;
-        summary.overdueAmount += value;
+        summary.overdueAmountCents += valueCents;
       }
     } else if (invoice.status === 'PAID') {
       summary.paidCount += 1;
-      summary.paidAmount += value;
+      summary.paidAmountCents += valueCents;
     } else if (invoice.status === 'CANCELLED') {
       summary.cancelledCount += 1;
     }
   }
+
   return {
-    ...summary,
-    openAmount: money(summary.openAmount),
-    overdueAmount: money(summary.overdueAmount),
-    paidAmount: money(summary.paidAmount),
+    currency: summary.currency,
+    totalCount: summary.totalCount,
+    openCount: summary.openCount,
+    overdueCount: summary.overdueCount,
+    paidCount: summary.paidCount,
+    cancelledCount: summary.cancelledCount,
+    openAmount: formatHundredths(summary.openAmountCents),
+    overdueAmount: formatHundredths(summary.overdueAmountCents),
+    paidAmount: formatHundredths(summary.paidAmountCents),
   };
 }
 
@@ -178,9 +208,20 @@ function serialize(invoice) {
 
 async function nextInvoiceNumber(client, companyId, prefix, year) {
   const stem = `${prefix}-${year}-`;
-  const latest = await client.invoice.findFirst({ where: { companyId, invoiceNumber: { startsWith: stem } }, orderBy: { invoiceNumber: 'desc' }, select: { invoiceNumber: true } });
+  const latest = await client.invoice.findFirst({
+    where: { companyId, invoiceNumber: { startsWith: stem } },
+    orderBy: { invoiceNumber: 'desc' },
+    select: { invoiceNumber: true },
+  });
   const current = Number.parseInt(latest?.invoiceNumber?.slice(stem.length), 10) || 0;
   return `${stem}${String(current + 1).padStart(4, '0')}`;
+}
+
+function isInvoiceNumberConflict(error) {
+  if (error?.code !== 'P2002') return false;
+  const target = error?.meta?.target;
+  if (Array.isArray(target)) return target.some(value => String(value).includes('invoiceNumber'));
+  return String(target || '').includes('invoiceNumber');
 }
 
 async function buildDraftContext(client, context, payload = {}) {
@@ -189,43 +230,150 @@ async function buildDraftContext(client, context, payload = {}) {
   const user = await client.user.findUnique({ where: { id: membership.userId } });
   const company = await client.company.findUnique({ where: { id: membership.companyId } });
   if (!user || !company) throw new Error('Invoice context not found');
-  const tax = profileTax(user); const buyer = companyBilling(company); assertSellerReady(tax); assertBuyerReady(buyer);
-  const fallbackRate = Number(membership.hourlyRateCzk || 0);
-  if (!Number.isFinite(fallbackRate) || fallbackRate <= 0) throw new Error('Hourly rate must be greater than zero before creating an invoice');
-  const storedEntries = await client.workEntry.findMany({ where: { companyId: membership.companyId, employeeMembershipId: membership.id, status: 'APPROVED', workDate: { gte: range.start, lt: range.endExclusive }, invoiceItems: { none: { invoice: { status: { not: 'CANCELLED' } } } } }, include: { project: true }, orderBy: [{ workDate: 'asc' }, { createdAt: 'asc' }] });
-  if (!storedEntries.length) throw new Error('No uninvoiced approved hours for this month');
-  const rules = { breakMinutes: Number(company.breakMinutes || 0), standardDailyHours: Number(company.standardDailyHours || 8) };
-  const entries = calculateNetWorkEntries(storedEntries, rules).map(entry => {
-    const rate = Number(entry.hourlyRateCzk ?? fallbackRate);
-    if (!Number.isFinite(rate) || rate <= 0) throw new Error('Hourly rate must be greater than zero before creating an invoice');
-    const hours = Number(entry.netHours || 0);
-    return { ...entry, invoiceHours: hours, invoiceRate: rate, invoiceAmount: hours * rate };
+
+  const tax = profileTax(user);
+  const buyer = companyBilling(company);
+  assertSellerReady(tax);
+  assertBuyerReady(buyer);
+
+  const fallbackRateCents = toHundredths(membership.hourlyRateCzk);
+  if (fallbackRateCents <= 0) throw new Error('Hourly rate must be greater than zero before creating an invoice');
+
+  const storedEntries = await client.workEntry.findMany({
+    where: {
+      companyId: membership.companyId,
+      employeeMembershipId: membership.id,
+      status: 'APPROVED',
+      workDate: { gte: range.start, lt: range.endExclusive },
+      invoiceItems: { none: { invoice: { status: { not: 'CANCELLED' } } } },
+    },
+    include: { project: true },
+    orderBy: [{ workDate: 'asc' }, { createdAt: 'asc' }],
   });
-  const totalHours = entries.reduce((sum, entry) => sum + entry.invoiceHours, 0);
-  const subtotal = entries.reduce((sum, entry) => sum + entry.invoiceAmount, 0);
-  const rate = totalHours > 0 ? subtotal / totalHours : fallbackRate;
-  const issueDate = new Date(); issueDate.setUTCHours(0, 0, 0, 0);
+  if (!storedEntries.length) throw new Error('No uninvoiced approved hours for this month');
+
+  const rules = {
+    breakMinutes: Number(company.breakMinutes || 0),
+    standardDailyHours: Number(company.standardDailyHours || 8),
+  };
+
+  const entries = calculateNetWorkEntries(storedEntries, rules).map(entry => {
+    const rateCents = toHundredths(entry.hourlyRateCzk ?? membership.hourlyRateCzk);
+    if (rateCents <= 0) throw new Error('Hourly rate must be greater than zero before creating an invoice');
+
+    const hoursHundredths = toHundredths(entry.netHours);
+    const amountCents = Math.round((hoursHundredths * rateCents) / 100);
+    return {
+      ...entry,
+      invoiceHours: formatHundredths(hoursHundredths),
+      invoiceRate: formatHundredths(rateCents),
+      invoiceAmount: formatHundredths(amountCents),
+      hoursHundredths,
+      amountCents,
+    };
+  });
+
+  const totalHoursHundredths = entries.reduce((sum, entry) => sum + entry.hoursHundredths, 0);
+  const subtotalCents = entries.reduce((sum, entry) => sum + entry.amountCents, 0);
+  const effectiveRateCents = totalHoursHundredths > 0
+    ? Math.round((subtotalCents * 100) / totalHoursHundredths)
+    : fallbackRateCents;
+  const issueDate = new Date();
+  issueDate.setUTCHours(0, 0, 0, 0);
   const dueDate = new Date(issueDate.getTime() + tax.dueDays * 86400000);
-  return { membership, range, user, company, tax, buyer, rate, entries, totalHours, subtotal, issueDate, dueDate };
+
+  return {
+    membership,
+    range,
+    user,
+    company,
+    tax,
+    buyer,
+    rate: formatHundredths(effectiveRateCents),
+    entries,
+    totalHours: formatHundredths(totalHoursHundredths),
+    subtotal: formatHundredths(subtotalCents),
+    issueDate,
+    dueDate,
+  };
 }
 
 export async function previewInvoiceDraft(client, context, payload = {}) {
   const draft = await buildDraftContext(client, context, payload);
   const invoiceNumber = await nextInvoiceNumber(client, draft.membership.companyId, draft.tax.prefix, draft.range.year);
   const previewShape = { invoiceNumber, subtotal: draft.subtotal, currency: 'CZK', dueDate: draft.dueDate, sellerSnapshot: draft.tax };
-  return { month: draft.range.value, invoiceNumber, variableSymbol: variableSymbolFor(invoiceNumber), paymentDescriptor: buildSpayd(previewShape), periodStart: dateOnly(draft.range.start), periodEnd: dateOnly(draft.range.end), issueDate: dateOnly(draft.issueDate), dueDate: dateOnly(draft.dueDate), currency: 'CZK', hourlyRate: money(draft.rate), totalHours: money(draft.totalHours), subtotal: money(draft.subtotal), seller: { ...draft.tax, email: draft.user.email, phone: draft.user.phone || '' }, buyer: { ...draft.buyer, companyId: draft.company.id }, itemsCount: draft.entries.length };
+  return {
+    month: draft.range.value,
+    invoiceNumber,
+    variableSymbol: variableSymbolFor(invoiceNumber),
+    paymentDescriptor: buildSpayd(previewShape),
+    periodStart: dateOnly(draft.range.start),
+    periodEnd: dateOnly(draft.range.end),
+    issueDate: dateOnly(draft.issueDate),
+    dueDate: dateOnly(draft.dueDate),
+    currency: 'CZK',
+    hourlyRate: draft.rate,
+    totalHours: draft.totalHours,
+    subtotal: draft.subtotal,
+    seller: { ...draft.tax, email: draft.user.email, phone: draft.user.phone || '' },
+    buyer: { ...draft.buyer, companyId: draft.company.id },
+    itemsCount: draft.entries.length,
+  };
 }
 
 export async function createInvoiceDraft(client, context, payload = {}) {
-  const draft = await buildDraftContext(client, context, payload);
-  const invoiceNumber = await nextInvoiceNumber(client, draft.membership.companyId, draft.tax.prefix, draft.range.year);
-  const invoice = await client.invoice.create({ data: { id: randomUUID(), companyId: draft.membership.companyId, employeeMembershipId: draft.membership.id, invoiceNumber, periodStart: draft.range.start, periodEnd: draft.range.end, issueDate: draft.issueDate, dueDate: draft.dueDate, currency: 'CZK', hourlyRate: money(draft.rate), totalHours: money(draft.totalHours), subtotal: money(draft.subtotal), status: 'DRAFT', sellerSnapshot: { ...draft.tax, email: draft.user.email, phone: draft.user.phone || '' }, buyerSnapshot: { ...draft.buyer, companyId: draft.company.id }, items: { create: draft.entries.map(entry => ({ id: randomUUID(), workEntryId: entry.id, description: invoiceItemDescription(entry), workDate: entry.workDate, hours: money(entry.invoiceHours), hourlyRate: money(entry.invoiceRate), amount: money(entry.invoiceAmount) })) } }, include: { items: { orderBy: { workDate: 'asc' } } } });
-  return serialize(invoice);
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const draft = await buildDraftContext(client, context, payload);
+    const invoiceNumber = await nextInvoiceNumber(client, draft.membership.companyId, draft.tax.prefix, draft.range.year);
+
+    try {
+      const invoice = await client.invoice.create({
+        data: {
+          id: randomUUID(),
+          companyId: draft.membership.companyId,
+          employeeMembershipId: draft.membership.id,
+          invoiceNumber,
+          periodStart: draft.range.start,
+          periodEnd: draft.range.end,
+          issueDate: draft.issueDate,
+          dueDate: draft.dueDate,
+          currency: 'CZK',
+          hourlyRate: draft.rate,
+          totalHours: draft.totalHours,
+          subtotal: draft.subtotal,
+          status: 'DRAFT',
+          sellerSnapshot: { ...draft.tax, email: draft.user.email, phone: draft.user.phone || '' },
+          buyerSnapshot: { ...draft.buyer, companyId: draft.company.id },
+          items: {
+            create: draft.entries.map(entry => ({
+              id: randomUUID(),
+              workEntryId: entry.id,
+              description: invoiceItemDescription(entry),
+              workDate: entry.workDate,
+              hours: entry.invoiceHours,
+              hourlyRate: entry.invoiceRate,
+              amount: entry.invoiceAmount,
+            })),
+          },
+        },
+        include: { items: { orderBy: { workDate: 'asc' } } },
+      });
+      return serialize(invoice);
+    } catch (error) {
+      if (!isInvoiceNumberConflict(error) || attempt === 2) throw error;
+    }
+  }
+
+  throw new Error('Unable to allocate invoice number');
 }
 
 export async function listEmployeeInvoices(client, context) {
   const membership = employeeMembership(context);
-  const invoices = (await client.invoice.findMany({ where: { companyId: membership.companyId, employeeMembershipId: membership.id }, include: { items: { orderBy: { workDate: 'asc' } } }, orderBy: { createdAt: 'desc' } })).map(serialize);
+  const invoices = (await client.invoice.findMany({
+    where: { companyId: membership.companyId, employeeMembershipId: membership.id },
+    include: { items: { orderBy: { workDate: 'asc' } } },
+    orderBy: { createdAt: 'desc' },
+  })).map(serialize);
   return { invoices, summary: summarizeInvoices(invoices) };
 }
 
@@ -241,24 +389,48 @@ export async function getEmployeeInvoice(client, context, invoiceId) {
 
 export async function sendInvoice(client, context, invoiceId) {
   const membership = employeeMembership(context);
-  const invoice = await client.invoice.findFirst({ where: { id: invoiceId, companyId: membership.companyId, employeeMembershipId: membership.id }, include: { items: true } });
+  const invoice = await client.invoice.findFirst({
+    where: { id: invoiceId, companyId: membership.companyId, employeeMembershipId: membership.id },
+    include: { items: true },
+  });
   if (!invoice) throw new Error('Invoice not found');
   if (invoice.status !== 'DRAFT') throw new Error('Only draft invoices can be sent');
-  return serialize(await client.invoice.update({ where: { id: invoice.id }, data: { status: 'SENT', sentAt: new Date() }, include: { items: { orderBy: { workDate: 'asc' } } } }));
+  return serialize(await client.invoice.update({
+    where: { id: invoice.id },
+    data: { status: 'SENT', sentAt: new Date() },
+    include: { items: { orderBy: { workDate: 'asc' } } },
+  }));
 }
 
 export async function cancelInvoice(client, context, invoiceId) {
   const membership = employeeMembership(context);
-  const invoice = await client.invoice.findFirst({ where: { id: invoiceId, companyId: membership.companyId, employeeMembershipId: membership.id } });
+  const invoice = await client.invoice.findFirst({
+    where: { id: invoiceId, companyId: membership.companyId, employeeMembershipId: membership.id },
+  });
   if (!invoice) throw new Error('Invoice not found');
   if (!['DRAFT', 'SENT', 'VIEWED'].includes(invoice.status)) throw new Error('Invoice cannot be cancelled');
-  return serialize(await client.invoice.update({ where: { id: invoice.id }, data: { status: 'CANCELLED', cancelledAt: new Date() }, include: { items: { orderBy: { workDate: 'asc' } } } }));
+  return serialize(await client.invoice.update({
+    where: { id: invoice.id },
+    data: { status: 'CANCELLED', cancelledAt: new Date() },
+    include: { items: { orderBy: { workDate: 'asc' } } },
+  }));
 }
 
 export async function listManagerInvoices(client, context) {
   const membership = managerMembership(context);
-  const raw = await client.invoice.findMany({ where: { companyId: membership.companyId, status: { not: 'DRAFT' } }, include: { items: true, employeeMembership: { include: { user: true } } }, orderBy: { createdAt: 'desc' } });
-  const invoices = raw.map(invoice => ({ ...serialize(invoice), employee: { id: invoice.employeeMembership.id, name: invoice.employeeMembership.user.name || invoice.employeeMembership.user.email, email: invoice.employeeMembership.user.email } }));
+  const raw = await client.invoice.findMany({
+    where: { companyId: membership.companyId, status: { not: 'DRAFT' } },
+    include: { items: true, employeeMembership: { include: { user: true } } },
+    orderBy: { createdAt: 'desc' },
+  });
+  const invoices = raw.map(invoice => ({
+    ...serialize(invoice),
+    employee: {
+      id: invoice.employeeMembership.id,
+      name: invoice.employeeMembership.user.name || invoice.employeeMembership.user.email,
+      email: invoice.employeeMembership.user.email,
+    },
+  }));
   return { invoices, summary: summarizeInvoices(invoices) };
 }
 
@@ -284,10 +456,17 @@ export async function markInvoiceViewed(client, context, invoiceId) {
   const invoice = await client.invoice.findFirst({ where: { id: invoiceId, companyId: membership.companyId } });
   if (!invoice) throw new Error('Invoice not found');
   if (invoice.status !== 'SENT') {
-    const current = await client.invoice.findUnique({ where: { id: invoice.id }, include: { items: { orderBy: { workDate: 'asc' } } } });
+    const current = await client.invoice.findUnique({
+      where: { id: invoice.id },
+      include: { items: { orderBy: { workDate: 'asc' } } },
+    });
     return serialize(current);
   }
-  return serialize(await client.invoice.update({ where: { id: invoice.id }, data: { status: 'VIEWED', viewedAt: new Date() }, include: { items: { orderBy: { workDate: 'asc' } } } }));
+  return serialize(await client.invoice.update({
+    where: { id: invoice.id },
+    data: { status: 'VIEWED', viewedAt: new Date() },
+    include: { items: { orderBy: { workDate: 'asc' } } },
+  }));
 }
 
 export async function markInvoicePaid(client, context, invoiceId) {
@@ -295,5 +474,9 @@ export async function markInvoicePaid(client, context, invoiceId) {
   const invoice = await client.invoice.findFirst({ where: { id: invoiceId, companyId: membership.companyId } });
   if (!invoice) throw new Error('Invoice not found');
   if (!['SENT', 'VIEWED'].includes(invoice.status)) throw new Error('Invoice cannot be marked paid');
-  return serialize(await client.invoice.update({ where: { id: invoice.id }, data: { status: 'PAID', paidAt: new Date() }, include: { items: { orderBy: { workDate: 'asc' } } } }));
+  return serialize(await client.invoice.update({
+    where: { id: invoice.id },
+    data: { status: 'PAID', paidAt: new Date() },
+    include: { items: { orderBy: { workDate: 'asc' } } },
+  }));
 }
