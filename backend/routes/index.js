@@ -8,6 +8,7 @@ import { handleManagerRoutes } from './manager/index.js';
 import { handleMeRoutes } from './me.js';
 import { handleMonthlyHoursRoutes } from './monthly-hours.js';
 import { handleNotificationRoutes } from './notifications.js';
+import { handleProjectRoutes } from './projects.js';
 import { handlePublicRoutes } from './public.js';
 import { handleWorkRulesRoutes } from './work-rules.js';
 import { handleWorkTrackRoutes } from './worktrack.js';
@@ -24,6 +25,7 @@ const routeHandlers = [
   handleMonthlyHoursRoutes,
   handleAdvanceRoutes,
   handleExpenseRoutes,
+  handleProjectRoutes,
   handleWorkTrackRoutes,
   handleManagerRoutes,
 ];
