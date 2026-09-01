@@ -326,6 +326,20 @@ export async function handleWorkTrackRoutes(request, response, { pathName, url }
     const submission = await runStoreTransaction({
       prisma: async client => {
         const createdSubmission = await submitEmployeeWeek(client, context, body);
+        const hourlyRateCzk = context.activeMembership.hourlyRateCzk == null
+          ? null
+          : String(context.activeMembership.hourlyRateCzk);
+        if (hourlyRateCzk != null) {
+          await client.workEntry.updateMany({
+            where: {
+              companyId: context.activeMembership.companyId,
+              employeeMembershipId: context.activeMembership.id,
+              weeklySubmissionId: createdSubmission.id,
+              hourlyRateCzk: null,
+            },
+            data: { hourlyRateCzk },
+          });
+        }
         await notifyManagersAboutSubmission(client, context, createdSubmission);
         return createdSubmission;
       },
