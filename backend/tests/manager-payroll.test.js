@@ -51,7 +51,6 @@ function createClient({ onFindMany, breakMinutes = 0, standardDailyHours = '8.00
             workEntries: [
               { id: 'a1', workDate: new Date('2026-08-17T00:00:00.000Z'), status: 'APPROVED', hours: '8.00' },
               { id: 'a2', workDate: new Date('2026-08-18T00:00:00.000Z'), status: 'SUBMITTED', hours: '4.00' },
-              { id: 'a3', workDate: new Date('2026-08-18T00:00:00.000Z'), status: 'DRAFT', hours: '2.00' },
             ],
           },
           {
@@ -97,30 +96,30 @@ test('manager payroll calculates a selected week and employee breakdown', async 
   assert.equal(query.where.role, 'EMPLOYEE');
   assert.equal(query.include.workEntries.where.workDate.gte.toISOString(), '2026-08-17T00:00:00.000Z');
   assert.equal(query.include.workEntries.where.workDate.lt.toISOString(), '2026-08-24T00:00:00.000Z');
-  assert.deepEqual(query.include.workEntries.where.status.in, ['DRAFT', 'SUBMITTED', 'APPROVED']);
+  assert.deepEqual(query.include.workEntries.where.status.in, ['SUBMITTED', 'APPROVED']);
 
   assert.equal(payload.employees[0].name, 'Anna Novak');
   assert.deepEqual(payload.employees[0].summary, {
-    totalHours: '14.00',
+    totalHours: '12.00',
     approvedHours: '8.00',
-    pendingHours: '6.00',
+    pendingHours: '4.00',
     confirmedSalaryCzk: '1600.00',
-    predictedSalaryCzk: '1200.00',
-    accruedSalaryCzk: '2800.00',
+    predictedSalaryCzk: '800.00',
+    accruedSalaryCzk: '2400.00',
     advancesCzk: '0.00',
-    netPayCzk: '2800.00',
+    netPayCzk: '2400.00',
   });
   assert.equal(payload.employees[1].status, 'INACTIVE');
   assert.deepEqual(payload.summary, {
     employeeCount: 2,
     employeesWithHours: 2,
     approvedHours: '13.00',
-    pendingHours: '6.00',
+    pendingHours: '4.00',
     confirmedSalaryCzk: '3100.00',
-    predictedSalaryCzk: '1200.00',
-    accruedSalaryCzk: '4300.00',
+    predictedSalaryCzk: '800.00',
+    accruedSalaryCzk: '3900.00',
     advancesCzk: '0.00',
-    netPayCzk: '4300.00',
+    netPayCzk: '3900.00',
   });
 });
 
@@ -132,18 +131,48 @@ test('manager payroll deducts lunch once per employee work day', async () => {
   );
 
   assert.deepEqual(payload.employees[0].summary, {
-    totalHours: '12.00',
+    totalHours: '10.00',
     approvedHours: '7.00',
-    pendingHours: '5.00',
+    pendingHours: '3.00',
     confirmedSalaryCzk: '1400.00',
-    predictedSalaryCzk: '1000.00',
-    accruedSalaryCzk: '2400.00',
+    predictedSalaryCzk: '600.00',
+    accruedSalaryCzk: '2000.00',
     advancesCzk: '0.00',
-    netPayCzk: '2400.00',
+    netPayCzk: '2000.00',
   });
   assert.equal(payload.employees[1].summary.totalHours, '4.00');
   assert.equal(payload.workRules.breakMinutes, 60);
   assert.equal(payload.workRules.standardDailyHours, '8.00');
+});
+
+test('manager payroll excludes draft hours that have not been submitted', async () => {
+  let query = null;
+  const payload = await getManagerPayroll(
+    createClient({
+      onFindMany: value => (query = value),
+      memberships: [
+        {
+          id: 'employee-membership-1',
+          userId: 'employee-user-1',
+          companyId: 'company-1',
+          role: 'EMPLOYEE',
+          status: 'ACTIVE',
+          hourlyRateCzk: '250.00',
+          createdAt: new Date('2026-01-01T00:00:00.000Z'),
+          user: { firstName: 'Dima', lastName: 'Vasenkov', email: 'dima@example.com', deletedAt: null },
+          workEntries: [],
+        },
+      ],
+    }),
+    createManagerContext(),
+    { period: 'month', anchor: '2026-09-02' }
+  );
+
+  assert.deepEqual(query.include.workEntries.where.status.in, ['SUBMITTED', 'APPROVED']);
+  assert.equal(payload.employees[0].summary.totalHours, '0.00');
+  assert.equal(payload.employees[0].summary.pendingHours, '0.00');
+  assert.equal(payload.employees[0].summary.accruedSalaryCzk, '0.00');
+  assert.equal(payload.employees[0].summary.netPayCzk, '0.00');
 });
 
 test('manager payroll uses the rate snapshot stored on each work entry', async () => {
@@ -237,9 +266,9 @@ test('manager payroll includes advances in the selected period', async () => {
   );
 
   assert.equal(payload.employees[0].summary.advancesCzk, '500.00');
-  assert.equal(payload.employees[0].summary.netPayCzk, '2300.00');
+  assert.equal(payload.employees[0].summary.netPayCzk, '1900.00');
   assert.equal(payload.summary.advancesCzk, '500.00');
-  assert.equal(payload.summary.netPayCzk, '3800.00');
+  assert.equal(payload.summary.netPayCzk, '3400.00');
 });
 
 test('manager payroll resolves a complete calendar month', async () => {
