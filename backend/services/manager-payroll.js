@@ -83,7 +83,7 @@ export async function getManagerPayroll(client, context, query = {}) {
       include: {
         user: true,
         workEntries: {
-          where: { workDate: { gte: period.start, lt: period.next }, status: { in: ['DRAFT', 'SUBMITTED', 'APPROVED'] } },
+          where: { workDate: { gte: period.start, lt: period.next }, status: { in: ['SUBMITTED', 'APPROVED'] } },
           orderBy: { workDate: 'asc' },
         },
       },
