@@ -82,6 +82,15 @@ function getBoundRequest(response) {
   return response[REQUEST_CONTEXT] || null;
 }
 
+export function getBearerToken(request) {
+  const rawHeader = request?.headers?.authorization;
+  const header = Array.isArray(rawHeader) ? rawHeader[0] : rawHeader;
+  if (typeof header !== 'string') return '';
+
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1].trim() : '';
+}
+
 export function bindRequestContext(response, request) {
   response[REQUEST_CONTEXT] = request;
 }
