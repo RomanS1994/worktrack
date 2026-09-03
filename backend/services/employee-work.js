@@ -6,13 +6,13 @@ import { normalizeText, nowIso } from '../validation/common.js';
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const EDITABLE_ENTRY_STATUSES = new Set(['DRAFT', 'REJECTED']);
+const LOCKED_SUBMISSION_STATUSES = ['SUBMITTED', 'APPROVED'];
 
 function parseDate(value, message = 'Invalid work date') {
   const raw = normalizeText(value);
   const parsed = /^\d{4}-\d{2}-\d{2}$/.test(raw)
     ? new Date(`${raw}T00:00:00.000Z`)
     : new Date(value);
-
   if (Number.isNaN(parsed.getTime())) throw new Error(message);
   return parsed;
 }
@@ -35,6 +35,21 @@ function toIsoTimestamp(value) {
   return Number.isNaN(parsed.getTime()) ? '' : parsed.toISOString();
 }
 
+function monthKey(date) {
+  return toIsoDate(date).slice(0, 7);
+}
+
+function monthSegment(range, key) {
+  const [year, month] = key.split('-').map(Number);
+  const monthStart = new Date(Date.UTC(year, month - 1, 1));
+  const nextMonth = new Date(Date.UTC(year, month, 1));
+  const monthEnd = addDays(nextMonth, -1);
+  return {
+    start: range.weekStart > monthStart ? range.weekStart : monthStart,
+    end: range.weekEnd < monthEnd ? range.weekEnd : monthEnd,
+  };
+}
+
 export function getEmployeeWeekRange(value = new Date()) {
   const source = value instanceof Date ? value : parseDate(value, 'Invalid week start');
   const dayStart = startOfUtcDay(source);
@@ -43,18 +58,13 @@ export function getEmployeeWeekRange(value = new Date()) {
   const weekStart = addDays(dayStart, mondayOffset);
   const nextWeekStart = addDays(weekStart, 7);
   const weekEnd = addDays(weekStart, 6);
-
   return {
     weekStart,
     weekEnd,
     nextWeekStart,
     days: Array.from({ length: 7 }, (_, index) => {
       const date = addDays(weekStart, index);
-      return {
-        date,
-        dateKey: toIsoDate(date),
-        label: WEEKDAY_LABELS[date.getUTCDay()],
-      };
+      return { date, dateKey: toIsoDate(date), label: WEEKDAY_LABELS[date.getUTCDay()] };
     }),
   };
 }
@@ -70,11 +80,8 @@ function serializeWeek(range) {
 function normalizeHoursString(value) {
   const raw = String(value ?? '').trim().replace(',', '.');
   if (!/^\d+(\.\d{1,2})?$/.test(raw)) throw new Error('Invalid hours value');
-
   const amount = Number(raw);
-  if (!Number.isFinite(amount) || amount <= 0 || amount > 24) {
-    throw new Error('Invalid hours value');
-  }
+  if (!Number.isFinite(amount) || amount <= 0 || amount > 24) throw new Error('Invalid hours value');
   return amount.toFixed(2);
 }
 
@@ -90,48 +97,33 @@ function decimalToHundredths(value) {
 function formatHundredths(value) {
   const sign = value < 0 ? '-' : '';
   const absolute = Math.abs(Math.round(value));
-  const whole = Math.floor(absolute / 100);
-  const fraction = String(absolute % 100).padStart(2, '0');
-  return `${sign}${whole}.${fraction}`;
-}
-
-function salaryCentsFromHoursAndRate(hourHundredths, rateCents) {
-  return Math.round((hourHundredths * rateCents) / 100);
+  return `${sign}${Math.floor(absolute / 100)}.${String(absolute % 100).padStart(2, '0')}`;
 }
 
 function calculateWorkSummary(entries = [], hourlyRateCzk = '0') {
   const rateCents = decimalToHundredths(hourlyRateCzk);
-  let totalHourHundredths = 0;
-  let approvedHourHundredths = 0;
-  let pendingHourHundredths = 0;
-
+  let total = 0;
+  let approved = 0;
+  let pending = 0;
   for (const entry of entries) {
-    const hourHundredths = decimalToHundredths(entry.hours);
-    totalHourHundredths += hourHundredths;
-    if (entry.status === 'APPROVED') approvedHourHundredths += hourHundredths;
-    else if (entry.status === 'DRAFT' || entry.status === 'SUBMITTED') {
-      pendingHourHundredths += hourHundredths;
-    }
+    const hours = decimalToHundredths(entry.hours);
+    total += hours;
+    if (entry.status === 'APPROVED') approved += hours;
+    else if (entry.status === 'DRAFT' || entry.status === 'SUBMITTED') pending += hours;
   }
-
+  const salary = hours => Math.round((hours * rateCents) / 100);
   return {
-    totalHours: formatHundredths(totalHourHundredths),
-    approvedHours: formatHundredths(approvedHourHundredths),
-    pendingHours: formatHundredths(pendingHourHundredths),
-    confirmedSalaryCzk: formatHundredths(
-      salaryCentsFromHoursAndRate(approvedHourHundredths, rateCents),
-    ),
-    predictedSalaryCzk: formatHundredths(
-      salaryCentsFromHoursAndRate(pendingHourHundredths, rateCents),
-    ),
+    totalHours: formatHundredths(total),
+    approvedHours: formatHundredths(approved),
+    pendingHours: formatHundredths(pending),
+    confirmedSalaryCzk: formatHundredths(salary(approved)),
+    predictedSalaryCzk: formatHundredths(salary(pending)),
   };
 }
 
 function ensureEmployeeContext(context) {
   const membership = context?.activeMembership || context?.membership || context || null;
-  if (!membership?.companyId || membership.status === 'INACTIVE') {
-    throw new Error('Company access is required');
-  }
+  if (!membership?.companyId || membership.status === 'INACTIVE') throw new Error('Company access is required');
   if (membership.role !== 'EMPLOYEE') throw new Error('Employee access is required');
   return membership;
 }
@@ -173,9 +165,7 @@ function serializeEmployeeMembership(membership) {
     role: membership.role,
     status: membership.status,
     hourlyRateCzk: membership.hourlyRateCzk == null ? '0.00' : String(membership.hourlyRateCzk),
-    pendingSubmissions: Array.isArray(membership.weeklySubmissions)
-      ? membership.weeklySubmissions.length
-      : 0,
+    pendingSubmissions: Array.isArray(membership.weeklySubmissions) ? membership.weeklySubmissions.length : 0,
     user: serializeUserSummary(user),
     email: user?.email || '',
     firstName: normalizeText(user?.firstName),
@@ -207,7 +197,6 @@ function serializeWeeklySubmission(submission) {
   if (!submission) return null;
   const entries = Array.isArray(submission.workEntries) ? submission.workEntries : [];
   const employeeMembership = submission.employeeMembership || null;
-
   return {
     id: submission.id,
     companyId: submission.companyId,
@@ -228,45 +217,41 @@ function serializeWeeklySubmission(submission) {
   };
 }
 
-function ensureSubmissionCanBeSubmitted(submission) {
-  if (!submission) return;
-  if (submission.status === 'SUBMITTED') throw new Error('Weekly submission is already submitted');
-  if (submission.status === 'APPROVED') throw new Error('Weekly submission is already approved');
-}
-
 function ensureEntryEditable(entry) {
   if (!entry || !EDITABLE_ENTRY_STATUSES.has(entry.status)) throw new Error('Work entry is locked');
-  if (entry.weeklySubmission && ['SUBMITTED', 'APPROVED'].includes(entry.weeklySubmission.status)) {
+  if (entry.weeklySubmission && LOCKED_SUBMISSION_STATUSES.includes(entry.weeklySubmission.status)) {
     throw new Error('Work entry is locked');
   }
 }
 
-async function findWeekSubmission(client, employeeMembershipId, range) {
-  return client.weeklySubmission.findUnique({
+async function findSubmissionsForWeek(client, employeeMembershipId, range) {
+  return client.weeklySubmission.findMany({
     where: {
-      employeeMembershipId_weekStart: {
-        employeeMembershipId,
-        weekStart: range.weekStart,
-      },
+      employeeMembershipId,
+      weekStart: { lt: range.nextWeekStart },
+      weekEnd: { gte: range.weekStart },
     },
+    orderBy: [{ weekStart: 'asc' }, { createdAt: 'asc' }],
   });
 }
 
-async function ensureWeekOpenForEditing(client, employeeMembershipId, range) {
-  const submission = await findWeekSubmission(client, employeeMembershipId, range);
-  if (submission && ['SUBMITTED', 'APPROVED'].includes(submission.status)) {
-    throw new Error('Weekly submission is locked');
-  }
-  return submission;
+async function ensureDateOpenForEditing(client, employeeMembershipId, workDate) {
+  const locked = await client.weeklySubmission.findFirst({
+    where: {
+      employeeMembershipId,
+      status: { in: LOCKED_SUBMISSION_STATUSES },
+      weekStart: { lte: workDate },
+      weekEnd: { gte: workDate },
+    },
+    select: { id: true },
+  });
+  if (locked) throw new Error('Work entry is locked');
 }
 
 async function findProjectInCompany(client, companyId, projectId) {
   const id = normalizeText(projectId);
   if (!id) throw new Error('Project is required');
-
-  const project = await client.project.findFirst({
-    where: { id, companyId, isActive: true },
-  });
+  const project = await client.project.findFirst({ where: { id, companyId, isActive: true } });
   if (!project) throw new Error('Project not found');
   return project;
 }
@@ -276,10 +261,7 @@ async function getSubmissionByCompany(client, companyId, submissionId) {
     where: { id: submissionId, companyId },
     include: {
       employeeMembership: { include: { user: true } },
-      workEntries: {
-        include: { project: true },
-        orderBy: { workDate: 'asc' },
-      },
+      workEntries: { include: { project: true }, orderBy: { workDate: 'asc' } },
     },
   });
   if (!submission) throw new Error('Weekly submission not found');
@@ -289,8 +271,7 @@ async function getSubmissionByCompany(client, companyId, submissionId) {
 export async function getEmployeeWeek(client, context, weekStartInput) {
   const membership = ensureEmployeeContext(context);
   const range = getEmployeeWeekRange(weekStartInput || new Date());
-
-  const [entries, submission] = await Promise.all([
+  const [entries, submissions] = await Promise.all([
     client.workEntry.findMany({
       where: {
         companyId: membership.companyId,
@@ -300,13 +281,24 @@ export async function getEmployeeWeek(client, context, weekStartInput) {
       include: { project: true },
       orderBy: [{ workDate: 'asc' }, { createdAt: 'asc' }],
     }),
-    findWeekSubmission(client, membership.id, range),
+    findSubmissionsForWeek(client, membership.id, range),
   ]);
+
+  const editableEntries = entries.filter(entry => EDITABLE_ENTRY_STATUSES.has(entry.status));
+  const serializedSubmissions = submissions.map(serializeWeeklySubmission);
+  const representativeSubmission = editableEntries.length
+    ? null
+    : serializedSubmissions.find(item => item.status === 'SUBMITTED')
+      || serializedSubmissions.find(item => item.status === 'APPROVED')
+      || serializedSubmissions[serializedSubmissions.length - 1]
+      || null;
 
   return {
     week: serializeWeek(range),
     entries: entries.map(serializeEmployeeWorkEntry),
-    submission: serializeWeeklySubmission(submission),
+    submission: representativeSubmission,
+    submissions: serializedSubmissions,
+    hasEditableEntries: editableEntries.length > 0,
     summary: calculateWorkSummary(entries, membership.hourlyRateCzk ?? '0'),
   };
 }
@@ -314,17 +306,10 @@ export async function getEmployeeWeek(client, context, weekStartInput) {
 export async function createEmployeeWorkEntry(client, context, payload = {}) {
   const membership = ensureEmployeeContext(context);
   const workDate = startOfUtcDay(parseDate(payload.workDate));
-  const range = getEmployeeWeekRange(workDate);
-  await ensureWeekOpenForEditing(client, membership.id, range);
+  await ensureDateOpenForEditing(client, membership.id, workDate);
   const project = await findProjectInCompany(client, membership.companyId, payload.projectId);
-
   const existing = await client.workEntry.findFirst({
-    where: {
-      companyId: membership.companyId,
-      employeeMembershipId: membership.id,
-      projectId: project.id,
-      workDate,
-    },
+    where: { companyId: membership.companyId, employeeMembershipId: membership.id, projectId: project.id, workDate },
   });
   if (existing) throw new Error('Work entry already exists');
 
@@ -344,7 +329,6 @@ export async function createEmployeeWorkEntry(client, context, payload = {}) {
     },
     include: { project: true },
   });
-
   await createAuditLog(client, {
     action: 'work_entry.created',
     actorUserId: membership.userId,
@@ -353,7 +337,6 @@ export async function createEmployeeWorkEntry(client, context, payload = {}) {
     entityId: entry.id,
     after: serializeEmployeeWorkEntry(entry),
   });
-
   return serializeEmployeeWorkEntry(entry);
 }
 
@@ -363,7 +346,6 @@ export async function updateEmployeeWorkEntry(client, context, entryId, payload 
     where: { id: entryId },
     include: { weeklySubmission: true, project: true },
   });
-
   if (!existing || existing.companyId !== membership.companyId || existing.employeeMembershipId !== membership.id) {
     throw new Error('Work entry not found');
   }
@@ -372,7 +354,6 @@ export async function updateEmployeeWorkEntry(client, context, entryId, payload 
   const projectId = Object.prototype.hasOwnProperty.call(payload, 'projectId')
     ? (await findProjectInCompany(client, membership.companyId, payload.projectId)).id
     : existing.projectId;
-
   const duplicate = await client.workEntry.findFirst({
     where: {
       companyId: membership.companyId,
@@ -395,7 +376,6 @@ export async function updateEmployeeWorkEntry(client, context, entryId, payload 
     },
     include: { project: true },
   });
-
   await createAuditLog(client, {
     action: 'work_entry.updated',
     actorUserId: membership.userId,
@@ -405,7 +385,6 @@ export async function updateEmployeeWorkEntry(client, context, entryId, payload 
     before: serializeEmployeeWorkEntry(existing),
     after: serializeEmployeeWorkEntry(entry),
   });
-
   return serializeEmployeeWorkEntry(entry);
 }
 
@@ -415,12 +394,10 @@ export async function deleteEmployeeWorkEntry(client, context, entryId) {
     where: { id: entryId },
     include: { weeklySubmission: true, project: true },
   });
-
   if (!existing || existing.companyId !== membership.companyId || existing.employeeMembershipId !== membership.id) {
     throw new Error('Work entry not found');
   }
   ensureEntryEditable(existing);
-
   await client.workEntry.delete({ where: { id: existing.id } });
   await createAuditLog(client, {
     action: 'work_entry.deleted',
@@ -430,7 +407,6 @@ export async function deleteEmployeeWorkEntry(client, context, entryId) {
     entityId: existing.id,
     before: serializeEmployeeWorkEntry(existing),
   });
-
   return { ok: true };
 }
 
@@ -438,10 +414,8 @@ export async function submitEmployeeWeek(client, context, payload = {}) {
   const membership = ensureEmployeeContext(context);
   const range = getEmployeeWeekRange(payload.weekStart || new Date());
   const timestamp = new Date(nowIso());
-  const existingSubmission = await findWeekSubmission(client, membership.id, range);
-  ensureSubmissionCanBeSubmitted(existingSubmission);
 
-  const entries = await client.workEntry.findMany({
+  const draftEntries = await client.workEntry.findMany({
     where: {
       companyId: membership.companyId,
       employeeMembershipId: membership.id,
@@ -450,7 +424,23 @@ export async function submitEmployeeWeek(client, context, payload = {}) {
     },
     orderBy: { workDate: 'asc' },
   });
-  if (!entries.length) throw new Error('No work entries to submit');
+  if (!draftEntries.length) throw new Error('No work entries to submit');
+
+  const targetMonth = monthKey(draftEntries[0].workDate);
+  const entries = draftEntries.filter(entry => monthKey(entry.workDate) === targetMonth);
+  const segment = monthSegment(range, targetMonth);
+
+  let existingSubmission = await client.weeklySubmission.findFirst({
+    where: {
+      employeeMembershipId: membership.id,
+      weekStart: segment.start,
+      weekEnd: segment.end,
+    },
+  });
+
+  if (existingSubmission && LOCKED_SUBMISSION_STATUSES.includes(existingSubmission.status)) {
+    throw new Error('Weekly submission is already submitted');
+  }
 
   const submission = existingSubmission
     ? await client.weeklySubmission.update({
@@ -461,7 +451,6 @@ export async function submitEmployeeWeek(client, context, payload = {}) {
           reviewedAt: null,
           reviewedByMembershipId: null,
           rejectionReason: null,
-          weekEnd: range.weekEnd,
           updatedAt: timestamp,
         },
       })
@@ -471,8 +460,8 @@ export async function submitEmployeeWeek(client, context, payload = {}) {
           companyId: membership.companyId,
           employeeMembershipId: membership.id,
           reviewedByMembershipId: null,
-          weekStart: range.weekStart,
-          weekEnd: range.weekEnd,
+          weekStart: segment.start,
+          weekEnd: segment.end,
           status: 'SUBMITTED',
           submittedAt: timestamp,
           reviewedAt: null,
@@ -488,11 +477,7 @@ export async function submitEmployeeWeek(client, context, payload = {}) {
       companyId: membership.companyId,
       employeeMembershipId: membership.id,
     },
-    data: {
-      weeklySubmissionId: submission.id,
-      status: 'SUBMITTED',
-      updatedAt: timestamp,
-    },
+    data: { weeklySubmissionId: submission.id, status: 'SUBMITTED', updatedAt: timestamp },
   });
 
   await createAuditLog(client, {
@@ -503,7 +488,9 @@ export async function submitEmployeeWeek(client, context, payload = {}) {
     entityId: submission.id,
     after: {
       companyId: membership.companyId,
-      weekStart: toIsoDate(range.weekStart),
+      weekStart: toIsoDate(segment.start),
+      weekEnd: toIsoDate(segment.end),
+      calendarWeekStart: toIsoDate(range.weekStart),
       status: 'SUBMITTED',
       entryIds: entries.map(entry => entry.id),
     },
