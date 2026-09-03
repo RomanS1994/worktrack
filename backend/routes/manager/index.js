@@ -1,4 +1,5 @@
 import { requireManager } from '../../auth/context.js';
+import { createAuditLog } from '../../db/prisma-helpers.js';
 import { runStoreRead, runStoreTransaction } from '../../db/store.js';
 import { readJsonBody, sendJson } from '../../lib/http.js';
 import { deleteManagerEmployee, restoreDeletedManagerEmployee } from '../../services/deletion.js';
@@ -321,6 +322,59 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
       return { ok: true, deletedEntries: deleted.count };
     } });
     sendJson(response, 200, result); return true;
+  }
+
+  const reopenSubmissionMatch = pathName.match(/^\/api\/manager\/submissions\/([^/]+)\/reopen$/);
+  if (request.method === 'POST' && reopenSubmissionMatch) {
+    const context = await requireManager(request, response); if (!context) return true;
+    const submission = await runStoreTransaction({ prisma: async client => {
+      const manager = context.activeMembership || context.membership || context;
+      const existing = await client.weeklySubmission.findFirst({
+        where: { id: reopenSubmissionMatch[1], companyId: manager.companyId },
+        include: { employeeMembership: { select: { userId: true } } },
+      });
+      if (!existing) throw new Error('Weekly submission not found');
+      if (existing.status !== 'APPROVED') throw new Error('Only approved submissions can be reopened');
+
+      const invoicedEntries = await client.invoiceItem.count({
+        where: {
+          workEntry: { is: { weeklySubmissionId: existing.id, companyId: manager.companyId } },
+          invoice: { is: { status: { not: 'CANCELLED' } } },
+        },
+      });
+      if (invoicedEntries > 0) {
+        throw new Error('Approved hours are already included in an invoice. Cancel the invoice before reopening them.');
+      }
+
+      const timestamp = new Date();
+      await client.workEntry.updateMany({
+        where: { companyId: manager.companyId, weeklySubmissionId: existing.id },
+        data: { status: 'SUBMITTED', updatedAt: timestamp },
+      });
+      await client.weeklySubmission.update({
+        where: { id: existing.id },
+        data: {
+          status: 'SUBMITTED',
+          reviewedByMembershipId: null,
+          reviewedAt: null,
+          rejectionReason: null,
+          updatedAt: timestamp,
+        },
+      });
+      await createAuditLog(client, {
+        action: 'weekly_submission.approval_reverted',
+        actorUserId: manager.userId,
+        targetUserId: existing.employeeMembership?.userId || null,
+        entityType: 'weekly_submission',
+        entityId: existing.id,
+        before: { status: 'APPROVED' },
+        after: { status: 'SUBMITTED' },
+      });
+      const raw = await getManagerSubmissionById(client, context, existing.id);
+      const [enriched] = await enrichSubmissionHours(client, context, raw);
+      return enriched;
+    } });
+    sendJson(response, 200, { submission }); return true;
   }
 
   const submissionMatch = pathName.match(/^\/api\/manager\/submissions\/([^/]+)$/);
