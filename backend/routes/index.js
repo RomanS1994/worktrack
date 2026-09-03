@@ -3,6 +3,7 @@ import { handleAuthRoutes } from './auth/index.js';
 import { handleBillingRoutes } from './billing.js';
 import { handleCompanySettingsRoutes } from './company-settings.js';
 import { handleDefaultProjectRoutes } from './default-project.js';
+import { handleEmployeeWorkRoutes } from './employee-work.js';
 import { handleExpenseRoutes } from './expenses.js';
 import { handleInvoicePdfRoutes } from './invoice-pdf.js';
 import { handleManagerRoutes } from './manager/index.js';
@@ -28,6 +29,7 @@ const routeHandlers = [
   handleExpenseRoutes,
   handleCompanySettingsRoutes,
   handleProjectRoutes,
+  handleEmployeeWorkRoutes,
   handleWorkTrackRoutes,
   handleManagerRoutes,
 ];
