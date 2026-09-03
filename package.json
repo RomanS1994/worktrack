@@ -20,9 +20,10 @@
     "postinstall": "node backend/tools/prisma-postinstall.js",
     "secrets:check": "node tools/check-secrets.js",
     "i18n:check": "node tools/check-i18n.js",
+    "test:frontend": "node --test frontend/shared/src/react-app/app/api/getApiErrorMessage.test.js",
     "build:web": "npm run i18n:check && vite build --config vite.config.js",
     "build": "npm run db:generate && npm run build:web",
-    "verify": "npm --prefix backend test && npm run build:web && node tools/audit-production.js && npm run secrets:check",
+    "verify": "npm --prefix backend test && npm run test:frontend && npm run build:web && node tools/audit-production.js && npm run secrets:check",
     "preview": "vite preview",
     "smoke:production": "node tools/production-smoke.js",
     "start": "node tools/render-start.js",
@@ -31,7 +32,7 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^4.7.0",
     "postcss": "^8.4.41",
-    "postcss-sort-media-queries": "^5.2.0",
+    "postcss-sort-media-queries": "^2.0.0",
     "prisma": "^6.19.3",
     "vite": "^5.4.6"
   },
