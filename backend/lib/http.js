@@ -82,15 +82,6 @@ function getBoundRequest(response) {
   return response[REQUEST_CONTEXT] || null;
 }
 
-export function getBearerToken(request) {
-  const rawHeader = request?.headers?.authorization;
-  const header = Array.isArray(rawHeader) ? rawHeader[0] : rawHeader;
-  if (typeof header !== 'string') return '';
-
-  const match = header.match(/^Bearer\s+(.+)$/i);
-  return match ? match[1].trim() : '';
-}
-
 export function bindRequestContext(response, request) {
   response[REQUEST_CONTEXT] = request;
 }
@@ -147,7 +138,8 @@ export function sendBuffer(
   response,
   statusCode,
   buffer,
-  { contentType = 'application/octet-stream', fileName = 'download' } = {}) {
+  { contentType = 'application/octet-stream', fileName = 'download' } = {}
+) {
   setCorsHeaders(response);
   response.writeHead(statusCode, {
     'Content-Type': contentType,
@@ -187,9 +179,105 @@ export async function readJsonBody(request) {
 
   if (chunks.length === 0) return {};
 
+  const raw = Buffer.concat(chunks).toString('utf8');
+
   try {
-    return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+    return JSON.parse(raw);
   } catch {
     throw new Error('Invalid JSON body');
   }
+}
+
+export function getBearerToken(request) {
+  const authHeader = request.headers.authorization || '';
+  const [scheme, token] = authHeader.split(' ');
+
+  if (scheme !== 'Bearer' || !token) {
+    return null;
+  }
+
+  return token;
+}
+
+export function parseCookies(request) {
+  const header = request.headers.cookie || '';
+  if (!header) return {};
+
+  return header
+    .split(';')
+    .map(item => item.trim())
+    .filter(Boolean)
+    .reduce((cookies, pair) => {
+      const separatorIndex = pair.indexOf('=');
+      if (separatorIndex < 0) return cookies;
+
+      const name = pair.slice(0, separatorIndex).trim();
+      const rawValue = pair.slice(separatorIndex + 1).trim();
+      cookies[name] = decodeURIComponent(rawValue);
+      return cookies;
+    }, {});
+}
+
+export function getCookie(request, name) {
+  return parseCookies(request)[name] || '';
+}
+
+function appendSetCookieHeader(response, value) {
+  const current = response.getHeader('Set-Cookie');
+  if (!current) {
+    response.setHeader('Set-Cookie', value);
+    return;
+  }
+
+  const next = Array.isArray(current) ? [...current, value] : [current, value];
+  response.setHeader('Set-Cookie', next);
+}
+
+export function setCookie(response, name, value, options = {}) {
+  const parts = [`${name}=${encodeURIComponent(value)}`];
+
+  if (options.maxAge !== undefined && options.maxAge !== null) {
+    parts.push(`Max-Age=${Math.max(0, Math.floor(options.maxAge))}`);
+  }
+
+  if (options.expires instanceof Date) {
+    parts.push(`Expires=${options.expires.toUTCString()}`);
+  }
+
+  parts.push(`Path=${options.path || '/'}`);
+
+  if (options.httpOnly !== false) {
+    parts.push('HttpOnly');
+  }
+
+  if (options.secure) {
+    parts.push('Secure');
+  }
+
+  if (options.sameSite) {
+    parts.push(`SameSite=${options.sameSite}`);
+  }
+
+  appendSetCookieHeader(response, parts.join('; '));
+}
+
+export function clearCookie(response, name, options = {}) {
+  setCookie(response, name, '', {
+    ...options,
+    expires: new Date(0),
+    maxAge: 0,
+  });
+}
+
+export function getClientIp(request) {
+  const forwarded = String(request.headers['x-forwarded-for'] || '')
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean);
+
+  if (forwarded.length > 0) {
+    return forwarded[0];
+  }
+
+  return request.socket?.remoteAddress || '';
 }
