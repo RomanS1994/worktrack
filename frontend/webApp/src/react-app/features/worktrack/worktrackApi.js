@@ -43,6 +43,7 @@ export const worktrackApi = baseApi.injectEndpoints({
     clearManagerSubmission: builder.mutation({ query:submissionId=>({url:`/manager/submissions/${submissionId}/clear`,method:'DELETE'}), invalidatesTags:MANAGER_REVIEW_TAGS }),
     approveSubmission: builder.mutation({ query:submissionId=>({url:`/manager/submissions/${submissionId}/approve`,method:'POST'}), invalidatesTags:(_r,_e,submissionId)=>withSubmission(submissionId,{notifications:true}) }),
     rejectSubmission: builder.mutation({ query:({submissionId,rejectionReason})=>({url:`/manager/submissions/${submissionId}/reject`,method:'POST',body:{rejectionReason}}), invalidatesTags:(_r,_e,{submissionId})=>withSubmission(submissionId,{notifications:true}) }),
+    reopenSubmission: builder.mutation({ query:submissionId=>({url:`/manager/submissions/${submissionId}/reopen`,method:'POST'}), invalidatesTags:(_r,_e,submissionId)=>withSubmission(submissionId) }),
   }),
 });
 
@@ -52,5 +53,5 @@ export const {
   useGetWorkRulesQuery,useUpdateWorkRulesMutation,
   useGetWeekEntriesQuery,useCreateWorkEntryMutation,useUpdateWorkEntryMutation,useDeleteWorkEntryMutation,useSubmitWeekMutation,
   useGetManagerEmployeesQuery,useCreateManagerEmployeeMutation,useUpdateManagerEmployeeMutation,useDeleteManagerEmployeeMutation,useResetManagerEmployeePasswordMutation,
-  useGetManagerSubmissionsQuery,useGetManagerSubmissionQuery,useUpdateManagerWorkEntryMutation,useDeleteManagerWorkEntryMutation,useClearManagerSubmissionMutation,useApproveSubmissionMutation,useRejectSubmissionMutation,
+  useGetManagerSubmissionsQuery,useGetManagerSubmissionQuery,useUpdateManagerWorkEntryMutation,useDeleteManagerWorkEntryMutation,useClearManagerSubmissionMutation,useApproveSubmissionMutation,useRejectSubmissionMutation,useReopenSubmissionMutation,
 } = worktrackApi;
