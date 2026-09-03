@@ -1,16 +1,16 @@
 import { requireEmployee } from '../auth/context.js';
 import { runStoreRead, runStoreTransaction } from '../db/store.js';
 import { readJsonBody, sendJson } from '../lib/http.js';
-import { notifyManagersAboutSubmission } from '../services/notifications.js';
-import { freezeSubmissionHourlyRateSnapshots } from '../services/submission-rate-snapshots.js';
-import { calculateNetWorkEntries, calculateNetWorkSummary } from '../services/work-time-calculation.js';
 import {
   createEmployeeWorkEntry,
   deleteEmployeeWorkEntry,
   getEmployeeWeek,
   submitEmployeeWeek,
   updateEmployeeWorkEntry,
-} from '../services/worktrack.js';
+} from '../services/employee-work.js';
+import { notifyManagersAboutSubmission } from '../services/notifications.js';
+import { freezeSubmissionHourlyRateSnapshots } from '../services/submission-rate-snapshots.js';
+import { calculateNetWorkEntries, calculateNetWorkSummary } from '../services/work-time-calculation.js';
 
 function normalizeClockTime(value) {
   const text = String(value ?? '').trim();
