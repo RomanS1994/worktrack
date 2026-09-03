@@ -1,12 +1,20 @@
 import { useMemo, useState } from 'react';
 
+import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { formatCzk, formatHours } from '../../app/formatters.js';
+import { useGetManagerSubmissionsQuery, useReopenSubmissionMutation } from '../../features/worktrack/worktrackApi.js';
 import './ManagerPayrollAdvances.css';
 
 const COPY = {
-  uk: { accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати' },
-  cs: { accrued: 'Nárok', advances: 'Zálohy', netPay: 'K výplatě' },
-  en: { accrued: 'Accrued', advances: 'Advances', netPay: 'Net pay' },
+  uk: {
+    accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати', approvedTitle: 'Погоджені години', approvedHint: 'Якщо години погоджено помилково, їх можна повернути назад на перевірку.', reopen: 'Скасувати погодження', reopenConfirm: 'Скасувати погодження цих годин і повернути їх у статус «На перевірці»?', reopened: 'Погодження скасовано. Години знову очікують перевірки.', noApproved: 'Немає погоджених подань.',
+  },
+  cs: {
+    accrued: 'Nárok', advances: 'Zálohy', netPay: 'K výplatě', approvedTitle: 'Schválené hodiny', approvedHint: 'Pokud byly hodiny schváleny omylem, lze je vrátit zpět ke kontrole.', reopen: 'Zrušit schválení', reopenConfirm: 'Zrušit schválení těchto hodin a vrátit je do stavu ke kontrole?', reopened: 'Schválení bylo zrušeno. Hodiny znovu čekají na kontrolu.', noApproved: 'Žádná schválená podání.',
+  },
+  en: {
+    accrued: 'Accrued', advances: 'Advances', netPay: 'Net pay', approvedTitle: 'Approved hours', approvedHint: 'If hours were approved by mistake, you can return them to review.', reopen: 'Undo approval', reopenConfirm: 'Undo approval for these hours and return them to review?', reopened: 'Approval undone. The hours are pending review again.', noApproved: 'No approved submissions.',
+  },
 };
 
 function copyForLocale(locale = '') {
@@ -39,6 +47,16 @@ function accruedAmount(summary) {
   return Number(summary?.confirmedSalaryCzk || 0) + Number(summary?.predictedSalaryCzk || 0);
 }
 
+function submissionName(submission) {
+  return submission?.employee?.name || submission?.employee?.email || '—';
+}
+
+function submissionPeriod(submission, locale) {
+  if (!submission?.weekStart || !submission?.weekEnd) return '—';
+  const fmt = value => new Intl.DateTimeFormat(locale || 'uk-UA', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`));
+  return `${fmt(submission.weekStart)} – ${fmt(submission.weekEnd)}`;
+}
+
 export function ManagerPayrollDashboard({
   anchor,
   employees,
@@ -54,6 +72,8 @@ export function ManagerPayrollDashboard({
   t,
 }) {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
+  const [reopenMessage, setReopenMessage] = useState('');
+  const [reopenError, setReopenError] = useState('');
   const selectedEmployee = useMemo(
     () => employees.find(employee => employee.id === selectedEmployeeId) || null,
     [employees, selectedEmployeeId],
@@ -67,10 +87,28 @@ export function ManagerPayrollDashboard({
   const pending = Number(visibleSummary?.predictedSalaryCzk || 0);
   const approvedHours = visibleSummary?.approvedHours || 0;
   const pendingHours = visibleSummary?.pendingHours || 0;
+  const approvedQuery = useGetManagerSubmissionsQuery({ status: 'APPROVED' });
+  const [reopenSubmission, reopenState] = useReopenSubmissionMutation();
+  const approvedSubmissions = useMemo(
+    () => (approvedQuery.data?.submissions || []).slice(0, 8),
+    [approvedQuery.data],
+  );
 
   const toggleEmployee = employeeId => {
     setSelectedEmployeeId(current => current === employeeId ? null : employeeId);
   };
+
+  async function undoApproval(submission) {
+    if (!submission?.id || reopenState.isLoading || !window.confirm(copy.reopenConfirm)) return;
+    setReopenMessage('');
+    setReopenError('');
+    try {
+      await reopenSubmission(submission.id).unwrap();
+      setReopenMessage(copy.reopened);
+    } catch (error) {
+      setReopenError(getApiErrorMessage(error));
+    }
+  }
 
   return (
     <div className="managerPayrollMobile noPrint">
@@ -145,6 +183,40 @@ export function ManagerPayrollDashboard({
               </button>
             );
           })}
+        </div>
+      </section>
+
+      <section className="managerPayrollMobile-employees">
+        <header>
+          <div>
+            <h2>{copy.approvedTitle}</h2>
+            <p>{copy.approvedHint}</p>
+          </div>
+          <span>{approvedSubmissions.length}</span>
+        </header>
+        {reopenMessage ? <p className="statusNote is-success">{reopenMessage}</p> : null}
+        {reopenError ? <p className="statusNote is-error">{reopenError}</p> : null}
+        <div className="managerPayrollMobile-list">
+          {approvedQuery.isLoading ? <p className="statusNote">…</p> : null}
+          {!approvedQuery.isLoading && !approvedSubmissions.length ? <p className="statusNote">{copy.noApproved}</p> : null}
+          {approvedSubmissions.map(submission => (
+            <button
+              type="button"
+              className="managerPayrollMobile-employee"
+              key={submission.id}
+              disabled={reopenState.isLoading}
+              onClick={() => undoApproval(submission)}
+            >
+              <div className="managerPayrollMobile-avatar" aria-hidden="true">{initials(submissionName(submission))}</div>
+              <div className="managerPayrollMobile-person">
+                <strong>{submissionName(submission)}</strong>
+                <span>{submissionPeriod(submission, locale)} · {formatHours(submission.summary?.totalHours || 0, locale)}</span>
+              </div>
+              <div className="managerPayrollMobile-employeeAmounts is-net-pay">
+                <div className="is-net"><span>{copy.approvedTitle}</span><strong>{copy.reopen}</strong></div>
+              </div>
+            </button>
+          ))}
         </div>
       </section>
     </div>
