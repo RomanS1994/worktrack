@@ -102,9 +102,7 @@ export function getApiErrorMessageForLanguage(error, language, fallbackKey = 'co
   const detail = getApiErrorDetail(error);
 
   if (detail) {
-    if (copy[detail]) return copy[detail];
-    if (language === 'en') return detail;
-    return translatedFallback(language, fallbackKey);
+    return copy[detail] || detail;
   }
 
   if (error && typeof error === 'object') {
