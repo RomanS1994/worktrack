@@ -52,7 +52,17 @@ export {
   updateSubmittedWorkEntryByManager,
 };
 
-export const listManagerEmployees = getManagerEmployees;
+// Legacy compatibility facade: historical callers of worktrack.js expect this
+// helper to return employee-only rows. The manager API imports getManagerEmployees
+// directly and exposes the new dual-capability roster including managers.
+export async function listManagerEmployees(client, context, now) {
+  const payload = await getManagerEmployees(client, context, now);
+  return {
+    ...payload,
+    employees: payload.employees.filter(employee => employee.role === 'EMPLOYEE'),
+  };
+}
+
 export const getManagerDashboardSummary = getManagerDashboard;
 
 export async function getEmployeeDashboardSummary(client, context, weekStartInput) {
