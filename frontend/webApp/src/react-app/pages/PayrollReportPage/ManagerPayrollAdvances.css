@@ -11,6 +11,17 @@
   .managerPayrollMobile-employeeAmounts.is-net-pay .is-advance strong{color:#b45309}
   .managerPayrollMobile-employeeAmounts.is-net-pay .is-net strong{color:#15803d}
   .managerPayrollMobile-employeeAmounts.is-net-pay .is-net{text-align:right}
+
+  .managerPayrollMobile-approvedHistory>header{align-items:flex-start;gap:12px}
+  .managerPayrollMobile-approvedHistory>header p{margin:4px 0 0;color:#64748b;font-size:12px;line-height:1.4}
+  .managerPayrollMobile-approvedFilters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+  .managerPayrollMobile-approvedFilters label{display:flex;flex-direction:column;gap:5px;min-width:0}
+  .managerPayrollMobile-approvedFilters label>span{font-size:11px;font-weight:700;color:#64748b}
+  .managerPayrollMobile-approvedFilters select,
+  .managerPayrollMobile-approvedFilters input{width:100%;min-width:0;height:42px;border:1px solid #dbe3ee;border-radius:12px;background:#fff;padding:0 11px;font:inherit;color:#0f172a}
+  .managerPayrollMobile-resetApproved{grid-column:1/-1;height:38px;border:0;border-radius:10px;background:#eef2f7;color:#334155;font-weight:700}
+  .managerPayrollMobile-approvedSubmission .managerPayrollMobile-employeeAmounts.is-net-pay{grid-template-columns:1fr}
+  .managerPayrollMobile-approvedSubmission .managerPayrollMobile-employeeAmounts.is-net-pay .is-net{text-align:right}
 }
 
 @media(max-width:390px){
@@ -22,4 +33,6 @@
   .managerPayrollMobile-employeeAmounts.is-net-pay>div+div{padding-left:6px}
   .managerPayrollMobile-employeeAmounts.is-net-pay strong{font-size:11px}
   .managerPayrollMobile-employeeAmounts.is-net-pay span{font-size:8px}
+  .managerPayrollMobile-approvedFilters{grid-template-columns:1fr}
+  .managerPayrollMobile-resetApproved{grid-column:auto}
 }
