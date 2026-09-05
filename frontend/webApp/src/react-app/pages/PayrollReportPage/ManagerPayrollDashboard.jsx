@@ -7,13 +7,13 @@ import './ManagerPayrollAdvances.css';
 
 const COPY = {
   uk: {
-    accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати', approvedTitle: 'Погоджені години', approvedHint: 'Знайдіть будь-яке попереднє погодження за працівником або місяцем і, за потреби, поверніть його назад на перевірку.', reopen: 'Скасувати погодження', reopenConfirm: 'Скасувати погодження цих годин і повернути їх у статус «На перевірці»?', reopened: 'Погодження скасовано. Години знову очікують перевірки.', noApproved: 'Немає погоджених подань за вибраними фільтрами.', employeeFilter: 'Працівник', allEmployees: 'Усі працівники', monthFilter: 'Місяць', allMonths: 'Усі місяці', resetFilters: 'Скинути', shown: 'Знайдено',
+    accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати', approvedTitle: 'Погоджені години', approvedHint: 'Знайдіть будь-яке попереднє погодження за працівником або місяцем і, за потреби, поверніть його назад на перевірку.', reopen: 'Скасувати погодження', reopenConfirm: 'Скасувати погодження цих годин і повернути їх у статус «На перевірці»?', reopened: 'Погодження скасовано. Години знову очікують перевірки.', noApproved: 'Немає погоджених подань за вибраними фільтрами.', employeeFilter: 'Працівник', allEmployees: 'Усі працівники', monthFilter: 'Місяць', allMonths: 'Усі місяці', resetFilters: 'Скинути', shown: 'Знайдено', rollbackFailed: 'Не вдалося скасувати погодження.',
   },
   cs: {
-    accrued: 'Nárok', advances: 'Zálohy', netPay: 'K výplatě', approvedTitle: 'Schválené hodiny', approvedHint: 'Najděte libovolné dřívější schválení podle zaměstnance nebo měsíce a v případě potřeby jej vraťte ke kontrole.', reopen: 'Zrušit schválení', reopenConfirm: 'Zrušit schválení těchto hodin a vrátit je do stavu ke kontrole?', reopened: 'Schválení bylo zrušeno. Hodiny znovu čekají na kontrolu.', noApproved: 'Pro zvolené filtry nejsou žádná schválená podání.', employeeFilter: 'Zaměstnanec', allEmployees: 'Všichni zaměstnanci', monthFilter: 'Měsíc', allMonths: 'Všechny měsíce', resetFilters: 'Resetovat', shown: 'Nalezeno',
+    accrued: 'Nárok', advances: 'Zálohy', netPay: 'K výplatě', approvedTitle: 'Schválené hodiny', approvedHint: 'Najděte libovolné dřívější schválení podle zaměstnance nebo měsíce a v případě potřeby jej vraťte ke kontrole.', reopen: 'Zrušit schválení', reopenConfirm: 'Zrušit schválení těchto hodin a vrátit je do stavu ke kontrole?', reopened: 'Schválení bylo zrušeno. Hodiny znovu čekají na kontrolu.', noApproved: 'Pro zvolené filtry nejsou žádná schválená podání.', employeeFilter: 'Zaměstnanec', allEmployees: 'Všichni zaměstnanci', monthFilter: 'Měsíc', allMonths: 'Všechny měsíce', resetFilters: 'Resetovat', shown: 'Nalezeno', rollbackFailed: 'Schválení se nepodařilo zrušit.',
   },
   en: {
-    accrued: 'Accrued', advances: 'Advances', netPay: 'Net pay', approvedTitle: 'Approved hours', approvedHint: 'Find any previous approval by employee or month and return it to review if it needs correction.', reopen: 'Undo approval', reopenConfirm: 'Undo approval for these hours and return them to review?', reopened: 'Approval undone. The hours are pending review again.', noApproved: 'No approved submissions match the selected filters.', employeeFilter: 'Employee', allEmployees: 'All employees', monthFilter: 'Month', allMonths: 'All months', resetFilters: 'Reset', shown: 'Found',
+    accrued: 'Accrued', advances: 'Advances', netPay: 'Net pay', approvedTitle: 'Approved hours', approvedHint: 'Find any previous approval by employee or month and return it to review if it needs correction.', reopen: 'Undo approval', reopenConfirm: 'Undo approval for these hours and return them to review?', reopened: 'Approval undone. The hours are pending review again.', noApproved: 'No approved submissions match the selected filters.', employeeFilter: 'Employee', allEmployees: 'All employees', monthFilter: 'Month', allMonths: 'All months', resetFilters: 'Reset', shown: 'Found', rollbackFailed: 'Could not undo approval.',
   },
 };
 
@@ -124,10 +124,16 @@ export function ManagerPayrollDashboard({
     setReopenMessage('');
     setReopenError('');
     try {
-      await reopenSubmission(submission.id).unwrap();
-      setReopenMessage(copy.reopened);
+      const result = await reopenSubmission(submission.id).unwrap();
+      if (result?.submission?.status !== 'SUBMITTED') {
+        throw new Error(copy.rollbackFailed);
+      }
+      await approvedQuery.refetch();
+      setReopenMessage(`${copy.reopened} ${submissionName(submission)} · ${submissionPeriod(submission, locale)}`);
     } catch (error) {
-      setReopenError(getApiErrorMessage(error));
+      const message = getApiErrorMessage(error) || copy.rollbackFailed;
+      setReopenError(message);
+      window.alert(message);
     }
   }
 
