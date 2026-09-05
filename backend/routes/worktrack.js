@@ -95,8 +95,10 @@ export async function handleWorkTrackRoutes(request, response, { pathName, url }
   const context = await getAuthContext(request, response);
   if (!context) return true;
 
+  const requestedCabinet = String(url.searchParams.get('cabinet') || '').trim().toLowerCase();
+  const managerCabinet = context.activeMembership?.role === 'MANAGER' && requestedCabinet !== 'employee';
   const payload = await runStoreRead({
-    prisma: client => context.activeMembership?.role === 'MANAGER'
+    prisma: client => managerCabinet
       ? getManagerDashboard(client, context)
       : getEmployeeWeeklySummary(client, context, url.searchParams.get('weekStart')),
   });
