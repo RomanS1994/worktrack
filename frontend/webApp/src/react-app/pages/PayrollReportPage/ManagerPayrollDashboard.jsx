@@ -7,13 +7,13 @@ import './ManagerPayrollAdvances.css';
 
 const COPY = {
   uk: {
-    accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати', approvedTitle: 'Погоджені години', approvedHint: 'Якщо години погоджено помилково, їх можна повернути назад на перевірку.', reopen: 'Скасувати погодження', reopenConfirm: 'Скасувати погодження цих годин і повернути їх у статус «На перевірці»?', reopened: 'Погодження скасовано. Години знову очікують перевірки.', noApproved: 'Немає погоджених подань.',
+    accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати', approvedTitle: 'Погоджені години', approvedHint: 'Знайдіть будь-яке попереднє погодження за працівником або місяцем і, за потреби, поверніть його назад на перевірку.', reopen: 'Скасувати погодження', reopenConfirm: 'Скасувати погодження цих годин і повернути їх у статус «На перевірці»?', reopened: 'Погодження скасовано. Години знову очікують перевірки.', noApproved: 'Немає погоджених подань за вибраними фільтрами.', employeeFilter: 'Працівник', allEmployees: 'Усі працівники', monthFilter: 'Місяць', allMonths: 'Усі місяці', resetFilters: 'Скинути', shown: 'Знайдено',
   },
   cs: {
-    accrued: 'Nárok', advances: 'Zálohy', netPay: 'K výplatě', approvedTitle: 'Schválené hodiny', approvedHint: 'Pokud byly hodiny schváleny omylem, lze je vrátit zpět ke kontrole.', reopen: 'Zrušit schválení', reopenConfirm: 'Zrušit schválení těchto hodin a vrátit je do stavu ke kontrole?', reopened: 'Schválení bylo zrušeno. Hodiny znovu čekají na kontrolu.', noApproved: 'Žádná schválená podání.',
+    accrued: 'Nárok', advances: 'Zálohy', netPay: 'K výplatě', approvedTitle: 'Schválené hodiny', approvedHint: 'Najděte libovolné dřívější schválení podle zaměstnance nebo měsíce a v případě potřeby jej vraťte ke kontrole.', reopen: 'Zrušit schválení', reopenConfirm: 'Zrušit schválení těchto hodin a vrátit je do stavu ke kontrole?', reopened: 'Schválení bylo zrušeno. Hodiny znovu čekají na kontrolu.', noApproved: 'Pro zvolené filtry nejsou žádná schválená podání.', employeeFilter: 'Zaměstnanec', allEmployees: 'Všichni zaměstnanci', monthFilter: 'Měsíc', allMonths: 'Všechny měsíce', resetFilters: 'Resetovat', shown: 'Nalezeno',
   },
   en: {
-    accrued: 'Accrued', advances: 'Advances', netPay: 'Net pay', approvedTitle: 'Approved hours', approvedHint: 'If hours were approved by mistake, you can return them to review.', reopen: 'Undo approval', reopenConfirm: 'Undo approval for these hours and return them to review?', reopened: 'Approval undone. The hours are pending review again.', noApproved: 'No approved submissions.',
+    accrued: 'Accrued', advances: 'Advances', netPay: 'Net pay', approvedTitle: 'Approved hours', approvedHint: 'Find any previous approval by employee or month and return it to review if it needs correction.', reopen: 'Undo approval', reopenConfirm: 'Undo approval for these hours and return them to review?', reopened: 'Approval undone. The hours are pending review again.', noApproved: 'No approved submissions match the selected filters.', employeeFilter: 'Employee', allEmployees: 'All employees', monthFilter: 'Month', allMonths: 'All months', resetFilters: 'Reset', shown: 'Found',
   },
 };
 
@@ -53,8 +53,15 @@ function submissionName(submission) {
 
 function submissionPeriod(submission, locale) {
   if (!submission?.weekStart || !submission?.weekEnd) return '—';
-  const fmt = value => new Intl.DateTimeFormat(locale || 'uk-UA', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`));
+  const fmt = value => new Intl.DateTimeFormat(locale || 'uk-UA', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`));
   return `${fmt(submission.weekStart)} – ${fmt(submission.weekEnd)}`;
+}
+
+function submissionTouchesMonth(submission, month) {
+  if (!month) return true;
+  const start = String(submission?.weekStart || '').slice(0, 7);
+  const end = String(submission?.weekEnd || '').slice(0, 7);
+  return start === month || end === month;
 }
 
 export function ManagerPayrollDashboard({
@@ -72,6 +79,8 @@ export function ManagerPayrollDashboard({
   t,
 }) {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
+  const [approvedEmployeeId, setApprovedEmployeeId] = useState('');
+  const [approvedMonth, setApprovedMonth] = useState('');
   const [reopenMessage, setReopenMessage] = useState('');
   const [reopenError, setReopenError] = useState('');
   const selectedEmployee = useMemo(
@@ -89,14 +98,26 @@ export function ManagerPayrollDashboard({
   const pendingHours = visibleSummary?.pendingHours || 0;
   const approvedQuery = useGetManagerSubmissionsQuery({ status: 'APPROVED' });
   const [reopenSubmission, reopenState] = useReopenSubmissionMutation();
-  const approvedSubmissions = useMemo(
-    () => (approvedQuery.data?.submissions || []).slice(0, 8),
+  const allApprovedSubmissions = useMemo(
+    () => (Array.isArray(approvedQuery.data?.submissions) ? approvedQuery.data.submissions : []),
     [approvedQuery.data],
+  );
+  const approvedSubmissions = useMemo(
+    () => allApprovedSubmissions.filter(submission => (
+      (!approvedEmployeeId || submission.employeeMembershipId === approvedEmployeeId) &&
+      submissionTouchesMonth(submission, approvedMonth)
+    )),
+    [allApprovedSubmissions, approvedEmployeeId, approvedMonth],
   );
 
   const toggleEmployee = employeeId => {
     setSelectedEmployeeId(current => current === employeeId ? null : employeeId);
   };
+
+  function resetApprovedFilters() {
+    setApprovedEmployeeId('');
+    setApprovedMonth('');
+  }
 
   async function undoApproval(submission) {
     if (!submission?.id || reopenState.isLoading || !window.confirm(copy.reopenConfirm)) return;
@@ -186,23 +207,40 @@ export function ManagerPayrollDashboard({
         </div>
       </section>
 
-      <section className="managerPayrollMobile-employees">
+      <section className="managerPayrollMobile-employees managerPayrollMobile-approvedHistory">
         <header>
           <div>
             <h2>{copy.approvedTitle}</h2>
             <p>{copy.approvedHint}</p>
           </div>
-          <span>{approvedSubmissions.length}</span>
+          <span>{copy.shown}: {approvedSubmissions.length}</span>
         </header>
+
+        <div className="managerPayrollMobile-approvedFilters">
+          <label>
+            <span>{copy.employeeFilter}</span>
+            <select value={approvedEmployeeId} onChange={event => setApprovedEmployeeId(event.target.value)}>
+              <option value="">{copy.allEmployees}</option>
+              {employees.map(employee => <option value={employee.id} key={employee.id}>{employee.name}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>{copy.monthFilter}</span>
+            <input type="month" value={approvedMonth} onChange={event => setApprovedMonth(event.target.value)} aria-label={copy.monthFilter} />
+          </label>
+          {(approvedEmployeeId || approvedMonth) ? <button type="button" className="managerPayrollMobile-resetApproved" onClick={resetApprovedFilters}>{copy.resetFilters}</button> : null}
+        </div>
+
         {reopenMessage ? <p className="statusNote is-success">{reopenMessage}</p> : null}
         {reopenError ? <p className="statusNote is-error">{reopenError}</p> : null}
         <div className="managerPayrollMobile-list">
           {approvedQuery.isLoading ? <p className="statusNote">…</p> : null}
-          {!approvedQuery.isLoading && !approvedSubmissions.length ? <p className="statusNote">{copy.noApproved}</p> : null}
+          {approvedQuery.error ? <p className="statusNote is-error">{getApiErrorMessage(approvedQuery.error)}</p> : null}
+          {!approvedQuery.isLoading && !approvedQuery.error && !approvedSubmissions.length ? <p className="statusNote">{copy.noApproved}</p> : null}
           {approvedSubmissions.map(submission => (
             <button
               type="button"
-              className="managerPayrollMobile-employee"
+              className="managerPayrollMobile-employee managerPayrollMobile-approvedSubmission"
               key={submission.id}
               disabled={reopenState.isLoading}
               onClick={() => undoApproval(submission)}
