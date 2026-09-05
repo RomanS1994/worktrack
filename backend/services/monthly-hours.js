@@ -12,7 +12,7 @@ function normalizeMonth(value) {
 
 export async function getEmployeeMonthlyHours(client, context, monthInput) {
   const membership = context?.activeMembership;
-  if (!membership || membership.role !== 'EMPLOYEE' || membership.status !== 'ACTIVE') {
+  if (!membership || !['EMPLOYEE', 'MANAGER'].includes(membership.role) || membership.status !== 'ACTIVE') {
     throw new Error('Employee access is required');
   }
 
