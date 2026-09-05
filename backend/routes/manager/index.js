@@ -291,6 +291,7 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
       const manager = context.activeMembership || context.membership || context;
       const entry = await client.workEntry.findFirst({ where: { id: managerEntryMatch[1], companyId: manager.companyId }, include: { weeklySubmission: true } });
       if (!entry) throw new Error('Work entry not found');
+      if (entry.employeeMembershipId === manager.id) throw new Error('Managers cannot review their own submission');
       if (entry.status !== 'SUBMITTED' || entry.weeklySubmission?.status !== 'SUBMITTED') {
         throw new Error('Work entry is not pending review');
       }
@@ -316,6 +317,7 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
       const manager = context.activeMembership || context.membership || context;
       const submission = await client.weeklySubmission.findFirst({ where: { id: clearSubmissionMatch[1], companyId: manager.companyId } });
       if (!submission) throw new Error('Weekly submission not found');
+      if (submission.employeeMembershipId === manager.id) throw new Error('Managers cannot review their own submission');
       if (submission.status !== 'SUBMITTED') throw new Error('Weekly submission is not pending review');
       const deleted = await client.workEntry.deleteMany({ where: { companyId: manager.companyId, weeklySubmissionId: submission.id } });
       await client.weeklySubmission.delete({ where: { id: submission.id } });
@@ -334,6 +336,7 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
         include: { employeeMembership: { select: { userId: true } } },
       });
       if (!existing) throw new Error('Weekly submission not found');
+      if (existing.employeeMembershipId === manager.id) throw new Error('Managers cannot review their own submission');
       if (existing.status !== 'APPROVED') throw new Error('Only approved submissions can be reopened');
 
       const invoicedEntries = await client.invoiceItem.count({
