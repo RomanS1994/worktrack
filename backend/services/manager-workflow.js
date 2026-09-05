@@ -331,6 +331,7 @@ export async function listManagerSubmissions(client, context, query = {}) {
   const submissions = await client.weeklySubmission.findMany({
     where: {
       companyId: membership.companyId,
+      employeeMembershipId: { not: membership.id },
       ...(status ? { status } : {}),
       employeeMembership: { is: { deletedAt: null, user: { is: { deletedAt: null } } } },
     },
@@ -355,6 +356,7 @@ export async function updateSubmittedWorkEntryByManager(client, context, entryId
     include: { weeklySubmission: true, project: true, employeeMembership: { select: { userId: true } } },
   });
   if (!existing || existing.companyId !== managerMembership.companyId) throw new Error('Work entry not found');
+  if (existing.employeeMembershipId === managerMembership.id) throw new Error('Managers cannot review their own submission');
   if (existing.status !== REVIEWABLE_STATUS || existing.weeklySubmission?.status !== REVIEWABLE_STATUS) {
     throw new Error('Work entry is not pending review');
   }
@@ -452,6 +454,7 @@ export async function reviewWeeklySubmission(client, context, submissionId, deci
     },
   });
   if (!submission) throw new Error('Weekly submission not found');
+  if (submission.employeeMembershipId === managerMembership.id) throw new Error('Managers cannot review their own submission');
   if (submission.status !== REVIEWABLE_STATUS) throw new Error('Weekly submission is not pending review');
 
   const timestamp = new Date(nowIso());
