@@ -6,6 +6,7 @@ import {
   reviewWeeklySubmission,
   updateSubmittedWorkEntryByManager,
 } from '../services/manager-workflow.js';
+import { upsertManagerTimesheetCell } from '../services/manager-timesheet.js';
 import { notifyManagersAboutSubmission } from '../services/notifications.js';
 
 function managerContext() {
@@ -95,6 +96,29 @@ test('manager cannot edit their own submitted entry through approval tools', asy
     /cannot review their own submission/i,
   );
   assert.equal(updated, false);
+});
+
+test('manager cannot write the control timesheet for their own employee row', async () => {
+  let created = false;
+  const client = {
+    companyMembership: {
+      findFirst: async () => ({ id: 'manager-membership-1' }),
+    },
+    managerTimesheetEntry: {
+      create: async () => {
+        created = true;
+      },
+    },
+  };
+
+  await assert.rejects(
+    upsertManagerTimesheetCell(client, managerContext(), 'manager-membership-1', {
+      date: '2026-09-03',
+      hours: '8',
+    }),
+    /cannot edit their own control timesheet/i,
+  );
+  assert.equal(created, false);
 });
 
 test('manager submitter is excluded from manager submission notifications', async () => {
