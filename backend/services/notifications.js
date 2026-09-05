@@ -133,6 +133,7 @@ export async function notifyManagersAboutSubmission(client, context, submission)
   const managers = await client.companyMembership.findMany({
     where: {
       companyId: employeeMembership.companyId,
+      id: { not: employeeMembership.id },
       role: 'MANAGER',
       status: 'ACTIVE',
       user: { is: { deletedAt: null } },
