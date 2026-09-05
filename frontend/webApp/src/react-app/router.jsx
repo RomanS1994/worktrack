@@ -7,6 +7,7 @@ import { RouterError } from '@shared/app/components/RouterError/RouterError.jsx'
 import { SectionShell } from './components/SectionTabs/SectionShell.jsx';
 import { ApprovalsPage } from './pages/ApprovalsPage/ApprovalsPage.jsx';
 import { CalendarPage } from './pages/CalendarPage/CalendarPage.jsx';
+import { ChatPage } from './pages/ChatPage/ChatPage.jsx';
 import { CompanySettingsPage } from './pages/CompanySettingsPage/CompanySettingsPage.jsx';
 import { DashboardPage } from './pages/DashboardPage/DashboardPage.jsx';
 import { EmployeesPage } from './pages/EmployeesPage/EmployeesPage.jsx';
@@ -39,6 +40,7 @@ export const router = createBrowserRouter([
       { path: 'sign-in', element: <SignInPage /> },
       { path: 'register', element: <SignInPage defaultMode="register" /> },
       { path: 'dashboard', element: <ProtectedRoute><DashboardPage /></ProtectedRoute> },
+      { path: 'chat', element: <ProtectedRoute><ChatPage /></ProtectedRoute> },
       {
         element: <ProtectedRoute requireEmployee><SectionShell section="time" /></ProtectedRoute>,
         children: [
