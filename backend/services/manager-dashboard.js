@@ -30,6 +30,7 @@ export async function getManagerDashboard(client, context, now = new Date()) {
     client.weeklySubmission.count({
       where: {
         companyId: membership.companyId,
+        employeeMembershipId: { not: membership.id },
         weekStart: range.weekStart,
         status: 'SUBMITTED',
       },
