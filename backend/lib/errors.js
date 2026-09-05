@@ -56,6 +56,7 @@ const STATUS_BY_MESSAGE = new Map([
   ['Weekly submission is already approved', 409],
   ['Weekly submission is not pending review', 409],
   ['Managers cannot review their own submission', 409],
+  ['Managers cannot edit their own control timesheet', 409],
   ['Employee is not assigned to a manager', 409],
   ['No work entries to submit', 400],
   ['Notification not found', 404],
