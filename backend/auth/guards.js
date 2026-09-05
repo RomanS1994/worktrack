@@ -170,5 +170,15 @@ export async function requireEmployee(request, response) {
     return null;
   }
 
-  return context;
+  if (context.activeMembership?.role !== 'MANAGER') return context;
+
+  // Keep the persisted membership role untouched while presenting a compatible
+  // employee context to legacy employee services that still validate the role.
+  return {
+    ...context,
+    activeMembership: {
+      ...context.activeMembership,
+      role: 'EMPLOYEE',
+    },
+  };
 }
