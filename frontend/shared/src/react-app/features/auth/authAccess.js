@@ -19,6 +19,6 @@ export function hasManagerAccess(user) {
 }
 
 export function hasEmployeeAccess(user) {
-  if (typeof user === 'string') return user === 'EMPLOYEE';
-  return getActiveMembership(user)?.role === 'EMPLOYEE';
+  const role = typeof user === 'string' ? user : getActiveMembership(user)?.role;
+  return role === 'EMPLOYEE' || role === 'MANAGER';
 }
