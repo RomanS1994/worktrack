@@ -21,6 +21,7 @@ const EXPECTED_CLIENT_ERRORS = new Map([
   ['Start and end time are required', 400],
   ['Work time must be longer than the automatic break', 400],
   ['Weekly submission is not pending review', 409],
+  ['Managers cannot review their own submission', 409],
   ['No work entries to submit', 400],
   ['Invalid invoice month', 400],
   ['Complete tax information before creating an invoice', 400],
