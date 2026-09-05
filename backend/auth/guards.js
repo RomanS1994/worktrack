@@ -18,7 +18,9 @@ export function hasEmployeeAccess(value) {
       ? value
       : value?.activeMembership?.role || value?.role || value?.membership?.role || '';
 
-  return role === 'EMPLOYEE';
+  // A manager is also an employee of the same company. The role now represents
+  // additional manager access rather than an exclusive account type.
+  return role === 'EMPLOYEE' || role === 'MANAGER';
 }
 
 export function getAccessTokenClaims(request) {
