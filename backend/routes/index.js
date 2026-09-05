@@ -1,6 +1,7 @@
 import { handleAdvanceRoutes } from './advances.js';
 import { handleAuthRoutes } from './auth/index.js';
 import { handleBillingRoutes } from './billing.js';
+import { handleChatRoutes } from './chat.js';
 import { handleCompanySettingsRoutes } from './company-settings.js';
 import { handleDefaultProjectRoutes } from './default-project.js';
 import { handleEmployeeWorkRoutes } from './employee-work.js';
@@ -19,6 +20,7 @@ const routeHandlers = [
   handlePublicRoutes,
   handleAuthRoutes,
   handleMeRoutes,
+  handleChatRoutes,
   handleNotificationRoutes,
   handleInvoicePdfRoutes,
   handleBillingRoutes,
