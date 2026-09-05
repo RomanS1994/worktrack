@@ -1,11 +1,32 @@
 import { randomUUID } from 'node:crypto';
 
+import { getVapidPublicKey, sendWebPush } from './web-push.js';
+
 function getMembership(context) {
   const membership = context?.activeMembership;
   if (!membership?.id || !membership?.companyId || membership.status === 'INACTIVE') {
     throw new Error('Company access is required');
   }
   return membership;
+}
+
+function profileObject(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
+
+function readPushSubscriptions(profile) {
+  const value = profileObject(profile).pushSubscriptions;
+  return Array.isArray(value) ? value.filter(item => item && typeof item === 'object') : [];
+}
+
+function cleanSubscription(body = {}) {
+  const endpoint = String(body.endpoint || '').trim();
+  const p256dh = String(body.keys?.p256dh || '').trim();
+  const auth = String(body.keys?.auth || '').trim();
+  if (!endpoint.startsWith('https://') || !p256dh || !auth) {
+    throw new Error('Invalid push subscription');
+  }
+  return { endpoint: endpoint.slice(0, 2048), keys: { p256dh, auth } };
 }
 
 function serializeNotification(notification) {
@@ -22,8 +43,27 @@ function serializeNotification(notification) {
   };
 }
 
+async function deliverPush(client, notification) {
+  try {
+    const membership = await client.companyMembership.findUnique({
+      where: { id: notification.recipientMembershipId },
+      select: { id: true, companyId: true, user: { select: { profile: true } } },
+    });
+    if (!membership) return;
+
+    const subscriptions = readPushSubscriptions(membership.user?.profile)
+      .filter(item => item.membershipId === membership.id && item.companyId === membership.companyId);
+    if (!subscriptions.length) return;
+
+    const payload = serializeNotification(notification);
+    await Promise.allSettled(subscriptions.map(subscription => sendWebPush(subscription, payload)));
+  } catch (error) {
+    console.warn('Web Push delivery failed:', error instanceof Error ? error.message : String(error));
+  }
+}
+
 export async function createNotification(client, payload) {
-  return client.notification.create({
+  const notification = await client.notification.create({
     data: {
       id: randomUUID(),
       companyId: payload.companyId,
@@ -35,6 +75,57 @@ export async function createNotification(client, payload) {
       readAt: null,
     },
   });
+
+  await deliverPush(client, notification);
+  return notification;
+}
+
+export async function getPushSettings(client, context) {
+  const membership = getMembership(context);
+  const user = await client.user.findUnique({ where: { id: membership.userId }, select: { profile: true } });
+  const subscriptions = readPushSubscriptions(user?.profile)
+    .filter(item => item.membershipId === membership.id && item.companyId === membership.companyId);
+  return {
+    publicKey: getVapidPublicKey(),
+    subscriptionCount: subscriptions.length,
+  };
+}
+
+export async function savePushSubscription(client, context, body, userAgent = '') {
+  const membership = getMembership(context);
+  const subscription = cleanSubscription(body);
+  const user = await client.user.findUnique({ where: { id: membership.userId }, select: { profile: true } });
+  const profile = profileObject(user?.profile);
+  const existing = readPushSubscriptions(profile);
+  const next = existing.filter(item => item.endpoint !== subscription.endpoint);
+  next.push({
+    ...subscription,
+    membershipId: membership.id,
+    companyId: membership.companyId,
+    userAgent: String(userAgent || '').slice(0, 300),
+    updatedAt: new Date().toISOString(),
+  });
+
+  await client.user.update({
+    where: { id: membership.userId },
+    data: { profile: { ...profile, pushSubscriptions: next.slice(-8) } },
+  });
+  return { ok: true, subscriptionCount: next.filter(item => item.membershipId === membership.id).length };
+}
+
+export async function deletePushSubscription(client, context, endpoint) {
+  const membership = getMembership(context);
+  const cleanEndpoint = String(endpoint || '').trim();
+  const user = await client.user.findUnique({ where: { id: membership.userId }, select: { profile: true } });
+  const profile = profileObject(user?.profile);
+  const next = readPushSubscriptions(profile).filter(item => !(
+    item.endpoint === cleanEndpoint && item.membershipId === membership.id
+  ));
+  await client.user.update({
+    where: { id: membership.userId },
+    data: { profile: { ...profile, pushSubscriptions: next } },
+  });
+  return { ok: true };
 }
 
 export async function notifyManagersAboutSubmission(client, context, submission) {
@@ -79,6 +170,18 @@ export async function notifyEmployeeAboutReview(client, context, submission) {
     message: isRejected
       ? submission.rejectionReason || 'Your manager rejected this week. Open it to make corrections.'
       : `Your work for ${submission.weekStart} - ${submission.weekEnd} was approved.`,
+    href: `/hours?date=${submission.weekStart}`,
+  });
+}
+
+export async function notifyEmployeeApprovalReopened(client, context, submission) {
+  const managerMembership = getMembership(context);
+  await createNotification(client, {
+    companyId: managerMembership.companyId,
+    recipientMembershipId: submission.employeeMembershipId,
+    type: 'weekly_submission.reopened',
+    title: 'Approval cancelled',
+    message: `Your work for ${submission.weekStart} - ${submission.weekEnd} was returned to review.`,
     href: `/hours?date=${submission.weekStart}`,
   });
 }
