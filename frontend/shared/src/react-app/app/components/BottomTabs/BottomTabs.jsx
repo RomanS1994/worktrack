@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { useI18n } from '../../i18n/useI18n.js';
 import { SvgIcon } from '../SvgIcon/SvgIcon.jsx';
 import { selectUser } from '../../../features/auth/authSlice.js';
-import { hasManagerAccess } from '../../../features/auth/authAccess.js';
+import { isManagerCabinet } from '../../../features/auth/cabinetMode.js';
 import './BottomTabs.css';
 
 const COPY={
@@ -24,7 +24,7 @@ function TaskTab({to,label,icon,activePaths=[],primary=false}){
 export function BottomTabs(){
  const {language,t}=useI18n();
  const user=useSelector(selectUser);
- const isManager=hasManagerAccess(user);
+ const isManager=isManagerCabinet(user);
  const c=COPY[language]||COPY.uk;
  return <nav className="bottomTabs" aria-label={t('bottomTabs.navLabel')}>
   <TaskTab to="/" label={c.home} icon="dashboard" />
