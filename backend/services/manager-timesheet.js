@@ -70,7 +70,6 @@ export async function getManagerTimesheet(client, context, { month }) {
     client.companyMembership.findMany({
       where: {
         companyId,
-        role: 'EMPLOYEE',
         status: 'ACTIVE',
         deletedAt: null,
         user: { is: { deletedAt: null } },
@@ -250,7 +249,7 @@ export async function upsertManagerTimesheetCell(client, context, employeeMember
   const { raw: date, date: workDate } = parseDate(body?.date);
 
   const employee = await client.companyMembership.findFirst({
-    where: { id: employeeMembershipId, companyId, role: 'EMPLOYEE', status: 'ACTIVE', deletedAt: null },
+    where: { id: employeeMembershipId, companyId, status: 'ACTIVE', deletedAt: null },
     select: { id: true },
   });
   if (!employee) throw new Error('Employee not found');
