@@ -18,9 +18,9 @@ export function hasEmployeeAccess(value) {
       ? value
       : value?.activeMembership?.role || value?.role || value?.membership?.role || '';
 
-  // A manager is also an employee of the same company. The role now represents
-  // additional manager access rather than an exclusive account type.
-  return role === 'EMPLOYEE' || role === 'MANAGER';
+  // Keep this predicate compatible with existing role consumers. Dual access is
+  // granted by requireEmployee below without changing the persisted role.
+  return role === 'EMPLOYEE';
 }
 
 export function getAccessTokenClaims(request) {
@@ -165,15 +165,15 @@ export async function requireEmployee(request, response) {
   const context = await getAuthContext(request, response);
   if (!context) return null;
 
-  if (!hasEmployeeAccess(context)) {
+  if (!hasEmployeeAccess(context) && !hasManagerAccess(context)) {
     sendError(response, 403, 'Employee access is required');
     return null;
   }
 
   if (context.activeMembership?.role !== 'MANAGER') return context;
 
-  // Keep the persisted membership role untouched while presenting a compatible
-  // employee context to legacy employee services that still validate the role.
+  // Present a compatibility employee context to existing employee services.
+  // The persisted membership stays MANAGER and manager permissions remain intact.
   return {
     ...context,
     activeMembership: {
