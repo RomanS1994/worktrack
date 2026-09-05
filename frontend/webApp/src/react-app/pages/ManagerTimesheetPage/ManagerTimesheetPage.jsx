@@ -110,6 +110,7 @@ export function ManagerTimesheetPage() {
   }
 
   function openCell(row, day) {
+    if (row.canEdit === false) return;
     setSelected({ row, day });
     setHours(day.managerHours == null ? '' : String(day.managerHours));
     setBreakMinutes(day.managerBreakMinutes == null ? '' : String(day.managerBreakMinutes));
@@ -190,7 +191,7 @@ export function ManagerTimesheetPage() {
             <thead><tr><th className="employeeColumn">Працівник</th>{days.map(day => <th key={day.date}><span>{day.day}</span><small>{new Intl.DateTimeFormat('uk-UA', { weekday: 'short' }).format(new Date(`${day.date}T00:00:00`))}</small></th>)}<th className="totalColumn">Разом</th></tr></thead>
             <tbody>{rows.map(row => <tr key={row.employeeId}>
               <th className="employeeColumn"><span className="employeeName">{row.name}</span>{row.problems ? <small className="employeeProblems">⚠ {row.problems}</small> : <small className="employeeOk">✓</small>}</th>
-              {row.days.map(day => <td key={day.date}><button type="button" className={cellClass(day.status)} onClick={() => openCell(row, day)} title={problemLabel(day)}>{day.managerHours ?? '—'}</button></td>)}
+              {row.days.map(day => <td key={day.date}><button type="button" className={cellClass(day.status)} disabled={row.canEdit === false} onClick={() => openCell(row, day)} title={row.canEdit === false ? 'Власний контрольний рядок редагує інший менеджер' : problemLabel(day)}>{day.managerHours ?? '—'}</button></td>)}
               <td className="totalColumn"><strong>{row.managerTotal}</strong><small> год</small></td>
             </tr>)}</tbody>
           </table>
@@ -215,7 +216,7 @@ export function ManagerTimesheetPage() {
             <div className="managerTimesheetMobileEmployee"><strong>{initials(row.name)}</strong><small className={row.problems ? 'hasProblems' : 'isOk'}>{row.problems ? `⚠ ${row.problems}` : '✓'}</small></div>
             {mobileWeek.map(day => {
               const entry = row.days.find(item => item.date === day.date) || day;
-              return <button type="button" key={day.date} className={cellClass(entry.status)} onClick={() => openCell(row, entry)} aria-label={`${row.name}, ${day.date}: ${problemLabel(entry)}`}>{entry.managerHours ?? '—'}</button>;
+              return <button type="button" key={day.date} className={cellClass(entry.status)} disabled={row.canEdit === false} onClick={() => openCell(row, entry)} aria-label={`${row.name}, ${day.date}: ${row.canEdit === false ? 'власний контрольний рядок редагує інший менеджер' : problemLabel(entry)}`}>{entry.managerHours ?? '—'}</button>;
             })}
             <div className="managerTimesheetMobileTotal"><strong>{row.managerTotal}</strong><small>год</small></div>
           </div>)}
