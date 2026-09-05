@@ -331,7 +331,6 @@ export async function listManagerSubmissions(client, context, query = {}) {
   const submissions = await client.weeklySubmission.findMany({
     where: {
       companyId: membership.companyId,
-      employeeMembershipId: { not: membership.id },
       ...(status ? { status } : {}),
       employeeMembership: { is: { deletedAt: null, user: { is: { deletedAt: null } } } },
     },
@@ -341,7 +340,11 @@ export async function listManagerSubmissions(client, context, query = {}) {
     },
     orderBy: [{ submittedAt: 'desc' }, { weekStart: 'desc' }],
   });
-  return { submissions: submissions.map(serializeWeeklySubmission) };
+  return {
+    submissions: submissions
+      .filter(submission => submission.employeeMembershipId !== membership.id)
+      .map(serializeWeeklySubmission),
+  };
 }
 
 export async function getManagerSubmissionById(client, context, submissionId, { notFoundMessage = 'Weekly submission not found' } = {}) {
