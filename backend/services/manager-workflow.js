@@ -123,6 +123,8 @@ function serializeEmployeeMembership(membership) {
     userId: membership.userId,
     companyId: membership.companyId,
     role: membership.role,
+    canAccessEmployeeCabinet: true,
+    canAccessManagerCabinet: membership.role === 'MANAGER',
     status: membership.status,
     hourlyRateCzk: membership.hourlyRateCzk == null ? '0.00' : String(membership.hourlyRateCzk),
     pendingSubmissions: Array.isArray(membership.weeklySubmissions) ? membership.weeklySubmissions.length : 0,
@@ -204,6 +206,20 @@ function normalizeSubmissionStatusFilter(value) {
   return status;
 }
 
+async function ensureManagerWillRemain(client, companyId, membershipId) {
+  const remainingManagers = await client.companyMembership.count({
+    where: {
+      companyId,
+      id: { not: membershipId },
+      role: 'MANAGER',
+      status: 'ACTIVE',
+      deletedAt: null,
+      user: { is: { deletedAt: null } },
+    },
+  });
+  if (remainingManagers < 1) throw new Error('Company must have at least one active manager');
+}
+
 export async function createManagerEmployee(client, context, payload = {}) {
   const managerMembership = ensureManagerContext(context);
   const firstName = normalizeText(payload.firstName);
@@ -246,7 +262,7 @@ export async function createManagerEmployee(client, context, payload = {}) {
       id: randomUUID(),
       companyId: managerMembership.companyId,
       userId: user.id,
-      role: 'EMPLOYEE',
+      role: payload.canAccessManagerCabinet === true ? 'MANAGER' : 'EMPLOYEE',
       hourlyRateCzk,
       status: 'ACTIVE',
       createdAt: timestamp,
@@ -269,17 +285,29 @@ export async function createManagerEmployee(client, context, payload = {}) {
 export async function updateEmployeeMembership(client, context, employeeMembershipId, payload = {}) {
   const managerMembership = ensureManagerContext(context);
   const existing = await client.companyMembership.findFirst({
-    where: { id: employeeMembershipId, companyId: managerMembership.companyId, role: 'EMPLOYEE' },
+    where: { id: employeeMembershipId, companyId: managerMembership.companyId, deletedAt: null },
     include: { user: true },
   });
   if (!existing) throw new Error('Employee not found');
+
   const data = { updatedAt: new Date(nowIso()) };
   if (Object.prototype.hasOwnProperty.call(payload, 'hourlyRateCzk')) data.hourlyRateCzk = normalizeMoneyString(payload.hourlyRateCzk);
+  if (Object.prototype.hasOwnProperty.call(payload, 'canAccessManagerCabinet')) {
+    const managerAccess = payload.canAccessManagerCabinet === true;
+    if (existing.role === 'MANAGER' && !managerAccess) {
+      await ensureManagerWillRemain(client, managerMembership.companyId, existing.id);
+    }
+    data.role = managerAccess ? 'MANAGER' : 'EMPLOYEE';
+  }
   if (Object.prototype.hasOwnProperty.call(payload, 'status')) {
     const status = normalizeText(payload.status).toUpperCase();
     if (!MEMBERSHIP_STATUS_VALUES.includes(status)) throw new Error('Invalid membership status');
+    if (existing.role === 'MANAGER' && existing.status === 'ACTIVE' && status === 'INACTIVE') {
+      await ensureManagerWillRemain(client, managerMembership.companyId, existing.id);
+    }
     data.status = status;
   }
+
   const membership = await client.companyMembership.update({
     where: { id: existing.id },
     data,
@@ -304,7 +332,7 @@ export async function listManagerSubmissions(client, context, query = {}) {
     where: {
       companyId: membership.companyId,
       ...(status ? { status } : {}),
-      employeeMembership: { is: { role: 'EMPLOYEE', user: { is: { deletedAt: null } } } },
+      employeeMembership: { is: { deletedAt: null, user: { is: { deletedAt: null } } } },
     },
     include: {
       employeeMembership: { include: { user: true } },
@@ -416,7 +444,7 @@ export async function reviewWeeklySubmission(client, context, submissionId, deci
     where: {
       id: submissionId,
       companyId: managerMembership.companyId,
-      employeeMembership: { is: { role: 'EMPLOYEE', user: { is: { deletedAt: null } } } },
+      employeeMembership: { is: { deletedAt: null, user: { is: { deletedAt: null } } } },
     },
     include: {
       employeeMembership: { include: { user: true } },
