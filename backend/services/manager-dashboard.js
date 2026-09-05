@@ -37,8 +37,8 @@ export async function getManagerDashboard(client, context, now = new Date()) {
     client.companyMembership.findMany({
       where: {
         companyId: membership.companyId,
-        role: 'EMPLOYEE',
         status: 'ACTIVE',
+        deletedAt: null,
         user: { is: { deletedAt: null } },
       },
       include: {
