@@ -22,23 +22,53 @@ function managerContext() {
   };
 }
 
+function submission(id, employeeMembershipId, userId) {
+  return {
+    id,
+    companyId: 'company-1',
+    employeeMembershipId,
+    reviewedByMembershipId: null,
+    weekStart: new Date('2026-09-01T00:00:00.000Z'),
+    weekEnd: new Date('2026-09-06T00:00:00.000Z'),
+    status: 'SUBMITTED',
+    submittedAt: new Date('2026-09-06T12:00:00.000Z'),
+    reviewedAt: null,
+    rejectionReason: null,
+    createdAt: new Date('2026-09-06T12:00:00.000Z'),
+    updatedAt: new Date('2026-09-06T12:00:00.000Z'),
+    employeeMembership: {
+      id: employeeMembershipId,
+      userId,
+      companyId: 'company-1',
+      role: 'MANAGER',
+      status: 'ACTIVE',
+      hourlyRateCzk: '250.00',
+      user: { id: userId, name: userId, email: `${userId}@example.com` },
+    },
+    workEntries: [],
+  };
+}
+
 test('manager approval list excludes the manager own employee submission', async () => {
   let query;
   const client = {
     weeklySubmission: {
       findMany: async args => {
         query = args;
-        return [];
+        return [
+          submission('own-submission', 'manager-membership-1', 'manager-user-1'),
+          submission('other-submission', 'manager-membership-2', 'manager-user-2'),
+        ];
       },
     },
   };
 
   const result = await listManagerSubmissions(client, managerContext(), { status: 'SUBMITTED' });
 
-  assert.deepEqual(result, { submissions: [] });
-  assert.deepEqual(query.where.employeeMembershipId, { not: 'manager-membership-1' });
   assert.equal(query.where.companyId, 'company-1');
   assert.equal(query.where.status, 'SUBMITTED');
+  assert.equal(result.submissions.length, 1);
+  assert.equal(result.submissions[0].id, 'other-submission');
 });
 
 test('manager cannot approve their own submitted week', async () => {
