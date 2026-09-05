@@ -1,10 +1,13 @@
 import { getAuthContext } from '../auth/context.js';
 import { runStoreRead, runStoreTransaction } from '../db/store.js';
-import { sendJson } from '../lib/http.js';
+import { readJsonBody, sendJson } from '../lib/http.js';
 import {
+  deletePushSubscription,
+  getPushSettings,
   listNotifications,
   markAllNotificationsRead,
   markNotificationRead,
+  savePushSubscription,
 } from '../services/notifications.js';
 
 export async function handleNotificationRoutes(request, response, { pathName }) {
@@ -14,6 +17,36 @@ export async function handleNotificationRoutes(request, response, { pathName }) 
 
     const payload = await runStoreRead({
       prisma: client => listNotifications(client, context),
+    });
+    sendJson(response, 200, payload);
+    return true;
+  }
+
+  if (request.method === 'GET' && pathName === '/api/notifications/push-settings') {
+    const context = await getAuthContext(request, response);
+    if (!context) return true;
+    const payload = await runStoreRead({ prisma: client => getPushSettings(client, context) });
+    sendJson(response, 200, payload);
+    return true;
+  }
+
+  if (request.method === 'POST' && pathName === '/api/notifications/push-subscription') {
+    const context = await getAuthContext(request, response);
+    if (!context) return true;
+    const body = await readJsonBody(request);
+    const payload = await runStoreTransaction({
+      prisma: client => savePushSubscription(client, context, body, request.headers['user-agent'] || ''),
+    });
+    sendJson(response, 200, payload);
+    return true;
+  }
+
+  if (request.method === 'DELETE' && pathName === '/api/notifications/push-subscription') {
+    const context = await getAuthContext(request, response);
+    if (!context) return true;
+    const body = await readJsonBody(request);
+    const payload = await runStoreTransaction({
+      prisma: client => deletePushSubscription(client, context, body?.endpoint),
     });
     sendJson(response, 200, payload);
     return true;
