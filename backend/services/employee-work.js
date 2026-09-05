@@ -124,7 +124,7 @@ function calculateWorkSummary(entries = [], hourlyRateCzk = '0') {
 function ensureEmployeeContext(context) {
   const membership = context?.activeMembership || context?.membership || context || null;
   if (!membership?.companyId || membership.status === 'INACTIVE') throw new Error('Company access is required');
-  if (membership.role !== 'EMPLOYEE') throw new Error('Employee access is required');
+  if (!['EMPLOYEE', 'MANAGER'].includes(membership.role)) throw new Error('Employee access is required');
   return membership;
 }
 
