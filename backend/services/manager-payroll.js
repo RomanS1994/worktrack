@@ -76,7 +76,6 @@ export async function getManagerPayroll(client, context, query = {}) {
     client.companyMembership.findMany({
       where: {
         companyId: managerMembership.companyId,
-        role: 'EMPLOYEE',
         deletedAt: null,
         user: { is: { deletedAt: null } },
       },
@@ -148,6 +147,7 @@ export async function getManagerPayroll(client, context, query = {}) {
       name: getEmployeeName(membership.user),
       email: membership.user?.email || '',
       status: membership.status,
+      canAccessManagerCabinet: membership.role === 'MANAGER',
       hourlyRateCzk: membership.hourlyRateCzk == null ? '0.00' : String(membership.hourlyRateCzk),
       effectiveRateCzk: rates.effectiveRateCzk,
       mixedRates: rates.mixedRates,
