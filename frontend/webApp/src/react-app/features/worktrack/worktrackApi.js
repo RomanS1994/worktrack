@@ -13,6 +13,9 @@ export const worktrackApi = baseApi.injectEndpoints({
     createManagerExpense: builder.mutation({ query:body=>({url:'/manager/expenses',method:'POST',body}), invalidatesTags:[{type:'WorkEntries',id:'EXPENSES'}] }),
     deleteManagerExpense: builder.mutation({ query:expenseId=>({url:`/manager/expenses/${expenseId}`,method:'DELETE'}), invalidatesTags:[{type:'WorkEntries',id:'EXPENSES'}] }),
     getNotifications: builder.query({ query:()=>'/notifications', providesTags:[{type:'Notifications',id:'LIST'}] }),
+    getPushSettings: builder.query({ query:()=>'/notifications/push-settings', providesTags:[{type:'Notifications',id:'PUSH'}] }),
+    savePushSubscription: builder.mutation({ query:body=>({url:'/notifications/push-subscription',method:'POST',body}), invalidatesTags:[{type:'Notifications',id:'PUSH'}] }),
+    deletePushSubscription: builder.mutation({ query:body=>({url:'/notifications/push-subscription',method:'DELETE',body}), invalidatesTags:[{type:'Notifications',id:'PUSH'}] }),
     markNotificationRead: builder.mutation({ query:notificationId=>({url:`/notifications/${notificationId}/read`,method:'POST'}), invalidatesTags:[{type:'Notifications',id:'LIST'}] }),
     markAllNotificationsRead: builder.mutation({ query:()=>({url:'/notifications/read-all',method:'POST'}), invalidatesTags:[{type:'Notifications',id:'LIST'}] }),
     getProjects: builder.query({ query:()=>'/projects', providesTags:result=>[{type:'Projects',id:'LIST'},...(Array.isArray(result?.projects)?result.projects:[]).map(project=>({type:'Projects',id:project.id}))] }),
@@ -43,12 +46,12 @@ export const worktrackApi = baseApi.injectEndpoints({
     clearManagerSubmission: builder.mutation({ query:submissionId=>({url:`/manager/submissions/${submissionId}/clear`,method:'DELETE'}), invalidatesTags:MANAGER_REVIEW_TAGS }),
     approveSubmission: builder.mutation({ query:submissionId=>({url:`/manager/submissions/${submissionId}/approve`,method:'POST'}), invalidatesTags:(_r,_e,submissionId)=>withSubmission(submissionId,{notifications:true}) }),
     rejectSubmission: builder.mutation({ query:({submissionId,rejectionReason})=>({url:`/manager/submissions/${submissionId}/reject`,method:'POST',body:{rejectionReason}}), invalidatesTags:(_r,_e,{submissionId})=>withSubmission(submissionId,{notifications:true}) }),
-    reopenSubmission: builder.mutation({ query:submissionId=>({url:`/manager/submissions/${submissionId}/reopen`,method:'POST'}), invalidatesTags:(_r,_e,submissionId)=>withSubmission(submissionId) }),
+    reopenSubmission: builder.mutation({ query:submissionId=>({url:`/manager/submissions/${submissionId}/reopen`,method:'POST'}), invalidatesTags:(_r,_e,submissionId)=>withSubmission(submissionId,{notifications:true}) }),
   }),
 });
 
 export const {
-  useGetWorkSummaryQuery,useGetManagerPayrollQuery,useGetManagerAdvancesQuery,useCreateManagerAdvanceMutation,useDeleteManagerAdvanceMutation,useGetEmployeeAdvancesQuery,useGetManagerExpensesQuery,useCreateManagerExpenseMutation,useDeleteManagerExpenseMutation,useGetNotificationsQuery,useMarkNotificationReadMutation,useMarkAllNotificationsReadMutation,
+  useGetWorkSummaryQuery,useGetManagerPayrollQuery,useGetManagerAdvancesQuery,useCreateManagerAdvanceMutation,useDeleteManagerAdvanceMutation,useGetEmployeeAdvancesQuery,useGetManagerExpensesQuery,useCreateManagerExpenseMutation,useDeleteManagerExpenseMutation,useGetNotificationsQuery,useGetPushSettingsQuery,useSavePushSubscriptionMutation,useDeletePushSubscriptionMutation,useMarkNotificationReadMutation,useMarkAllNotificationsReadMutation,
   useGetProjectsQuery,useGetDefaultProjectQuery,useUpdateDefaultProjectMutation,useCreateProjectMutation,useUpdateProjectMutation,useDeactivateProjectMutation,useDeleteProjectMutation,useGetCompanySettingsQuery,useUpdateCompanySettingsMutation,
   useGetWorkRulesQuery,useUpdateWorkRulesMutation,
   useGetWeekEntriesQuery,useCreateWorkEntryMutation,useUpdateWorkEntryMutation,useDeleteWorkEntryMutation,useSubmitWeekMutation,
