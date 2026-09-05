@@ -7,6 +7,8 @@ import { GlobalRequestLoader } from '../../components/RequestLoader/RequestLoade
 import { SessionNotice } from '../../components/SessionNotice/SessionNotice.jsx';
 import { selectToken, selectUser } from '../../../features/auth/authSlice.js';
 import { hasActiveCompanyAccess } from '../../../features/auth/authAccess.js';
+import { ChatFab } from '../../../features/chat/ChatFab.jsx';
+import { ChatLiveSync } from '../../../features/chat/ChatLiveSync.jsx';
 import './AppLayout.css';
 import './BackgroundRedesign.css';
 
@@ -25,6 +27,7 @@ export function AppLayout({ children }) {
       <GlobalRequestLoader />
       <AuthSessionErrorModal />
       <SessionNotice />
+      {showWorkspaceNav ? <ChatLiveSync /> : null}
       {showWorkspaceNav ? <NotificationBell /> : null}
       <div className="appLayout-workspaceBody">
         <div className="pageContainer">
@@ -32,6 +35,7 @@ export function AppLayout({ children }) {
         </div>
       </div>
 
+      {showWorkspaceNav ? <ChatFab /> : null}
       {showWorkspaceNav ? <BottomTabs /> : null}
     </div>
   );
