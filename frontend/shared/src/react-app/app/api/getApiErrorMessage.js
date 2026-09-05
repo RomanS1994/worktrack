@@ -26,6 +26,8 @@ const ERROR_COPY = {
     'Invoice cannot be marked paid': 'Цю фактуру не можна позначити оплаченою.',
     'Invalid payment date': 'Вкажіть коректну дату оплати.',
     'Payment date cannot be in the future': 'Дата оплати не може бути в майбутньому.',
+    'Only approved submissions can be reopened': 'Відкотити можна лише вже погоджені години.',
+    'Approved hours are already included in an invoice. Cancel the invoice before reopening them.': 'Ці години вже включені у фактуру. Спочатку скасуйте фактуру, а потім повторіть відкат погодження.',
   },
   cs: {
     fallback: 'Požadavek se nepodařilo dokončit.', fetch: 'Nepodařilo se připojit k serveru.', timeout: 'Vypršel časový limit odpovědi serveru.', parsing: 'Server vrátil neplatnou odpověď.',
@@ -51,6 +53,8 @@ const ERROR_COPY = {
     'Invoice cannot be marked paid': 'Tuto fakturu nelze označit jako zaplacenou.',
     'Invalid payment date': 'Zadejte platné datum platby.',
     'Payment date cannot be in the future': 'Datum platby nemůže být v budoucnosti.',
+    'Only approved submissions can be reopened': 'Vrátit lze pouze již schválené hodiny.',
+    'Approved hours are already included in an invoice. Cancel the invoice before reopening them.': 'Tyto hodiny jsou již zahrnuté ve faktuře. Nejprve fakturu zrušte a potom zrušení schválení opakujte.',
   },
   en: {
     fallback: 'Request failed.', fetch: 'Could not connect to the server.', timeout: 'The server response timed out.', parsing: 'The server returned an invalid response.',
@@ -67,6 +71,8 @@ const ERROR_COPY = {
     'Invoice cannot be marked paid': 'This invoice cannot be marked as paid.',
     'Invalid payment date': 'Enter a valid payment date.',
     'Payment date cannot be in the future': 'The payment date cannot be in the future.',
+    'Only approved submissions can be reopened': 'Only approved hours can be returned to review.',
+    'Approved hours are already included in an invoice. Cancel the invoice before reopening them.': 'These hours are already included in an invoice. Cancel the invoice first, then undo the approval again.',
   },
 };
 
