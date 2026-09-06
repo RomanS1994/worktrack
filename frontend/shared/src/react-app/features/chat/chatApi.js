@@ -6,6 +6,10 @@ export const chatApi = baseApi.injectEndpoints({
       query: () => '/chat/summary',
       providesTags: [{ type: 'Notifications', id: 'CHAT_SUMMARY' }],
     }),
+    getChatPresence: builder.query({
+      query: () => '/chat/presence',
+      providesTags: [{ type: 'Notifications', id: 'CHAT_PRESENCE' }],
+    }),
     getChatMessages: builder.query({
       query: ({ before = '', limit = 50 } = {}) => ({
         url: '/chat/messages',
@@ -36,6 +40,7 @@ export const chatApi = baseApi.injectEndpoints({
 
 export const {
   useGetChatSummaryQuery,
+  useGetChatPresenceQuery,
   useGetChatMessagesQuery,
   useLazyGetChatMessagesQuery,
   useSendChatMessageMutation,
