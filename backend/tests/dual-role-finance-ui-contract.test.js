@@ -18,11 +18,16 @@ test('dual-role managers remain eligible for advances and expenses', async () =>
 });
 
 test('manager invoice actions require cross-review', async () => {
-  const billing = await read('backend/routes/billing.js');
+  const [billing, managerInvoicesPage] = await Promise.all([
+    read('backend/routes/billing.js'),
+    read('frontend/webApp/src/react-app/pages/ManagerInvoicesPage/ManagerInvoicesPage.jsx'),
+  ]);
   assert.match(billing, /employeeMembershipId===context\.activeMembership\.id/);
   assert.match(billing, /Managers cannot review their own invoice/);
   assert.match(billing, /managerReviewInvoice\(client,context,viewedMatch\[1\]\)/);
   assert.match(billing, /managerReviewInvoice\(client,context,paidMatch\[1\]\)/);
+  assert.match(managerInvoicesPage, /invoice\.employeeMembershipId===ownMembershipId/);
+  assert.match(managerInvoicesPage, /const canPay=!ownInvoice&&\['SENT','VIEWED'\]\.includes\(invoice\.status\)/);
 });
 
 test('cabinet-sensitive UI uses reactive cabinet mode', async () => {
