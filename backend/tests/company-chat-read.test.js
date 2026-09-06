@@ -19,26 +19,21 @@ function taggedValues(args) {
 
 test('mark chat read resolves read time from a message in the active company', async () => {
   const messageAt = new Date('2026-09-06T08:15:00.000Z');
-  let writtenValues = null;
+  let queryValues = null;
   const client = {
     $queryRaw: async (...args) => {
-      const values = taggedValues(args);
-      assert.equal(values[0], 'message-1');
-      assert.equal(values[1], 'company-1');
-      return [{ createdAt: messageAt }];
-    },
-    $executeRaw: async (...args) => {
-      writtenValues = taggedValues(args);
-      return 1;
+      queryValues = taggedValues(args);
+      return [{ lastReadAt: messageAt }];
     },
   };
 
   const result = await markChatRead(client, context(), { messageId: 'message-1' });
 
+  assert.equal(queryValues[0], 'member-1');
+  assert.equal(queryValues[1], 'company-1');
+  assert.equal(queryValues[2], 'message-1');
+  assert.equal(queryValues[3], 'company-1');
   assert.equal(result.lastReadAt, messageAt.toISOString());
-  assert.equal(writtenValues[0], 'member-1');
-  assert.equal(writtenValues[1], 'company-1');
-  assert.equal(new Date(writtenValues[2]).toISOString(), messageAt.toISOString());
 });
 
 test('mark chat read rejects a message outside the active company', async () => {
