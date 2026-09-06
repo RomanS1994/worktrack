@@ -128,27 +128,37 @@ test('manager cannot edit their own submitted entry through approval tools', asy
   assert.equal(updated, false);
 });
 
-test('manager cannot write the control timesheet for their own employee row', async () => {
-  let created = false;
+test('manager can write the control timesheet for their own employee row', async () => {
+  let createdData = null;
   const client = {
     companyMembership: {
       findFirst: async () => ({ id: 'manager-membership-1' }),
     },
     managerTimesheetEntry: {
-      create: async () => {
-        created = true;
+      findUnique: async () => null,
+      create: async ({ data }) => {
+        createdData = data;
+        return {
+          ...data,
+          hours: 8,
+        };
       },
     },
   };
 
-  await assert.rejects(
-    upsertManagerTimesheetCell(client, managerContext(), 'manager-membership-1', {
+  const result = await upsertManagerTimesheetCell(
+    client,
+    managerContext(),
+    'manager-membership-1',
+    {
       date: '2026-09-03',
       hours: '8',
-    }),
-    /cannot edit their own control timesheet/i,
+    },
   );
-  assert.equal(created, false);
+
+  assert.equal(createdData.employeeMembershipId, 'manager-membership-1');
+  assert.equal(createdData.managerMembershipId, 'manager-membership-1');
+  assert.equal(result.entry.hours, 8);
 });
 
 test('manager submitter is excluded from manager submission notifications', async () => {
