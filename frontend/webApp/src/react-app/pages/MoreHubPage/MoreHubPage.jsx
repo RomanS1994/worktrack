@@ -8,172 +8,24 @@ import { isManagerCabinet } from '@shared/features/auth/cabinetMode.js';
 import './MoreHubPage.css';
 
 const COPY = {
-  uk: {
-    title: 'Налаштування',
-    copy: 'Компанія, робота та ваш акаунт.',
-    companyGroup: 'Компанія',
-    identity: 'Дані компанії',
-    identityCopy: 'Назва та системні дані',
-    billing: 'Реквізити',
-    billingCopy: 'IČO, DIČ, адреса та email для фактур',
-    workGroup: 'Робота',
-    work: 'Робочі правила',
-    workCopy: 'Обід, денна норма та графік роботи',
-    myWork: 'Моя робота',
-    myWorkCopy: 'Ставка, правила та дані компанії',
-    accountGroup: 'Акаунт',
-    personal: 'Особисті дані',
-    personalCopy: 'Імʼя, телефон і фото профілю',
-    notifications: 'Сповіщення',
-    notificationsCopy: 'Push-сповіщення на цьому пристрої',
-    languageCopy: 'Мова інтерфейсу застосунку',
-    securityCopy: 'Оновити пароль для входу',
-    tax: 'Податкова інформація',
-    taxCopy: 'Дані для автоматичного створення фактур',
-    account: 'Акаунт і вихід',
-    accountCopy: 'Вийти або видалити акаунт',
-    version: 'Версія',
-  },
-  cs: {
-    title: 'Nastavení',
-    copy: 'Společnost, práce a váš účet.',
-    companyGroup: 'Společnost',
-    identity: 'Údaje společnosti',
-    identityCopy: 'Název a systémové údaje',
-    billing: 'Fakturační údaje',
-    billingCopy: 'IČO, DIČ, adresa a e-mail pro faktury',
-    workGroup: 'Práce',
-    work: 'Pracovní pravidla',
-    workCopy: 'Přestávka, denní norma a pracovní plán',
-    myWork: 'Moje práce',
-    myWorkCopy: 'Sazba, pravidla a údaje společnosti',
-    accountGroup: 'Účet',
-    personal: 'Osobní údaje',
-    personalCopy: 'Jméno, telefon a profilová fotografie',
-    notifications: 'Oznámení',
-    notificationsCopy: 'Push oznámení na tomto zařízení',
-    languageCopy: 'Jazyk rozhraní aplikace',
-    securityCopy: 'Aktualizovat přihlašovací heslo',
-    tax: 'Daňové údaje',
-    taxCopy: 'Údaje pro automatické vystavování faktur',
-    account: 'Účet a odhlášení',
-    accountCopy: 'Odhlásit se nebo odstranit účet',
-    version: 'Verze',
-  },
-  en: {
-    title: 'Settings',
-    copy: 'Company, work and your account.',
-    companyGroup: 'Company',
-    identity: 'Company details',
-    identityCopy: 'Name and system details',
-    billing: 'Billing details',
-    billingCopy: 'Company ID, VAT ID, address and invoice email',
-    workGroup: 'Work',
-    work: 'Work rules',
-    workCopy: 'Lunch, daily standard and work schedule',
-    myWork: 'My work',
-    myWorkCopy: 'Rate, rules and company details',
-    accountGroup: 'Account',
-    personal: 'Personal details',
-    personalCopy: 'Name, phone and profile photo',
-    notifications: 'Notifications',
-    notificationsCopy: 'Push notifications on this device',
-    languageCopy: 'Application interface language',
-    securityCopy: 'Update your sign-in password',
-    tax: 'Tax information',
-    taxCopy: 'Details used to create invoices automatically',
-    account: 'Account and sign out',
-    accountCopy: 'Sign out or delete your account',
-    version: 'Version',
-  },
+  uk: { title:'Налаштування',copy:'Компанія, робота та ваш акаунт.',companyGroup:'Компанія',identity:'Дані компанії',identityCopy:'Назва та системні дані',billing:'Реквізити',billingCopy:'IČO, DIČ, адреса та email для фактур',workGroup:'Робота',work:'Робочі правила',workCopy:'Обід, денна норма та графік роботи',myWork:'Моя робота',myWorkCopy:'Ставка, правила та дані компанії',accountGroup:'Акаунт',personal:'Особисті дані',personalCopy:'Імʼя, телефон і фото профілю',notifications:'Сповіщення',notificationsCopy:'Push-сповіщення на цьому пристрої',languageCopy:'Мова інтерфейсу застосунку',securityCopy:'Оновити пароль для входу',tax:'Податкова інформація',taxCopy:'Дані для автоматичного створення фактур',account:'Акаунт і вихід',accountCopy:'Вийти або видалити акаунт',version:'Версія' },
+  cs: { title:'Nastavení',copy:'Společnost, práce a váš účet.',companyGroup:'Společnost',identity:'Údaje společnosti',identityCopy:'Název a systémové údaje',billing:'Fakturační údaje',billingCopy:'IČO, DIČ, adresa a e-mail pro faktury',workGroup:'Práce',work:'Pracovní pravidla',workCopy:'Přestávka, denní norma a pracovní plán',myWork:'Moje práce',myWorkCopy:'Sazba, pravidla a údaje společnosti',accountGroup:'Účet',personal:'Osobní údaje',personalCopy:'Jméno, telefon a profilová fotografie',notifications:'Oznámení',notificationsCopy:'Push oznámení na tomto zařízení',languageCopy:'Jazyk rozhraní aplikace',securityCopy:'Aktualizovat přihlašovací heslo',tax:'Daňové údaje',taxCopy:'Údaje pro automatické vystavování faktur',account:'Účet a odhlášení',accountCopy:'Odhlásit se nebo odstranit účet',version:'Verze' },
+  en: { title:'Settings',copy:'Company, work and your account.',companyGroup:'Company',identity:'Company details',identityCopy:'Name and system details',billing:'Billing details',billingCopy:'Company ID, VAT ID, address and invoice email',workGroup:'Work',work:'Work rules',workCopy:'Lunch, daily standard and work schedule',myWork:'My work',myWorkCopy:'Rate, rules and company details',accountGroup:'Account',personal:'Personal details',personalCopy:'Name, phone and profile photo',notifications:'Notifications',notificationsCopy:'Push notifications on this device',languageCopy:'Application interface language',securityCopy:'Update your sign-in password',tax:'Tax information',taxCopy:'Details used to create invoices automatically',account:'Account and sign out',accountCopy:'Sign out or delete your account',version:'Version' },
 };
 
-function getName(user) {
-  return user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email || '-';
-}
+function getName(user){return user?.name||[user?.firstName,user?.lastName].filter(Boolean).join(' ')||user?.email||'-'}
+function getCompanyName(user){return user?.activeMembership?.company?.name||user?.activeCompany?.name||user?.company?.name||''}
+function initials(user){return [user?.firstName,user?.lastName].filter(Boolean).map(value=>value[0]).join('').slice(0,2).toUpperCase()||getName(user).slice(0,1).toUpperCase()}
+function SettingsRow({to,icon,title,copy,tone='default'}){return <Link to={to} className={`moreHubRow moreHubRow--${tone}`}><span className="moreHubIcon"><SvgIcon name={icon}/></span><span className="moreHubRowText"><strong>{title}</strong><small>{copy}</small></span><span className="moreHubChevron" aria-hidden="true">›</span></Link>}
+function SettingsGroup({title,children}){return <section className="moreHubGroup"><h2>{title}</h2><div className="moreHubMenu screenCard">{children}</div></section>}
 
-function getCompanyName(user) {
-  return user?.activeMembership?.company?.name || user?.activeCompany?.name || user?.company?.name || '';
-}
-
-function initials(user) {
-  return [user?.firstName, user?.lastName]
-    .filter(Boolean)
-    .map(value => value[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase() || getName(user).slice(0, 1).toUpperCase();
-}
-
-function SettingsRow({ to, icon, title, copy, tone = 'default' }) {
-  return (
-    <Link to={to} className={`moreHubRow moreHubRow--${tone}`}>
-      <span className="moreHubIcon"><SvgIcon name={icon} /></span>
-      <span className="moreHubRowText"><strong>{title}</strong><small>{copy}</small></span>
-      <span className="moreHubChevron" aria-hidden="true">›</span>
-    </Link>
-  );
-}
-
-function SettingsGroup({ title, children }) {
-  return <section className="moreHubGroup"><h2>{title}</h2><div className="moreHubMenu screenCard">{children}</div></section>;
-}
-
-export function MoreHubPage() {
-  const user = useSelector(selectUser);
-  const { language, t } = useI18n();
-  const c = COPY[language] || COPY.uk;
-  const managerCabinet = isManagerCabinet(user);
-  const avatar = user?.profile?.avatarDataUrl || '';
-  const companyName = getCompanyName(user);
-  const roleLabel = managerCabinet ? t('profile.manager') : t('profile.employee');
-
-  return (
-    <section className="moreHub pageStack">
-      <header className="moreHubHeader appTop">
-        <div className="appTitleBlock"><h1>{c.title}</h1><p>{c.copy}</p></div>
-      </header>
-
-      <Link className="moreHubProfile screenCard moreHubProfile--link" to="/profile?section=personal&from=settings" aria-label={c.personal}>
-        <span className={`moreHubAvatar${avatar ? ' has-photo' : ''}`}>
-          {avatar ? <img src={avatar} alt="" /> : <span>{initials(user)}</span>}
-        </span>
-        <span className="moreHubProfileMain">
-          <span className="moreHubProfileText">
-            <strong>{getName(user)}</strong>
-            <small>{user?.email || ''}</small>
-            <em>{[companyName, roleLabel].filter(Boolean).join(' · ')}</em>
-          </span>
-          <span className="moreHubProfileChevron" aria-hidden="true">›</span>
-        </span>
-      </Link>
-
-      {managerCabinet ? (
-        <>
-          <SettingsGroup title={c.companyGroup}>
-            <SettingsRow to="/company-settings?section=identity&from=settings" icon="building" tone="company" title={c.identity} copy={c.identityCopy} />
-            <SettingsRow to="/company-settings?section=billing&from=settings" icon="receipt" tone="billing" title={c.billing} copy={c.billingCopy} />
-          </SettingsGroup>
-          <SettingsGroup title={c.workGroup}>
-            <SettingsRow to="/company-settings?section=work&from=settings" icon="clock" tone="work" title={c.work} copy={c.workCopy} />
-          </SettingsGroup>
-        </>
-      ) : (
-        <SettingsGroup title={c.workGroup}>
-          <SettingsRow to="/profile?section=work&from=settings" icon="clock" tone="work" title={c.myWork} copy={c.myWorkCopy} />
-        </SettingsGroup>
-      )}
-
-      <SettingsGroup title={c.accountGroup}>
-        <SettingsRow to="/profile?section=personal&from=settings" icon="user" title={c.personal} copy={c.personalCopy} />
-        <SettingsRow to="/profile?section=notifications&from=settings" icon="bell" title={c.notifications} copy={c.notificationsCopy} />
-        <SettingsRow to="/profile?section=language&from=settings" icon="globe" tone="language" title={t('settings.languageCard.title')} copy={c.languageCopy} />
-        <SettingsRow to="/profile?section=password&from=settings" icon="lock" tone="security" title={t('profile.changePassword')} copy={c.securityCopy} />
-        {!managerCabinet ? <SettingsRow to="/tax-information" icon="receipt" tone="billing" title={c.tax} copy={c.taxCopy} /> : null}
-        <SettingsRow to="/profile?section=account&from=settings" icon="logout" title={c.account} copy={c.accountCopy} />
-      </SettingsGroup>
-
-      <p className="moreHubVersion">WorkTrack · {c.version} 1.0.0</p>
-    </section>
-  );
+export function MoreHubPage(){
+ const user=useSelector(selectUser);const {language,t}=useI18n();const c=COPY[language]||COPY.uk;const managerCabinet=isManagerCabinet(user);const avatar=user?.profile?.avatarDataUrl||'';const companyName=getCompanyName(user);const roleLabel=managerCabinet?t('profile.manager'):t('profile.employee');
+ return <section className="moreHub pageStack">
+  <header className="moreHubHeader appTop"><div className="appTitleBlock"><h1>{c.title}</h1><p>{c.copy}</p></div></header>
+  <Link className="moreHubProfile screenCard moreHubProfile--link" to="/profile?section=personal&from=settings" aria-label={c.personal}><span className={`moreHubAvatar${avatar?' has-photo':''}`}>{avatar?<img src={avatar} alt=""/>:<span>{initials(user)}</span>}</span><span className="moreHubProfileMain"><span className="moreHubProfileText"><strong>{getName(user)}</strong><small>{user?.email||''}</small><em>{[companyName,roleLabel].filter(Boolean).join(' · ')}</em></span><span className="moreHubProfileChevron" aria-hidden="true">›</span></span></Link>
+  {managerCabinet?<><SettingsGroup title={c.companyGroup}><SettingsRow to="/company-settings?section=identity&from=settings" icon="building" tone="company" title={c.identity} copy={c.identityCopy}/><SettingsRow to="/company-settings?section=billing&from=settings" icon="receipt" tone="billing" title={c.billing} copy={c.billingCopy}/></SettingsGroup><SettingsGroup title={c.workGroup}><SettingsRow to="/company-settings?section=work&from=settings" icon="clock" tone="work" title={c.work} copy={c.workCopy}/></SettingsGroup></>:<SettingsGroup title={c.workGroup}><SettingsRow to="/profile?section=work&from=settings" icon="clock" tone="work" title={c.myWork} copy={c.myWorkCopy}/></SettingsGroup>}
+  <SettingsGroup title={c.accountGroup}><SettingsRow to="/profile?section=personal&from=settings" icon="settings" title={c.personal} copy={c.personalCopy}/>{!managerCabinet?<SettingsRow to="/profile?section=notifications&from=settings" icon="settings" title={c.notifications} copy={c.notificationsCopy}/>:null}<SettingsRow to="/profile?section=language&from=settings" icon="globe" tone="language" title={t('settings.languageCard.title')} copy={c.languageCopy}/><SettingsRow to="/profile?section=password&from=settings" icon="lock" tone="security" title={t('profile.changePassword')} copy={c.securityCopy}/>{!managerCabinet?<SettingsRow to="/tax-information" icon="receipt" tone="billing" title={c.tax} copy={c.taxCopy}/>:null}<SettingsRow to="/profile?section=account&from=settings" icon="logout" title={c.account} copy={c.accountCopy}/></SettingsGroup>
+  <p className="moreHubVersion">WorkTrack · {c.version} 1.0.0</p>
+ </section>;
 }
