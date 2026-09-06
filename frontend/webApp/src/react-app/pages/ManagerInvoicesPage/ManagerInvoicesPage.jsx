@@ -1,15 +1,17 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { RequestLoadingState } from '@shared/app/components/RequestLoader/RequestLoader.jsx';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
+import { selectUser } from '@shared/features/auth/authSlice.js';
 import { useGetManagerInvoicesQuery, useMarkInvoicePaidMutation } from '../../features/worktrack/billingApi.js';
 import './ManagerInvoicesPage.css';
 
 const COPY={
- uk:{eyebrow:'Фактури',title:'Фактури працівників',subtitle:'Отримані фактури та статус оплати.',empty:'Фактур за цим фільтром немає.',document:'Документ / PDF',paid:'Позначити оплачено',paying:'Збереження…',loading:'Завантаження фактур…',hours:'год',due:'Оплатити до',paymentDate:'Дата оплати',paidOn:'Оплачено',draft:'Чернетка',sent:'Відправлено',viewed:'Переглянуто',paidStatus:'Оплачено',cancelled:'Скасовано',overdue:'Прострочено',all:'Усі',open:'До оплати',overdueFilter:'Прострочені',paidFilter:'Оплачені',cancelledFilter:'Скасовані',openAmount:'До оплати',overdueAmount:'Прострочено',paidAmount:'Оплачено',paymentTitle:'Підтвердження оплати',paymentCopy:'Вкажіть фактичну дату оплати. Після підтвердження працівник отримає сповіщення.',close:'Скасувати',confirmPaid:'Підтвердити оплату'},
- cs:{eyebrow:'Faktury',title:'Faktury pracovníků',subtitle:'Přijaté faktury a stav plateb.',empty:'Pro tento filtr nejsou žádné faktury.',document:'Doklad / PDF',paid:'Označit jako zaplacené',paying:'Ukládání…',loading:'Načítání faktur…',hours:'h',due:'Splatnost',paymentDate:'Datum platby',paidOn:'Zaplaceno',draft:'Koncept',sent:'Odesláno',viewed:'Zobrazeno',paidStatus:'Zaplaceno',cancelled:'Zrušeno',overdue:'Po splatnosti',all:'Vše',open:'K úhradě',overdueFilter:'Po splatnosti',paidFilter:'Zaplacené',cancelledFilter:'Zrušené',openAmount:'K úhradě',overdueAmount:'Po splatnosti',paidAmount:'Zaplaceno',paymentTitle:'Potvrzení platby',paymentCopy:'Zadejte skutečné datum platby. Po potvrzení dostane pracovník oznámení.',close:'Zrušit',confirmPaid:'Potvrdit platbu'},
- en:{eyebrow:'Invoices',title:'Employee invoices',subtitle:'Received invoices and payment status.',empty:'No invoices match this filter.',document:'Document / PDF',paid:'Mark as paid',paying:'Saving…',loading:'Loading invoices…',hours:'h',due:'Due',paymentDate:'Payment date',paidOn:'Paid on',draft:'Draft',sent:'Sent',viewed:'Viewed',paidStatus:'Paid',cancelled:'Cancelled',overdue:'Overdue',all:'All',open:'Open',overdueFilter:'Overdue',paidFilter:'Paid',cancelledFilter:'Cancelled',openAmount:'Open amount',overdueAmount:'Overdue',paidAmount:'Paid',paymentTitle:'Confirm payment',paymentCopy:'Set the actual payment date. The employee will be notified after confirmation.',close:'Cancel',confirmPaid:'Confirm payment'}
+ uk:{eyebrow:'Фактури',title:'Фактури працівників',subtitle:'Отримані фактури та статус оплати.',empty:'Фактур за цим фільтром немає.',document:'Документ / PDF',paid:'Позначити оплачено',paying:'Збереження…',loading:'Завантаження фактур…',hours:'год',due:'Оплатити до',paymentDate:'Дата оплати',paidOn:'Оплачено',draft:'Чернетка',sent:'Відправлено',viewed:'Переглянуто',paidStatus:'Оплачено',cancelled:'Скасовано',overdue:'Прострочено',all:'Усі',open:'До оплати',overdueFilter:'Прострочені',paidFilter:'Оплачені',cancelledFilter:'Скасовані',openAmount:'До оплати',overdueAmount:'Прострочено',paidAmount:'Оплачено',paymentTitle:'Підтвердження оплати',paymentCopy:'Вкажіть фактичну дату оплати. Після підтвердження працівник отримає сповіщення.',close:'Скасувати',confirmPaid:'Підтвердити оплату',own:'Власна фактура'},
+ cs:{eyebrow:'Faktury',title:'Faktury pracovníků',subtitle:'Přijaté faktury a stav plateb.',empty:'Pro tento filtr nejsou žádné faktury.',document:'Doklad / PDF',paid:'Označit jako zaplacené',paying:'Ukládání…',loading:'Načítání faktur…',hours:'h',due:'Splatnost',paymentDate:'Datum platby',paidOn:'Zaplaceno',draft:'Koncept',sent:'Odesláno',viewed:'Zobrazeno',paidStatus:'Zaplaceno',cancelled:'Zrušeno',overdue:'Po splatnosti',all:'Vše',open:'K úhradě',overdueFilter:'Po splatnosti',paidFilter:'Zaplacené',cancelledFilter:'Zrušené',openAmount:'K úhradě',overdueAmount:'Po splatnosti',paidAmount:'Zaplaceno',paymentTitle:'Potvrzení platby',paymentCopy:'Zadejte skutečné datum platby. Po potvrzení dostane pracovník oznámení.',close:'Zrušit',confirmPaid:'Potvrdit platbu',own:'Vlastní faktura'},
+ en:{eyebrow:'Invoices',title:'Employee invoices',subtitle:'Received invoices and payment status.',empty:'No invoices match this filter.',document:'Document / PDF',paid:'Mark as paid',paying:'Saving…',loading:'Loading invoices…',hours:'h',due:'Due',paymentDate:'Payment date',paidOn:'Paid on',draft:'Draft',sent:'Sent',viewed:'Viewed',paidStatus:'Paid',cancelled:'Cancelled',overdue:'Overdue',all:'All',open:'Open',overdueFilter:'Overdue',paidFilter:'Paid',cancelledFilter:'Cancelled',openAmount:'Open amount',overdueAmount:'Overdue',paidAmount:'Paid',paymentTitle:'Confirm payment',paymentCopy:'Set the actual payment date. The employee will be notified after confirmation.',close:'Cancel',confirmPaid:'Confirm payment',own:'Own invoice'}
 };
 function statusLabel(c,status){if(status==='PAID')return c.paidStatus;return c[String(status||'').toLowerCase()]||status}
 function money(value){return `${Number(value||0).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2})} CZK`}
@@ -18,8 +20,10 @@ function paidDateValue(value){return value?String(value).slice(0,10):''}
 
 export function ManagerInvoicesPage(){
  const navigate=useNavigate();
+ const user=useSelector(selectUser);
  const {language}=useI18n();
  const c=COPY[language]||COPY.uk;
+ const ownMembershipId=user?.activeMembership?.id||'';
  const today=localDateValue();
  const [actionError,setActionError]=useState('');
  const [filter,setFilter]=useState('OPEN');
@@ -38,8 +42,8 @@ export function ManagerInvoicesPage(){
   return true;
  }),[filter,invoices]);
  const counts={ALL:summary.totalCount??invoices.length,OPEN:summary.openCount??0,OVERDUE:summary.overdueCount??0,PAID:summary.paidCount??0,CANCELLED:summary.cancelledCount??0};
- function openPayment(invoice){setPaymentDate(today);setActionError('');setPayTarget(invoice)}
- async function paid(){if(!payTarget?.id||!paymentDate)return;setActionError('');try{await markPaid({invoiceId:payTarget.id,paidDate:paymentDate}).unwrap();setPayTarget(null)}catch(err){setActionError(getApiErrorMessage(err))}}
+ function openPayment(invoice){if(invoice.employeeMembershipId===ownMembershipId)return;setPaymentDate(today);setActionError('');setPayTarget(invoice)}
+ async function paid(){if(!payTarget?.id||!paymentDate||payTarget.employeeMembershipId===ownMembershipId)return;setActionError('');try{await markPaid({invoiceId:payTarget.id,paidDate:paymentDate}).unwrap();setPayTarget(null)}catch(err){setActionError(getApiErrorMessage(err))}}
  const filters=[['OPEN',c.open],['OVERDUE',c.overdueFilter],['PAID',c.paidFilter],['CANCELLED',c.cancelledFilter],['ALL',c.all]];
  const showContent=!isLoading&&!queryError;
  return <section className="managerInvoicePage pageStack">
@@ -56,9 +60,10 @@ export function ManagerInvoicesPage(){
    {actionError?<p className="statusNote is-error">{actionError}</p>:null}
    <section className="managerInvoiceList" aria-busy={isFetching}>{filtered.length?filtered.map(invoice=>{
     const overdue=Boolean(invoice.isOverdue);
-    const canPay=['SENT','VIEWED'].includes(invoice.status);
+    const ownInvoice=Boolean(ownMembershipId&&invoice.employeeMembershipId===ownMembershipId);
+    const canPay=!ownInvoice&&['SENT','VIEWED'].includes(invoice.status);
     return <article className={`managerInvoiceCard screenCard${overdue?' is-overdue':''}`} key={invoice.id}>
-     <div className="managerInvoiceTop"><div><span>{invoice.employee?.name||invoice.employee?.email}</span><strong>{invoice.invoiceNumber}</strong></div><div className="managerInvoiceAmount"><strong>{Number(invoice.subtotal).toLocaleString()} {invoice.currency}</strong><div className="managerInvoiceStatusRow"><span className={`invoiceStatus is-${String(invoice.status).toLowerCase()}`}>{statusLabel(c,invoice.status)}</span>{overdue?<span className="invoiceOverdueBadge">{c.overdue}</span>:null}</div></div></div>
+     <div className="managerInvoiceTop"><div><span>{invoice.employee?.name||invoice.employee?.email}{ownInvoice?` · ${c.own}`:''}</span><strong>{invoice.invoiceNumber}</strong></div><div className="managerInvoiceAmount"><strong>{Number(invoice.subtotal).toLocaleString()} {invoice.currency}</strong><div className="managerInvoiceStatusRow"><span className={`invoiceStatus is-${String(invoice.status).toLowerCase()}`}>{statusLabel(c,invoice.status)}</span>{overdue?<span className="invoiceOverdueBadge">{c.overdue}</span>:null}</div></div></div>
      <div className="managerInvoiceMeta"><span>{invoice.periodStart} — {invoice.periodEnd}</span><span>{invoice.totalHours} {c.hours}</span><span className={overdue?'is-overdue-text':''}>{c.due}: {invoice.dueDate}</span>{invoice.status==='PAID'&&invoice.paidAt?<span>{c.paidOn}: {paidDateValue(invoice.paidAt)}</span>:null}</div>
      <div className="managerInvoiceActions"><button className="managerInvoiceDocument" type="button" onClick={()=>navigate(`/manager/invoices/${invoice.id}`)}>{c.document}</button>{canPay?<button type="button" onClick={()=>openPayment(invoice)}>{c.paid}</button>:null}</div>
     </article>
