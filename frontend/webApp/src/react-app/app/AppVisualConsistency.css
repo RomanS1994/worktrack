@@ -1,147 +1,22 @@
 /*
- * App-wide visual consistency layer.
- * The visual reference is the employee Time / Week screen.
- * The reference screen itself and printable documents are intentionally excluded.
+ * App-wide consistency bridge.
+ * Core typography, spacing, radii, shadows and control sizes now live in
+ * shared/app/theme.css. Keep this file intentionally small so pages cannot
+ * silently override the design system with broad selectors.
  */
 
 #react-root {
   font-family: var(--font-app);
 }
 
-/*
- * Typography scale copied from the compact Time / Week screen:
- * page title 23px, section title 17px, primary UI 14px,
- * row/body text 12px, secondary/caption 10px.
- */
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) > header h1,
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .appTitleBlock h1,
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .employeeFinance-heading h1,
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .compactHeader h1 {
-  font-family: var(--font-app);
-  font-size: 23px;
-  line-height: 1.1;
-  letter-spacing: -0.025em;
-  font-weight: 800;
-}
-
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .screenCard h2,
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .screenCard h3,
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .compactHeader h2,
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .compactHeader h3,
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .employeeFinance-card h2 {
-  font-family: var(--font-app);
-  font-size: 17px;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  font-weight: 800;
-}
-
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .screenCard h4,
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) [class*="Card"] > strong:first-child,
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) [class*="card"] > strong:first-child {
-  font-family: var(--font-app);
-  font-size: 14px;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-  font-weight: 800;
-}
-
-/* Body / secondary / caption scale. */
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) p,
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) li,
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) td,
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) label {
-  font-family: var(--font-app);
-}
-
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) p,
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) li,
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) td {
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .compactHeader p,
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) [class*="subtitle"],
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) [class*="Subtitle"],
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) [class*="description"],
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) [class*="Description"],
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) [class*="meta"],
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) [class*="Meta"],
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) small {
-  font-size: 10px;
-  line-height: 1.35;
-}
-
-/* Controls follow the Time / Week density. */
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) button,
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) a[role="button"] {
-  font-family: var(--font-app);
-  font-size: 12px;
-  line-height: 1.1;
-  font-weight: 700;
-}
-
-#react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .screenCard {
-  gap: 10px;
-  padding: 13px 14px;
-  border-radius: 17px;
-}
-
-/* Segmented controls match Week tabs. */
+/* Keep shared typography inheritance predictable without forcing page sizes. */
+#react-root .pageStack,
+#react-root .sectionShell,
+#react-root .screenCard,
 #react-root .sectionTabs,
 #react-root [class*="Tabs"],
 #react-root [class*="tabs"] {
   font-family: var(--font-app);
-}
-
-#react-root .sectionTabs button,
-#react-root [class*="Toggle"] button,
-#react-root [class*="toggle"] button {
-  font-size: 12px;
-  font-weight: 700;
-}
-
-/* Bottom navigation. */
-#react-root .bottomTab-label {
-  font-family: var(--font-app);
-  font-size: 10px;
-  line-height: 1.1;
-  font-weight: 700;
-  letter-spacing: 0;
-}
-
-/* Finance screen specifically aligned to Time / Week. */
-#react-root .employeeFinance {
-  gap: 10px;
-}
-
-#react-root .employeeFinance-heading h1 {
-  margin: 0;
-  font-size: 23px;
-}
-
-#react-root .employeeFinance-period strong {
-  font-size: 14px;
-  line-height: 1.2;
-  font-weight: 800;
-}
-
-#react-root .employeeFinance-period span,
-#react-root .employeeFinance-companyCard span,
-#react-root .employeeFinance-progressMeta,
-#react-root .employeeFinance-heroTop small {
-  font-size: 10px;
-}
-
-#react-root .employeeFinance-companyCard strong {
-  font-size: 14px;
-  font-weight: 800;
-}
-
-#react-root .employeeFinance-card,
-#react-root .employeeFinance-companyCard {
-  border-radius: 17px;
 }
 
 /* Form controls stay at 16px on iOS to avoid browser zoom. */
@@ -151,29 +26,12 @@
   font-size: 16px;
 }
 
-/* Keep document typography independent when printing. */
+/* Printable documents remain independent from application UI typography. */
 @media print {
   #react-root .payrollReport-sheet,
   #react-root .payrollReport-sheet *,
   #react-root .invoiceDocumentPage,
   #react-root .invoiceDocumentPage * {
     font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-  }
-}
-
-@media (min-width: 701px) {
-  #react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) > header h1,
-  #react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .appTitleBlock h1,
-  #react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .employeeFinance-heading h1,
-  #react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .compactHeader h1 {
-    font-size: 25px;
-  }
-
-  #react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .screenCard h2,
-  #react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .screenCard h3,
-  #react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .compactHeader h2,
-  #react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .compactHeader h3,
-  #react-root .pageStack:not(.invoiceDocumentPage):not(.fastHoursPage) .employeeFinance-card h2 {
-    font-size: 18px;
   }
 }
