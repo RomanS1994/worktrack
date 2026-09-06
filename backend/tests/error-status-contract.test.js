@@ -23,6 +23,7 @@ const EXPECTED_CLIENT_ERRORS = new Map([
   ['Weekly submission is not pending review', 409],
   ['Managers cannot review their own submission', 409],
   ['Managers cannot edit their own control timesheet', 409],
+  ['Managers cannot review their own invoice', 409],
   ['No work entries to submit', 400],
   ['Invalid invoice month', 400],
   ['Complete tax information before creating an invoice', 400],
