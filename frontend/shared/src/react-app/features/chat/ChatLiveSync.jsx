@@ -13,7 +13,7 @@ export function ChatLiveSync() {
 
   useEffect(() => {
     if (!enabled) return undefined;
-    const controller = new AbortController();
+    let controller = null;
     let retryId = null;
     let stopped = false;
 
@@ -32,19 +32,49 @@ export function ChatLiveSync() {
       window.dispatchEvent(new CustomEvent('worktrack:chat-live', { detail: { event, payload } }));
     };
 
+    const stopConnection = () => {
+      if (retryId) window.clearTimeout(retryId);
+      retryId = null;
+      controller?.abort();
+      controller = null;
+    };
+
     const start = async () => {
+      if (stopped || document.visibilityState !== 'visible' || controller) return;
+      controller = new AbortController();
+      const activeController = controller;
       try {
-        await connectChatStream({ signal: controller.signal, onEvent: handleEvent });
+        await connectChatStream({ signal: activeController.signal, onEvent: handleEvent });
       } catch {
-        if (!stopped && !controller.signal.aborted) retryId = window.setTimeout(start, 3000);
+        // Reconnect below unless this connection was intentionally aborted.
+      } finally {
+        if (controller === activeController) controller = null;
+      }
+      if (!stopped && !activeController.signal.aborted && document.visibilityState === 'visible') {
+        retryId = window.setTimeout(start, 3000);
       }
     };
 
-    start();
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        dispatch(baseApi.util.invalidateTags([
+          { type: 'Notifications', id: 'CHAT_MESSAGES' },
+          { type: 'Notifications', id: 'CHAT_SUMMARY' },
+          { type: 'Notifications', id: 'CHAT_PRESENCE' },
+          { type: 'Notifications', id: 'CHAT_READ_STATES' },
+        ]));
+        void start();
+      } else {
+        stopConnection();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    void start();
     return () => {
       stopped = true;
-      if (retryId) window.clearTimeout(retryId);
-      controller.abort();
+      document.removeEventListener('visibilitychange', handleVisibility);
+      stopConnection();
     };
   }, [dispatch, enabled]);
 
