@@ -18,20 +18,38 @@ export function ChatLiveSync() {
     let stopped = false;
 
     const handleEvent = (event, payload) => {
-      const tags = [
-        { type: 'Notifications', id: 'CHAT_MESSAGES' },
-        { type: 'Notifications', id: 'CHAT_SUMMARY' },
-      ];
-      if (event === 'presence' || event === 'ready') {
-        tags.push({ type: 'Notifications', id: 'CHAT_PRESENCE' });
+      const tags = [];
+
+      if (event === 'message' || event === 'delete') {
+        tags.push(
+          { type: 'Notifications', id: 'CHAT_MESSAGES' },
+          { type: 'Notifications', id: 'CHAT_SUMMARY' },
+        );
       }
-      if (event === 'read') {
-        tags.push({ type: 'Notifications', id: 'CHAT_READ_STATES' });
-      }
+
       if (event === 'reaction') {
         tags.push({ type: 'Notifications', id: 'CHAT_REACTIONS' });
       }
-      if (event !== 'typing') dispatch(baseApi.util.invalidateTags(tags));
+
+      if (event === 'read') {
+        tags.push({ type: 'Notifications', id: 'CHAT_READ_STATES' });
+      }
+
+      if (event === 'presence') {
+        tags.push({ type: 'Notifications', id: 'CHAT_PRESENCE' });
+      }
+
+      if (event === 'ready') {
+        tags.push(
+          { type: 'Notifications', id: 'CHAT_MESSAGES' },
+          { type: 'Notifications', id: 'CHAT_SUMMARY' },
+          { type: 'Notifications', id: 'CHAT_PRESENCE' },
+          { type: 'Notifications', id: 'CHAT_READ_STATES' },
+          { type: 'Notifications', id: 'CHAT_REACTIONS' },
+        );
+      }
+
+      if (tags.length) dispatch(baseApi.util.invalidateTags(tags));
       window.dispatchEvent(new CustomEvent('worktrack:chat-live', { detail: { event, payload } }));
     };
 
