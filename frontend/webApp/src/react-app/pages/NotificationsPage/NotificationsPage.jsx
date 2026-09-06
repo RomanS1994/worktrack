@@ -23,6 +23,7 @@ const MANAGER_NOTIFICATION_TYPES = new Set([
 const EMPLOYEE_NOTIFICATION_TYPES = new Set([
   'weekly_submission.approved',
   'weekly_submission.rejected',
+  'weekly_submission.reopened',
   'invoice.viewed',
   'invoice.paid',
 ]);
@@ -120,6 +121,16 @@ function localizeNotification(notification, t, language) {
       message: notification.message && notification.message !== backendFallback
         ? notification.message
         : t('notificationDynamic.rejectedFallback'),
+    };
+  }
+
+  if (type === 'weekly_submission.reopened') {
+    const period = extractPeriod(notification.message);
+    return {
+      title: t('notificationDynamic.reopenedTitle'),
+      message: period
+        ? t('notificationDynamic.reopenedMessage', { period })
+        : t('notificationDynamic.reopenedFallback'),
     };
   }
 
