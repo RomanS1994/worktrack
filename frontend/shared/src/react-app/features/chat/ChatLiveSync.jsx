@@ -9,6 +9,7 @@ export function ChatLiveSync() {
   const dispatch = useDispatch();
   const token = useSelector(selectToken);
   const user = useSelector(selectUser);
+  const membershipId = user?.activeMembership?.id || '';
   const enabled = Boolean(token && user && hasActiveCompanyAccess(user));
 
   useEffect(() => {
@@ -19,12 +20,17 @@ export function ChatLiveSync() {
 
     const handleEvent = (event, payload) => {
       const tags = [];
+      const ownMessage = event === 'message' && payload?.authorMembershipId === membershipId;
+      const ownReaction = event === 'reaction' && payload?.membershipId === membershipId;
+      const ownDelete = event === 'delete' && payload?.membershipId === membershipId;
 
-      if (event === 'message' || event === 'delete' || event === 'reaction') {
+      if ((event === 'message' && !ownMessage)
+        || (event === 'delete' && !ownDelete)
+        || (event === 'reaction' && !ownReaction)) {
         tags.push({ type: 'Notifications', id: 'CHAT_MESSAGES' });
       }
 
-      if (event === 'message' || event === 'delete') {
+      if ((event === 'message' && !ownMessage) || event === 'delete') {
         tags.push({ type: 'Notifications', id: 'CHAT_SUMMARY' });
       }
 
@@ -93,7 +99,7 @@ export function ChatLiveSync() {
       document.removeEventListener('visibilitychange', handleVisibility);
       stopConnection();
     };
-  }, [dispatch, enabled]);
+  }, [dispatch, enabled, membershipId]);
 
   return null;
 }
