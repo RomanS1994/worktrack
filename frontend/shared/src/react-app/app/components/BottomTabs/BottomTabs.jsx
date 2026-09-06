@@ -35,7 +35,7 @@ export function BottomTabs(){
    <TaskTab to="/more" label={c.more} icon="settings" activePaths={['/more','/profile']}/>
   </>:<>
    <TaskTab to="/employees" label={c.team} icon="accounts" activePaths={['/employees','/projects']}/>
-   <TaskTab to="/manager/timesheet" label={c.time} icon="clock" primary activePaths={['/manager/timesheet','/approvals']}/>
+   <TaskTab to="/manager/timesheet" label={c.time} icon="clock" primary activePaths={['/manager/timesheet','/approvals','/approval-history']}/>
    <TaskTab to="/payroll-report" label={c.payroll} icon="wallet" activePaths={['/payroll-report','/manager/advances','/manager/expenses','/manager/invoices']}/>
    <TaskTab to="/more" label={c.more} icon="settings" activePaths={['/more','/company-settings','/profile']}/>
   </>}
