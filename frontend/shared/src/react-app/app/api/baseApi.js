@@ -18,8 +18,12 @@ function resolveBaseUrl() {
   const testBaseUrl = import.meta.env.VITE_API_BASE_URL_TEST;
   if (testBaseUrl) return testBaseUrl;
 
+  const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const isLocalOverride = /^http:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?\/api\/?$/i.test(configuredBaseUrl);
+  if (isLocalOverride) return configuredBaseUrl;
+
   if (import.meta.env.DEV) {
-    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+    return configuredBaseUrl || 'http://localhost:3001/api';
   }
 
   // Production must stay same-origin so the refresh cookie remains first-party,
