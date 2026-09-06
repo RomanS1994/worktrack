@@ -221,6 +221,7 @@ export async function getManagerTimesheet(client, context, { month }) {
       employeeId: employee.id,
       name: employeeName(employee),
       status: employee.status,
+      // Every active membership row is editable, including the manager's own row.
       canEdit: true,
       employeeTotal: round2(employeeTotal),
       managerTotal: round2(managerTotal),
