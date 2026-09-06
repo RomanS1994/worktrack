@@ -317,7 +317,7 @@ export function ChatPage(){
         {item.id===firstUnreadId?<div className="companyChatUnread"><span>{c.newMessages}</span></div>:null}
         <article id={`chat-message-${item.id}`} className={`companyChatMessage${mine?' isMine':''}`}>
           {!mine?<div className="companyChatAvatar">{item.author?.avatarDataUrl?<img src={item.author.avatarDataUrl} alt=""/>:<span>{initials(item.author?.name)}</span>}</div>:null}
-          <div className="companyChatBubble" onClick={event=>{if(event.target.closest('button'))return;setReactionTarget(current=>current?.id===item.id?null:item)}}>
+          <div className="companyChatBubble" onDoubleClick={event=>{if(event.target.closest('button'))return;setReactionTarget(current=>current?.id===item.id?null:item)}}>
             {!mine?<strong>{item.author?.name||'-'}</strong>:null}
             {item.replyTo?<button className="companyChatReplyQuote" type="button" onClick={()=>scrollToMessage(item.replyTo.id)}><strong>{item.replyTo.author?.name||c.replyingTo}</strong><span>{item.replyTo.deleted?c.deletedMessage:item.replyTo.body}</span></button>:null}
             <p>{item.body}</p>
