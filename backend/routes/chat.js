@@ -9,6 +9,7 @@ import {
   listChatMessages,
   markChatRead,
 } from '../services/company-chat.js';
+import { getChatReactions, toggleChatReaction } from '../services/chat-reactions.js';
 import { broadcastCompanyChat, getCompanyChatPresence, subscribeToCompanyChat } from '../services/chat-live.js';
 import { notifyCompanyAboutChatMessage } from '../services/chat-push.js';
 
@@ -35,6 +36,26 @@ export async function handleChatRoutes(request, response, { url, pathName }) {
 
   if (request.method === 'GET' && pathName === '/api/chat/read-states') {
     const payload = await runStoreRead({ prisma: client => getChatReadStates(client, context) });
+    sendJson(response, 200, payload);
+    return true;
+  }
+
+  if (request.method === 'GET' && pathName === '/api/chat/reactions') {
+    const messageIds = (url.searchParams.get('messageIds') || '').split(',').filter(Boolean);
+    const payload = await runStoreRead({ prisma: client => getChatReactions(client, context, messageIds) });
+    sendJson(response, 200, payload);
+    return true;
+  }
+
+  if (request.method === 'POST' && pathName === '/api/chat/reactions') {
+    const body = await readJsonBody(request);
+    const payload = await runStoreTransaction({ prisma: client => toggleChatReaction(client, context, body) });
+    broadcastCompanyChat(context.activeMembership.companyId, 'reaction', {
+      messageId: payload.messageId,
+      emoji: payload.emoji,
+      membershipId: context.activeMembership.id,
+      active: payload.active,
+    });
     sendJson(response, 200, payload);
     return true;
   }
