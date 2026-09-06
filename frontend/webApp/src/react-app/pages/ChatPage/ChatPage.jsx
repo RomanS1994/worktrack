@@ -17,9 +17,9 @@ import { useI18n } from '@shared/app/i18n/useI18n.js';
 import './ChatPage.css';
 
 const COPY = {
-  uk:{title:'Чат компанії',subtitle:'Спільний чат для всієї команди',online:'онлайн',placeholder:'Написати повідомлення…',send:'Надіслати',older:'Завантажити старіші',empty:'Поки що повідомлень немає.',today:'Сьогодні',yesterday:'Вчора',newMessages:'Нові повідомлення',scrollNew:'Нові повідомлення',delete:'Видалити',typing:'друкує…',delivered:'Доставлено',read:'Прочитано'},
-  cs:{title:'Firemní chat',subtitle:'Společný chat pro celý tým',online:'online',placeholder:'Napsat zprávu…',send:'Odeslat',older:'Načíst starší',empty:'Zatím zde nejsou žádné zprávy.',today:'Dnes',yesterday:'Včera',newMessages:'Nové zprávy',scrollNew:'Nové zprávy',delete:'Smazat',typing:'píše…',delivered:'Doručeno',read:'Přečteno'},
-  en:{title:'Company chat',subtitle:'Shared chat for the whole team',online:'online',placeholder:'Write a message…',send:'Send',older:'Load older',empty:'No messages yet.',today:'Today',yesterday:'Yesterday',newMessages:'New messages',scrollNew:'New messages',delete:'Delete',typing:'is typing…',delivered:'Delivered',read:'Read'},
+  uk:{title:'Чат компанії',subtitle:'Спільний чат для всієї команди',online:'онлайн',placeholder:'Написати повідомлення…',send:'Надіслати',older:'Завантажити старіші',empty:'Поки що повідомлень немає.',today:'Сьогодні',yesterday:'Вчора',newMessages:'Нові повідомлення',scrollNew:'Нові повідомлення',delete:'Видалити',typing:'друкує…',delivered:'Доставлено',read:'Прочитано',reply:'Відповісти',replyingTo:'Відповідь',cancelReply:'Скасувати відповідь',deletedMessage:'Повідомлення видалено'},
+  cs:{title:'Firemní chat',subtitle:'Společný chat pro celý tým',online:'online',placeholder:'Napsat zprávu…',send:'Odeslat',older:'Načíst starší',empty:'Zatím zde nejsou žádné zprávy.',today:'Dnes',yesterday:'Včera',newMessages:'Nové zprávy',scrollNew:'Nové zprávy',delete:'Smazat',typing:'píše…',delivered:'Doručeno',read:'Přečteno',reply:'Odpovědět',replyingTo:'Odpověď',cancelReply:'Zrušit odpověď',deletedMessage:'Zpráva byla smazána'},
+  en:{title:'Company chat',subtitle:'Shared chat for the whole team',online:'online',placeholder:'Write a message…',send:'Send',older:'Load older',empty:'No messages yet.',today:'Today',yesterday:'Yesterday',newMessages:'New messages',scrollNew:'New messages',delete:'Delete',typing:'is typing…',delivered:'Delivered',read:'Read',reply:'Reply',replyingTo:'Replying to',cancelReply:'Cancel reply',deletedMessage:'Message deleted'},
 };
 
 function localeFor(language){return language==='cs'?'cs-CZ':language==='en'?'en-GB':'uk-UA'}
@@ -50,11 +50,13 @@ export function ChatPage(){
   const [markRead]=useMarkChatReadMutation();
   const [deleteMessage]=useDeleteChatMessageMutation();
   const [text,setText]=useState('');
+  const [replyTo,setReplyTo]=useState(null);
   const [older,setOlder]=useState([]);
   const [showNewMessages,setShowNewMessages]=useState(false);
   const [typingUsers,setTypingUsers]=useState({});
   const [liveReadStates,setLiveReadStates]=useState({});
   const listRef=useRef(null);
+  const composerRef=useRef(null);
   const initialReadAtRef=useRef(null);
   const capturedInitialReadRef=useRef(false);
   const didInitialScrollRef=useRef(false);
@@ -62,6 +64,7 @@ export function ChatPage(){
   const typingStopTimerRef=useRef(null);
   const lastTypingSentRef=useRef(0);
   const typingExpiryTimersRef=useRef(new Map());
+  const highlightTimerRef=useRef(null);
   const latest=data?.messages||[];
   const onlineCount=Math.max(0,Number(presence?.onlineCount)||0);
   const typingList=Object.values(typingUsers);
@@ -123,6 +126,7 @@ export function ChatPage(){
 
   useEffect(()=>()=>{
     if(typingStopTimerRef.current)window.clearTimeout(typingStopTimerRef.current);
+    if(highlightTimerRef.current)window.clearTimeout(highlightTimerRef.current);
     void sendTyping({typing:false});
   },[sendTyping]);
 
@@ -173,6 +177,20 @@ export function ChatPage(){
     },2500);
   }
 
+  function beginReply(item){
+    setReplyTo(item);
+    requestAnimationFrame(()=>composerRef.current?.focus());
+  }
+
+  function scrollToMessage(messageId){
+    const target=document.getElementById(`chat-message-${messageId}`);
+    if(!target)return;
+    target.scrollIntoView({behavior:'smooth',block:'center'});
+    target.classList.add('isHighlighted');
+    if(highlightTimerRef.current)window.clearTimeout(highlightTimerRef.current);
+    highlightTimerRef.current=window.setTimeout(()=>target.classList.remove('isHighlighted'),1300);
+  }
+
   async function submit(event){
     event.preventDefault();
     const body=text.trim();
@@ -180,9 +198,19 @@ export function ChatPage(){
     if(typingStopTimerRef.current)window.clearTimeout(typingStopTimerRef.current);
     void sendTyping({typing:false});
     lastTypingSentRef.current=0;
+    const activeReply=replyTo;
     setText('');
-    try{await sendMessage({body,clientMessageId:crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`}).unwrap();requestAnimationFrame(()=>scrollToBottom('smooth'));}
-    catch{setText(body)}
+    try{
+      await sendMessage({
+        body,
+        clientMessageId:crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,
+        ...(activeReply?.id?{replyToMessageId:activeReply.id}:{}),
+      }).unwrap();
+      setReplyTo(null);
+      requestAnimationFrame(()=>scrollToBottom('smooth'));
+    }catch{
+      setText(body);
+    }
   }
 
   async function loadMore(){
@@ -197,6 +225,7 @@ export function ChatPage(){
   async function remove(item){
     if(item.authorMembershipId!==membershipId&&role!=='MANAGER')return;
     await deleteMessage(item.id).unwrap();
+    if(replyTo?.id===item.id)setReplyTo(null);
   }
 
   function isReadByOther(item){
@@ -214,17 +243,21 @@ export function ChatPage(){
       {messages.map((item,index)=>{const mine=item.authorMembershipId===membershipId;const previous=messages[index-1];const showDay=!previous||dayKey(previous.createdAt)!==dayKey(item.createdAt);const read=mine&&isReadByOther(item);return <Fragment key={item.id}>
         {showDay?<div className="companyChatDay"><span>{formatDay(item.createdAt,language,c)}</span></div>:null}
         {item.id===firstUnreadId?<div className="companyChatUnread"><span>{c.newMessages}</span></div>:null}
-        <article className={`companyChatMessage${mine?' isMine':''}`}>
+        <article id={`chat-message-${item.id}`} className={`companyChatMessage${mine?' isMine':''}`}>
           {!mine?<div className="companyChatAvatar">{item.author?.avatarDataUrl?<img src={item.author.avatarDataUrl} alt=""/>:<span>{initials(item.author?.name)}</span>}</div>:null}
           <div className="companyChatBubble">
             {!mine?<strong>{item.author?.name||'-'}</strong>:null}
+            {item.replyTo?<button className="companyChatReplyQuote" type="button" onClick={()=>scrollToMessage(item.replyTo.id)}><strong>{item.replyTo.author?.name||c.replyingTo}</strong><span>{item.replyTo.deleted?c.deletedMessage:item.replyTo.body}</span></button>:null}
             <p>{item.body}</p>
-            <footer><time>{formatTime(item.createdAt,language)}</time>{mine?<span className={`companyChatReceipt${read?' isRead':''}`} title={read?c.read:c.delivered} aria-label={read?c.read:c.delivered}>{read?'✓✓':'✓'}</span>:null}{mine||role==='MANAGER'?<button type="button" onClick={()=>remove(item)}>{c.delete}</button>:null}</footer>
+            <footer><time>{formatTime(item.createdAt,language)}</time>{mine?<span className={`companyChatReceipt${read?' isRead':''}`} title={read?c.read:c.delivered} aria-label={read?c.read:c.delivered}>{read?'✓✓':'✓'}</span>:null}<button type="button" className="companyChatReplyAction" onClick={()=>beginReply(item)}>{c.reply}</button>{mine||role==='MANAGER'?<button type="button" onClick={()=>remove(item)}>{c.delete}</button>:null}</footer>
           </div>
         </article>
       </Fragment>})}
     </div>
     {showNewMessages?<button className="companyChatNewButton" type="button" onClick={()=>scrollToBottom('smooth')}>↓ {c.scrollNew}</button>:null}
-    <form className="companyChatComposer" onSubmit={submit}><textarea rows="1" maxLength="4000" value={text} onChange={handleTextChange} placeholder={c.placeholder}/><button type="submit" disabled={!text.trim()||sendState.isLoading}>{sendState.isLoading?'…':c.send}</button></form>
+    <form className="companyChatComposer" onSubmit={submit}>
+      {replyTo?<div className="companyChatComposerReply"><span><strong>{c.replyingTo}: {replyTo.author?.name||'-'}</strong><small>{replyTo.body}</small></span><button type="button" onClick={()=>setReplyTo(null)} aria-label={c.cancelReply}>×</button></div>:null}
+      <textarea ref={composerRef} rows="1" maxLength="4000" value={text} onChange={handleTextChange} placeholder={c.placeholder}/><button type="submit" disabled={!text.trim()||sendState.isLoading}>{sendState.isLoading?'…':c.send}</button>
+    </form>
   </section>;
 }
