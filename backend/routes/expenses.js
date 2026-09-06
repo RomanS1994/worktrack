@@ -133,7 +133,6 @@ export async function handleExpenseRoutes(request, response, { pathName, url }) 
         where: {
           id: employeeMembershipId,
           companyId: context.activeMembership.companyId,
-          role: 'EMPLOYEE',
           status: 'ACTIVE',
           deletedAt: null,
         },
