@@ -62,6 +62,7 @@ export async function getManagerDashboard(client, context, now = new Date()) {
       email: employee.user?.email || '',
       status: serializeSubmissionStatus(submission),
       submittedAt: submission?.submittedAt?.toISOString?.() || '',
+      reviewedAt: submission?.reviewedAt?.toISOString?.() || '',
       rejectionReason: submission?.rejectionReason || '',
     };
   });
@@ -70,11 +71,22 @@ export async function getManagerDashboard(client, context, now = new Date()) {
   const needsChanges = employeeStatuses.filter(item => item.status === 'REJECTED');
   const submitted = employeeStatuses.filter(item => item.status === 'SUBMITTED');
   const approved = employeeStatuses.filter(item => item.status === 'APPROVED');
+  const ownStatus = employeeStatuses.find(item => item.id === membership.id) || null;
+  const ownPayroll = payroll.employees?.find(item => item.id === membership.id) || null;
 
   return {
     role: 'MANAGER',
     company: payroll.company,
     week,
+    self: {
+      status: ownStatus?.status || 'NOT_SUBMITTED',
+      submittedAt: ownStatus?.submittedAt || '',
+      reviewedAt: ownStatus?.reviewedAt || '',
+      rejectionReason: ownStatus?.rejectionReason || '',
+      totalHours: ownPayroll?.summary?.totalHours || '0.00',
+      approvedHours: ownPayroll?.summary?.approvedHours || '0.00',
+      pendingHours: ownPayroll?.summary?.pendingHours || '0.00',
+    },
     summary: {
       employeeCount: employees.length,
       activeProjectCount,
