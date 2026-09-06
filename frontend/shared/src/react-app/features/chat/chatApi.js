@@ -100,6 +100,19 @@ export const chatApi = baseApi.injectEndpoints({
     }),
     deleteChatMessage: builder.mutation({
       query: messageId => ({ url: `/chat/messages/${messageId}`, method: 'DELETE' }),
+      async onQueryStarted(messageId, { dispatch, queryFulfilled }) {
+        const patch = dispatch(
+          chatApi.util.updateQueryData('getChatMessages', { limit: 50 }, draft => {
+            if (!Array.isArray(draft?.messages)) return;
+            draft.messages = draft.messages.filter(item => item.id !== messageId);
+          }),
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patch.undo();
+        }
+      },
       invalidatesTags: [
         { type: 'Notifications', id: 'CHAT_MESSAGES' },
         { type: 'Notifications', id: 'CHAT_SUMMARY' },
