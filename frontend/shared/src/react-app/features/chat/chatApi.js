@@ -53,11 +53,20 @@ export const chatApi = baseApi.injectEndpoints({
       providesTags: [{ type: 'Notifications', id: 'CHAT_REACTIONS' }],
     }),
     getChatMessages: builder.query({
-      query: ({ before = '', limit = 50 } = {}) => ({
+      query: ({ before = '', beforeId = '', limit = 50 } = {}) => ({
         url: '/chat/messages',
-        params: { ...(before ? { before } : {}), limit },
+        params: {
+          ...(beforeId ? { beforeId } : before ? { before } : {}),
+          limit,
+        },
       }),
       providesTags: [{ type: 'Notifications', id: 'CHAT_MESSAGES' }],
+    }),
+    getChatMessageContext: builder.query({
+      query: ({ messageId, radius = 20 }) => ({
+        url: `/chat/messages/${messageId}/context`,
+        params: { radius },
+      }),
     }),
     sendChatMessage: builder.mutation({
       query: body => ({ url: '/chat/messages', method: 'POST', body }),
@@ -106,6 +115,7 @@ export const {
   useGetChatReactionsQuery,
   useGetChatMessagesQuery,
   useLazyGetChatMessagesQuery,
+  useLazyGetChatMessageContextQuery,
   useSendChatMessageMutation,
   useToggleChatReactionMutation,
   useSendChatTypingMutation,
