@@ -20,7 +20,7 @@
     "postinstall": "node backend/tools/prisma-postinstall.js",
     "secrets:check": "node tools/check-secrets.js",
     "i18n:check": "node tools/check-i18n.js",
-    "test:frontend": "node --test frontend/shared/src/react-app/app/api/getApiErrorMessage.test.js",
+    "test:frontend": "node --test frontend/shared/src/react-app/app/api/getApiErrorMessage.test.js frontend/webApp/src/react-app/pages/CalendarPage/calendarUtils.test.js",
     "build:web": "npm run i18n:check && vite build --config vite.config.js",
     "build": "npm run db:generate && npm run build:web",
     "verify": "npm --prefix backend test && npm run test:frontend && npm run build:web && node tools/audit-production.js && npm run secrets:check",
