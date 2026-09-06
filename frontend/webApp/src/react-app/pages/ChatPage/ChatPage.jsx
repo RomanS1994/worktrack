@@ -5,6 +5,7 @@ import { selectUser } from '@shared/features/auth/authSlice.js';
 import {
   useDeleteChatMessageMutation,
   useGetChatMessagesQuery,
+  useGetChatPresenceQuery,
   useLazyGetChatMessagesQuery,
   useMarkChatReadMutation,
   useSendChatMessageMutation,
@@ -13,9 +14,9 @@ import { useI18n } from '@shared/app/i18n/useI18n.js';
 import './ChatPage.css';
 
 const COPY = {
-  uk:{title:'Чат компанії',subtitle:'Спільний чат для всієї команди',placeholder:'Написати повідомлення…',send:'Надіслати',older:'Завантажити старіші',empty:'Поки що повідомлень немає.',today:'Сьогодні',delete:'Видалити'},
-  cs:{title:'Firemní chat',subtitle:'Společný chat pro celý tým',placeholder:'Napsat zprávu…',send:'Odeslat',older:'Načíst starší',empty:'Zatím zde nejsou žádné zprávy.',today:'Dnes',delete:'Smazat'},
-  en:{title:'Company chat',subtitle:'Shared chat for the whole team',placeholder:'Write a message…',send:'Send',older:'Load older',empty:'No messages yet.',today:'Today',delete:'Delete'},
+  uk:{title:'Чат компанії',subtitle:'Спільний чат для всієї команди',online:'онлайн',placeholder:'Написати повідомлення…',send:'Надіслати',older:'Завантажити старіші',empty:'Поки що повідомлень немає.',today:'Сьогодні',delete:'Видалити'},
+  cs:{title:'Firemní chat',subtitle:'Společný chat pro celý tým',online:'online',placeholder:'Napsat zprávu…',send:'Odeslat',older:'Načíst starší',empty:'Zatím zde nejsou žádné zprávy.',today:'Dnes',delete:'Smazat'},
+  en:{title:'Company chat',subtitle:'Shared chat for the whole team',online:'online',placeholder:'Write a message…',send:'Send',older:'Load older',empty:'No messages yet.',today:'Today',delete:'Delete'},
 };
 
 function formatTime(value, language){
@@ -33,6 +34,7 @@ export function ChatPage(){
   const {language}=useI18n();
   const c=COPY[language]||COPY.uk;
   const {data,isLoading}=useGetChatMessagesQuery({limit:50},{pollingInterval:15000});
+  const {data:presence}=useGetChatPresenceQuery(undefined,{pollingInterval:30000});
   const [loadOlder,{isFetching:loadingOlder}]=useLazyGetChatMessagesQuery();
   const [sendMessage,sendState]=useSendChatMessageMutation();
   const [markRead]=useMarkChatReadMutation();
@@ -41,6 +43,8 @@ export function ChatPage(){
   const [older,setOlder]=useState([]);
   const listRef=useRef(null);
   const latest=data?.messages||[];
+  const onlineCount=Math.max(0,Number(presence?.onlineCount)||0);
+  const subtitle=onlineCount>0?`${c.subtitle} · ${onlineCount} ${c.online}`:c.subtitle;
   const messages=useMemo(()=>{
     const map=new Map();
     [...older,...latest].forEach(item=>map.set(item.id,item));
@@ -81,7 +85,7 @@ export function ChatPage(){
   }
 
   return <section className="companyChat">
-    <header className="companyChatHeader"><button type="button" onClick={()=>navigate(-1)} aria-label="Back">‹</button><div><h1>{c.title}</h1><p>{c.subtitle}</p></div></header>
+    <header className="companyChatHeader"><button type="button" onClick={()=>navigate(-1)} aria-label="Back">‹</button><div><h1>{c.title}</h1><p>{subtitle}</p></div></header>
     <div className="companyChatMessages" ref={listRef}>
       {data?.hasMore||older.length?<button className="companyChatOlder" type="button" onClick={loadMore} disabled={loadingOlder}>{loadingOlder?'…':c.older}</button>:null}
       {isLoading?<p className="companyChatEmpty">…</p>:null}
