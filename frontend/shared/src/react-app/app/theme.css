@@ -1,11 +1,13 @@
 :root {
   color-scheme: light;
+
+  /* Canvas and semantic colors */
   --bg-top: #fbfdfb;
-  --bg-bottom: #f3f7f4;
-  --surface: rgba(255, 255, 255, 0.92);
+  --bg-bottom: #f5f8f6;
+  --surface: rgba(255, 255, 255, 0.94);
   --surface-strong: #ffffff;
-  --surface-border: rgba(22, 163, 74, 0.10);
-  --surface-shadow: 0 10px 26px rgba(20, 40, 28, 0.055);
+  --surface-subtle: #f7f9f8;
+  --surface-border: rgba(17, 24, 39, 0.09);
   --text: #111827;
   --muted: #667085;
   --accent: #16a34a;
@@ -17,29 +19,64 @@
   --warning: #f59e0b;
   --danger: #b42318;
 
-  /* WorkTrack design system — based on Time / Week */
+  /* Typography */
   --font-app: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
-  --font-size-page-title: 30px;
-  --font-size-section-title: 20px;
-  --font-size-card-title: 17px;
-  --font-size-body: 15px;
-  --font-size-secondary: 14px;
-  --font-size-label: 13px;
-  --font-size-caption: 12px;
+  --font-size-page-title: 24px;
+  --font-size-section-title: 17px;
+  --font-size-card-title: 15px;
+  --font-size-body: 14px;
+  --font-size-secondary: 12px;
+  --font-size-label: 12px;
+  --font-size-caption: 11px;
   --weight-regular: 400;
-  --weight-medium: 600;
-  --weight-semibold: 700;
-  --weight-bold: 800;
-  --radius-xl: 20px;
-  --radius-lg: 18px;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Spacing: 4 / 8 / 12 / 16 / 20 / 24 / 32 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-page: var(--space-3);
+  --space-card: var(--space-4);
+  --page-inline: var(--space-4);
+
+  /* Shape */
+  --radius-sm: 10px;
   --radius-md: 14px;
-  --space-page: 14px;
-  --space-card: 16px;
+  --radius-lg: 18px;
+  --radius-full: 999px;
+  /* Backward-compatible alias while pages are migrated. */
+  --radius-xl: var(--radius-lg);
+
+  /* Elevation */
+  --shadow-none: none;
+  --shadow-sm: 0 4px 16px rgba(20, 40, 28, 0.045);
+  --shadow-overlay: 0 12px 32px rgba(15, 23, 42, 0.12);
+  --surface-shadow: var(--shadow-sm);
+
+  /* Controls */
+  --control-height-compact: 36px;
+  --control-height: 40px;
+  --control-height-touch: 44px;
+  --icon-size-sm: 16px;
+  --icon-size-md: 20px;
+  --icon-size-lg: 24px;
+
+  /* Motion / focus */
+  --motion-fast: 150ms ease;
+  --focus-ring: 0 0 0 3px rgba(22, 163, 74, 0.18);
 }
 
 * { box-sizing: border-box; }
 
-html, body, #react-root {
+html,
+body,
+#react-root {
   width: 100%;
   min-height: 100%;
 }
@@ -59,23 +96,36 @@ body {
 
 body.no-scroll { overflow: hidden; }
 a { color: inherit; }
-button, input, select, textarea { font-family: var(--font-app); }
-button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button,
+input,
+select,
+textarea { font-family: var(--font-app); }
+button,
+a,
+input,
+select,
+textarea { -webkit-tap-highlight-color: transparent; }
 
-input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+/* 16px prevents unwanted iOS zoom in editable controls. */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
   font-size: 16px !important;
 }
 
-/* Shared typography. Individual screens can still size hero numbers independently. */
-h1, h2, h3, h4, p { text-wrap: pretty; }
+h1,
+h2,
+h3,
+h4,
+p { text-wrap: pretty; }
 
 .pageStack > header h1,
 .appTitleBlock h1,
 .compactHeader > h1 {
   margin: 0;
   font-size: var(--font-size-page-title);
-  line-height: 1.08;
-  letter-spacing: -0.035em;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   font-weight: var(--weight-bold);
 }
 
@@ -84,8 +134,8 @@ h1, h2, h3, h4, p { text-wrap: pretty; }
 .compactHeader h4 {
   margin: 0;
   font-size: var(--font-size-section-title);
-  line-height: 1.16;
-  letter-spacing: -0.025em;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
   font-weight: var(--weight-bold);
 }
 
@@ -94,40 +144,50 @@ h1, h2, h3, h4, p { text-wrap: pretty; }
 .statusNote {
   margin: 0;
   font-size: var(--font-size-secondary);
-  line-height: 1.45;
+  line-height: 1.4;
   color: var(--muted);
 }
 
 button {
   appearance: none;
-  min-height: 44px;
+  min-height: var(--control-height);
   padding: 0 14px;
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   color: var(--text);
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 3px 12px rgba(20, 40, 28, 0.035);
+  background: var(--surface-strong);
+  box-shadow: var(--shadow-none);
   font: inherit;
   font-size: var(--font-size-secondary);
   font-weight: var(--weight-semibold);
   line-height: 1.1;
   cursor: pointer;
-  transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease, opacity 150ms ease;
+  transition: transform var(--motion-fast), box-shadow var(--motion-fast), background-color var(--motion-fast), border-color var(--motion-fast), opacity var(--motion-fast);
 }
+
+.button--compact { min-height: var(--control-height-compact); }
+.button--touch { min-height: var(--control-height-touch); }
 
 @media (hover: hover) and (pointer: fine) {
   button:hover:not(:disabled) {
-    transform: translateY(-1px);
-    border-color: rgba(22, 163, 74, 0.18);
-    box-shadow: 0 6px 16px rgba(20, 40, 28, 0.055);
+    border-color: rgba(22, 163, 74, 0.2);
+    background: #fbfdfb;
   }
 }
 
 button:active:not(:disabled) { transform: scale(0.985); }
 button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
-button:focus-visible, a:focus-visible { outline: 3px solid rgba(22, 163, 74, 0.2); outline-offset: 2px; }
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
 
-.visually-hidden, .visuallyHidden {
+.visually-hidden,
+.visuallyHidden {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -146,10 +206,10 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(22, 163, 74, 0.2
   margin: 0;
   align-items: center;
   padding: 0 9px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: var(--accent-soft);
   color: var(--accent-strong);
-  font-size: 11px;
+  font-size: var(--font-size-caption);
   font-weight: var(--weight-semibold);
   line-height: 1;
 }
@@ -159,32 +219,38 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(22, 163, 74, 0.2
   gap: var(--space-page);
   padding: var(--space-card);
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background: var(--surface-strong);
-  box-shadow: var(--surface-shadow);
+  box-shadow: var(--shadow-sm);
 }
 
-.compactHeader { display: grid; gap: 5px; }
+.compactHeader {
+  display: grid;
+  gap: 5px;
+}
 
 .appTop {
   position: relative;
   display: grid;
-  gap: 8px;
-  padding: 18px;
+  gap: var(--space-2);
+  padding: var(--space-4);
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: var(--radius-xl);
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: var(--surface-shadow);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
 }
 
-.appTitleBlock { display: grid; gap: 5px; }
+.appTitleBlock {
+  display: grid;
+  gap: 5px;
+}
 
 .appTitleBlock h1 {
   margin: 0;
   font-size: var(--font-size-page-title);
-  line-height: 1.08;
-  letter-spacing: -0.035em;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   font-weight: var(--weight-bold);
 }
 
@@ -195,19 +261,19 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(22, 163, 74, 0.2
   gap: 3px;
   padding: 10px 12px;
   border: 1px solid rgba(22, 163, 74, 0.08);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background: var(--accent-softer);
 }
 
 .topMetric span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--font-size-caption);
   font-weight: var(--weight-semibold);
   text-transform: uppercase;
 }
 
 .topMetric strong {
-  font-size: 16px;
+  font-size: var(--font-size-card-title);
   line-height: 1.1;
   font-weight: var(--weight-bold);
 }
@@ -217,25 +283,31 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(22, 163, 74, 0.2
 .homeOverviewGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .homeOverviewCard {
   display: grid;
   gap: 5px;
-  min-height: 100px;
-  padding: 14px;
+  min-height: 96px;
+  padding: var(--space-3);
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: #fff;
+  border-radius: var(--radius-sm);
+  background: var(--surface-strong);
 }
 
-.homeOverviewCard-link { text-decoration: none; transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease; }
-.homeOverviewCard-link:active { transform: scale(0.985); border-color: rgba(22, 163, 74, 0.18); }
+.homeOverviewCard-link {
+  text-decoration: none;
+  transition: transform var(--motion-fast), border-color var(--motion-fast), box-shadow var(--motion-fast);
+}
+.homeOverviewCard-link:active {
+  transform: scale(0.985);
+  border-color: rgba(22, 163, 74, 0.18);
+}
 
 .homeOverviewCard span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--font-size-caption);
   font-weight: var(--weight-semibold);
   text-transform: uppercase;
 }
@@ -243,7 +315,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(22, 163, 74, 0.2
 .homeOverviewCard strong {
   overflow: hidden;
   font-size: var(--font-size-card-title);
-  line-height: 1.12;
+  line-height: 1.15;
   font-weight: var(--weight-bold);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -256,10 +328,12 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(22, 163, 74, 0.2
   line-height: 1.4;
 }
 
-.pageStack { display: grid; gap: var(--space-page); }
+.pageStack {
+  display: grid;
+  gap: var(--space-page);
+}
 .statusNote.is-error { color: var(--danger); }
 
-/* Normalize common page/card headings to the Time / Week hierarchy. */
 .screenCard > h2,
 .screenCard > h3,
 .screenCard header h2,
@@ -267,8 +341,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(22, 163, 74, 0.2
 section > .compactHeader h2,
 article > .compactHeader h2 {
   font-size: var(--font-size-section-title);
-  line-height: 1.16;
-  letter-spacing: -0.025em;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
   font-weight: var(--weight-bold);
 }
 
@@ -280,19 +354,16 @@ article > .compactHeader h2 {
   font-family: var(--font-app);
 }
 
-@media (max-width: 480px) {
+@media (min-width: 701px) {
   :root {
-    --font-size-page-title: 30px;
-    --font-size-section-title: 20px;
-    --font-size-card-title: 17px;
-    --font-size-body: 15px;
-    --space-page: 12px;
-    --space-card: 16px;
+    --font-size-page-title: 28px;
+    --font-size-section-title: 18px;
+    --font-size-card-title: 16px;
+    --font-size-secondary: 13px;
   }
+}
 
-  body { font-size: var(--font-size-body); }
-  .screenCard { border-radius: var(--radius-lg); }
-  .appTop { padding: 16px; border-radius: var(--radius-xl); }
-  .pageStack { gap: 12px; }
-  button { min-height: 44px; padding: 0 13px; }
+@media (max-width: 480px) {
+  .appTop { padding: var(--space-4); }
+  .pageStack { gap: var(--space-3); }
 }
