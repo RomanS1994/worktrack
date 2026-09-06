@@ -6,6 +6,7 @@ import { baseApi } from '@shared/app/api/baseApi.js';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { BackButton } from '@shared/app/components/BackButton/BackButton.jsx';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
+import { applicationServerKey, isIos, isStandalone, pushSupported } from '@shared/app/utils/push.js';
 import { useChangePasswordMutation, useDeleteMeMutation, useLogoutMutation, useUpdateProfileMutation } from '@shared/features/auth/authApi.js';
 import { clearSession as clearAuthSession, selectToken, selectUser, setSession } from '@shared/features/auth/authSlice.js';
 import { clearSession as clearStoredSession, saveSession } from '@shared/features/auth/authStorage.js';
@@ -31,10 +32,6 @@ function getName(user) { return user?.name || [user?.firstName, user?.lastName].
 function initials(user) { return [user?.firstName, user?.lastName].filter(Boolean).map(v => v[0]).join('').slice(0, 2).toUpperCase() || getName(user).slice(0, 1).toUpperCase(); }
 function CameraIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.2 5.5 9.4 3.8h5.2l1.2 1.7H19a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.5a2 2 0 0 1 2-2h3.2Z"/><circle cx="12" cy="12.5" r="3.4"/></svg>; }
 function resizeProfilePhoto(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onerror = reject; reader.onload = () => { const image = new Image(); image.onerror = reject; image.onload = () => { const canvas = document.createElement('canvas'); canvas.width = AVATAR_SIZE; canvas.height = AVATAR_SIZE; const context = canvas.getContext('2d'); if (!context) { reject(new Error('Canvas is unavailable')); return; } const sourceSize = Math.min(image.naturalWidth, image.naturalHeight); const sourceX = Math.max(0, (image.naturalWidth - sourceSize) / 2); const sourceY = Math.max(0, (image.naturalHeight - sourceSize) / 2); context.drawImage(image, sourceX, sourceY, sourceSize, sourceSize, 0, 0, AVATAR_SIZE, AVATAR_SIZE); resolve(canvas.toDataURL('image/jpeg', 0.82)); }; image.src = String(reader.result || ''); }; reader.readAsDataURL(file); }); }
-function pushSupported(){return typeof window!=='undefined'&&'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;}
-function isIos(){return typeof navigator!=='undefined'&&(/iPad|iPhone|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1));}
-function isStandalone(){return typeof window!=='undefined'&&(window.matchMedia?.('(display-mode: standalone)').matches||window.navigator.standalone===true);}
-function applicationServerKey(value){const padding='='.repeat((4-(value.length%4))%4);const raw=atob((value+padding).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(raw,char=>char.charCodeAt(0));}
 
 export function ProfilePage() {
   const dispatch = useDispatch(); const navigate = useNavigate(); const [searchParams] = useSearchParams(); const user = useSelector(selectUser); const token = useSelector(selectToken); const { language, setLanguage, t } = useI18n();

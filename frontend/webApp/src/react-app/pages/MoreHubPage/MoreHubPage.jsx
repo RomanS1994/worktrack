@@ -5,6 +5,7 @@ import { baseApi } from '@shared/app/api/baseApi.js';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
 import { SvgIcon } from '@shared/app/components/SvgIcon/SvgIcon.jsx';
+import { applicationServerKey, isIos, isStandalone, pushSupported } from '@shared/app/utils/push.js';
 import { useLogoutMutation, useUpdateProfileMutation } from '@shared/features/auth/authApi.js';
 import { clearSession as clearAuthSession, selectToken, selectUser, setSession } from '@shared/features/auth/authSlice.js';
 import { hasManagerAccess } from '@shared/features/auth/authAccess.js';
@@ -32,10 +33,6 @@ function initials(user){return [user?.firstName,user?.lastName].filter(Boolean).
 function resizeProfilePhoto(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=reject;reader.onload=()=>{const image=new Image();image.onerror=reject;image.onload=()=>{const canvas=document.createElement('canvas');canvas.width=AVATAR_SIZE;canvas.height=AVATAR_SIZE;const context=canvas.getContext('2d');if(!context)return reject(new Error('Canvas unavailable'));const size=Math.min(image.naturalWidth,image.naturalHeight);const x=Math.max(0,(image.naturalWidth-size)/2);const y=Math.max(0,(image.naturalHeight-size)/2);context.drawImage(image,x,y,size,size,0,0,AVATAR_SIZE,AVATAR_SIZE);resolve(canvas.toDataURL('image/jpeg',.82))};image.src=String(reader.result||'')};reader.readAsDataURL(file)})}
 function SettingsRow({to,onClick,icon,title,copy,tone='default'}){const Row=to?Link:'button';const props=to?{to}:{type:'button',onClick};return <Row {...props} className={`moreHubRow moreHubRow--${tone}`}><span className="moreHubIcon"><SvgIcon name={icon}/></span><span className="moreHubRowText"><strong>{title}</strong><small>{copy}</small></span><span className="moreHubChevron" aria-hidden="true">›</span></Row>}
 function SettingsGroup({title,children}){return <section className="moreHubGroup"><h2>{title}</h2><div className="moreHubMenu screenCard">{children}</div></section>}
-function pushSupported(){return typeof window!=='undefined'&&'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window}
-function isIos(){return /iPad|iPhone|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1)}
-function isStandalone(){return window.matchMedia?.('(display-mode: standalone)').matches||window.navigator.standalone===true}
-function applicationServerKey(value){const padding='='.repeat((4-(value.length%4))%4);const raw=atob((value+padding).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(raw,char=>char.charCodeAt(0))}
 
 export function MoreHubPage(){
  const dispatch=useDispatch();const navigate=useNavigate();const user=useSelector(selectUser);const token=useSelector(selectToken);const {language,t}=useI18n();const c=COPY[language]||COPY.uk;const photoInputRef=useRef(null);const [updateProfile,updateState]=useUpdateProfileMutation();const [logout,logoutState]=useLogoutMutation();const [photoError,setPhotoError]=useState('');const [logoutError,setLogoutError]=useState('');const avatar=user?.profile?.avatarDataUrl||'';const companyName=getCompanyName(user);const managerAccess=hasManagerAccess(user);const managerCabinet=isManagerCabinet(user);const roleLabel=managerCabinet?t('profile.manager'):t('profile.employee');
