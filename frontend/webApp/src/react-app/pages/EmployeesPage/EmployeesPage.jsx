@@ -138,14 +138,16 @@ export function EmployeesPage() {
         <h1>{t('employees.title')}</h1>
         {hasEmployeeList?<p>{activeEmployeeCount} {t('employees.active')} · {employees.length} {t('employees.total')}</p>:null}
       </div>
-      <button className="employeesAddTop" type="button" onClick={openAddEmployee}>+ {t('employees.addEmployee')}</button>
     </header>
 
     {actionSuccess?<p className="statusNote is-success">{actionSuccess}</p>:null}
 
     <section className="employeesPanel">
       <div className="employeesPanelHeader">
-        <h2>{t('employees.title')} <span>· {employees.length}</span></h2>
+        <div>
+          <h2>{t('employees.title')}</h2>
+          {hasEmployeeList?<span>{activeEmployeeCount} {t('employees.active')} · {employees.length} {t('employees.total')}</span>:null}
+        </div>
         <button type="button" onClick={openAddEmployee}>+ {t('employees.addEmployee')}</button>
       </div>
 
@@ -160,10 +162,13 @@ export function EmployeesPage() {
         const managerAccess=Boolean(employee.canAccessManagerCabinet ?? employee.role==='MANAGER');
         return <button className={`employeeCard${isActive?'':' is-inactive'}`} type="button" key={employee.id} onClick={()=>openManage(employee)}>
           <span className={`employeeCard-avatar${avatar?' has-photo':''}`}>{avatar?<img src={avatar} alt=""/>:employeeName.slice(0,1).toUpperCase()}</span>
-          <div className="employeeCard-content">
-            <strong className="employeeCard-name">{employeeName}{managerAccess?<small> · {ac.managerCabinet}</small>:null}</strong>
-            <p className="employeeCard-email">{employee.email}</p>
-          </div>
+          <span className="employeeCard-content">
+            <span className="employeeCard-titleRow">
+              <strong className="employeeCard-name">{employeeName}</strong>
+              {managerAccess?<em className="employeeCard-role">{ac.managerCabinet}</em>:null}
+            </span>
+            <span className="employeeCard-email">{employee.email}</span>
+          </span>
           <span className="employeeCard-chevron" aria-hidden="true">›</span>
         </button>
       })}</div>:null}
