@@ -43,6 +43,20 @@ function serializeNotification(notification) {
   };
 }
 
+async function activeNotificationRecipient(client, payload) {
+  if (!payload?.recipientMembershipId || !payload?.companyId) return null;
+  return client.companyMembership.findFirst({
+    where: {
+      id: payload.recipientMembershipId,
+      companyId: payload.companyId,
+      status: 'ACTIVE',
+      deletedAt: null,
+      user: { is: { deletedAt: null } },
+    },
+    select: { id: true },
+  });
+}
+
 async function pruneExpiredPushSubscriptions(client, membership, expiredEndpoints) {
   if (!membership?.userId || !expiredEndpoints?.size) return;
 
@@ -104,6 +118,9 @@ async function deliverPush(client, notification) {
 }
 
 export async function createNotification(client, payload) {
+  const recipient = await activeNotificationRecipient(client, payload);
+  if (!recipient) return null;
+
   const notification = await client.notification.create({
     data: {
       id: randomUUID(),
