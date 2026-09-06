@@ -1,5 +1,36 @@
 import { baseApi } from '../../app/api/baseApi.js';
 
+function applyOptimisticReaction(draft, { messageId, emoji }) {
+  const message = draft?.messages?.find(item => item.id === messageId);
+  if (!message) return;
+
+  const reactions = Array.isArray(message.reactions) ? message.reactions : [];
+  const currentMine = reactions.find(item => item.mine);
+
+  if (currentMine?.emoji === emoji) {
+    currentMine.count = Math.max(0, Number(currentMine.count || 0) - 1);
+    currentMine.mine = false;
+    if (currentMine.count <= 0) {
+      message.reactions = reactions.filter(item => item !== currentMine);
+    }
+    return;
+  }
+
+  if (currentMine) {
+    currentMine.count = Math.max(0, Number(currentMine.count || 0) - 1);
+    currentMine.mine = false;
+  }
+
+  let next = reactions.find(item => item.emoji === emoji);
+  if (!next) {
+    next = { emoji, count: 0, mine: false, names: [] };
+    reactions.push(next);
+  }
+  next.count = Number(next.count || 0) + 1;
+  next.mine = true;
+  message.reactions = reactions.filter(item => Number(item.count || 0) > 0);
+}
+
 export const chatApi = baseApi.injectEndpoints({
   endpoints: builder => ({
     getChatSummary: builder.query({
@@ -37,6 +68,18 @@ export const chatApi = baseApi.injectEndpoints({
     }),
     toggleChatReaction: builder.mutation({
       query: body => ({ url: '/chat/reactions', method: 'POST', body }),
+      async onQueryStarted(body, { dispatch, queryFulfilled }) {
+        const patch = dispatch(
+          chatApi.util.updateQueryData('getChatMessages', { limit: 50 }, draft => {
+            applyOptimisticReaction(draft, body);
+          }),
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patch.undo();
+        }
+      },
       invalidatesTags: [{ type: 'Notifications', id: 'CHAT_MESSAGES' }],
     }),
     sendChatTyping: builder.mutation({
