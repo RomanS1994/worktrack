@@ -221,7 +221,7 @@ export async function getManagerTimesheet(client, context, { month }) {
       employeeId: employee.id,
       name: employeeName(employee),
       status: employee.status,
-      canEdit: employee.id !== manager.id,
+      canEdit: true,
       employeeTotal: round2(employeeTotal),
       managerTotal: round2(managerTotal),
       difference: round2(managerTotal - employeeTotal),
@@ -254,7 +254,6 @@ export async function upsertManagerTimesheetCell(client, context, employeeMember
     select: { id: true },
   });
   if (!employee) throw new Error('Employee not found');
-  if (employee.id === manager.id) throw new Error('Managers cannot edit their own control timesheet');
 
   const hasHoursInput = body?.hours !== '' && body?.hours != null;
   const hours = hasHoursInput ? toNumber(body.hours) : null;
