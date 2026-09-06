@@ -156,26 +156,20 @@ export function ChatPage(){
     return()=>window.removeEventListener('keydown',handleKey);
   },[deleteTarget,deleteState.isLoading]);
 
-  function markLatestRead(){
-    const newest=latest[latest.length-1];
-    if(!newest?.id||newest.id===lastMarkedReadIdRef.current)return;
-    lastMarkedReadIdRef.current=newest.id;
-    void markRead({messageId:newest.id}).unwrap().catch(()=>{
-      if(lastMarkedReadIdRef.current===newest.id)lastMarkedReadIdRef.current='';
-    });
-  }
-
   useEffect(()=>{
-    if(!newestMessageId||Number(summary?.unreadCount||0)<=0)return;
-    markLatestRead();
-  },[newestMessageId,summary?.unreadCount]);
+    const unreadCount=Number(summary?.unreadCount||0);
+    if(!newestMessageId||unreadCount<=0||newestMessageId===lastMarkedReadIdRef.current)return;
+    lastMarkedReadIdRef.current=newestMessageId;
+    void markRead({messageId:newestMessageId}).unwrap().catch(()=>{
+      if(lastMarkedReadIdRef.current===newestMessageId)lastMarkedReadIdRef.current='';
+    });
+  },[newestMessageId,summary?.unreadCount,markRead]);
 
   function scrollToBottom(behavior='smooth'){
     const el=listRef.current;if(!el)return;
     el.scrollTo({top:el.scrollHeight,behavior});
     nearBottomRef.current=true;
     setShowNewMessages(false);
-    markLatestRead();
   }
 
   useEffect(()=>{
@@ -194,7 +188,7 @@ export function ChatPage(){
     const el=listRef.current;if(!el)return;
     const nearBottom=el.scrollHeight-el.scrollTop-el.clientHeight<120;
     nearBottomRef.current=nearBottom;
-    if(nearBottom){setShowNewMessages(false);markLatestRead();}
+    if(nearBottom)setShowNewMessages(false);
   }
 
   function handleTextChange(event){
@@ -307,7 +301,7 @@ export function ChatPage(){
             {!mine?<strong>{item.author?.name||'-'}</strong>:null}
             {item.replyTo?<button className="companyChatReplyQuote" type="button" onClick={()=>scrollToMessage(item.replyTo.id)}><strong>{item.replyTo.author?.name||c.replyingTo}</strong><span>{item.replyTo.deleted?c.deletedMessage:item.replyTo.body}</span></button>:null}
             <p>{item.body}</p>
-            <footer><time>{formatTime(item.createdAt,language,c)}</time>{mine?<span className={`companyChatReceipt${read?' isRead':''}`} title={read?c.read:c.delivered} aria-label={read?c.read:c.delivered}>{read?'✓✓':'✓'}</span>:null}<button type="button" className="companyChatReplyAction" onClick={()=>beginReply(item)}>{c.reply}</button>{mine||role==='MANAGER'?<button type="button" onClick={()=>remove(item)}>{c.delete}</button>:null}</footer>
+            <footer><time>{formatTime(item.createdAt,language)}</time>{mine?<span className={`companyChatReceipt${read?' isRead':''}`} title={read?c.read:c.delivered} aria-label={read?c.read:c.delivered}>{read?'✓✓':'✓'}</span>:null}<button type="button" className="companyChatReplyAction" onClick={()=>beginReply(item)}>{c.reply}</button>{mine||role==='MANAGER'?<button type="button" onClick={()=>remove(item)}>{c.delete}</button>:null}</footer>
           </div>
         </article>
       </Fragment>})}
