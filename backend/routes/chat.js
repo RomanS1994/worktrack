@@ -135,7 +135,10 @@ export async function handleChatRoutes(request, response, { url, pathName }) {
     const payload = await runStoreTransaction({
       prisma: client => deleteChatMessage(client, context, deleteMatch[1]),
     });
-    broadcastCompanyChat(context.activeMembership.companyId, 'delete', payload);
+    broadcastCompanyChat(context.activeMembership.companyId, 'delete', {
+      ...payload,
+      membershipId: context.activeMembership.id,
+    });
     sendJson(response, 200, payload);
     return true;
   }
