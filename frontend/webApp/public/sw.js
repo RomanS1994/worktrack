@@ -6,8 +6,17 @@ const DEFAULT_PREFERENCES = {
 };
 
 function categoryForType(type = '') {
+  // A submitted week is actionable work for managers, so it belongs to Team.
+  // Review results belong to the employee's Work hours notifications.
+  if (type === 'weekly_submission.submitted') return 'team';
   if (type.startsWith('weekly_submission.')) return 'hours';
-  if (type.startsWith('invoice.')) return 'finance';
+  if (
+    type.startsWith('invoice.')
+    || type.startsWith('payroll.')
+    || type.startsWith('payment.')
+    || type.startsWith('advance.')
+    || type.startsWith('expense.')
+  ) return 'finance';
   if (type === 'chat.message' || type.startsWith('chat.')) return 'chat';
   if (type.startsWith('team.') || type.startsWith('employee.') || type.startsWith('project.')) return 'team';
   return 'system';
