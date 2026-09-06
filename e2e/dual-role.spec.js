@@ -74,13 +74,13 @@ test('Roman submits his week, Misha approves it, Roman sees approved', async ({ 
     await earlyConfirm.click();
   }
 
-  await expect(page.getByText(/Тиждень погоджено|Week approved|Týden schváлен/i)).toBeVisible();
+  await expect(page.getByText(/Тиждень погоджено|Week approved|Týden schválen/i)).toBeVisible();
 
   await resetBrowserSession(page, context);
   await login(page, romanEmail);
   await setCabinet(page, 'employee');
   await page.goto(`${APP}/hours`);
 
-  await expect(page.getByText(/Погоджено|Approved|Schválenо/).first()).toBeVisible();
+  await expect(page.getByText(/Погоджено|Approved|Schváleno/).first()).toBeVisible();
   await expect(page.getByRole('button', { name: /Відправити тиждень менеджеру|Send week to manager|Odeslat týden manažerovi/ })).toBeDisabled();
 });
