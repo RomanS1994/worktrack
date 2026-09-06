@@ -4,6 +4,7 @@ import { readJsonBody, sendJson } from '../lib/http.js';
 import {
   createChatMessage,
   deleteChatMessage,
+  getChatReadStates,
   getChatSummary,
   listChatMessages,
   markChatRead,
@@ -29,6 +30,24 @@ export async function handleChatRoutes(request, response, { url, pathName }) {
 
   if (request.method === 'GET' && pathName === '/api/chat/presence') {
     sendJson(response, 200, getCompanyChatPresence(context.activeMembership.companyId));
+    return true;
+  }
+
+  if (request.method === 'GET' && pathName === '/api/chat/read-states') {
+    const payload = await runStoreRead({ prisma: client => getChatReadStates(client, context) });
+    sendJson(response, 200, payload);
+    return true;
+  }
+
+  if (request.method === 'POST' && pathName === '/api/chat/typing') {
+    const body = await readJsonBody(request);
+    broadcastCompanyChat(context.activeMembership.companyId, 'typing', {
+      membershipId: context.activeMembership.id,
+      name: context.user?.name || context.user?.email || 'User',
+      typing: Boolean(body?.typing),
+      at: new Date().toISOString(),
+    });
+    sendJson(response, 200, { ok: true });
     return true;
   }
 
