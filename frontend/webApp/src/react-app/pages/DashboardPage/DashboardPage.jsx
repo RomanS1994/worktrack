@@ -6,7 +6,7 @@ import { RequestLoadingState } from '@shared/app/components/RequestLoader/Reques
 import { SvgIcon } from '@shared/app/components/SvgIcon/SvgIcon.jsx';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
 import { selectUser } from '@shared/features/auth/authSlice.js';
-import { isManagerCabinet } from '@shared/features/auth/cabinetMode.js';
+import { useCabinetMode } from '@shared/features/auth/cabinetMode.js';
 import {
   businessDaysInMonth,
   formatCzk,
@@ -34,7 +34,8 @@ export function DashboardPage(){
   const user=useSelector(selectUser);
   const {language,t}=useI18n();
   const locale=resolveLocale(language);
-  const isManager=isManagerCabinet(user);
+  const cabinetMode=useCabinetMode(user);
+  const isManager=cabinetMode==='manager';
   const {data,error,isLoading}=useGetWorkSummaryQuery({cabinet:isManager?'manager':'employee'});
   const currentMonth=monthKeyFromAnchor(getLocalDateKey());
   const monthlyQuery=useGetMonthlyHoursQuery(currentMonth,{skip:isManager});
