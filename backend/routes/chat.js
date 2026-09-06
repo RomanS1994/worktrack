@@ -4,6 +4,7 @@ import { readJsonBody, sendJson } from '../lib/http.js';
 import {
   createChatMessage,
   deleteChatMessage,
+  getChatMessageContext,
   getChatReadStates,
   getChatSummary,
   listChatMessages,
@@ -82,7 +83,19 @@ export async function handleChatRoutes(request, response, { url, pathName }) {
     const payload = await runStoreRead({
       prisma: client => listChatMessages(client, context, {
         before: url.searchParams.get('before') || '',
+        beforeId: url.searchParams.get('beforeId') || '',
         limit: url.searchParams.get('limit') || 50,
+      }),
+    });
+    sendJson(response, 200, payload);
+    return true;
+  }
+
+  const contextMatch = pathName.match(/^\/api\/chat\/messages\/([^/]+)\/context$/);
+  if (request.method === 'GET' && contextMatch) {
+    const payload = await runStoreRead({
+      prisma: client => getChatMessageContext(client, context, contextMatch[1], {
+        radius: url.searchParams.get('radius') || 20,
       }),
     });
     sendJson(response, 200, payload);
