@@ -5,12 +5,13 @@ import {
   formatMonthPeriod,
   formatPeriod,
 } from '../../app/formatters.js';
+import { useDownloadEmployeeFinancePdfMutation } from '../../features/worktrack/employeeFinancePdfApi.js';
 import './EmployeeFinanceCompact.css';
 
 const FINANCE_COPY = {
-  uk: { finance:'Фінанси',week:'Тиждень',month:'Місяць',thisWeek:'Цей тиждень',thisMonth:'Цей місяць',expected:'До виплати',grossExpected:'Нараховано',advances:'Залоги',advanceReceived:'Отримано залогів',remaining:'Залишилось',norm:'год норми',details:'Деталі',calculation:'Розрахунок',confirmed:'Підтверджено',pending:'Очікує підтвердження',overtime:'Понаднормові',total:'Нараховано',netTotal:'Чиста зарплата',rate:'Ставка',hourlyRate:'Поточна погодинна ставка',mixedRates:'Кілька ставок',periodRate:'Ефективна ставка за період',taxNote:'Податки та інші відрахування не враховано',download:'Завантажити звіт PDF',share:'Поділитися' },
-  cs: { finance:'Finance',week:'Týden',month:'Měsíc',thisWeek:'Tento týden',thisMonth:'Tento měsíc',expected:'K výplatě',grossExpected:'Nárok',advances:'Zálohy',advanceReceived:'Vyplacené zálohy',remaining:'Zbývá',norm:'h normy',details:'Detaily',calculation:'Výpočet',confirmed:'Potvrzeno',pending:'Čeká na potvrzení',overtime:'Přesčas',total:'Nárok',netTotal:'Čistě k výplatě',rate:'Sazba',hourlyRate:'Aktuální hodinová sazba',mixedRates:'Více sazeb',periodRate:'Efektivní sazba za období',taxNote:'Daně a další odvody nejsou zahrnuty',download:'Stáhnout PDF report',share:'Sdílet' },
-  en: { finance:'Finance',week:'Week',month:'Month',thisWeek:'This week',thisMonth:'This month',expected:'Net payable',grossExpected:'Earned',advances:'Advances',advanceReceived:'Advances received',remaining:'Remaining',norm:'h target',details:'Details',calculation:'Calculation',confirmed:'Confirmed',pending:'Pending confirmation',overtime:'Overtime',total:'Earned',netTotal:'Net salary',rate:'Rate',hourlyRate:'Current hourly rate',mixedRates:'Multiple rates',periodRate:'Effective period rate',taxNote:'Taxes and other deductions are not included',download:'Download PDF report',share:'Share' },
+  uk: { finance:'Фінанси',week:'Тиждень',month:'Місяць',thisWeek:'Цей тиждень',thisMonth:'Цей місяць',expected:'До виплати',grossExpected:'Нараховано',advances:'Залоги',advanceReceived:'Отримано залогів',remaining:'Залишилось',norm:'год норми',details:'Деталі',calculation:'Розрахунок',confirmed:'Підтверджено',pending:'Очікує підтвердження',overtime:'Понаднормові',total:'Нараховано',netTotal:'Чиста зарплата',rate:'Ставка',hourlyRate:'Поточна погодинна ставка',mixedRates:'Кілька ставок',periodRate:'Ефективна ставка за період',taxNote:'Податки та інші відрахування не враховано',download:'Завантажити звіт PDF',downloading:'Готуємо PDF…',downloadError:'Не вдалося завантажити PDF',share:'Поділитися' },
+  cs: { finance:'Finance',week:'Týden',month:'Měsíc',thisWeek:'Tento týden',thisMonth:'Tento měsíc',expected:'K výplatě',grossExpected:'Nárok',advances:'Zálohy',advanceReceived:'Vyplacené zálohy',remaining:'Zbývá',norm:'h normy',details:'Detaily',calculation:'Výpočet',confirmed:'Potvrzeno',pending:'Čeká na potvrzení',overtime:'Přesčas',total:'Nárok',netTotal:'Čistě k výplatě',rate:'Sazba',hourlyRate:'Aktuální hodinová sazba',mixedRates:'Více sazeb',periodRate:'Efektivní sazba za období',taxNote:'Daně a další odvody nejsou zahrnuty',download:'Stáhnout PDF report',downloading:'Připravuji PDF…',downloadError:'PDF se nepodařilo stáhnout',share:'Sdílet' },
+  en: { finance:'Finance',week:'Week',month:'Month',thisWeek:'This week',thisMonth:'This month',expected:'Net payable',grossExpected:'Earned',advances:'Advances',advanceReceived:'Advances received',remaining:'Remaining',norm:'h target',details:'Details',calculation:'Calculation',confirmed:'Confirmed',pending:'Pending confirmation',overtime:'Overtime',total:'Earned',netTotal:'Net salary',rate:'Rate',hourlyRate:'Current hourly rate',mixedRates:'Multiple rates',periodRate:'Effective period rate',taxNote:'Taxes and other deductions are not included',download:'Download PDF report',downloading:'Preparing PDF…',downloadError:'Could not download PDF',share:'Share' },
 };
 
 function advancesForPeriod(advances, period, monthData, week) {
@@ -25,8 +26,21 @@ function advancesForPeriod(advances, period, monthData, week) {
   return list.filter(item => item.paidAt >= start && item.paidAt <= end);
 }
 
+function triggerBlobDownload(blob, fileName) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  link.rel = 'noopener';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 export function EmployeeFinanceDashboard({ advances, companyName, hourlyRate, language, locale, localizedStatus, monthData, onChangePeriod, onPeriodChange, period, submission, summary, week, workRules }) {
   const copy = FINANCE_COPY[language] || FINANCE_COPY.uk;
+  const [downloadPdf, downloadState] = useDownloadEmployeeFinancePdfMutation();
   const sourceSummary = period === 'month' ? (monthData?.summary || {}) : summary;
   const totalHours = Number(sourceSummary.totalHours || 0);
   const approvedHours = Number(sourceSummary.approvedHours || 0);
@@ -53,6 +67,30 @@ export function EmployeeFinanceDashboard({ advances, companyName, hourlyRate, la
     ? `${formatHours(totalHours, locale)} · ${copy.mixedRates}`
     : `${formatHours(totalHours, locale)} × ${formatCzk(currentRate, locale)}`;
 
+  async function handleDownloadPdf() {
+    if (downloadState.isLoading) return;
+    try {
+      const blob = await downloadPdf({
+        language,
+        companyName,
+        period,
+        periodKey: period === 'month' ? monthData?.month : week?.weekStart,
+        periodLabel,
+        totalHours,
+        approvedHours,
+        pendingHours,
+        confirmedSalary,
+        pendingSalary,
+        advanceAmount,
+        expectedSalary,
+        hourlyRate: effectiveRate,
+      }).unwrap();
+      triggerBlobDownload(blob, `worktrack-payroll-${period === 'month' ? monthData?.month || 'month' : week?.weekStart || 'week'}.pdf`);
+    } catch {
+      window.alert(copy.downloadError);
+    }
+  }
+
   async function handleShare() {
     const payload = { title: copy.finance, text: `${companyName}: ${formatCzk(expectedSalary, locale)}`, url: window.location.href };
     if (navigator.share) {
@@ -69,6 +107,6 @@ export function EmployeeFinanceDashboard({ advances, companyName, hourlyRate, la
     <section className="employeeFinance-hero"><div className="employeeFinance-heroTop"><div><span>{copy.expected}</span><strong>{formatCzk(expectedSalary,locale)}</strong><small>{heroRateText}</small></div><span className="employeeFinance-status"><i />{status}</span></div><div className="employeeFinance-progress" aria-label={`${formatHours(totalHours,locale)} / ${formatHours(targetHours,locale)}`}><span style={{width:`${progress}%`}} /></div><div className="employeeFinance-progressMeta"><span>{formatHours(totalHours,locale)} / {formatHours(targetHours,locale)} {copy.norm}</span><span>{copy.remaining} {formatHours(remainingHours,locale)}</span></div></section>
     <section className="employeeFinance-card employeeFinance-calculationCard"><h2>{copy.calculation}</h2><div className="employeeFinance-breakdownRow is-confirmed"><span><i />{copy.confirmed}</span><strong>{formatHours(approvedHours,locale)}</strong><b>{formatCzk(confirmedSalary,locale)}</b></div><div className="employeeFinance-breakdownRow is-pending"><span><i />{copy.pending}</span><strong>{formatHours(pendingHours,locale)}</strong><b>{formatCzk(pendingSalary,locale)}</b></div>{period==='week'&&overtimeHours>0?<div className="employeeFinance-breakdownRow is-overtime"><span><i />{copy.overtime}</span><strong>{formatHours(overtimeHours,locale)}</strong><b>{formatCzk(overtimeSalary,locale)}</b></div>:null}<div className="employeeFinance-breakdownRow is-advance"><span>{copy.advances}</span><strong></strong><b>− {formatCzk(advanceAmount,locale)}</b></div><div className="employeeFinance-totalRow is-net"><span>{copy.netTotal}</span><strong></strong><b>{formatCzk(expectedSalary,locale)}</b></div></section>
     <section className="employeeFinance-card employeeFinance-rateCard"><div className="employeeFinance-taxNote"><span aria-hidden="true">ⓘ</span>{copy.taxNote}</div></section>
-    <div className="employeeFinance-actions"><button className="employeeFinance-primaryAction" type="button" onClick={()=>window.print()}><span aria-hidden="true">⇩</span>{copy.download}</button><button className="employeeFinance-secondaryAction" type="button" onClick={handleShare}><span aria-hidden="true">⇧</span>{copy.share}</button></div>
+    <div className="employeeFinance-actions"><button className="employeeFinance-primaryAction" type="button" disabled={downloadState.isLoading} onClick={handleDownloadPdf}><span aria-hidden="true">⇩</span>{downloadState.isLoading ? copy.downloading : copy.download}</button><button className="employeeFinance-secondaryAction" type="button" onClick={handleShare}><span aria-hidden="true">⇧</span>{copy.share}</button></div>
   </div>;
 }
