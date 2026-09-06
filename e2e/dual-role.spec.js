@@ -5,6 +5,7 @@ const password = process.env.E2E_USER_PASSWORD;
 const runId = String(process.env.E2E_RUN_ID || 'local').replace(/[^a-zA-Z0-9-]/g, '-');
 const romanEmail = `roman-e2e-${runId}@example.test`;
 const mishaEmail = `misha-e2e-${runId}@example.test`;
+const CABINET_STORAGE_KEY = 'worktrack.activeCabinet';
 
 async function login(page, email) {
   await page.goto(`${APP}/sign-in`);
@@ -15,19 +16,24 @@ async function login(page, email) {
 }
 
 async function setCabinet(page, mode) {
-  await page.evaluate(nextMode => {
-    localStorage.setItem('worktrack:active-cabinet', nextMode);
-  }, mode);
+  await page.evaluate(({ key, nextMode }) => {
+    localStorage.setItem(key, nextMode);
+  }, { key: CABINET_STORAGE_KEY, nextMode: mode });
   await page.reload();
+
+  const expectedLabel = mode === 'manager'
+    ? /Менеджер|Manager|Manažer/
+    : /Працівник|Employee|Pracovník/;
+  await expect(page.getByText(expectedLabel, { exact: true }).first()).toBeVisible();
 }
 
 async function resetBrowserSession(page, context) {
   await context.clearCookies();
   await page.goto(APP);
-  await page.evaluate(() => {
+  await page.evaluate(key => {
     localStorage.removeItem('react-auth-session');
-    localStorage.removeItem('worktrack:active-cabinet');
-  });
+    localStorage.removeItem(key);
+  }, CABINET_STORAGE_KEY);
 }
 
 test('Roman submits his week, Misha approves it, Roman sees approved', async ({ page, context }) => {
@@ -71,5 +77,5 @@ test('Roman submits his week, Misha approves it, Roman sees approved', async ({ 
   await page.goto(`${APP}/hours`);
 
   await expect(page.getByText(/Погоджено|Approved|Schváleno/).first()).toBeVisible();
-  await expect(page.getByRole('button', { name: /Відправити тиждень менеджеру|Send week to manager|Odeslat týden manažerovi/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Відправити тиждень менеджеру|Send week to manager|Odeslat týden manažerovi/ })).toBeDisabled();
 });
