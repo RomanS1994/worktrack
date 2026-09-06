@@ -61,15 +61,19 @@ const messageSelect = `
   ru.email AS "replyAuthorEmail"
 `;
 
+const messageJoins = `
+  FROM chat_messages m
+  JOIN company_memberships cm ON cm.id = m.author_membership_id
+  JOIN users u ON u.id = cm."userId"
+  LEFT JOIN chat_messages rm ON rm.id = m.reply_to_message_id
+  LEFT JOIN company_memberships rcm ON rcm.id = rm.author_membership_id
+  LEFT JOIN users ru ON ru.id = rcm."userId"
+`;
+
 async function findMessage(client, companyId, id) {
   const rows = await client.$queryRawUnsafe(
     `SELECT ${messageSelect}
-       FROM chat_messages m
-       JOIN company_memberships cm ON cm.id = m.author_membership_id
-       JOIN users u ON u.id = cm."userId"
-       LEFT JOIN chat_messages rm ON rm.id = m.reply_to_message_id
-       LEFT JOIN company_memberships rcm ON rcm.id = rm.author_membership_id
-       LEFT JOIN users ru ON ru.id = rcm."userId"
+       ${messageJoins}
       WHERE m.company_id = $1
         AND m.id = $2
       LIMIT 1`,
@@ -79,56 +83,141 @@ async function findMessage(client, companyId, id) {
   return rows[0] || null;
 }
 
-export async function listChatMessages(client, context, { before = '', limit = 50 } = {}) {
-  const membership = getMembership(context);
-  const safeLimit = Math.max(1, Math.min(100, Number(limit) || 50));
-  const beforeDate = before ? new Date(before) : null;
-  if (before && Number.isNaN(beforeDate.getTime())) throw new Error('Invalid chat cursor');
-
-  const rows = beforeDate
-    ? await client.$queryRawUnsafe(
-        `SELECT ${messageSelect}
-           FROM chat_messages m
-           JOIN company_memberships cm ON cm.id = m.author_membership_id
-           JOIN users u ON u.id = cm."userId"
-           LEFT JOIN chat_messages rm ON rm.id = m.reply_to_message_id
-           LEFT JOIN company_memberships rcm ON rcm.id = rm.author_membership_id
-           LEFT JOIN users ru ON ru.id = rcm."userId"
-          WHERE m.company_id = $1
-            AND m.deleted_at IS NULL
-            AND m.created_at < $2
-          ORDER BY m.created_at DESC
-          LIMIT $3`,
-        membership.companyId,
-        beforeDate,
-        safeLimit,
-      )
-    : await client.$queryRawUnsafe(
-        `SELECT ${messageSelect}
-           FROM chat_messages m
-           JOIN company_memberships cm ON cm.id = m.author_membership_id
-           JOIN users u ON u.id = cm."userId"
-           LEFT JOIN chat_messages rm ON rm.id = m.reply_to_message_id
-           LEFT JOIN company_memberships rcm ON rcm.id = rm.author_membership_id
-           LEFT JOIN users ru ON ru.id = rcm."userId"
-          WHERE m.company_id = $1
-            AND m.deleted_at IS NULL
-          ORDER BY m.created_at DESC
-          LIMIT $2`,
-        membership.companyId,
-        safeLimit,
-      );
-
-  const ordered = rows.map(serializeRow).reverse();
-  if (!ordered.length) return { messages: [], hasMore: false };
-
+async function attachReactions(client, context, rows) {
+  const ordered = rows.map(serializeRow);
+  if (!ordered.length) return [];
   const reactionPayload = await getChatReactions(client, context, ordered.map(item => item.id));
-  const messages = ordered.map(item => ({
+  return ordered.map(item => ({
     ...item,
     reactions: reactionPayload.byMessage[item.id] || [],
   }));
+}
 
+export async function listChatMessages(client, context, { before = '', beforeId = '', limit = 50 } = {}) {
+  const membership = getMembership(context);
+  const safeLimit = Math.max(1, Math.min(100, Number(limit) || 50));
+  const safeBeforeId = String(beforeId || '').trim().slice(0, 120);
+  const beforeDate = before ? new Date(before) : null;
+  if (before && Number.isNaN(beforeDate.getTime())) throw new Error('Invalid chat cursor');
+
+  let rows;
+  if (safeBeforeId) {
+    rows = await client.$queryRawUnsafe(
+      `SELECT ${messageSelect}
+         ${messageJoins}
+        WHERE m.company_id = $1
+          AND m.deleted_at IS NULL
+          AND (m.created_at, m.id) < (
+            SELECT cursor.created_at, cursor.id
+              FROM chat_messages cursor
+             WHERE cursor.id = $2
+               AND cursor.company_id = $1
+             LIMIT 1
+          )
+        ORDER BY m.created_at DESC, m.id DESC
+        LIMIT $3`,
+      membership.companyId,
+      safeBeforeId,
+      safeLimit,
+    );
+  } else if (beforeDate) {
+    rows = await client.$queryRawUnsafe(
+      `SELECT ${messageSelect}
+         ${messageJoins}
+        WHERE m.company_id = $1
+          AND m.deleted_at IS NULL
+          AND m.created_at < $2
+        ORDER BY m.created_at DESC, m.id DESC
+        LIMIT $3`,
+      membership.companyId,
+      beforeDate,
+      safeLimit,
+    );
+  } else {
+    rows = await client.$queryRawUnsafe(
+      `SELECT ${messageSelect}
+         ${messageJoins}
+        WHERE m.company_id = $1
+          AND m.deleted_at IS NULL
+        ORDER BY m.created_at DESC, m.id DESC
+        LIMIT $2`,
+      membership.companyId,
+      safeLimit,
+    );
+  }
+
+  const messages = await attachReactions(client, context, [...rows].reverse());
   return { messages, hasMore: rows.length === safeLimit };
+}
+
+export async function getChatMessageContext(client, context, messageId, { radius = 20 } = {}) {
+  const membership = getMembership(context);
+  const safeMessageId = String(messageId || '').trim().slice(0, 120);
+  const safeRadius = Math.max(5, Math.min(40, Number(radius) || 20));
+  if (!safeMessageId) throw new Error('Chat message is required');
+
+  const targetRows = await client.$queryRawUnsafe(
+    `SELECT ${messageSelect}
+       ${messageJoins}
+      WHERE m.company_id = $1
+        AND m.id = $2
+        AND m.deleted_at IS NULL
+      LIMIT 1`,
+    membership.companyId,
+    safeMessageId,
+  );
+  if (!targetRows[0]) throw new Error('Chat message not found');
+
+  const olderRows = await client.$queryRawUnsafe(
+    `SELECT ${messageSelect}
+       ${messageJoins}
+      WHERE m.company_id = $1
+        AND m.deleted_at IS NULL
+        AND (m.created_at, m.id) < (
+          SELECT cursor.created_at, cursor.id
+            FROM chat_messages cursor
+           WHERE cursor.id = $2
+             AND cursor.company_id = $1
+           LIMIT 1
+        )
+      ORDER BY m.created_at DESC, m.id DESC
+      LIMIT $3`,
+    membership.companyId,
+    safeMessageId,
+    safeRadius,
+  );
+
+  const newerRows = await client.$queryRawUnsafe(
+    `SELECT ${messageSelect}
+       ${messageJoins}
+      WHERE m.company_id = $1
+        AND m.deleted_at IS NULL
+        AND (m.created_at, m.id) > (
+          SELECT cursor.created_at, cursor.id
+            FROM chat_messages cursor
+           WHERE cursor.id = $2
+             AND cursor.company_id = $1
+           LIMIT 1
+        )
+      ORDER BY m.created_at ASC, m.id ASC
+      LIMIT $3`,
+    membership.companyId,
+    safeMessageId,
+    safeRadius,
+  );
+
+  const combined = [
+    ...[...olderRows].reverse(),
+    targetRows[0],
+    ...newerRows,
+  ];
+  const messages = await attachReactions(client, context, combined);
+  return {
+    targetId: safeMessageId,
+    messages,
+    hasOlder: olderRows.length === safeRadius,
+    hasNewer: newerRows.length === safeRadius,
+  };
 }
 
 export async function getChatSummary(client, context) {
@@ -158,7 +247,7 @@ export async function getChatSummary(client, context) {
       FROM chat_messages
      WHERE company_id = ${membership.companyId}
        AND deleted_at IS NULL
-     ORDER BY created_at DESC
+     ORDER BY created_at DESC, id DESC
      LIMIT 1
   `;
   const lastReadAt = stateRows[0]?.lastReadAt ? new Date(stateRows[0].lastReadAt) : null;
@@ -268,7 +357,7 @@ export async function markChatRead(client, context, body = {}) {
       FROM chat_messages
      WHERE company_id = ${membership.companyId}
        AND deleted_at IS NULL
-     ORDER BY created_at DESC
+     ORDER BY created_at DESC, id DESC
      LIMIT 1
   `;
   if (!latestRows[0]?.createdAt) return { ok: true, lastReadAt: '' };
