@@ -18,12 +18,13 @@ test('dual-role managers remain eligible for advances and expenses', async () =>
 });
 
 test('cabinet-sensitive UI uses reactive cabinet mode', async () => {
-  const [bottomTabs, sectionTabs, dashboard, payrollReport, notifications] = await Promise.all([
+  const [bottomTabs, sectionTabs, dashboard, payrollReport, notifications, protectedRoute] = await Promise.all([
     read('frontend/shared/src/react-app/app/components/BottomTabs/BottomTabs.jsx'),
     read('frontend/webApp/src/react-app/components/SectionTabs/SectionTabs.jsx'),
     read('frontend/webApp/src/react-app/pages/DashboardPage/DashboardPage.jsx'),
     read('frontend/webApp/src/react-app/pages/PayrollReportPage/PayrollReportPage.jsx'),
     read('frontend/webApp/src/react-app/pages/NotificationsPage/NotificationsPage.jsx'),
+    read('frontend/shared/src/react-app/app/components/ProtectedRoute/ProtectedRoute.jsx'),
   ]);
 
   assert.match(bottomTabs, /useCabinetMode\(user\)/);
@@ -32,4 +33,7 @@ test('cabinet-sensitive UI uses reactive cabinet mode', async () => {
   assert.match(payrollReport, /useCabinetMode\(user\)/);
   assert.match(notifications, /setCabinetMode\(['"]manager['"],\s*user\)/);
   assert.match(notifications, /setCabinetMode\(['"]employee['"],\s*user\)/);
+  assert.match(protectedRoute, /useCabinetMode\(user\)/);
+  assert.match(protectedRoute, /requireManager\s*&&\s*\(!hasManagerAccess\(user\)\s*\|\|\s*cabinetMode\s*!==\s*['"]manager['"]\)/);
+  assert.match(protectedRoute, /requireEmployee\s*&&\s*\(!hasEmployeeAccess\(user\)\s*\|\|\s*cabinetMode\s*!==\s*['"]employee['"]\)/);
 });
