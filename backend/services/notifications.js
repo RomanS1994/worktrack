@@ -2,6 +2,9 @@ import { randomUUID } from 'node:crypto';
 
 import { getVapidPublicKey, sendWebPush } from './web-push.js';
 
+const PUSH_LANGUAGES = new Set(['uk', 'cs', 'en']);
+const REVIEW_REJECTED_FALLBACK = 'Your manager rejected this week. Open it to make corrections.';
+
 function getMembership(context) {
   const membership = context?.activeMembership;
   if (!membership?.id || !membership?.companyId || membership.status === 'INACTIVE') {
@@ -17,6 +20,11 @@ function profileObject(value) {
 function readPushSubscriptions(profile) {
   const value = profileObject(profile).pushSubscriptions;
   return Array.isArray(value) ? value.filter(item => item && typeof item === 'object') : [];
+}
+
+function normalizePushLanguage(value) {
+  const language = String(value || '').trim().toLowerCase();
+  return PUSH_LANGUAGES.has(language) ? language : 'uk';
 }
 
 function cleanSubscription(body = {}) {
@@ -41,6 +49,109 @@ function serializeNotification(notification) {
     readAt: notification.readAt ? notification.readAt.toISOString() : '',
     createdAt: notification.createdAt.toISOString(),
   };
+}
+
+function extractPeriod(message = '') {
+  const match = String(message).match(/(\d{4}-\d{2}-\d{2})\s*-\s*(\d{4}-\d{2}-\d{2})/);
+  return match ? `${match[1]} – ${match[2]}` : '';
+}
+
+function extractInvoiceNumber(notification) {
+  const match = String(notification?.title || '').match(/Invoice\s+([^\s]+)(?:\s|$)/i);
+  return match?.[1] || '';
+}
+
+function submittedEmployeeName(notification) {
+  const suffix = ' submitted a week';
+  const title = String(notification?.title || '');
+  return title.endsWith(suffix) ? title.slice(0, -suffix.length) : title || 'Employee';
+}
+
+export function localizePushNotification(notification, rawLanguage = 'uk') {
+  const language = normalizePushLanguage(rawLanguage);
+  const payload = serializeNotification(notification);
+  const type = String(notification?.type || '');
+  if (language === 'en' || type === 'chat.message') return payload;
+
+  const period = extractPeriod(notification?.message);
+  if (type === 'weekly_submission.submitted') {
+    const name = submittedEmployeeName(notification);
+    return {
+      ...payload,
+      title: language === 'cs' ? `${name} odeslal(a) týden` : `${name} відправив(ла) тиждень`,
+      message: period
+        ? language === 'cs' ? `Zkontrolujte pracovní hodiny za období ${period}.` : `Перевірте робочі години за ${period}.`
+        : language === 'cs' ? 'Týden je připraven ke kontrole.' : 'Тиждень готовий до перевірки.',
+    };
+  }
+
+  if (type === 'weekly_submission.approved') {
+    return {
+      ...payload,
+      title: language === 'cs' ? 'Týden byl schválen' : 'Тиждень погоджено',
+      message: language === 'cs'
+        ? `Vaše práce za období ${period || '—'} byla schválena.`
+        : `Ваші години за ${period || '—'} погоджено.`,
+    };
+  }
+
+  if (type === 'weekly_submission.rejected') {
+    const customReason = String(notification?.message || '');
+    return {
+      ...payload,
+      title: language === 'cs' ? 'Týden vyžaduje úpravy' : 'Потрібні зміни в тижні',
+      message: customReason && customReason !== REVIEW_REJECTED_FALLBACK
+        ? customReason
+        : language === 'cs'
+          ? 'Manažer tento týden zamítl. Otevřete ho, proveďte opravy a odešlete znovu.'
+          : 'Менеджер відхилив цей тиждень. Відкрийте його, внесіть виправлення та відправте повторно.',
+    };
+  }
+
+  if (type === 'weekly_submission.reopened') {
+    return {
+      ...payload,
+      title: language === 'cs' ? 'Schválení bylo zrušeno' : 'Погодження скасовано',
+      message: language === 'cs'
+        ? `Vaše práce za období ${period || '—'} byla vrácena ke kontrole.`
+        : `Ваші години за ${period || '—'} повернено на перевірку.`,
+    };
+  }
+
+  if (type.startsWith('invoice.')) {
+    const number = extractInvoiceNumber(notification) || '—';
+    if (type === 'invoice.sent') {
+      return {
+        ...payload,
+        title: language === 'cs' ? `Přijata faktura ${number}` : `Отримано фактуру ${number}`,
+        message: notification.message,
+      };
+    }
+    if (type === 'invoice.cancelled') {
+      return {
+        ...payload,
+        title: language === 'cs' ? `Faktura ${number} byla zrušena` : `Фактуру ${number} скасовано`,
+        message: language === 'cs' ? 'Pracovník tuto fakturu zrušil.' : 'Працівник скасував цю фактуру.',
+      };
+    }
+    if (type === 'invoice.viewed') {
+      return {
+        ...payload,
+        title: language === 'cs' ? `Faktura ${number} byla zobrazena` : `Фактуру ${number} переглянуто`,
+        message: language === 'cs' ? 'Zaměstnavatel otevřel vaši fakturu.' : 'Роботодавець відкрив вашу фактуру.',
+      };
+    }
+    if (type === 'invoice.paid') {
+      const amount = String(notification.message || '').replace(' was marked as paid.', '');
+      return {
+        ...payload,
+        title: language === 'cs' ? `Faktura ${number} byla zaplacena` : `Фактуру ${number} оплачено`,
+        message: language === 'cs' ? `${amount} bylo označeno jako zaplacené.` : `${amount} позначено як оплачено.`,
+      };
+    }
+  }
+
+  return payload;
 }
 
 async function activeNotificationRecipient(client, payload) {
@@ -101,9 +212,10 @@ async function deliverPush(client, notification) {
       .filter(item => item.membershipId === membership.id && item.companyId === membership.companyId);
     if (!subscriptions.length) return;
 
-    const payload = serializeNotification(notification);
     const results = await Promise.allSettled(
-      subscriptions.map(subscription => sendWebPush(subscription, payload)),
+      subscriptions.map(subscription =>
+        sendWebPush(subscription, localizePushNotification(notification, subscription.language)),
+      ),
     );
     const expiredEndpoints = new Set();
 
@@ -163,6 +275,7 @@ export async function savePushSubscription(client, context, body, userAgent = ''
     ...subscription,
     membershipId: membership.id,
     companyId: membership.companyId,
+    language: normalizePushLanguage(body?.language),
     userAgent: String(userAgent || '').slice(0, 300),
     updatedAt: new Date().toISOString(),
   });
@@ -230,7 +343,7 @@ export async function notifyEmployeeAboutReview(client, context, submission) {
     type: isRejected ? 'weekly_submission.rejected' : 'weekly_submission.approved',
     title: isRejected ? 'Week needs changes' : 'Week approved',
     message: isRejected
-      ? submission.rejectionReason || 'Your manager rejected this week. Open it to make corrections.'
+      ? submission.rejectionReason || REVIEW_REJECTED_FALLBACK
       : `Your work for ${submission.weekStart} - ${submission.weekEnd} was approved.`,
     href: `/hours?date=${submission.weekStart}`,
   });
