@@ -7,62 +7,22 @@ import { SvgIcon } from '@shared/app/components/SvgIcon/SvgIcon.jsx';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
 import { selectUser } from '@shared/features/auth/authSlice.js';
 import { useCabinetMode } from '@shared/features/auth/cabinetMode.js';
-import {
-  businessDaysInMonth,
-  formatCzk,
-  formatHours,
-  getLocalDateKey,
-  monthKeyFromAnchor,
-  resolveLocale,
-} from '../../app/formatters.js';
+import { businessDaysInMonth, formatCzk, formatHours, getLocalDateKey, monthKeyFromAnchor, resolveLocale } from '../../app/formatters.js';
 import { useGetMonthlyHoursQuery } from '../../features/worktrack/monthlyHoursApi.js';
 import { useGetEmployeeAdvancesQuery, useGetWorkSummaryQuery } from '../../features/worktrack/worktrackApi.js';
 import './DashboardPage.css';
 
-const EARNINGS_COPY = {
-  uk: { expected: 'До виплати', thisMonth: 'Цей місяць', remaining: 'Залишилось', target: 'год норми', open: 'Відкрити фінанси' },
-  cs: { expected: 'K výplatě', thisMonth: 'Tento měsíc', remaining: 'Zbývá', target: 'h normy', open: 'Otevřít finance' },
-  en: { expected: 'Net payable', thisMonth: 'This month', remaining: 'Remaining', target: 'h target', open: 'Open finance' },
-};
-
+const EARNINGS_COPY={uk:{expected:'До виплати',thisMonth:'Цей місяць',remaining:'Залишилось',target:'год норми',open:'Відкрити фінанси'},cs:{expected:'K výplatě',thisMonth:'Tento měsíc',remaining:'Zbývá',target:'h normy',open:'Otevřít finance'},en:{expected:'Net payable',thisMonth:'This month',remaining:'Remaining',target:'h target',open:'Open finance'}};
+const SELF_COPY={uk:{title:'Мої години',NOT_SUBMITTED:'Не подано',SUBMITTED:'Очікує погодження',APPROVED:'Погоджено',REJECTED:'Потрібні виправлення'},cs:{title:'Moje hodiny',NOT_SUBMITTED:'Neodesláno',SUBMITTED:'Čeká na schválení',APPROVED:'Schváleno',REJECTED:'Vyžaduje opravu'},en:{title:'My hours',NOT_SUBMITTED:'Not submitted',SUBMITTED:'Awaiting approval',APPROVED:'Approved',REJECTED:'Needs changes'}};
 function getDisplayName(user){return user?.firstName||user?.name||user?.email||'WorkTrack user'}
 function getFirstName(user){return String(getDisplayName(user)).split(/[\s@]/)[0]||''}
 function getGreeting(t){const hour=new Date().getHours();if(hour<12)return t('dashboard.goodMorning');if(hour<18)return t('dashboard.goodAfternoon');return t('dashboard.goodEvening')}
 function getCompanyName(user,data,t){return data?.company?.name||user?.activeCompany?.name||t('dashboard.companyWorkspace')}
 
 export function DashboardPage(){
-  const user=useSelector(selectUser);
-  const {language,t}=useI18n();
-  const locale=resolveLocale(language);
-  const cabinetMode=useCabinetMode(user);
-  const isManager=cabinetMode==='manager';
-  const {data,error,isLoading}=useGetWorkSummaryQuery({cabinet:isManager?'manager':'employee'});
-  const currentMonth=monthKeyFromAnchor(getLocalDateKey());
-  const monthlyQuery=useGetMonthlyHoursQuery(currentMonth,{skip:isManager});
-  const advancesQuery=useGetEmployeeAdvancesQuery({}, {skip:isManager});
-  const summary=data?.summary||{};
-  const companyName=getCompanyName(user,data,t);
-  const pendingCount=Number(summary.pendingSubmissions||0);
-  const hasSummary=Boolean(data&&!error&&!isLoading);
-  const managerStats=[{label:t('dashboard.employees'),value:String(summary.employeeCount||0)},{label:t('dashboard.projects'),value:String(summary.activeProjectCount||0)},{label:t('dashboard.pendingApprovals'),value:String(pendingCount),warning:pendingCount>0}];
-  const employeeStats=[{label:t('dashboard.thisWeek'),value:`${summary.totalHours||'0.00'} h`},{label:t('dashboard.approved'),value:`${summary.approvedHours||'0.00'} h`},{label:t('dashboard.salary'),value:formatCzk(summary.confirmedSalaryCzk,locale)}];
-  const stats=isManager?managerStats:employeeStats;
-
-  const monthData=monthlyQuery.data;
-  const monthSummary=monthData?.summary||{};
-  const monthHours=Number(monthSummary.totalHours||0);
-  const hourlyRate=Number(monthData?.hourlyRateCzk||user?.activeMembership?.hourlyRateCzk||0);
-  const monthEarned=Number(monthSummary.approvedAmountCzk||0)+Number(monthSummary.pendingAmountCzk||0);
-  const monthAdvances=(Array.isArray(advancesQuery.data?.advances)?advancesQuery.data.advances:[])
-    .filter(item=>String(item.paidAt||'').startsWith(currentMonth))
-    .reduce((sum,item)=>sum+Number(item.amountCzk||0),0);
-  const monthPayable=monthEarned-monthAdvances;
-  const dailyTarget=Math.max(.25,Number(monthData?.workRules?.standardDailyHours||8));
-  const targetHours=dailyTarget*(businessDaysInMonth(monthData?.month)||20);
-  const remainingHours=Math.max(targetHours-monthHours,0);
-  const progress=targetHours>0?Math.min((monthHours/targetHours)*100,100):0;
-  const copy=EARNINGS_COPY[language]||EARNINGS_COPY.uk;
-  const showEmployeeEarnings=!isManager&&!monthlyQuery.isLoading&&!monthlyQuery.isFetching&&!monthlyQuery.error&&Boolean(monthData);
-
-  return <section className="dashboardPage pageStack"><header className="dashboardHero"><div className="dashboardHero-copy"><p className="sectionEyebrow">{isManager?companyName:t('dashboard.myWorkspace')}</p><h1>{getGreeting(t)}, {getFirstName(user)} <span aria-hidden="true">👋</span></h1></div></header>{isLoading?<RequestLoadingState label={t('dashboard.loading')}/>:null}{error?<p className="statusNote is-error">{getApiErrorMessage(error)}</p>:null}{hasSummary?<>{showEmployeeEarnings?<Link className="dashboardEarningsCard" to="/finance" aria-label={copy.open}><div className="dashboardEarningsTop"><div className="dashboardEarningsAmount"><span>{copy.expected}</span><strong>{formatCzk(monthPayable,locale)}</strong><small>{formatHours(monthHours,locale)} × {formatCzk(hourlyRate,locale)}</small></div><span className="dashboardEarningsStatus"><i />{copy.thisMonth}</span></div><div className="dashboardEarningsProgress" aria-label={`${formatHours(monthHours,locale)} / ${formatHours(targetHours,locale)}`}><span style={{width:`${progress}%`}} /></div><div className="dashboardEarningsMeta"><span>{formatHours(monthHours,locale)} / {formatHours(targetHours,locale)} {copy.target}</span><span>{copy.remaining} {formatHours(remainingHours,locale)}</span></div></Link>:null}{isManager?<Link className={`dashboardFocusCard${pendingCount?' is-warning':''}`} to="/approvals"><span className="dashboardFocusIcon"><SvgIcon name="check-circle"/></span><span className="dashboardFocusCopy"><small>{t('dashboard.needsAttention')}</small><strong>{t(pendingCount===1?'dashboard.weekNeedsApproval':'dashboard.weeksNeedApproval',{count:pendingCount})}</strong><em>{t('dashboard.reviewSubmittedHours')}</em></span><b aria-hidden="true">›</b></Link>:<Link className="dashboardFocusCard" to="/hours"><span className="dashboardFocusIcon"><SvgIcon name="clock"/></span><span className="dashboardFocusCopy"><small>{t('dashboard.thisWeek')}</small><strong>{summary.totalHours||'0.00'} h</strong><em>{t('dashboard.addEditEntries')}</em></span><b aria-hidden="true">›</b></Link>}<section className="dashboardCompactStats" aria-label={t('dashboard.workspaceSummary')}>{stats.map(item=><article key={item.label} className={item.warning?'is-warning':''}><span>{item.label}</span><strong>{item.value}</strong></article>)}</section><section className="dashboardShortcuts">{isManager?<><Link to="/employees"><span><SvgIcon name="accounts"/></span><strong>{t('dashboard.employees')}</strong><small>{t('dashboard.manageTeam')}</small><b>›</b></Link><Link to="/finance"><span><SvgIcon name="wallet"/></span><strong>{t('dashboard.payroll')}</strong><small>{formatCzk(summary.confirmedSalaryCzk,locale)}</small><b>›</b></Link></>:<><Link to="/finance"><span><SvgIcon name="wallet"/></span><strong>{t('dashboard.salary')}</strong><small>{t('dashboard.predictedFromPending',{amount:formatCzk(summary.predictedSalaryCzk,locale)})}</small><b>›</b></Link><Link to="/calendar"><span><SvgIcon name="calendar"/></span><strong>{t('dashboard.calendar')}</strong><small>{t('dashboard.monthlyOverview')}</small><b>›</b></Link></>}</section></>:null}</section>;
+ const user=useSelector(selectUser);const {language,t}=useI18n();const locale=resolveLocale(language);const cabinetMode=useCabinetMode(user);const isManager=cabinetMode==='manager';
+ const {data,error,isLoading}=useGetWorkSummaryQuery({cabinet:isManager?'manager':'employee'});const currentMonth=monthKeyFromAnchor(getLocalDateKey());const monthlyQuery=useGetMonthlyHoursQuery(currentMonth,{skip:isManager});const advancesQuery=useGetEmployeeAdvancesQuery({}, {skip:isManager});
+ const summary=data?.summary||{};const companyName=getCompanyName(user,data,t);const pendingCount=Number(summary.pendingSubmissions||0);const hasSummary=Boolean(data&&!error&&!isLoading);const managerStats=[{label:t('dashboard.employees'),value:String(summary.employeeCount||0)},{label:t('dashboard.projects'),value:String(summary.activeProjectCount||0)},{label:t('dashboard.pendingApprovals'),value:String(pendingCount),warning:pendingCount>0}];const employeeStats=[{label:t('dashboard.thisWeek'),value:`${summary.totalHours||'0.00'} h`},{label:t('dashboard.approved'),value:`${summary.approvedHours||'0.00'} h`},{label:t('dashboard.salary'),value:formatCzk(summary.confirmedSalaryCzk,locale)}];const stats=isManager?managerStats:employeeStats;
+ const monthData=monthlyQuery.data;const monthSummary=monthData?.summary||{};const monthHours=Number(monthSummary.totalHours||0);const hourlyRate=Number(monthData?.hourlyRateCzk||user?.activeMembership?.hourlyRateCzk||0);const monthEarned=Number(monthSummary.approvedAmountCzk||0)+Number(monthSummary.pendingAmountCzk||0);const monthAdvances=(Array.isArray(advancesQuery.data?.advances)?advancesQuery.data.advances:[]).filter(item=>String(item.paidAt||'').startsWith(currentMonth)).reduce((sum,item)=>sum+Number(item.amountCzk||0),0);const monthPayable=monthEarned-monthAdvances;const dailyTarget=Math.max(.25,Number(monthData?.workRules?.standardDailyHours||8));const targetHours=dailyTarget*(businessDaysInMonth(monthData?.month)||20);const remainingHours=Math.max(targetHours-monthHours,0);const progress=targetHours>0?Math.min((monthHours/targetHours)*100,100):0;const copy=EARNINGS_COPY[language]||EARNINGS_COPY.uk;const selfCopy=SELF_COPY[language]||SELF_COPY.uk;const showEmployeeEarnings=!isManager&&!monthlyQuery.isLoading&&!monthlyQuery.isFetching&&!monthlyQuery.error&&Boolean(monthData);const self=data?.self||null;const selfStatus=String(self?.status||'NOT_SUBMITTED').toUpperCase();
+ return <section className="dashboardPage pageStack"><header className="dashboardHero"><div className="dashboardHero-copy"><p className="sectionEyebrow">{isManager?companyName:t('dashboard.myWorkspace')}</p><h1>{getGreeting(t)}, {getFirstName(user)} <span aria-hidden="true">👋</span></h1></div></header>{isLoading?<RequestLoadingState label={t('dashboard.loading')}/>:null}{error?<p className="statusNote is-error">{getApiErrorMessage(error)}</p>:null}{hasSummary?<>{showEmployeeEarnings?<Link className="dashboardEarningsCard" to="/finance" aria-label={copy.open}><div className="dashboardEarningsTop"><div className="dashboardEarningsAmount"><span>{copy.expected}</span><strong>{formatCzk(monthPayable,locale)}</strong><small>{formatHours(monthHours,locale)} × {formatCzk(hourlyRate,locale)}</small></div><span className="dashboardEarningsStatus"><i />{copy.thisMonth}</span></div><div className="dashboardEarningsProgress"><span style={{width:`${progress}%`}}/></div><div className="dashboardEarningsMeta"><span>{formatHours(monthHours,locale)} / {formatHours(targetHours,locale)} {copy.target}</span><span>{copy.remaining} {formatHours(remainingHours,locale)}</span></div></Link>:null}{isManager&&self?<article className={`dashboardSelfCard is-${selfStatus.toLowerCase()}`}><span><SvgIcon name="clock"/></span><div><small>{selfCopy.title}</small><strong>{formatHours(self.totalHours,locale)}</strong><em>{selfCopy[selfStatus]||selfCopy.NOT_SUBMITTED}</em></div></article>:null}{isManager?<Link className={`dashboardFocusCard${pendingCount?' is-warning':''}`} to="/approvals"><span className="dashboardFocusIcon"><SvgIcon name="check-circle"/></span><span className="dashboardFocusCopy"><small>{t('dashboard.needsAttention')}</small><strong>{t(pendingCount===1?'dashboard.weekNeedsApproval':'dashboard.weeksNeedApproval',{count:pendingCount})}</strong><em>{t('dashboard.reviewSubmittedHours')}</em></span><b aria-hidden="true">›</b></Link>:<Link className="dashboardFocusCard" to="/hours"><span className="dashboardFocusIcon"><SvgIcon name="clock"/></span><span className="dashboardFocusCopy"><small>{t('dashboard.thisWeek')}</small><strong>{summary.totalHours||'0.00'} h</strong><em>{t('dashboard.addEditEntries')}</em></span><b aria-hidden="true">›</b></Link>}<section className="dashboardCompactStats">{stats.map(item=><article key={item.label} className={item.warning?'is-warning':''}><span>{item.label}</span><strong>{item.value}</strong></article>)}</section><section className="dashboardShortcuts">{isManager?<><Link to="/employees"><span><SvgIcon name="accounts"/></span><strong>{t('dashboard.employees')}</strong><small>{t('dashboard.manageTeam')}</small><b>›</b></Link><Link to="/finance"><span><SvgIcon name="wallet"/></span><strong>{t('dashboard.payroll')}</strong><small>{formatCzk(summary.confirmedSalaryCzk,locale)}</small><b>›</b></Link></>:<><Link to="/finance"><span><SvgIcon name="wallet"/></span><strong>{t('dashboard.salary')}</strong><small>{t('dashboard.predictedFromPending',{amount:formatCzk(summary.predictedSalaryCzk,locale)})}</small><b>›</b></Link><Link to="/calendar"><span><SvgIcon name="calendar"/></span><strong>{t('dashboard.calendar')}</strong><small>{t('dashboard.monthlyOverview')}</small><b>›</b></Link></>}</section></>:null}</section>;
 }
