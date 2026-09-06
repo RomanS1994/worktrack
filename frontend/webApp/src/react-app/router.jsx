@@ -5,6 +5,7 @@ import { App } from '@shared/app/App.jsx';
 import { ProtectedRoute } from '@shared/app/components/ProtectedRoute/ProtectedRoute.jsx';
 import { RouterError } from '@shared/app/components/RouterError/RouterError.jsx';
 import { SectionShell } from './components/SectionTabs/SectionShell.jsx';
+import { ApprovalHistoryPage } from './pages/ApprovalHistoryPage/ApprovalHistoryPage.jsx';
 import { ApprovalsPage } from './pages/ApprovalsPage/ApprovalsPage.jsx';
 import { CalendarPage } from './pages/CalendarPage/CalendarPage.jsx';
 import { ChatPage } from './pages/ChatPage/ChatPage.jsx';
@@ -78,6 +79,7 @@ export const router = createBrowserRouter([
         children: [
           { path: 'manager/timesheet', element: <ManagerTimesheetPage /> },
           { path: 'approvals', element: <ApprovalsPage /> },
+          { path: 'approval-history', element: <ApprovalHistoryPage /> },
         ],
       },
       { path: 'notifications', element: <ProtectedRoute><NotificationsPage /></ProtectedRoute> },
