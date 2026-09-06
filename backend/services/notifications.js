@@ -45,6 +45,9 @@ function serializeNotification(notification) {
 
 async function activeNotificationRecipient(client, payload) {
   if (!payload?.recipientMembershipId || !payload?.companyId) return null;
+  if (typeof client.companyMembership?.findFirst !== 'function') {
+    return { id: payload.recipientMembershipId };
+  }
   return client.companyMembership.findFirst({
     where: {
       id: payload.recipientMembershipId,
