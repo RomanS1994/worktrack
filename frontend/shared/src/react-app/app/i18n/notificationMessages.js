@@ -9,6 +9,9 @@ export const notificationMessages = {
       approvedMessage: 'Ваші години за {period} погоджено.',
       rejectedTitle: 'Потрібні зміни в тижні',
       rejectedFallback: 'Менеджер відхилив цей тиждень. Відкрийте його, внесіть виправлення та відправте повторно.',
+      reopenedTitle: 'Погодження скасовано',
+      reopenedMessage: 'Ваші години за {period} повернуто на повторну перевірку.',
+      reopenedFallback: 'Погоджений тиждень повернуто на повторну перевірку.',
     },
   },
   cs: {
@@ -21,6 +24,9 @@ export const notificationMessages = {
       approvedMessage: 'Vaše práce za období {period} byla schválena.',
       rejectedTitle: 'Týden vyžaduje úpravy',
       rejectedFallback: 'Manažer tento týden zamítl. Otevřete ho, proveďte opravy a odešlete znovu.',
+      reopenedTitle: 'Schválení bylo zrušeno',
+      reopenedMessage: 'Vaše práce za období {period} byla vrácena ke kontrole.',
+      reopenedFallback: 'Schválený týden byl vrácen ke kontrole.',
     },
   },
   en: {
@@ -33,6 +39,9 @@ export const notificationMessages = {
       approvedMessage: 'Your work for {period} was approved.',
       rejectedTitle: 'Week needs changes',
       rejectedFallback: 'Your manager rejected this week. Open it to make corrections and resubmit it.',
+      reopenedTitle: 'Approval cancelled',
+      reopenedMessage: 'Your work for {period} was returned to review.',
+      reopenedFallback: 'The approved week was returned to review.',
     },
   },
 };
