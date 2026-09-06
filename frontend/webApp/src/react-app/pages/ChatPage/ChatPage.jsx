@@ -6,20 +6,23 @@ import {
   useDeleteChatMessageMutation,
   useGetChatMessagesQuery,
   useGetChatPresenceQuery,
+  useGetChatReactionsQuery,
   useGetChatReadStatesQuery,
   useGetChatSummaryQuery,
   useLazyGetChatMessagesQuery,
   useMarkChatReadMutation,
   useSendChatMessageMutation,
   useSendChatTypingMutation,
+  useToggleChatReactionMutation,
 } from '@shared/features/chat/chatApi.js';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
 import './ChatPage.css';
 
+const REACTION_EMOJIS=['👍','❤️','😂','😮','😢','🙏'];
 const COPY = {
-  uk:{title:'Чат компанії',subtitle:'Спільний чат для всієї команди',online:'онлайн',placeholder:'Написати повідомлення…',send:'Надіслати',older:'Завантажити старіші',empty:'Поки що повідомлень немає.',today:'Сьогодні',yesterday:'Вчора',newMessages:'Нові повідомлення',scrollNew:'Нові повідомлення',delete:'Видалити',deleteConfirm:'Видалити повідомлення?',deleteConfirmCopy:'Цю дію неможливо скасувати.',cancel:'Скасувати',typing:'друкує…',delivered:'Доставлено',read:'Прочитано',reply:'Відповісти',replyingTo:'Відповідь',cancelReply:'Скасувати відповідь',deletedMessage:'Повідомлення видалено'},
-  cs:{title:'Firemní chat',subtitle:'Společný chat pro celý tým',online:'online',placeholder:'Napsat zprávu…',send:'Odeslat',older:'Načíst starší',empty:'Zatím zde nejsou žádné zprávy.',today:'Dnes',yesterday:'Včera',newMessages:'Nové zprávy',scrollNew:'Nové zprávy',delete:'Smazat',deleteConfirm:'Smazat zprávu?',deleteConfirmCopy:'Tuto akci nelze vrátit zpět.',cancel:'Zrušit',typing:'píše…',delivered:'Doručeno',read:'Přečteno',reply:'Odpovědět',replyingTo:'Odpověď',cancelReply:'Zrušit odpověď',deletedMessage:'Zpráva byla smazána'},
-  en:{title:'Company chat',subtitle:'Shared chat for the whole team',online:'online',placeholder:'Write a message…',send:'Send',older:'Load older',empty:'No messages yet.',today:'Today',yesterday:'Yesterday',newMessages:'New messages',scrollNew:'New messages',delete:'Delete',deleteConfirm:'Delete message?',deleteConfirmCopy:'This action cannot be undone.',cancel:'Cancel',typing:'is typing…',delivered:'Delivered',read:'Read',reply:'Reply',replyingTo:'Replying to',cancelReply:'Cancel reply',deletedMessage:'Message deleted'},
+  uk:{title:'Чат компанії',subtitle:'Спільний чат для всієї команди',online:'онлайн',placeholder:'Написати повідомлення…',send:'Надіслати',older:'Завантажити старіші',empty:'Поки що повідомлень немає.',today:'Сьогодні',yesterday:'Вчора',newMessages:'Нові повідомлення',scrollNew:'Нові повідомлення',delete:'Видалити',deleteConfirm:'Видалити повідомлення?',deleteConfirmCopy:'Цю дію неможливо скасувати.',cancel:'Скасувати',typing:'друкує…',delivered:'Доставлено',read:'Прочитано',reply:'Відповісти',replyingTo:'Відповідь',cancelReply:'Скасувати відповідь',deletedMessage:'Повідомлення видалено',reaction:'Поставити реакцію'},
+  cs:{title:'Firemní chat',subtitle:'Společný chat pro celý tým',online:'online',placeholder:'Napsat zprávu…',send:'Odeslat',older:'Načíst starší',empty:'Zatím zde nejsou žádné zprávy.',today:'Dnes',yesterday:'Včera',newMessages:'Nové zprávy',scrollNew:'Nové zprávy',delete:'Smazat',deleteConfirm:'Smazat zprávu?',deleteConfirmCopy:'Tuto akci nelze vrátit zpět.',cancel:'Zrušit',typing:'píše…',delivered:'Doručeno',read:'Přečteno',reply:'Odpovědět',replyingTo:'Odpověď',cancelReply:'Zrušit odpověď',deletedMessage:'Zpráva byla smazána',reaction:'Přidat reakci'},
+  en:{title:'Company chat',subtitle:'Shared chat for the whole team',online:'online',placeholder:'Write a message…',send:'Send',older:'Load older',empty:'No messages yet.',today:'Today',yesterday:'Yesterday',newMessages:'New messages',scrollNew:'New messages',delete:'Delete',deleteConfirm:'Delete message?',deleteConfirmCopy:'This action cannot be undone.',cancel:'Cancel',typing:'is typing…',delivered:'Delivered',read:'Read',reply:'Reply',replyingTo:'Replying to',cancelReply:'Cancel reply',deletedMessage:'Message deleted',reaction:'Add reaction'},
 };
 
 function localeFor(language){return language==='cs'?'cs-CZ':language==='en'?'en-GB':'uk-UA'}
@@ -49,9 +52,11 @@ export function ChatPage(){
   const [sendTyping]=useSendChatTypingMutation();
   const [markRead]=useMarkChatReadMutation();
   const [deleteMessage,deleteState]=useDeleteChatMessageMutation();
+  const [toggleReaction,reactionState]=useToggleChatReactionMutation();
   const [text,setText]=useState('');
   const [replyTo,setReplyTo]=useState(null);
   const [deleteTarget,setDeleteTarget]=useState(null);
+  const [reactionTarget,setReactionTarget]=useState(null);
   const [older,setOlder]=useState([]);
   const [hasMoreOlder,setHasMoreOlder]=useState(null);
   const [showNewMessages,setShowNewMessages]=useState(false);
@@ -81,6 +86,8 @@ export function ChatPage(){
     [...older,...latest].forEach(item=>map.set(item.id,item));
     return [...map.values()].sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));
   },[older,latest]);
+  const reactionIds=useMemo(()=>messages.map(item=>item.id).join(','),[messages]);
+  const {data:reactionData}=useGetChatReactionsQuery(reactionIds,{skip:!reactionIds});
 
   const readStates=useMemo(()=>{
     const map={};
@@ -189,6 +196,7 @@ export function ChatPage(){
     const nearBottom=el.scrollHeight-el.scrollTop-el.clientHeight<120;
     nearBottomRef.current=nearBottom;
     if(nearBottom)setShowNewMessages(false);
+    if(reactionTarget)setReactionTarget(null);
   }
 
   function handleTextChange(event){
@@ -212,6 +220,7 @@ export function ChatPage(){
   }
 
   function beginReply(item){
+    setReactionTarget(null);
     setReplyTo(item);
     requestAnimationFrame(()=>composerRef.current?.focus());
   }
@@ -265,6 +274,7 @@ export function ChatPage(){
 
   function remove(item){
     if(item.authorMembershipId!==membershipId&&role!=='MANAGER')return;
+    setReactionTarget(null);
     setDeleteTarget(item);
   }
 
@@ -280,6 +290,16 @@ export function ChatPage(){
     }
   }
 
+  async function reactToMessage(messageId,emoji){
+    if(reactionState.isLoading)return;
+    setReactionTarget(null);
+    try{
+      await toggleReaction({messageId,emoji}).unwrap();
+    }catch{
+      // Reaction remains unchanged if the request fails.
+    }
+  }
+
   function isReadByOther(item){
     if(item.authorMembershipId!==membershipId)return false;
     const createdAt=new Date(item.createdAt).getTime();
@@ -292,17 +312,19 @@ export function ChatPage(){
       {hasMoreOlder!==false&&(data?.hasMore||hasMoreOlder)?<button className="companyChatOlder" type="button" onClick={loadMore} disabled={loadingOlder}>{loadingOlder?'…':c.older}</button>:null}
       {isLoading?<p className="companyChatEmpty">…</p>:null}
       {!isLoading&&!messages.length?<p className="companyChatEmpty">{c.empty}</p>:null}
-      {messages.map((item,index)=>{const mine=item.authorMembershipId===membershipId;const previous=messages[index-1];const showDay=!previous||dayKey(previous.createdAt)!==dayKey(item.createdAt);const read=mine&&isReadByOther(item);return <Fragment key={item.id}>
+      {messages.map((item,index)=>{const mine=item.authorMembershipId===membershipId;const previous=messages[index-1];const showDay=!previous||dayKey(previous.createdAt)!==dayKey(item.createdAt);const read=mine&&isReadByOther(item);const reactions=reactionData?.byMessage?.[item.id]||[];return <Fragment key={item.id}>
         {showDay?<div className="companyChatDay"><span>{formatDay(item.createdAt,language,c)}</span></div>:null}
         {item.id===firstUnreadId?<div className="companyChatUnread"><span>{c.newMessages}</span></div>:null}
         <article id={`chat-message-${item.id}`} className={`companyChatMessage${mine?' isMine':''}`}>
           {!mine?<div className="companyChatAvatar">{item.author?.avatarDataUrl?<img src={item.author.avatarDataUrl} alt=""/>:<span>{initials(item.author?.name)}</span>}</div>:null}
-          <div className="companyChatBubble">
+          <div className="companyChatBubble" onClick={event=>{if(event.target.closest('button'))return;setReactionTarget(current=>current?.id===item.id?null:item)}}>
             {!mine?<strong>{item.author?.name||'-'}</strong>:null}
             {item.replyTo?<button className="companyChatReplyQuote" type="button" onClick={()=>scrollToMessage(item.replyTo.id)}><strong>{item.replyTo.author?.name||c.replyingTo}</strong><span>{item.replyTo.deleted?c.deletedMessage:item.replyTo.body}</span></button>:null}
             <p>{item.body}</p>
+            {reactions.length?<div className="companyChatReactions">{reactions.map(reaction=><button key={reaction.emoji} type="button" className={reaction.mine?'isMine':''} title={reaction.names?.join(', ')||''} onClick={()=>reactToMessage(item.id,reaction.emoji)}><span>{reaction.emoji}</span><small>{reaction.count}</small></button>)}</div>:null}
             <footer><time>{formatTime(item.createdAt,language)}</time>{mine?<span className={`companyChatReceipt${read?' isRead':''}`} title={read?c.read:c.delivered} aria-label={read?c.read:c.delivered}>{read?'✓✓':'✓'}</span>:null}<button type="button" className="companyChatReplyAction" onClick={()=>beginReply(item)}>{c.reply}</button>{mine||role==='MANAGER'?<button type="button" onClick={()=>remove(item)}>{c.delete}</button>:null}</footer>
           </div>
+          {reactionTarget?.id===item.id?<div className={`companyChatReactionPicker${mine?' isMine':''}`} role="menu" aria-label={c.reaction}>{REACTION_EMOJIS.map(emoji=><button key={emoji} type="button" disabled={reactionState.isLoading} onClick={()=>reactToMessage(item.id,emoji)}>{emoji}</button>)}</div>:null}
         </article>
       </Fragment>})}
     </div>
