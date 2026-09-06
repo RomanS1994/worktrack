@@ -1,0 +1,101 @@
+.approvalsPage{gap:var(--space-3)}
+.approvalsHeader{align-items:center;gap:var(--space-4);padding:0 2px 2px}
+.approvalsHeader h1{margin:0 0 4px;font-size:var(--font-size-page-title);line-height:1.08;letter-spacing:-.035em}
+.approvalsHeader p{font-size:var(--font-size-secondary);line-height:1.4}
+.approvalsHeaderStats{display:flex;gap:var(--space-2)}
+.approvalsHeaderStats>div{display:flex;align-items:baseline;gap:5px;min-width:0;padding:0;border:0;background:transparent}
+.approvalsHeaderStats strong{font-size:var(--font-size-card-title)}
+.approvalsHeaderStats span{font-size:var(--font-size-caption)}
+
+.approvalsWorkspace{gap:var(--space-3)}
+.approvalsQueue{border-radius:var(--radius-lg);box-shadow:var(--shadow-sm)}
+.approvalsQueueHeader{gap:3px;padding:12px 14px}
+.approvalsQueueHeader>div>span{font-size:var(--font-size-card-title)}
+.approvalsQueueHeader>div>strong{min-width:26px;height:26px;padding:0 8px;font-size:var(--font-size-caption)}
+.approvalsQueueHeader p{font-size:var(--font-size-caption)}
+.approvalsList{gap:1px;padding:6px}
+.approvalItem{grid-template-columns:36px minmax(0,1fr) auto 10px;gap:9px;min-height:62px;padding:8px;border-radius:var(--radius-md)}
+.approvalAvatar{width:36px;height:36px;font-size:12px}
+.approvalItemCopy strong{font-size:var(--font-size-secondary)}
+.approvalItemCopy em{font-size:var(--font-size-caption)}
+.approvalItemMeta b{font-size:var(--font-size-secondary)}
+.approvalItemMeta i{font-size:var(--font-size-caption)}
+.approvalItemChevron{font-size:20px}
+
+.approvalDetail{gap:var(--space-2)}
+.approvalWeekSummary{grid-template-columns:40px minmax(0,1fr) auto;gap:10px;min-height:78px;padding:12px 14px;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm)}
+.approvalWeekIcon{width:40px;height:40px;border-radius:var(--radius-md)}
+.approvalWeekIcon svg{width:21px;height:21px}
+.approvalWeekIdentity{gap:2px}
+.approvalWeekIdentity strong{font-size:var(--font-size-card-title)}
+.approvalWeekIdentity span{font-size:var(--font-size-caption)}
+.approvalWeekTotal{min-width:92px;padding-left:14px}
+.approvalWeekTotal strong{font-size:20px}
+.approvalWeekTotal span{font-size:var(--font-size-caption)}
+
+.approvalEntriesCard{border-radius:var(--radius-lg);box-shadow:var(--shadow-sm)}
+.approvalEntriesHeader{min-height:50px;padding:0 14px}
+.approvalEntriesHeader h2{font-size:var(--font-size-section-title)}
+.approvalEntriesHeader button{width:36px;min-width:36px;min-height:36px;border-radius:var(--radius-sm)}
+.approvalComparisonState{margin:0 14px 10px;font-size:var(--font-size-caption)}
+.approvalMismatchBanner{grid-template-columns:34px minmax(0,1fr) 18px;gap:9px;width:calc(100% - 28px);min-height:58px;margin:0 14px 10px;padding:8px 10px;border-radius:var(--radius-md)}
+.approvalMismatchIcon{width:34px;height:34px}
+.approvalMismatchIcon svg{width:26px;height:26px}
+.approvalMismatchBanner strong{font-size:var(--font-size-secondary)}
+.approvalMismatchBanner small{font-size:var(--font-size-caption)}
+
+.approvalEntries{padding:0 14px 2px}
+.approvalEntry{grid-template-columns:10px 42px minmax(0,1fr) auto 34px;gap:9px;min-height:62px;padding:7px 0}
+.approvalEntryDate small{font-size:var(--font-size-caption)}
+.approvalEntryDate strong{font-size:15px}
+.approvalEntryProject{gap:2px}
+.approvalEntryProject>strong{font-size:var(--font-size-secondary)}
+.approvalEntryProject>button{font-size:var(--font-size-caption)}
+.approvalEntryHours{min-height:30px;padding:0 9px;border-radius:var(--radius-sm);font-size:var(--font-size-caption)}
+.approvalEntryMore{width:32px;min-width:32px;min-height:32px;border-radius:var(--radius-sm)}
+
+@media(max-width:760px){
+  .approvalsPage{gap:8px}
+  .approvalsHeader{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:0}
+  .approvalsHeader h1{font-size:22px}
+  .approvalsHeader p{display:none}
+  .approvalsHeaderStats{gap:6px}
+  .approvalsHeaderStats>div{gap:3px}
+  .approvalsHeaderStats strong{font-size:13px}
+  .approvalsHeaderStats span{font-size:10px}
+  .approvalsWorkspace{display:block}
+  .approvalsQueue{border-radius:var(--radius-md)}
+  .approvalsQueueHeader{padding:10px 12px}
+  .approvalsQueueHeader p{display:none}
+  .approvalItem{min-height:58px;padding:7px}
+  .approvalDetail{gap:7px}
+  .approvalMobileBack{min-height:36px;padding:0 8px;font-size:var(--font-size-caption)}
+  .approvalWeekSummary{grid-template-columns:36px minmax(0,1fr) auto;min-height:68px;padding:10px 12px;border-radius:var(--radius-md)}
+  .approvalWeekIcon{width:36px;height:36px}
+  .approvalWeekIdentity strong{font-size:14px}
+  .approvalWeekTotal{min-width:76px;padding-left:10px}
+  .approvalWeekTotal strong{font-size:18px}
+  .approvalEntriesCard{border-radius:var(--radius-md)}
+  .approvalEntriesHeader{min-height:46px;padding:0 12px}
+  .approvalMismatchBanner{width:calc(100% - 24px);margin:0 12px 8px}
+  .approvalEntries{padding:0 12px 2px}
+  .approvalEntry{grid-template-columns:9px 38px minmax(0,1fr) auto 32px;gap:7px;min-height:58px;padding:6px 0}
+  .approvalEntryDate strong{font-size:14px}
+  .approvalEntryHours{min-height:28px;padding-inline:7px}
+}
+
+@media(max-width:430px){
+  .approvalsHeader{grid-template-columns:1fr}
+  .approvalsHeaderStats{justify-content:flex-start}
+  .approvalItem{grid-template-columns:34px minmax(0,1fr) auto 8px}
+  .approvalAvatar{width:34px;height:34px}
+  .approvalWeekSummary{grid-template-columns:34px minmax(0,1fr) auto;gap:8px;padding:9px 10px}
+  .approvalWeekIcon{width:34px;height:34px}
+  .approvalWeekTotal{min-width:68px;padding-left:8px}
+  .approvalWeekTotal strong{font-size:17px}
+  .approvalEntry{grid-template-columns:8px 34px minmax(0,1fr) auto 30px;gap:6px}
+  .approvalEntryDate small{font-size:10px}
+  .approvalEntryDate strong{font-size:13px}
+  .approvalEntryProject>strong{font-size:12px}
+  .approvalEntryHours{font-size:10px}
+}
