@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { selectUser } from '@shared/features/auth/authSlice.js';
@@ -52,15 +52,19 @@ export function ChatPage(){
   const [text,setText]=useState('');
   const [replyTo,setReplyTo]=useState(null);
   const [older,setOlder]=useState([]);
+  const [hasMoreOlder,setHasMoreOlder]=useState(null);
   const [showNewMessages,setShowNewMessages]=useState(false);
   const [typingUsers,setTypingUsers]=useState({});
   const [liveReadStates,setLiveReadStates]=useState({});
   const listRef=useRef(null);
   const composerRef=useRef(null);
   const initialReadAtRef=useRef(null);
+  const initialUnreadCountRef=useRef(0);
   const capturedInitialReadRef=useRef(false);
   const didInitialScrollRef=useRef(false);
   const nearBottomRef=useRef(true);
+  const lastMarkedReadIdRef=useRef('');
+  const pendingOlderScrollRef=useRef(null);
   const typingStopTimerRef=useRef(null);
   const lastTypingSentRef=useRef(0);
   const typingExpiryTimersRef=useRef(new Map());
@@ -84,14 +88,27 @@ export function ChatPage(){
 
   if(!capturedInitialReadRef.current&&summary){
     initialReadAtRef.current=summary.lastReadAt||'';
+    initialUnreadCountRef.current=Number(summary.unreadCount||0);
     capturedInitialReadRef.current=true;
   }
 
   const firstUnreadId=useMemo(()=>{
-    if(!capturedInitialReadRef.current||!Number(summary?.unreadCount||0))return '';
+    if(!capturedInitialReadRef.current||initialUnreadCountRef.current<=0)return '';
     const lastRead=initialReadAtRef.current?new Date(initialReadAtRef.current).getTime():0;
     return messages.find(item=>item.authorMembershipId!==membershipId&&new Date(item.createdAt).getTime()>lastRead)?.id||'';
-  },[messages,membershipId,summary?.unreadCount]);
+  },[messages,membershipId]);
+
+  useEffect(()=>{
+    if(data&&hasMoreOlder===null)setHasMoreOlder(Boolean(data.hasMore));
+  },[data,hasMoreOlder]);
+
+  useLayoutEffect(()=>{
+    const pending=pendingOlderScrollRef.current;
+    const el=listRef.current;
+    if(!pending||!el)return;
+    el.scrollTop=pending.previousTop+(el.scrollHeight-pending.previousHeight);
+    pendingOlderScrollRef.current=null;
+  },[older.length]);
 
   useEffect(()=>{
     const timers=typingExpiryTimersRef.current;
@@ -132,7 +149,11 @@ export function ChatPage(){
 
   function markLatestRead(){
     const newest=latest[latest.length-1];
-    if(newest?.createdAt)void markRead({readAt:newest.createdAt});
+    if(!newest?.id||newest.id===lastMarkedReadIdRef.current)return;
+    lastMarkedReadIdRef.current=newest.id;
+    void markRead({messageId:newest.id}).unwrap().catch(()=>{
+      if(lastMarkedReadIdRef.current===newest.id)lastMarkedReadIdRef.current='';
+    });
   }
 
   function scrollToBottom(behavior='smooth'){
@@ -166,8 +187,13 @@ export function ChatPage(){
     const value=event.target.value;
     setText(value);
     if(typingStopTimerRef.current)window.clearTimeout(typingStopTimerRef.current);
+    if(!value.trim()){
+      void sendTyping({typing:false});
+      lastTypingSentRef.current=0;
+      return;
+    }
     const now=Date.now();
-    if(value.trim()&&now-lastTypingSentRef.current>1500){
+    if(now-lastTypingSentRef.current>1500){
       lastTypingSentRef.current=now;
       void sendTyping({typing:true});
     }
@@ -215,11 +241,18 @@ export function ChatPage(){
 
   async function loadMore(){
     const first=messages[0];
-    if(!first?.createdAt)return;
-    const el=listRef.current;const previousHeight=el?.scrollHeight||0;
-    const result=await loadOlder({before:first.createdAt,limit:50}).unwrap();
-    setOlder(current=>[...(result?.messages||[]),...current]);
-    requestAnimationFrame(()=>{if(el)el.scrollTop+=el.scrollHeight-previousHeight;});
+    if(!first?.createdAt||loadingOlder||hasMoreOlder===false)return;
+    const el=listRef.current;
+    if(el){
+      pendingOlderScrollRef.current={previousHeight:el.scrollHeight,previousTop:el.scrollTop};
+    }
+    try{
+      const result=await loadOlder({before:first.createdAt,limit:50}).unwrap();
+      setHasMoreOlder(Boolean(result?.hasMore));
+      setOlder(current=>[...(result?.messages||[]),...current]);
+    }catch{
+      pendingOlderScrollRef.current=null;
+    }
   }
 
   async function remove(item){
@@ -237,7 +270,7 @@ export function ChatPage(){
   return <section className="companyChat">
     <header className="companyChatHeader"><button type="button" onClick={()=>navigate(-1)} aria-label="Back">‹</button><div><h1>{c.title}</h1><p className={typingLabel?'isTyping':''}>{subtitle}</p></div></header>
     <div className="companyChatMessages" ref={listRef} onScroll={handleScroll}>
-      {data?.hasMore||older.length?<button className="companyChatOlder" type="button" onClick={loadMore} disabled={loadingOlder}>{loadingOlder?'…':c.older}</button>:null}
+      {hasMoreOlder!==false&&(data?.hasMore||hasMoreOlder)?<button className="companyChatOlder" type="button" onClick={loadMore} disabled={loadingOlder}>{loadingOlder?'…':c.older}</button>:null}
       {isLoading?<p className="companyChatEmpty">…</p>:null}
       {!isLoading&&!messages.length?<p className="companyChatEmpty">{c.empty}</p>:null}
       {messages.map((item,index)=>{const mine=item.authorMembershipId===membershipId;const previous=messages[index-1];const showDay=!previous||dayKey(previous.createdAt)!==dayKey(item.createdAt);const read=mine&&isReadByOther(item);return <Fragment key={item.id}>
