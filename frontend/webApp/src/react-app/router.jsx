@@ -25,6 +25,7 @@ import { ManagerExpensesPage } from './pages/ManagerExpensesPage/ManagerExpenses
 import { ManagerInvoicesPage } from './pages/ManagerInvoicesPage/ManagerInvoicesPage.jsx';
 import { ManagerTimesheetPage } from './pages/ManagerTimesheetPage/ManagerTimesheetPage.jsx';
 import { MoreHubPage } from './pages/MoreHubPage/MoreHubPage.jsx';
+import { NotificationSettingsPage } from './pages/NotificationSettingsPage/NotificationSettingsPage.jsx';
 import { NotificationsPage } from './pages/NotificationsPage/NotificationsPage.jsx';
 import { PayrollReportPage } from './pages/PayrollReportPage/PayrollReportPage.jsx';
 import './pages/PayrollReportPage/ManagerPayrollMobile.css';
@@ -83,6 +84,7 @@ export const router = createBrowserRouter([
         ],
       },
       { path: 'notifications', element: <ProtectedRoute><NotificationsPage /></ProtectedRoute> },
+      { path: 'notification-settings', element: <ProtectedRoute><NotificationSettingsPage /></ProtectedRoute> },
       { path: 'company-settings', element: <ProtectedRoute requireManager><CompanySettingsPage /></ProtectedRoute> },
       { path: 'profile', element: <ProtectedRoute><ProfilePage /></ProtectedRoute> },
       { path: 'more', element: <ProtectedRoute><MoreHubPage /></ProtectedRoute> },
