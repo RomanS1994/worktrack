@@ -12,6 +12,7 @@ import {
 } from '../../features/worktrack/billingApi.js';
 import './InvoicesPage.css';
 import './InvoicesPage.errors.css';
+import './InvoicesCompact.css';
 
 const COPY={
  uk:{eyebrow:'Фактури',title:'Мої фактури',subtitle:'Створюйте фактури лише з погоджених годин.',month:'Місяць',preview:'Перевірити фактуру',checking:'Перевірка…',create:'Створити чернетку',creating:'Створення…',empty:'Фактур ще немає.',send:'Відправити роботодавцю',sending:'Відправлення…',delete:'Видалити фактуру',deleting:'Видалення…',cancel:'Скасувати фактуру',cancelling:'Скасування…',document:'Документ / PDF',hours:'год',due:'Оплатити до',draft:'Чернетка',sent:'Відправлено',viewed:'Переглянуто',paid:'Оплачено',cancelled:'Скасовано',overdue:'Прострочено',previewTitle:'Перевірте фактуру',invoiceNumber:'Номер',period:'Період',rate:'Ставка',total:'До сплати',seller:'Постачальник',buyer:'Замовник',close:'Назад',sendConfirm:'Відправити цю фактуру роботодавцю? Після відправлення вона стане доступною менеджеру.',deleteConfirm:'Видалити цю чернетку фактури назавжди? Години з неї знову стануть доступними для нової фактури.',cancelConfirm:'Скасувати цю фактуру? Години з неї знову можна буде використати для нової фактури.',openAmount:'Очікується оплата',overdueAmount:'Прострочено',paidAmount:'Оплачено',fillTax:'Заповнити реквізити',openHours:'Перейти до годин',invalidMonth:'Виберіть місяць для фактури.'},
