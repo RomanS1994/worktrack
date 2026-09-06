@@ -19,6 +19,17 @@ function cookieValue(request, name) {
   return '';
 }
 
+function withoutChatNotifications(payload) {
+  const notifications = Array.isArray(payload?.notifications)
+    ? payload.notifications.filter(notification => notification?.type !== 'chat.message')
+    : [];
+  return {
+    ...payload,
+    unreadCount: notifications.filter(notification => !notification.readAt).length,
+    notifications,
+  };
+}
+
 export async function handleNotificationRoutes(request, response, { pathName }) {
   if (request.method === 'GET' && pathName === '/api/notifications') {
     const context = await getAuthContext(request, response);
@@ -27,7 +38,7 @@ export async function handleNotificationRoutes(request, response, { pathName }) 
     const payload = await runStoreRead({
       prisma: client => listNotifications(client, context),
     });
-    sendJson(response, 200, payload);
+    sendJson(response, 200, withoutChatNotifications(payload));
     return true;
   }
 
