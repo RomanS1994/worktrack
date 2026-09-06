@@ -52,7 +52,7 @@ export async function handleAdvanceRoutes(request, response, { pathName, url }) 
     const payload = await runStoreRead({ prisma: async client => {
       const [employees, advances] = await Promise.all([
         client.companyMembership.findMany({
-          where: { companyId: context.activeMembership.companyId, role: 'EMPLOYEE', status: 'ACTIVE', user: { is: { deletedAt: null } } },
+          where: { companyId: context.activeMembership.companyId, status: 'ACTIVE', deletedAt: null, user: { is: { deletedAt: null } } },
           include: { user: true },
           orderBy: { createdAt: 'asc' },
         }),
@@ -68,6 +68,8 @@ export async function handleAdvanceRoutes(request, response, { pathName, url }) 
       return {
         employees: employees.map(m => ({
           id: m.id,
+          role: m.role,
+          canAccessManagerCabinet: m.role === 'MANAGER',
           name: [m.user?.firstName, m.user?.lastName].filter(Boolean).join(' ').trim() || m.user?.name || m.user?.email || '',
           email: m.user?.email || '',
         })),
@@ -86,7 +88,7 @@ export async function handleAdvanceRoutes(request, response, { pathName, url }) 
     const paidAt = parseDate(body?.paidAt);
     const note = String(body?.note || '').trim().slice(0, 500);
     const advance = await runStoreTransaction({ prisma: async client => {
-      const employee = await client.companyMembership.findFirst({ where: { id: employeeMembershipId, companyId: context.activeMembership.companyId, role: 'EMPLOYEE', status: 'ACTIVE' } });
+      const employee = await client.companyMembership.findFirst({ where: { id: employeeMembershipId, companyId: context.activeMembership.companyId, status: 'ACTIVE', deletedAt: null } });
       if (!employee) throw new Error('Employee not found');
       return client.salaryAdvance.create({
         data: { id: randomUUID(), companyId: context.activeMembership.companyId, employeeMembershipId, managerMembershipId: context.activeMembership.id, amountCzk, paidAt, note: note || null },
