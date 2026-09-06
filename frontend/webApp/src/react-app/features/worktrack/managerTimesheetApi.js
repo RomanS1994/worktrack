@@ -1,10 +1,11 @@
 import { baseApi } from '@shared/app/api/baseApi.js';
+import { MANAGER_TIMESHEET_TAG } from './cacheTags.js';
 
 export const managerTimesheetApi = baseApi.injectEndpoints({
   endpoints: builder => ({
     getManagerTimesheet: builder.query({
       query: month => ({ url: '/manager/timesheet', params: { month } }),
-      providesTags: [{ type: 'WorkEntries', id: 'MANAGER_TIMESHEET' }],
+      providesTags: [MANAGER_TIMESHEET_TAG],
     }),
     saveManagerTimesheetCell: builder.mutation({
       query: ({ employeeId, ...body }) => ({
@@ -13,7 +14,7 @@ export const managerTimesheetApi = baseApi.injectEndpoints({
         body,
       }),
       invalidatesTags: [
-        { type: 'WorkEntries', id: 'MANAGER_TIMESHEET' },
+        MANAGER_TIMESHEET_TAG,
         { type: 'WeeklySubmissions' },
       ],
     }),
