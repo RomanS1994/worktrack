@@ -20,6 +20,7 @@ const CONFIG={
  managerTime:c=>[
   {to:'/manager/timesheet',label:c.timesheet},
   {to:'/approvals',label:c.approvals},
+  {to:'/approval-history',label:c.history},
  ],
  team:c=>[
   {to:'/employees',label:c.employees},
