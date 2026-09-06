@@ -15,9 +15,15 @@ export function readStoredLanguage() {
 }
 
 export function saveStoredLanguage(language) {
+  const normalized = normalizeLanguage(language);
   try {
-    localStorage.setItem(LANGUAGE_STORAGE_KEY, normalizeLanguage(language));
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, normalized);
   } catch {
     // Ignore storage failures in private/incognito contexts.
+  }
+  try {
+    document.cookie = `${LANGUAGE_STORAGE_KEY}=${normalized}; Path=/; Max-Age=31536000; SameSite=Lax`;
+  } catch {
+    // Cookie sync is best effort only.
   }
 }
