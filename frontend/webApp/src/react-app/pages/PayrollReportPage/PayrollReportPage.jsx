@@ -6,7 +6,7 @@ import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { RequestLoadingState } from '@shared/app/components/RequestLoader/RequestLoader.jsx';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
 import { selectUser } from '@shared/features/auth/authSlice.js';
-import { isManagerCabinet } from '@shared/features/auth/cabinetMode.js';
+import { useCabinetMode } from '@shared/features/auth/cabinetMode.js';
 import { formatCzk, formatHours, formatMonthPeriod, formatPeriod, getEmployeeName, getLocalDateKey, monthKeyFromAnchor, resolveLocale, shiftAnchor } from '../../app/formatters.js';
 import { useGetMonthlyHoursQuery } from '../../features/worktrack/monthlyHoursApi.js';
 import { useGetEmployeeAdvancesQuery, useGetManagerPayrollQuery, useGetWorkSummaryQuery } from '../../features/worktrack/worktrackApi.js';
@@ -34,7 +34,8 @@ export function PayrollReportPage() {
   const { language, t } = useI18n();
   const locale = resolveLocale(language);
   const user = useSelector(selectUser);
-  const isManager = isManagerCabinet(user);
+  const cabinetMode = useCabinetMode(user);
+  const isManager = cabinetMode === 'manager';
   const [managerPeriod,setManagerPeriod] = useState('month');
   const [managerAnchor,setManagerAnchor] = useState(getLocalDateKey);
   const [employeePeriod,setEmployeePeriod] = useState('month');
