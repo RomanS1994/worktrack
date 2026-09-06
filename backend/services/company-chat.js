@@ -226,34 +226,39 @@ export async function createChatMessage(client, context, body = {}) {
 export async function markChatRead(client, context, body = {}) {
   const membership = getMembership(context);
   const messageId = String(body.messageId || '').trim().slice(0, 120);
-  let readAt = null;
 
   if (messageId) {
     const rows = await client.$queryRaw`
-      SELECT created_at AS "createdAt"
-        FROM chat_messages
-       WHERE id = ${messageId}
-         AND company_id = ${membership.companyId}
-         AND deleted_at IS NULL
-       LIMIT 1
+      INSERT INTO chat_read_states (membership_id, company_id, last_read_at, updated_at)
+      SELECT ${membership.id}, ${membership.companyId}, m.created_at, CURRENT_TIMESTAMP
+        FROM chat_messages m
+       WHERE m.id = ${messageId}
+         AND m.company_id = ${membership.companyId}
+         AND m.deleted_at IS NULL
+      ON CONFLICT (membership_id)
+      DO UPDATE SET
+        company_id = EXCLUDED.company_id,
+        last_read_at = GREATEST(chat_read_states.last_read_at, EXCLUDED.last_read_at),
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING last_read_at AS "lastReadAt"
     `;
-    if (!rows[0]?.createdAt) throw new Error('Chat message not found');
-    readAt = new Date(rows[0].createdAt);
-  } else {
-    const requested = body.readAt ? new Date(body.readAt) : new Date();
-    if (Number.isNaN(requested.getTime())) throw new Error('Invalid read timestamp');
-    const latestRows = await client.$queryRaw`
-      SELECT created_at AS "createdAt"
-        FROM chat_messages
-       WHERE company_id = ${membership.companyId}
-         AND deleted_at IS NULL
-       ORDER BY created_at DESC
-       LIMIT 1
-    `;
-    if (!latestRows[0]?.createdAt) return { ok: true, lastReadAt: '' };
-    const latestAt = new Date(latestRows[0].createdAt);
-    readAt = requested.getTime() > latestAt.getTime() ? latestAt : requested;
+    if (!rows[0]?.lastReadAt) throw new Error('Chat message not found');
+    return { ok: true, lastReadAt: new Date(rows[0].lastReadAt).toISOString() };
   }
+
+  const requested = body.readAt ? new Date(body.readAt) : new Date();
+  if (Number.isNaN(requested.getTime())) throw new Error('Invalid read timestamp');
+  const latestRows = await client.$queryRaw`
+    SELECT created_at AS "createdAt"
+      FROM chat_messages
+     WHERE company_id = ${membership.companyId}
+       AND deleted_at IS NULL
+     ORDER BY created_at DESC
+     LIMIT 1
+  `;
+  if (!latestRows[0]?.createdAt) return { ok: true, lastReadAt: '' };
+  const latestAt = new Date(latestRows[0].createdAt);
+  const readAt = requested.getTime() > latestAt.getTime() ? latestAt : requested;
 
   await client.$executeRaw`
     INSERT INTO chat_read_states (membership_id, company_id, last_read_at, updated_at)
