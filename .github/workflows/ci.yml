@@ -89,6 +89,7 @@ jobs:
           DIRECT_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/worktrack?schema=public
           AUTH_TOKEN_SECRET: worktrack-ci-auth-token-secret-2026-not-production
           CLIENT_ORIGIN: http://127.0.0.1:4173
+          VITE_API_BASE_URL: http://127.0.0.1:3000/api
         run: |
           npm --prefix backend start > /tmp/worktrack-backend.log 2>&1 &
           npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/worktrack-frontend.log 2>&1 &
