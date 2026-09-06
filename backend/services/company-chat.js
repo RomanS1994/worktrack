@@ -143,6 +143,31 @@ export async function getChatSummary(client, context) {
   };
 }
 
+export async function getChatReadStates(client, context) {
+  const membership = getMembership(context);
+  const rows = await client.$queryRaw`
+    SELECT s.membership_id AS "membershipId",
+           s.last_read_at AS "lastReadAt",
+           u.name AS "name",
+           u.email AS "email"
+      FROM chat_read_states s
+      JOIN company_memberships cm ON cm.id = s.membership_id
+      JOIN users u ON u.id = cm."userId"
+     WHERE s.company_id = ${membership.companyId}
+       AND s.membership_id <> ${membership.id}
+       AND cm.status = 'ACTIVE'
+       AND cm.deleted_at IS NULL
+       AND u.deleted_at IS NULL
+  `;
+  return {
+    states: rows.map(row => ({
+      membershipId: row.membershipId,
+      lastReadAt: new Date(row.lastReadAt).toISOString(),
+      name: row.name || row.email || 'User',
+    })),
+  };
+}
+
 export async function createChatMessage(client, context, body = {}) {
   const membership = getMembership(context);
   const messageBody = String(body.body || '').trim();
