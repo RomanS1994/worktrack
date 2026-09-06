@@ -20,15 +20,12 @@ export function ChatLiveSync() {
     const handleEvent = (event, payload) => {
       const tags = [];
 
-      if (event === 'message' || event === 'delete') {
-        tags.push(
-          { type: 'Notifications', id: 'CHAT_MESSAGES' },
-          { type: 'Notifications', id: 'CHAT_SUMMARY' },
-        );
+      if (event === 'message' || event === 'delete' || event === 'reaction') {
+        tags.push({ type: 'Notifications', id: 'CHAT_MESSAGES' });
       }
 
-      if (event === 'reaction') {
-        tags.push({ type: 'Notifications', id: 'CHAT_REACTIONS' });
+      if (event === 'message' || event === 'delete') {
+        tags.push({ type: 'Notifications', id: 'CHAT_SUMMARY' });
       }
 
       if (event === 'read') {
@@ -45,7 +42,6 @@ export function ChatLiveSync() {
           { type: 'Notifications', id: 'CHAT_SUMMARY' },
           { type: 'Notifications', id: 'CHAT_PRESENCE' },
           { type: 'Notifications', id: 'CHAT_READ_STATES' },
-          { type: 'Notifications', id: 'CHAT_REACTIONS' },
         );
       }
 
@@ -83,7 +79,6 @@ export function ChatLiveSync() {
           { type: 'Notifications', id: 'CHAT_SUMMARY' },
           { type: 'Notifications', id: 'CHAT_PRESENCE' },
           { type: 'Notifications', id: 'CHAT_READ_STATES' },
-          { type: 'Notifications', id: 'CHAT_REACTIONS' },
         ]));
         void start();
       } else {
