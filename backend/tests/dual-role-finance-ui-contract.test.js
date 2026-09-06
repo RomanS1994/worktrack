@@ -18,16 +18,18 @@ test('dual-role managers remain eligible for advances and expenses', async () =>
 });
 
 test('cabinet-sensitive UI uses reactive cabinet mode', async () => {
-  const [bottomTabs, sectionTabs, dashboard, notifications] = await Promise.all([
+  const [bottomTabs, sectionTabs, dashboard, payrollReport, notifications] = await Promise.all([
     read('frontend/shared/src/react-app/app/components/BottomTabs/BottomTabs.jsx'),
     read('frontend/webApp/src/react-app/components/SectionTabs/SectionTabs.jsx'),
     read('frontend/webApp/src/react-app/pages/DashboardPage/DashboardPage.jsx'),
+    read('frontend/webApp/src/react-app/pages/PayrollReportPage/PayrollReportPage.jsx'),
     read('frontend/webApp/src/react-app/pages/NotificationsPage/NotificationsPage.jsx'),
   ]);
 
   assert.match(bottomTabs, /useCabinetMode\(user\)/);
   assert.match(sectionTabs, /useCabinetMode\(user\)/);
   assert.match(dashboard, /useCabinetMode\(user\)/);
+  assert.match(payrollReport, /useCabinetMode\(user\)/);
   assert.match(notifications, /setCabinetMode\(['"]manager['"],\s*user\)/);
   assert.match(notifications, /setCabinetMode\(['"]employee['"],\s*user\)/);
 });
