@@ -3,8 +3,12 @@ import test from 'node:test';
 
 import {
   calculateShiftHours,
+  formatEntryDate,
   formatHours,
+  formatLongDate,
+  formatPeriod,
   formatSignedHours,
+  getEmployeeName,
   getMismatchReason,
   isWeekStillOpen,
   mismatchCountLabel,
@@ -39,6 +43,30 @@ test('hour formatters preserve approval-specific two-decimal display semantics',
   assert.equal(formatHours(null), '—');
   assert.equal(formatSignedHours(1.5), '+1.50 h');
   assert.equal(formatSignedHours(-1.5), '-1.50 h');
+});
+
+test('approval period formatter keeps its distinct same-month presentation', () => {
+  assert.equal(
+    formatPeriod({ weekStart: '2026-09-01', weekEnd: '2026-09-07' }, 'en-GB'),
+    '1 – 7 September 2026',
+  );
+  assert.equal(
+    formatPeriod({ weekStart: '2026-08-31', weekEnd: '2026-09-06' }, 'en-GB'),
+    '31 Aug 2026 – 6 Sept 2026',
+  );
+  assert.equal(formatPeriod({ weekStart: '', weekEnd: '2026-09-06' }, 'en-GB'), '—');
+});
+
+test('approval date formatters use UTC calendar dates and approval casing rules', () => {
+  assert.equal(formatLongDate('2026-09-07', 'en-GB'), 'Monday, 7 September 2026');
+  assert.deepEqual(formatEntryDate('2026-09-07', 'en-GB'), { weekday: 'Mon', day: '7' });
+  assert.deepEqual(formatEntryDate('', 'en-GB'), { weekday: '', day: '' });
+});
+
+test('approval employee name reads the submission employee shape and respects fallback', () => {
+  assert.equal(getEmployeeName({ employee: { name: 'Jane Doe', email: 'jane@example.com' } }, 'Employee'), 'Jane Doe');
+  assert.equal(getEmployeeName({ employee: { email: 'jane@example.com' } }, 'Employee'), 'jane@example.com');
+  assert.equal(getEmployeeName({}, 'Employee'), 'Employee');
 });
 
 test('getMismatchReason describes hours, break and project mismatches', () => {
