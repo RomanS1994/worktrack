@@ -3,8 +3,6 @@ import React from 'react';
 import { Link, useRouteError } from 'react-router-dom';
 import { useI18n } from '../../i18n/useI18n.js';
 
-import './RouterError.css';
-
 export function RouterError() {
   useRouteError();
   const { t } = useI18n();
