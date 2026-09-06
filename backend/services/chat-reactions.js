@@ -1,4 +1,8 @@
-const ALLOWED_REACTIONS = new Set(['👍', '❤️', '😂', '😮', '😢', '🙏']);
+const ALLOWED_REACTIONS = new Set([
+  '👍', '👎', '❤️', '🔥', '👏', '😂', '🤣', '😊', '😍', '🥰',
+  '😮', '🤯', '😢', '😭', '😡', '🤔', '🙄', '🙏', '💪', '👌',
+  '🤝', '🎉', '🥳', '💯', '✅', '❌', '⭐', '🚀', '👀', '🤦',
+]);
 
 function getMembership(context) {
   const membership = context?.activeMembership;
