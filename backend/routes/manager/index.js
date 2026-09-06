@@ -15,7 +15,7 @@ import {
   updateEmployeeMembership,
   updateSubmittedWorkEntryByManager,
 } from '../../services/manager-workflow.js';
-import { notifyEmployeeAboutReview } from '../../services/notifications.js';
+import { notifyEmployeeAboutReview, notifyEmployeeApprovalReopened } from '../../services/notifications.js';
 import { calculateNetWorkEntries, calculateNetWorkSummary } from '../../services/work-time-calculation.js';
 
 function isoDate(value) {
@@ -375,6 +375,7 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
       });
       const raw = await getManagerSubmissionById(client, context, existing.id);
       const [enriched] = await enrichSubmissionHours(client, context, raw);
+      await notifyEmployeeApprovalReopened(client, context, enriched);
       return enriched;
     } });
     sendJson(response, 200, { submission }); return true;
