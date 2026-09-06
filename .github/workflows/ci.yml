@@ -30,10 +30,6 @@ jobs:
           --health-retries 5
 
     env:
-      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/worktrack?schema=public
-      DIRECT_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/worktrack?schema=public
-      AUTH_TOKEN_SECRET: worktrack-ci-auth-token-secret-2026-not-production
-      CLIENT_ORIGIN: http://127.0.0.1:4173
       E2E_APP_URL: http://127.0.0.1:4173
       E2E_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
       E2E_USER_PASSWORD: WorkTrack-CI-User-2026
@@ -55,6 +51,9 @@ jobs:
         run: npm --prefix backend ci
 
       - name: Generate Prisma client
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/worktrack?schema=public
+          DIRECT_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/worktrack?schema=public
         run: npm --prefix backend run db:generate
 
       - name: Run backend tests
@@ -66,9 +65,15 @@ jobs:
         run: npm run build:web
 
       - name: Apply test database migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/worktrack?schema=public
+          DIRECT_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/worktrack?schema=public
         run: npm --prefix backend run db:migrate:deploy
 
       - name: Seed dual-role browser scenario
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/worktrack?schema=public
+          DIRECT_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/worktrack?schema=public
         run: node e2e/seed.js
 
       - name: Install Playwright
@@ -80,7 +85,10 @@ jobs:
         env:
           PORT: 3000
           NODE_ENV: test
-          VITE_API_BASE_URL: http://127.0.0.1:3000/api
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/worktrack?schema=public
+          DIRECT_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/worktrack?schema=public
+          AUTH_TOKEN_SECRET: worktrack-ci-auth-token-secret-2026-not-production
+          CLIENT_ORIGIN: http://127.0.0.1:4173
         run: |
           npm --prefix backend start > /tmp/worktrack-backend.log 2>&1 &
           npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/worktrack-frontend.log 2>&1 &
@@ -96,7 +104,7 @@ jobs:
           curl --fail http://127.0.0.1:4173 >/dev/null
 
       - name: Run dual-role browser E2E
-        run: npx playwright test e2e/dual-role.spec.js --project=chromium --reporter=line
+        run: npx playwright test --config=e2e/playwright.config.js dual-role.spec.js --project=chromium --reporter=line
 
       - name: Upload E2E diagnostics
         if: failure()
