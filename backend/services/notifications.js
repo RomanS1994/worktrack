@@ -43,11 +43,40 @@ function serializeNotification(notification) {
   };
 }
 
+async function pruneExpiredPushSubscriptions(client, membership, expiredEndpoints) {
+  if (!membership?.userId || !expiredEndpoints?.size) return;
+
+  const user = await client.user.findUnique({
+    where: { id: membership.userId },
+    select: { profile: true },
+  });
+  if (!user) return;
+
+  const profile = profileObject(user.profile);
+  const existing = readPushSubscriptions(profile);
+  const next = existing.filter(item => !(
+    expiredEndpoints.has(item.endpoint)
+    && item.membershipId === membership.id
+    && item.companyId === membership.companyId
+  ));
+  if (next.length === existing.length) return;
+
+  await client.user.update({
+    where: { id: membership.userId },
+    data: { profile: { ...profile, pushSubscriptions: next } },
+  });
+}
+
 async function deliverPush(client, notification) {
   try {
     const membership = await client.companyMembership.findUnique({
       where: { id: notification.recipientMembershipId },
-      select: { id: true, companyId: true, user: { select: { profile: true } } },
+      select: {
+        id: true,
+        companyId: true,
+        userId: true,
+        user: { select: { profile: true } },
+      },
     });
     if (!membership) return;
 
@@ -56,7 +85,19 @@ async function deliverPush(client, notification) {
     if (!subscriptions.length) return;
 
     const payload = serializeNotification(notification);
-    await Promise.allSettled(subscriptions.map(subscription => sendWebPush(subscription, payload)));
+    const results = await Promise.allSettled(
+      subscriptions.map(subscription => sendWebPush(subscription, payload)),
+    );
+    const expiredEndpoints = new Set();
+
+    results.forEach((result, index) => {
+      if (result.status !== 'fulfilled') return;
+      if (result.value?.expired) expiredEndpoints.add(subscriptions[index]?.endpoint);
+    });
+
+    if (expiredEndpoints.size) {
+      await pruneExpiredPushSubscriptions(client, membership, expiredEndpoints);
+    }
   } catch (error) {
     console.warn('Web Push delivery failed:', error instanceof Error ? error.message : String(error));
   }
