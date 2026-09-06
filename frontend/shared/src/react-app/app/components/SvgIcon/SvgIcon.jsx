@@ -5,6 +5,18 @@ const SPECIAL_ICONS = {
       <path d="M19.1 13.6c.08-.52.08-1.08 0-1.6l1.72-1.34-1.8-3.12-2.04.82a7.75 7.75 0 0 0-1.38-.8L15.3 5.4h-3.6l-.3 2.16c-.5.2-.96.47-1.38.8l-2.04-.82-1.8 3.12L7.9 12c-.08.52-.08 1.08 0 1.6l-1.72 1.34 1.8 3.12 2.04-.82c.42.33.88.6 1.38.8l.3 2.16h3.6l.3-2.16c.5-.2.96-.47 1.38-.8l2.04.82 1.8-3.12-1.72-1.34Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </>
   ),
+  user: (
+    <>
+      <circle cx="12" cy="8" r="3.3" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M5.5 20c.45-4 2.65-6 6.5-6s6.05 2 6.5 6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </>
+  ),
+  bell: (
+    <>
+      <path d="M6.3 10.2a5.7 5.7 0 0 1 11.4 0v3.2l1.5 2.4H4.8l1.5-2.4v-3.2Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9.8 19a2.6 2.6 0 0 0 4.4 0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </>
+  ),
   building: (
     <>
       <path d="M6 20V5.2c0-.7.5-1.2 1.2-1.2h7.6c.7 0 1.2.5 1.2 1.2V20M4 20h16M9 8h2M13 8h2M9 11.5h2M13 11.5h2M9 15h2M13 15h2M10.5 20v-2.5h3V20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
