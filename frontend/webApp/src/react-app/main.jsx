@@ -5,7 +5,7 @@ import { hideStartupSplash } from '@shared/app/startupSplash.js';
 import { AppProviders } from './app/providers/AppProviders.jsx';
 import { ApprovalHoursTextNormalizer } from './app/ApprovalHoursTextNormalizer.jsx';
 import './app/AppVisualConsistency.css';
-import './pages/ManagerTimesheetPage/ManagerTimesheetPage.controls.css';
+import './pages/ApprovalsPage/ApprovalsPage.compact.css';
 
 const rootElement = document.getElementById('react-root');
 
