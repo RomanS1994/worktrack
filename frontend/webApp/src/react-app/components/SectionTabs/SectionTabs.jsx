@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
 import { selectUser } from '@shared/features/auth/authSlice.js';
-import { hasManagerAccess } from '@shared/features/auth/authAccess.js';
+import { useCabinetMode } from '@shared/features/auth/cabinetMode.js';
 import './SectionTabs.css';
 
 const COPY={
@@ -42,7 +42,8 @@ export function SectionTabs({section}){
  const {language}=useI18n();
  const user=useSelector(selectUser);
  const c=COPY[language]||COPY.uk;
- const isManager=hasManagerAccess(user);
+ const cabinetMode=useCabinetMode(user);
+ const isManager=cabinetMode==='manager';
  const configKey=section==='finance'?(isManager?'managerFinance':'employeeFinance'):section==='time'&&isManager?'managerTime':section;
  const tabs=CONFIG[configKey]?.(c)||[];
  return <nav className={`sectionTabs sectionTabs-${configKey}`} aria-label={c[section]||section}>
