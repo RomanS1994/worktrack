@@ -34,7 +34,8 @@
 .fastDayHours{min-height:26px;padding:0 7px;font-size:var(--font-size-caption)}
 .fastDayOvertime{right:27px;bottom:1px;font-size:10px}
 .fastDayChevron{font-size:18px}
-.fastDayPlus{width:32px;height:32px;min-width:32px;min-height:32px;border-radius:var(--radius-sm);font-size:20px}
+.fastDayPlus{display:grid;place-items:center;width:36px;height:36px;min-width:36px;min-height:36px;padding:0;border:1px solid rgba(22,163,74,.22);border-radius:12px;background:#fff;color:#16a34a;font-size:0;line-height:1;box-shadow:none}
+.fastDayPlus::before{content:"+";display:block;font-size:28px;font-weight:400;line-height:1;transform:translateY(-1px)}
 
 .fastQuickCard{border-radius:var(--radius-md)}
 .fastQuickTrigger{grid-template-columns:32px minmax(0,1fr) 18px;gap:9px;min-height:52px;padding:7px 10px}
@@ -74,7 +75,7 @@
   .fastDayDate{padding:5px 7px}
   .fastDayShift{padding:4px 7px}
   .fastDayAction{padding:3px 6px 3px 1px}
-  .fastDayPlus{width:30px;height:30px;min-width:30px;min-height:30px;font-size:19px}
+  .fastDayPlus{width:36px;height:36px;min-width:36px;min-height:36px}
   .fastQuickTrigger{min-height:48px}
 }
 
