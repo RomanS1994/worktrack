@@ -5,6 +5,7 @@ import {
   formatMonthPeriod,
   formatPeriod,
 } from '../../app/formatters.js';
+import './EmployeeFinanceCompact.css';
 
 const FINANCE_COPY = {
   uk: { finance:'Фінанси',week:'Тиждень',month:'Місяць',thisWeek:'Цей тиждень',thisMonth:'Цей місяць',expected:'До виплати',grossExpected:'Нараховано',advances:'Залоги',advanceReceived:'Отримано залогів',remaining:'Залишилось',norm:'год норми',details:'Деталі',calculation:'Розрахунок',confirmed:'Підтверджено',pending:'Очікує підтвердження',overtime:'Понаднормові',total:'Нараховано',netTotal:'Чиста зарплата',rate:'Ставка',hourlyRate:'Поточна погодинна ставка',mixedRates:'Кілька ставок',periodRate:'Ефективна ставка за період',taxNote:'Податки та інші відрахування не враховано',download:'Завантажити звіт PDF',share:'Поділитися' },
