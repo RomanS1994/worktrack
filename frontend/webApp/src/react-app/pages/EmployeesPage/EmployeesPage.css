@@ -90,5 +90,38 @@
   .employeesModal>header{padding:12px 14px 10px}
   .employeesModalBody{gap:var(--space-3);padding:14px}
   .employeesFormGrid{grid-template-columns:1fr}
+
+  .employeesModal.is-drawer{max-height:88vh}
+  .employeesModal.is-drawer>header{padding:11px 14px 9px}
+  .employeesModal.is-drawer>header span{font-size:var(--font-size-secondary)}
+  .employeesModal.is-drawer>header h2{font-size:var(--font-size-section-title);line-height:1.15}
+  .employeesModal.is-drawer>header>button{width:34px;height:34px;min-height:34px}
+  .employeesModal.is-drawer .employeesModalBody{gap:14px;padding:14px 14px calc(16px + env(safe-area-inset-bottom))}
+  .employeesModal.is-drawer .employeeDetailHero{grid-template-columns:42px minmax(0,1fr) auto;gap:10px}
+  .employeesModal.is-drawer .employeeDetailAvatar{width:42px;height:42px;border-radius:12px}
+  .employeesModal.is-drawer .employeeDetailHero strong{font-size:var(--font-size-card-title);font-weight:var(--weight-semibold)}
+  .employeesModal.is-drawer .employeeDetailHero p{font-size:var(--font-size-secondary)}
+  .employeesModal.is-drawer .employeeDetailHero em{padding:5px 8px;font-size:var(--font-size-caption)}
+  .employeesModal.is-drawer .employeeDetailStats{gap:8px}
+  .employeesModal.is-drawer .employeeDetailStats div{min-height:64px;padding:9px 11px;border-radius:12px}
+  .employeesModal.is-drawer .employeeDetailStats strong{font-size:18px;line-height:1.15}
+  .employeesModal.is-drawer .employeeDetailStats span{font-size:11px;letter-spacing:.02em}
+  .employeesModal.is-drawer .employeeDetailSection{gap:8px;padding-top:0}
+  .employeesModal.is-drawer .employeeDetailSection h3{font-size:12px;letter-spacing:.05em}
+  .employeesModal.is-drawer .employeesField{gap:5px;font-size:13px}
+  .employeesModal.is-drawer .employeesField input{min-height:42px;border-radius:12px;font-size:16px}
+  .employeesModal.is-drawer .employeeRateRow{gap:8px}
+  .employeesModal.is-drawer .employeeRateRow button{min-height:42px;padding:0 12px;border-radius:12px;font-size:13px}
+  .employeesModal.is-drawer .employeeAction{min-height:46px;padding:8px 12px;border-radius:12px;font-size:14px;line-height:1.2}
+  .employeesModal.is-drawer div.employeeAction>span:first-child{color:var(--text);font-size:14px;font-weight:var(--weight-semibold)}
+  .employeesModal.is-drawer div.employeeAction>span:last-child{color:var(--muted);font-size:12px;font-weight:var(--weight-medium)}
+  .employeesModal.is-drawer button.employeeAction>span:first-child{color:var(--text);font-size:14px;font-weight:var(--weight-semibold)}
+  .employeesModal.is-drawer button.employeeAction>span:first-child small{margin-top:2px;color:var(--muted);font-size:11px;font-weight:var(--weight-regular)}
+  .employeesModal.is-drawer button.employeeAction>strong{flex:0 0 auto;margin-left:10px;font-size:13px;color:var(--accent-strong)}
+  .employeesModal.is-drawer .employeeAction>span:last-child:not(:first-child){font-size:18px;color:#98a2b3}
+  .employeesModal.is-drawer .employeeAction.is-danger{background:#fff;border-color:rgba(220,38,38,.16);color:#b91c1c}
+  .employeesModal.is-drawer .employeeAction.is-danger>span{color:#a6afba}
+  .employeesModal.is-drawer .employeeAction.is-success{background:#fff;border-color:rgba(22,163,74,.18)}
+
   @keyframes employeesSheetIn{from{transform:translateY(100%)}to{transform:none}}
 }
