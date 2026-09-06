@@ -18,8 +18,11 @@ export function ChatFab() {
 
   return (
     <button className="chatFab" type="button" onClick={() => navigate('/chat')} aria-label="Chat">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M6.8 5.25h10.4A2.55 2.55 0 0 1 19.75 7.8v6.35a2.55 2.55 0 0 1-2.55 2.55h-5.55l-4.4 3.05.85-3.05H6.8a2.55 2.55 0 0 1-2.55-2.55V7.8A2.55 2.55 0 0 1 6.8 5.25Z" fill="none" stroke="currentColor" strokeWidth="1.95" strokeLinecap="round" strokeLinejoin="round"/>
+      <svg className="chatFabIcon" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M8.2 6.8h15.6A4.2 4.2 0 0 1 28 11v8.2a4.2 4.2 0 0 1-4.2 4.2h-8.1L9 27.6l1.35-4.2H8.2A4.2 4.2 0 0 1 4 19.2V11a4.2 4.2 0 0 1 4.2-4.2Z" fill="currentColor"/>
+        <circle cx="11.7" cy="15.3" r="1.35" fill="#fff"/>
+        <circle cx="16" cy="15.3" r="1.35" fill="#fff"/>
+        <circle cx="20.3" cy="15.3" r="1.35" fill="#fff"/>
       </svg>
       {unread > 0 ? <span>{unread > 99 ? '99+' : unread}</span> : null}
     </button>
