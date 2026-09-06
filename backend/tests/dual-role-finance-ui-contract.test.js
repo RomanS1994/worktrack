@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import test from 'node:test';
+
+const read = path => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
+
+test('dual-role managers remain eligible for advances and expenses', async () => {
+  const [advances, expenses, payroll] = await Promise.all([
+    read('backend/routes/advances.js'),
+    read('backend/routes/expenses.js'),
+    read('backend/services/manager-payroll.js'),
+  ]);
+
+  assert.doesNotMatch(advances, /role:\s*['"]EMPLOYEE['"]/);
+  assert.doesNotMatch(expenses, /role:\s*['"]EMPLOYEE['"]/);
+  assert.match(payroll, /canAccessManagerCabinet:\s*membership\.role\s*===\s*['"]MANAGER['"]/);
+  assert.doesNotMatch(payroll, /where:\s*\{[^}]*role:\s*['"]EMPLOYEE['"]/s);
+});
+
+test('cabinet-sensitive UI uses reactive cabinet mode', async () => {
+  const [bottomTabs, sectionTabs, dashboard, notifications] = await Promise.all([
+    read('frontend/shared/src/react-app/app/components/BottomTabs/BottomTabs.jsx'),
+    read('frontend/webApp/src/react-app/components/SectionTabs/SectionTabs.jsx'),
+    read('frontend/webApp/src/react-app/pages/DashboardPage/DashboardPage.jsx'),
+    read('frontend/webApp/src/react-app/pages/NotificationsPage/NotificationsPage.jsx'),
+  ]);
+
+  assert.match(bottomTabs, /useCabinetMode\(user\)/);
+  assert.match(sectionTabs, /useCabinetMode\(user\)/);
+  assert.match(dashboard, /useCabinetMode\(user\)/);
+  assert.match(notifications, /setCabinetMode\(['"]manager['"],\s*user\)/);
+  assert.match(notifications, /setCabinetMode\(['"]employee['"],\s*user\)/);
+});
