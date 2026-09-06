@@ -14,6 +14,7 @@ import { DashboardPage } from './pages/DashboardPage/DashboardPage.jsx';
 import { EmployeesPage } from './pages/EmployeesPage/EmployeesPage.jsx';
 import { FastHoursPage } from './pages/FastHoursPage/FastHoursPage.jsx';
 import { HomePage } from './pages/HomePage/HomePage.jsx';
+import { GuestStage } from './pages/HomePage/components/GuestStage/GuestStage.jsx';
 import { HoursTablePage } from './pages/HoursTablePage/HoursTablePage.jsx';
 import { InvoiceDocumentPage } from './pages/InvoiceDocumentPage/InvoiceDocumentPage.jsx';
 import { InvoicesPage } from './pages/InvoicesPage/InvoicesPage.jsx';
@@ -29,7 +30,6 @@ import { PayrollReportPage } from './pages/PayrollReportPage/PayrollReportPage.j
 import './pages/PayrollReportPage/ManagerPayrollMobile.css';
 import { ProfilePage } from './pages/ProfilePage/ProfilePage.jsx';
 import { ProjectsPage } from './pages/ProjectsPage/ProjectsPage.jsx';
-import { SignInPage } from './pages/SignInPage/SignInPage.jsx';
 import { TaxInformationPage } from './pages/TaxInformationPage/TaxInformationPage.jsx';
 
 export const router = createBrowserRouter([
@@ -38,8 +38,8 @@ export const router = createBrowserRouter([
     errorElement: <RouterError />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: 'sign-in', element: <SignInPage /> },
-      { path: 'register', element: <SignInPage defaultMode="register" /> },
+      { path: 'sign-in', element: <GuestStage defaultMode="login" /> },
+      { path: 'register', element: <GuestStage defaultMode="register" /> },
       { path: 'dashboard', element: <ProtectedRoute><DashboardPage /></ProtectedRoute> },
       { path: 'chat', element: <ProtectedRoute><ChatPage /></ProtectedRoute> },
       {
