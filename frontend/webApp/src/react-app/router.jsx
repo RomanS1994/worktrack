@@ -1,4 +1,3 @@
-import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 import { App } from '@shared/app/App.jsx';
@@ -27,7 +26,6 @@ import { ManagerTimesheetPage } from './pages/ManagerTimesheetPage/ManagerTimesh
 import { MoreHubPage } from './pages/MoreHubPage/MoreHubPage.jsx';
 import { NotificationsPage } from './pages/NotificationsPage/NotificationsPage.jsx';
 import { PayrollReportPage } from './pages/PayrollReportPage/PayrollReportPage.jsx';
-import './pages/PayrollReportPage/ManagerPayrollMobile.css';
 import { ProfilePage } from './pages/ProfilePage/ProfilePage.jsx';
 import { ProjectsPage } from './pages/ProjectsPage/ProjectsPage.jsx';
 import { TaxInformationPage } from './pages/TaxInformationPage/TaxInformationPage.jsx';
