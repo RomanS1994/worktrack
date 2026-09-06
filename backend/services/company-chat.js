@@ -156,8 +156,8 @@ export async function getChatReadStates(client, context) {
      WHERE s.company_id = ${membership.companyId}
        AND s.membership_id <> ${membership.id}
        AND cm.status = 'ACTIVE'
-       AND cm.deleted_at IS NULL
-       AND u.deleted_at IS NULL
+       AND cm."deletedAt" IS NULL
+       AND u."deletedAt" IS NULL
   `;
   return {
     states: rows.map(row => ({
