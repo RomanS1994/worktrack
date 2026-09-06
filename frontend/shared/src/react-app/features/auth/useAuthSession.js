@@ -1,15 +1,13 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { useRefreshSessionMutation } from './authApi.js';
+import { useLazyGetMeQuery, useRefreshSessionMutation } from './authApi.js';
 import {
-  clearSession as clearStoredSession,
   getStoredUser,
   getToken,
   saveSession,
 } from './authStorage.js';
 import {
-  clearSession as clearAuthSession,
   setSession,
   setSessionError,
   setSessionInitialized,
@@ -19,33 +17,39 @@ import { readStoredLanguage } from '../../app/i18n/languageStorage.js';
 
 let sessionBootstrapPromise = null;
 
-// Відновлює сесію з локального сховища до завершення перевірки на сервері.
 function restoreStoredSession(dispatch) {
   const token = getToken();
   const user = getStoredUser();
 
-  if (!token || !user) {
-    return false;
-  }
+  if (!token || !user) return false;
 
   dispatch(setSession({ token, user }));
   return true;
 }
 
-// Застосовує оновлену сесію після успішного refresh-запиту.
 function applyRefreshedSession(dispatch, response) {
   const nextToken = response?.token || '';
   const nextUser = response?.user || null;
 
-  if (!nextToken || !nextUser) {
-    return false;
-  }
+  if (!nextToken || !nextUser) return false;
 
   saveSession(nextToken, nextUser, {
     accessTokenExpiresAt: response?.accessTokenExpiresAt || '',
     lastVerifiedAt: new Date().toISOString(),
   });
   dispatch(setSession({ token: nextToken, user: nextUser }));
+  dispatch(setSessionError({ type: '', message: '' }));
+  return true;
+}
+
+function applyCurrentUser(dispatch, response) {
+  const token = getToken();
+  const nextUser = response?.user || null;
+
+  if (!token || !nextUser) return false;
+
+  saveSession(token, nextUser);
+  dispatch(setSession({ token, user: nextUser }));
   dispatch(setSessionError({ type: '', message: '' }));
   return true;
 }
@@ -66,7 +70,6 @@ function t(key) {
   return getMessage(readStoredLanguage(), key);
 }
 
-// Завершує bootstrap сесії з неблокуючою server-помилкою без примусового logout.
 function handleSessionBootstrapFailure(dispatch, restoredFromStorage) {
   if (restoredFromStorage) {
     dispatch(
@@ -75,70 +78,57 @@ function handleSessionBootstrapFailure(dispatch, restoredFromStorage) {
         message: t('auth.sessionCheckFailedKeepSession'),
       }),
     );
-    dispatch(setSessionInitialized());
-    return;
   }
 
   dispatch(setSessionInitialized());
 }
 
-function handleExpiredStoredSession(dispatch) {
-  clearStoredSession();
-  dispatch(clearAuthSession());
-  dispatch(
-    setSessionError({
-      type: 'expired',
-      message: t('auth.sessionExpiredSignIn'),
-    }),
-  );
-}
-
 export function useAuthSession() {
   const dispatch = useDispatch();
   const [refreshSession] = useRefreshSessionMutation();
+  const [getMe] = useLazyGetMeQuery();
 
   useEffect(() => {
     let isActive = true;
-    let hasSession = restoreStoredSession(dispatch);
+    const hasStoredSession = restoreStoredSession(dispatch);
     let lastForegroundSyncAt = 0;
 
-    const syncSession = ({ initialize = false } = {}) => {
-      requestSessionRefresh(refreshSession)
+    const syncCurrentUser = ({ initialize = false } = {}) => {
+      getMe(undefined, false)
+        .unwrap()
         .then(response => {
           if (!isActive) return;
-
-          hasSession = applyRefreshedSession(dispatch, response) || hasSession;
+          applyCurrentUser(dispatch, response);
           if (initialize) dispatch(setSessionInitialized());
         })
-        .catch(error => {
+        .catch(() => {
           if (!isActive) return;
-
-          if (error?.status === 401) {
-            if (hasSession) {
-              handleExpiredStoredSession(dispatch);
-            } else if (initialize) {
-              dispatch(setSessionInitialized());
-            }
-            return;
-          }
-
-          if (initialize) {
-            handleSessionBootstrapFailure(dispatch, hasSession);
-          }
+          if (initialize) handleSessionBootstrapFailure(dispatch, true);
         });
     };
 
-    // Завжди звіряємо користувача з сервером при запуску застосунку.
-    // Це важливо для змін ролі/доступу, зроблених іншим менеджером.
-    syncSession({ initialize: true });
+    if (hasStoredSession) {
+      syncCurrentUser({ initialize: true });
+    } else {
+      requestSessionRefresh(refreshSession)
+        .then(response => {
+          if (!isActive) return;
+          applyRefreshedSession(dispatch, response);
+          dispatch(setSessionInitialized());
+        })
+        .catch(() => {
+          if (!isActive) return;
+          dispatch(setSessionInitialized());
+        });
+    }
 
     const syncOnForeground = () => {
-      if (!hasSession || document.visibilityState === 'hidden') return;
+      if (!getToken() || document.visibilityState === 'hidden') return;
 
       const now = Date.now();
       if (now - lastForegroundSyncAt < 2000) return;
       lastForegroundSyncAt = now;
-      syncSession();
+      syncCurrentUser();
     };
 
     window.addEventListener('focus', syncOnForeground);
@@ -149,5 +139,5 @@ export function useAuthSession() {
       window.removeEventListener('focus', syncOnForeground);
       document.removeEventListener('visibilitychange', syncOnForeground);
     };
-  }, [dispatch, refreshSession]);
+  }, [dispatch, getMe, refreshSession]);
 }
