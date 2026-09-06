@@ -71,6 +71,7 @@ export function ChatPage(){
   const typingExpiryTimersRef=useRef(new Map());
   const highlightTimerRef=useRef(null);
   const latest=data?.messages||[];
+  const newestMessageId=latest[latest.length-1]?.id||'';
   const onlineCount=Math.max(0,Number(presence?.onlineCount)||0);
   const typingList=Object.values(typingUsers);
   const typingLabel=typingList.length?`${typingList.slice(0,2).map(item=>item.name).join(', ')} ${c.typing}`:'';
@@ -182,7 +183,7 @@ export function ChatPage(){
     const newest=latest[latest.length-1];
     if(nearBottomRef.current){requestAnimationFrame(()=>scrollToBottom('smooth'));}
     else if(newest?.authorMembershipId!==membershipId){setShowNewMessages(true);}
-  },[latest.length,membershipId]);
+  },[newestMessageId,membershipId]);
 
   function handleScroll(){
     const el=listRef.current;if(!el)return;
