@@ -29,30 +29,52 @@ function serializeRow(row) {
       role: row.authorRole || '',
       avatarDataUrl: avatarFromProfile(row.authorProfile),
     },
+    replyTo: row.replyToMessageId ? {
+      id: row.replyToMessageId,
+      body: row.replyDeletedAt ? '' : (row.replyBody || ''),
+      deleted: Boolean(row.replyDeletedAt),
+      author: {
+        name: row.replyAuthorName || row.replyAuthorEmail || 'User',
+      },
+    } : null,
   };
 }
 
+const messageSelect = `
+  m.id,
+  m.company_id AS "companyId",
+  m.author_membership_id AS "authorMembershipId",
+  m.client_message_id AS "clientMessageId",
+  m.body,
+  m.created_at AS "createdAt",
+  m.edited_at AS "editedAt",
+  m.deleted_at AS "deletedAt",
+  m.reply_to_message_id AS "replyToMessageId",
+  u.name AS "authorName",
+  u.email AS "authorEmail",
+  u.profile AS "authorProfile",
+  cm.role::text AS "authorRole",
+  rm.body AS "replyBody",
+  rm.deleted_at AS "replyDeletedAt",
+  ru.name AS "replyAuthorName",
+  ru.email AS "replyAuthorEmail"
+`;
+
 async function findMessage(client, companyId, id) {
-  const rows = await client.$queryRaw`
-    SELECT m.id,
-           m.company_id AS "companyId",
-           m.author_membership_id AS "authorMembershipId",
-           m.client_message_id AS "clientMessageId",
-           m.body,
-           m.created_at AS "createdAt",
-           m.edited_at AS "editedAt",
-           m.deleted_at AS "deletedAt",
-           u.name AS "authorName",
-           u.email AS "authorEmail",
-           u.profile AS "authorProfile",
-           cm.role::text AS "authorRole"
-      FROM chat_messages m
-      JOIN company_memberships cm ON cm.id = m.author_membership_id
-      JOIN users u ON u.id = cm."userId"
-     WHERE m.company_id = ${companyId}
-       AND m.id = ${id}
-     LIMIT 1
-  `;
+  const rows = await client.$queryRawUnsafe(
+    `SELECT ${messageSelect}
+       FROM chat_messages m
+       JOIN company_memberships cm ON cm.id = m.author_membership_id
+       JOIN users u ON u.id = cm."userId"
+       LEFT JOIN chat_messages rm ON rm.id = m.reply_to_message_id
+       LEFT JOIN company_memberships rcm ON rcm.id = rm.author_membership_id
+       LEFT JOIN users ru ON ru.id = rcm."userId"
+      WHERE m.company_id = $1
+        AND m.id = $2
+      LIMIT 1`,
+    companyId,
+    id,
+  );
   return rows[0] || null;
 }
 
@@ -63,49 +85,38 @@ export async function listChatMessages(client, context, { before = '', limit = 5
   if (before && Number.isNaN(beforeDate.getTime())) throw new Error('Invalid chat cursor');
 
   const rows = beforeDate
-    ? await client.$queryRaw`
-        SELECT m.id,
-               m.company_id AS "companyId",
-               m.author_membership_id AS "authorMembershipId",
-               m.client_message_id AS "clientMessageId",
-               m.body,
-               m.created_at AS "createdAt",
-               m.edited_at AS "editedAt",
-               m.deleted_at AS "deletedAt",
-               u.name AS "authorName",
-               u.email AS "authorEmail",
-               u.profile AS "authorProfile",
-               cm.role::text AS "authorRole"
-          FROM chat_messages m
-          JOIN company_memberships cm ON cm.id = m.author_membership_id
-          JOIN users u ON u.id = cm."userId"
-         WHERE m.company_id = ${membership.companyId}
-           AND m.deleted_at IS NULL
-           AND m.created_at < ${beforeDate}
-         ORDER BY m.created_at DESC
-         LIMIT ${safeLimit}
-      `
-    : await client.$queryRaw`
-        SELECT m.id,
-               m.company_id AS "companyId",
-               m.author_membership_id AS "authorMembershipId",
-               m.client_message_id AS "clientMessageId",
-               m.body,
-               m.created_at AS "createdAt",
-               m.edited_at AS "editedAt",
-               m.deleted_at AS "deletedAt",
-               u.name AS "authorName",
-               u.email AS "authorEmail",
-               u.profile AS "authorProfile",
-               cm.role::text AS "authorRole"
-          FROM chat_messages m
-          JOIN company_memberships cm ON cm.id = m.author_membership_id
-          JOIN users u ON u.id = cm."userId"
-         WHERE m.company_id = ${membership.companyId}
-           AND m.deleted_at IS NULL
-         ORDER BY m.created_at DESC
-         LIMIT ${safeLimit}
-      `;
+    ? await client.$queryRawUnsafe(
+        `SELECT ${messageSelect}
+           FROM chat_messages m
+           JOIN company_memberships cm ON cm.id = m.author_membership_id
+           JOIN users u ON u.id = cm."userId"
+           LEFT JOIN chat_messages rm ON rm.id = m.reply_to_message_id
+           LEFT JOIN company_memberships rcm ON rcm.id = rm.author_membership_id
+           LEFT JOIN users ru ON ru.id = rcm."userId"
+          WHERE m.company_id = $1
+            AND m.deleted_at IS NULL
+            AND m.created_at < $2
+          ORDER BY m.created_at DESC
+          LIMIT $3`,
+        membership.companyId,
+        beforeDate,
+        safeLimit,
+      )
+    : await client.$queryRawUnsafe(
+        `SELECT ${messageSelect}
+           FROM chat_messages m
+           JOIN company_memberships cm ON cm.id = m.author_membership_id
+           JOIN users u ON u.id = cm."userId"
+           LEFT JOIN chat_messages rm ON rm.id = m.reply_to_message_id
+           LEFT JOIN company_memberships rcm ON rcm.id = rm.author_membership_id
+           LEFT JOIN users ru ON ru.id = rcm."userId"
+          WHERE m.company_id = $1
+            AND m.deleted_at IS NULL
+          ORDER BY m.created_at DESC
+          LIMIT $2`,
+        membership.companyId,
+        safeLimit,
+      );
 
   const ordered = rows.map(serializeRow).reverse();
   return { messages: ordered, hasMore: rows.length === safeLimit };
@@ -174,6 +185,21 @@ export async function createChatMessage(client, context, body = {}) {
   if (!messageBody) throw new Error('Message is required');
   if (messageBody.length > 4000) throw new Error('Message is too long');
   const clientMessageId = String(body.clientMessageId || '').trim().slice(0, 120) || null;
+  const requestedReplyId = String(body.replyToMessageId || '').trim().slice(0, 120) || null;
+  let replyToMessageId = null;
+
+  if (requestedReplyId) {
+    const replyRows = await client.$queryRaw`
+      SELECT id
+        FROM chat_messages
+       WHERE id = ${requestedReplyId}
+         AND company_id = ${membership.companyId}
+         AND deleted_at IS NULL
+       LIMIT 1
+    `;
+    if (!replyRows[0]?.id) throw new Error('Reply message not found');
+    replyToMessageId = replyRows[0].id;
+  }
 
   if (clientMessageId) {
     const existing = await client.$queryRaw`
@@ -190,8 +216,8 @@ export async function createChatMessage(client, context, body = {}) {
 
   const id = randomUUID();
   await client.$executeRaw`
-    INSERT INTO chat_messages (id, company_id, author_membership_id, client_message_id, body)
-    VALUES (${id}, ${membership.companyId}, ${membership.id}, ${clientMessageId}, ${messageBody})
+    INSERT INTO chat_messages (id, company_id, author_membership_id, client_message_id, body, reply_to_message_id)
+    VALUES (${id}, ${membership.companyId}, ${membership.id}, ${clientMessageId}, ${messageBody}, ${replyToMessageId})
   `;
   const row = await findMessage(client, membership.companyId, id);
   return { message: serializeRow(row), duplicate: false };
