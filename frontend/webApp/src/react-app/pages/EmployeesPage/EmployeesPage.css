@@ -9,7 +9,7 @@
 .employeesPanelHeader>div>span{color:var(--muted);font-size:var(--font-size-caption);font-weight:var(--weight-semibold)}
 .employeesPanelHeader button{min-height:var(--control-height-compact);padding:0 11px;border:1px solid rgba(22,163,74,.14);border-radius:var(--radius-sm);background:var(--accent-soft);color:var(--accent-strong);font-size:var(--font-size-label);font-weight:var(--weight-bold);box-shadow:none}
 .employeesList{display:grid;gap:6px;overflow:hidden;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface-strong)}
-.employeeCard{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:var(--space-3);align-items:center;width:100%;min-height:62px;padding:8px 12px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;color:var(--text);text-align:left;box-shadow:none;transition:background-color var(--motion-fast)}
+.employeeCard{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:var(--space-3);align-items:center;width:100%;min-height:64px;padding:8px 12px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;color:var(--text);text-align:left;box-shadow:none;transition:background-color var(--motion-fast)}
 .employeeCard:last-child{border-bottom:0}
 .employeeCard:hover:not(:disabled){transform:none;background:var(--surface-subtle);box-shadow:none}
 .employeeCard.is-inactive{opacity:.68;background:#fafbfb}
@@ -19,9 +19,9 @@
 .employeeCard.is-inactive .employeeCard-avatar{color:#64748b;background:#e2e8f0}
 .employeeCard-content{display:grid;min-width:0;gap:3px}
 .employeeCard-titleRow{display:flex;align-items:center;gap:7px;min-width:0}
-.employeeCard-name{display:block;min-width:0;overflow:hidden;font-size:var(--font-size-body);line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
-.employeeCard-role{flex:0 1 auto;min-width:0;overflow:hidden;padding:3px 6px;border-radius:var(--radius-full);background:#eef6ff;color:#2563eb;font-size:10px;font-style:normal;font-weight:var(--weight-bold);line-height:1;text-overflow:ellipsis;white-space:nowrap}
-.employeeCard-email{display:block;overflow:hidden;color:var(--muted);font-size:var(--font-size-caption);font-weight:var(--weight-medium);text-overflow:ellipsis;white-space:nowrap}
+.employeeCard-name{display:block;min-width:0;overflow:hidden;font-size:var(--font-size-card-title);line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
+.employeeCard-role{flex:0 1 auto;min-width:0;overflow:hidden;padding:3px 7px;border-radius:var(--radius-full);background:#eef6ff;color:#2563eb;font-size:var(--font-size-caption);font-style:normal;font-weight:var(--weight-bold);line-height:1;text-overflow:ellipsis;white-space:nowrap}
+.employeeCard-email{display:block;overflow:hidden;color:var(--muted);font-size:var(--font-size-secondary);font-weight:var(--weight-medium);text-overflow:ellipsis;white-space:nowrap}
 .employeeCard-chevron{color:#98a2b3;font-size:22px;line-height:1}
 .employeesEmpty{display:flex;align-items:center;gap:var(--space-3);min-height:72px;padding:var(--space-4);border:1px dashed rgba(22,163,74,.2);border-radius:var(--radius-md);color:var(--accent-strong);background:var(--accent-soft)}
 .employeesEmpty span{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:#fff}
@@ -53,19 +53,19 @@
 .employeeDetailHero>div{display:grid;gap:2px;min-width:0}
 .employeeDetailHero strong{overflow:hidden;font-size:var(--font-size-card-title);text-overflow:ellipsis;white-space:nowrap}
 .employeeDetailHero p{margin:0;overflow:hidden;color:var(--muted);font-size:var(--font-size-caption);text-overflow:ellipsis;white-space:nowrap}
-.employeeDetailHero em{padding:5px 8px;border-radius:var(--radius-full);background:#f1f5f9;color:#64748b;font-size:10px;font-style:normal;font-weight:var(--weight-bold)}
+.employeeDetailHero em{padding:5px 8px;border-radius:var(--radius-full);background:#f1f5f9;color:#64748b;font-size:var(--font-size-caption);font-style:normal;font-weight:var(--weight-bold)}
 .employeeDetailHero em.is-active{background:#dcfce7;color:var(--accent-strong)}
 .employeeDetailStats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2)}
 .employeeDetailStats div{display:grid;gap:2px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--surface-subtle)}
 .employeeDetailStats strong{font-size:var(--font-size-section-title)}
-.employeeDetailStats span{color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:var(--weight-semibold)}
+.employeeDetailStats span{color:var(--muted);font-size:var(--font-size-caption);text-transform:uppercase;font-weight:var(--weight-semibold)}
 .employeeDetailSection{display:grid;gap:var(--space-2);padding-top:2px}
 .employeeDetailSection h3{margin:0;color:var(--muted);font-size:var(--font-size-caption);text-transform:uppercase;letter-spacing:.04em}
 .employeeRateRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--space-2)}
 .employeeRateRow button{padding:0 12px;border:1px solid rgba(22,163,74,.15);border-radius:var(--radius-sm);background:var(--accent-soft);color:var(--accent-strong);font-size:var(--font-size-label);font-weight:var(--weight-semibold)}
 .employeeAction{display:flex;align-items:center;justify-content:space-between;min-height:var(--control-height-touch);padding:0 12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff;color:var(--text);font-weight:var(--weight-semibold)}
 .employeeAction span{color:#98a2b3;font-size:19px}
-.employeeAction span small{display:block;margin-top:1px;color:var(--muted);font-size:10px;font-weight:var(--weight-medium)}
+.employeeAction span small{display:block;margin-top:1px;color:var(--muted);font-size:var(--font-size-caption);font-weight:var(--weight-medium)}
 .employeeAction.is-danger{border-color:rgba(220,38,38,.14);background:#fff7f7;color:#b91c1c}
 .employeeAction.is-success{border-color:rgba(22,163,74,.15);background:#f4fcf6;color:var(--accent-strong)}
 .employeesPrimaryButton:disabled,.employeeRateRow button:disabled,.employeeAction:disabled{opacity:.55}
@@ -76,13 +76,13 @@
   .employeesPanel{gap:var(--space-2)}
   .employeesPanelHeader{padding:0}
   .employeesPanelHeader h2{font-size:var(--font-size-section-title)}
-  .employeesPanelHeader button{min-height:var(--control-height-compact);padding:0 10px;font-size:11px}
+  .employeesPanelHeader button{min-height:var(--control-height-compact);padding:0 11px;font-size:var(--font-size-label)}
   .employeesList{gap:0}
-  .employeeCard{min-height:58px;padding:7px 10px;gap:10px}
-  .employeeCard-avatar{width:38px;height:38px;border-radius:11px;font-size:13px}
-  .employeeCard-name{font-size:13px}
-  .employeeCard-role{max-width:108px;font-size:9.5px}
-  .employeeCard-email{font-size:10.5px}
+  .employeeCard{min-height:62px;padding:8px 10px;gap:10px}
+  .employeeCard-avatar{width:40px;height:40px;border-radius:11px;font-size:14px}
+  .employeeCard-name{font-size:var(--font-size-card-title)}
+  .employeeCard-role{max-width:116px;font-size:var(--font-size-caption)}
+  .employeeCard-email{font-size:var(--font-size-secondary)}
   .employeeCard-chevron{font-size:21px}
   .employeesModalBackdrop{place-items:end center;padding:0}
   .employeesModal,.employeesModal.is-drawer{width:100%;height:auto;max-height:90vh;border-radius:18px 18px 0 0;animation:employeesSheetIn .2s ease-out}
