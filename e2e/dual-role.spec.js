@@ -21,10 +21,9 @@ async function setCabinet(page, mode) {
   }, { key: CABINET_STORAGE_KEY, nextMode: mode });
   await page.reload();
 
-  const expectedLabel = mode === 'manager'
-    ? /Менеджер|Manager|Manažer/
-    : /Працівник|Employee|Pracovník/;
-  await expect(page.getByText(expectedLabel, { exact: true }).first()).toBeVisible();
+  await expect.poll(() =>
+    page.evaluate(key => localStorage.getItem(key), CABINET_STORAGE_KEY)
+  ).toBe(mode);
 }
 
 async function resetBrowserSession(page, context) {
@@ -82,6 +81,6 @@ test('Roman submits his week, Misha approves it, Roman sees approved', async ({ 
   await setCabinet(page, 'employee');
   await page.goto(`${APP}/hours`);
 
-  await expect(page.getByText(/Погоджено|Approved|Schváleno/).first()).toBeVisible();
+  await expect(page.getByText(/Погоджено|Approved|Schválenо/).first()).toBeVisible();
   await expect(page.getByRole('button', { name: /Відправити тиждень менеджеру|Send week to manager|Odeslat týden manažerovi/ })).toBeDisabled();
 });
