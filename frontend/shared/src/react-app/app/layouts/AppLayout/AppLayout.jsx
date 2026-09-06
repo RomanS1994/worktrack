@@ -2,6 +2,7 @@ import { useSelector } from 'react-redux';
 
 import { AuthSessionErrorModal } from '../../components/AuthSessionErrorModal/AuthSessionErrorModal.jsx';
 import { BottomTabs } from '../../components/BottomTabs/BottomTabs.jsx';
+import { CabinetModeBadge } from '../../components/CabinetModeBadge/CabinetModeBadge.jsx';
 import { NotificationBell } from '../../components/NotificationBell/NotificationBell.jsx';
 import { GlobalRequestLoader } from '../../components/RequestLoader/RequestLoader.jsx';
 import { SessionNotice } from '../../components/SessionNotice/SessionNotice.jsx';
@@ -28,6 +29,7 @@ export function AppLayout({ children }) {
       <AuthSessionErrorModal />
       <SessionNotice />
       {showWorkspaceNav ? <ChatLiveSync /> : null}
+      {showWorkspaceNav ? <CabinetModeBadge /> : null}
       {showWorkspaceNav ? <NotificationBell /> : null}
       <div className="appLayout-workspaceBody">
         <div className="pageContainer">
