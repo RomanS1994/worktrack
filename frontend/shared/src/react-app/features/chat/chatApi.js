@@ -14,6 +14,13 @@ export const chatApi = baseApi.injectEndpoints({
       query: () => '/chat/read-states',
       providesTags: [{ type: 'Notifications', id: 'CHAT_READ_STATES' }],
     }),
+    getChatReactions: builder.query({
+      query: messageIds => ({
+        url: '/chat/reactions',
+        params: { messageIds },
+      }),
+      providesTags: [{ type: 'Notifications', id: 'CHAT_REACTIONS' }],
+    }),
     getChatMessages: builder.query({
       query: ({ before = '', limit = 50 } = {}) => ({
         url: '/chat/messages',
@@ -28,6 +35,10 @@ export const chatApi = baseApi.injectEndpoints({
         { type: 'Notifications', id: 'CHAT_SUMMARY' },
       ],
     }),
+    toggleChatReaction: builder.mutation({
+      query: body => ({ url: '/chat/reactions', method: 'POST', body }),
+      invalidatesTags: [{ type: 'Notifications', id: 'CHAT_REACTIONS' }],
+    }),
     sendChatTyping: builder.mutation({
       query: body => ({ url: '/chat/typing', method: 'POST', body }),
     }),
@@ -40,6 +51,7 @@ export const chatApi = baseApi.injectEndpoints({
       invalidatesTags: [
         { type: 'Notifications', id: 'CHAT_MESSAGES' },
         { type: 'Notifications', id: 'CHAT_SUMMARY' },
+        { type: 'Notifications', id: 'CHAT_REACTIONS' },
       ],
     }),
   }),
@@ -49,9 +61,11 @@ export const {
   useGetChatSummaryQuery,
   useGetChatPresenceQuery,
   useGetChatReadStatesQuery,
+  useGetChatReactionsQuery,
   useGetChatMessagesQuery,
   useLazyGetChatMessagesQuery,
   useSendChatMessageMutation,
+  useToggleChatReactionMutation,
   useSendChatTypingMutation,
   useMarkChatReadMutation,
   useDeleteChatMessageMutation,
