@@ -1,61 +1,179 @@
-import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { baseApi } from '@shared/app/api/baseApi.js';
-import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
-import { useI18n } from '@shared/app/i18n/useI18n.js';
+import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+
 import { SvgIcon } from '@shared/app/components/SvgIcon/SvgIcon.jsx';
-import { useLogoutMutation, useUpdateProfileMutation } from '@shared/features/auth/authApi.js';
-import { clearSession as clearAuthSession, selectToken, selectUser, setSession } from '@shared/features/auth/authSlice.js';
-import { hasManagerAccess } from '@shared/features/auth/authAccess.js';
-import { isManagerCabinet, setCabinetMode } from '@shared/features/auth/cabinetMode.js';
-import { clearSession as clearStoredSession, saveSession } from '@shared/features/auth/authStorage.js';
-import {
-  useDeletePushSubscriptionMutation,
-  useGetPushSettingsQuery,
-  useSavePushSubscriptionMutation,
-} from '../../features/worktrack/worktrackApi.js';
+import { useI18n } from '@shared/app/i18n/useI18n.js';
+import { selectUser } from '@shared/features/auth/authSlice.js';
+import { isManagerCabinet } from '@shared/features/auth/cabinetMode.js';
 import './MoreHubPage.css';
 
-const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
-const AVATAR_SIZE = 512;
-
 const COPY = {
-  uk: { title:'Налаштування',copy:'Керуйте параметрами компанії та акаунта.',changePhoto:'Змінити фото',photoError:'Не вдалося змінити фото.',photoTooLarge:'Фото має бути до 5 МБ.',companyGroup:'Компанія',identity:'Дані компанії',identityCopy:'Назва, адреса та системні дані',billing:'Реквізити',billingCopy:'IČO, DIČ, адреса та email для рахунків',workGroup:'Робота',work:'Робочі правила',workCopy:'Обід, денна норма та графік роботи',myWork:'Моя робота',myWorkCopy:'Ставка, робочі правила та дані компанії',cabinetGroup:'Режим роботи',employeeCabinet:'Перейти в кабінет працівника',employeeCabinetCopy:'Мої години, зарплата та фактури',managerCabinet:'Перейти в кабінет менеджера',managerCabinetCopy:'Керування компанією, працівниками та погодженнями',accountGroup:'Акаунт',languageCopy:'Мова інтерфейсу застосунку',securityCopy:'Оновіть пароль для входу в акаунт',tax:'Податкова інформація',taxCopy:'Дані для автоматичного створення фактур',notificationGroup:'Сповіщення',pushTitle:'Push-сповіщення',pushEnabled:'Увімкнено на цьому пристрої',pushDisabled:'Отримуйте важливі повідомлення, навіть коли WorkTrack закритий',pushEnable:'Увімкнути',pushDisable:'Вимкнути',pushWorking:'Зачекайте…',pushUnsupported:'Цей браузер не підтримує push-сповіщення.',pushInstall:'На iPhone відкрийте WorkTrack з ярлика на Початковому екрані, щоб увімкнути push.',pushDenied:'Доступ до сповіщень заблоковано. Дозвольте їх для WorkTrack у налаштуваннях iPhone.',pushError:'Не вдалося налаштувати push-сповіщення.',deleteAccountCopy:'Назавжди видалити акаунт і доступ',signOut:'Вийти з акаунта',version:'Версія' },
-  cs: { title:'Nastavení',copy:'Spravujte nastavení společnosti a účtu.',changePhoto:'Změnit fotografii',photoError:'Fotografii se nepodařilo změnit.',photoTooLarge:'Fotografie může mít nejvýše 5 MB.',companyGroup:'Společnost',identity:'Údaje společnosti',identityCopy:'Název, adresa a systémové údaje',billing:'Fakturační údaje',billingCopy:'IČO, DIČ, adresa a e-mail pro faktury',workGroup:'Práce',work:'Pracovní pravidla',workCopy:'Přestávka, denní norma a pracovní plán',myWork:'Moje práce',myWorkCopy:'Sazba, pracovní pravidla a údaje společnosti',cabinetGroup:'Pracovní režim',employeeCabinet:'Přejít do kabinetu pracovníka',employeeCabinetCopy:'Moje hodiny, mzda a faktury',managerCabinet:'Přejít do kabinetu manažera',managerCabinetCopy:'Správa společnosti, pracovníků a schvalování',accountGroup:'Účet',languageCopy:'Jazyk rozhraní aplikace',securityCopy:'Aktualizujte heslo pro přihlášení',tax:'Daňové údaje',taxCopy:'Údaje pro automatické vystavování faktur',notificationGroup:'Oznámení',pushTitle:'Push oznámení',pushEnabled:'Zapnuto na tomto zařízení',pushDisabled:'Dostávejte důležitá oznámení, i když je WorkTrack zavřený',pushEnable:'Zapnout',pushDisable:'Vypnout',pushWorking:'Čekejte…',pushUnsupported:'Tento prohlížeč nepodporuje push oznámení.',pushInstall:'Na iPhonu otevřete WorkTrack z ikony na ploše, abyste mohli zapnout push.',pushDenied:'Oznámení jsou zablokována. Povolte je pro WorkTrack v nastavení iPhonu.',pushError:'Push oznámení se nepodařilo nastavit.',deleteAccountCopy:'Trvale odstranit účet a přístup',signOut:'Odhlásit se',version:'Verze' },
-  en: { title:'Settings',copy:'Manage company and account settings.',changePhoto:'Change photo',photoError:'Could not change photo.',photoTooLarge:'Photo must be under 5 MB.',companyGroup:'Company',identity:'Company details',identityCopy:'Name, address and system details',billing:'Billing details',billingCopy:'Company ID, VAT ID, address and invoice email',workGroup:'Work',work:'Work rules',workCopy:'Lunch, daily standard and work schedule',myWork:'My work',myWorkCopy:'Rate, work rules and company details',cabinetGroup:'Work mode',employeeCabinet:'Switch to employee cabinet',employeeCabinetCopy:'My hours, salary and invoices',managerCabinet:'Switch to manager cabinet',managerCabinetCopy:'Company, employee and approval management',accountGroup:'Account',languageCopy:'Application interface language',securityCopy:'Update your account sign-in password',tax:'Tax information',taxCopy:'Details used to create invoices automatically',notificationGroup:'Notifications',pushTitle:'Push notifications',pushEnabled:'Enabled on this device',pushDisabled:'Receive important updates even when WorkTrack is closed',pushEnable:'Enable',pushDisable:'Disable',pushWorking:'Please wait…',pushUnsupported:'This browser does not support push notifications.',pushInstall:'On iPhone, open WorkTrack from its Home Screen icon to enable push.',pushDenied:'Notifications are blocked. Allow them for WorkTrack in iPhone settings.',pushError:'Could not configure push notifications.',deleteAccountCopy:'Permanently remove your account and access',signOut:'Sign out',version:'Version' },
+  uk: {
+    title: 'Налаштування',
+    copy: 'Компанія, робота та ваш акаунт.',
+    companyGroup: 'Компанія',
+    identity: 'Дані компанії',
+    identityCopy: 'Назва та системні дані',
+    billing: 'Реквізити',
+    billingCopy: 'IČO, DIČ, адреса та email для фактур',
+    workGroup: 'Робота',
+    work: 'Робочі правила',
+    workCopy: 'Обід, денна норма та графік роботи',
+    myWork: 'Моя робота',
+    myWorkCopy: 'Ставка, правила та дані компанії',
+    accountGroup: 'Акаунт',
+    personal: 'Особисті дані',
+    personalCopy: 'Імʼя, телефон і фото профілю',
+    notifications: 'Сповіщення',
+    notificationsCopy: 'Push-сповіщення на цьому пристрої',
+    languageCopy: 'Мова інтерфейсу застосунку',
+    securityCopy: 'Оновити пароль для входу',
+    tax: 'Податкова інформація',
+    taxCopy: 'Дані для автоматичного створення фактур',
+    account: 'Акаунт і вихід',
+    accountCopy: 'Вийти або видалити акаунт',
+    version: 'Версія',
+  },
+  cs: {
+    title: 'Nastavení',
+    copy: 'Společnost, práce a váš účet.',
+    companyGroup: 'Společnost',
+    identity: 'Údaje společnosti',
+    identityCopy: 'Název a systémové údaje',
+    billing: 'Fakturační údaje',
+    billingCopy: 'IČO, DIČ, adresa a e-mail pro faktury',
+    workGroup: 'Práce',
+    work: 'Pracovní pravidla',
+    workCopy: 'Přestávka, denní norma a pracovní plán',
+    myWork: 'Moje práce',
+    myWorkCopy: 'Sazba, pravidla a údaje společnosti',
+    accountGroup: 'Účet',
+    personal: 'Osobní údaje',
+    personalCopy: 'Jméno, telefon a profilová fotografie',
+    notifications: 'Oznámení',
+    notificationsCopy: 'Push oznámení na tomto zařízení',
+    languageCopy: 'Jazyk rozhraní aplikace',
+    securityCopy: 'Aktualizovat přihlašovací heslo',
+    tax: 'Daňové údaje',
+    taxCopy: 'Údaje pro automatické vystavování faktur',
+    account: 'Účet a odhlášení',
+    accountCopy: 'Odhlásit se nebo odstranit účet',
+    version: 'Verze',
+  },
+  en: {
+    title: 'Settings',
+    copy: 'Company, work and your account.',
+    companyGroup: 'Company',
+    identity: 'Company details',
+    identityCopy: 'Name and system details',
+    billing: 'Billing details',
+    billingCopy: 'Company ID, VAT ID, address and invoice email',
+    workGroup: 'Work',
+    work: 'Work rules',
+    workCopy: 'Lunch, daily standard and work schedule',
+    myWork: 'My work',
+    myWorkCopy: 'Rate, rules and company details',
+    accountGroup: 'Account',
+    personal: 'Personal details',
+    personalCopy: 'Name, phone and profile photo',
+    notifications: 'Notifications',
+    notificationsCopy: 'Push notifications on this device',
+    languageCopy: 'Application interface language',
+    securityCopy: 'Update your sign-in password',
+    tax: 'Tax information',
+    taxCopy: 'Details used to create invoices automatically',
+    account: 'Account and sign out',
+    accountCopy: 'Sign out or delete your account',
+    version: 'Version',
+  },
 };
 
-function getName(user){return user?.name||[user?.firstName,user?.lastName].filter(Boolean).join(' ')||user?.email||'-'}
-function getCompanyName(user){return user?.activeMembership?.company?.name||user?.activeCompany?.name||user?.company?.name||''}
-function initials(user){return [user?.firstName,user?.lastName].filter(Boolean).map(value=>value[0]).join('').slice(0,2).toUpperCase()||getName(user).slice(0,1).toUpperCase()}
-function resizeProfilePhoto(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=reject;reader.onload=()=>{const image=new Image();image.onerror=reject;image.onload=()=>{const canvas=document.createElement('canvas');canvas.width=AVATAR_SIZE;canvas.height=AVATAR_SIZE;const context=canvas.getContext('2d');if(!context)return reject(new Error('Canvas unavailable'));const size=Math.min(image.naturalWidth,image.naturalHeight);const x=Math.max(0,(image.naturalWidth-size)/2);const y=Math.max(0,(image.naturalHeight-size)/2);context.drawImage(image,x,y,size,size,0,0,AVATAR_SIZE,AVATAR_SIZE);resolve(canvas.toDataURL('image/jpeg',.82))};image.src=String(reader.result||'')};reader.readAsDataURL(file)})}
-function SettingsRow({to,onClick,icon,title,copy,tone='default'}){const Row=to?Link:'button';const props=to?{to}:{type:'button',onClick};return <Row {...props} className={`moreHubRow moreHubRow--${tone}`}><span className="moreHubIcon"><SvgIcon name={icon}/></span><span className="moreHubRowText"><strong>{title}</strong><small>{copy}</small></span><span className="moreHubChevron" aria-hidden="true">›</span></Row>}
-function SettingsGroup({title,children}){return <section className="moreHubGroup"><h2>{title}</h2><div className="moreHubMenu screenCard">{children}</div></section>}
-function pushSupported(){return typeof window!=='undefined'&&'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window}
-function isIos(){return /iPad|iPhone|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1)}
-function isStandalone(){return window.matchMedia?.('(display-mode: standalone)').matches||window.navigator.standalone===true}
-function applicationServerKey(value){const padding='='.repeat((4-(value.length%4))%4);const raw=atob((value+padding).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(raw,char=>char.charCodeAt(0))}
+function getName(user) {
+  return user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email || '-';
+}
 
-export function MoreHubPage(){
- const dispatch=useDispatch();const navigate=useNavigate();const user=useSelector(selectUser);const token=useSelector(selectToken);const {language,t}=useI18n();const c=COPY[language]||COPY.uk;const photoInputRef=useRef(null);const [updateProfile,updateState]=useUpdateProfileMutation();const [logout,logoutState]=useLogoutMutation();const [photoError,setPhotoError]=useState('');const [logoutError,setLogoutError]=useState('');const avatar=user?.profile?.avatarDataUrl||'';const companyName=getCompanyName(user);const managerAccess=hasManagerAccess(user);const managerCabinet=isManagerCabinet(user);const roleLabel=managerCabinet?t('profile.manager'):t('profile.employee');
- const canPush=pushSupported();const pushSettings=useGetPushSettingsQuery(undefined,{skip:!canPush});const [savePush,savePushState]=useSavePushSubscriptionMutation();const [deletePush,deletePushState]=useDeletePushSubscriptionMutation();const [pushEnabled,setPushEnabled]=useState(false);const [pushError,setPushError]=useState('');const pushBusy=savePushState.isLoading||deletePushState.isLoading;
- useEffect(()=>{let active=true;if(!canPush)return undefined;navigator.serviceWorker.getRegistration('/').then(async registration=>{const subscription=registration?await registration.pushManager.getSubscription():null;if(active)setPushEnabled(Boolean(subscription))}).catch(()=>{if(active)setPushEnabled(false)});return()=>{active=false}},[canPush]);
- async function handlePhotoChange(event){const file=event.target.files?.[0];event.target.value='';if(!file)return;setPhotoError('');if(file.size>MAX_PHOTO_BYTES){setPhotoError(c.photoTooLarge);return}if(!['image/jpeg','image/png','image/webp'].includes(file.type)){setPhotoError(c.photoError);return}try{const avatarDataUrl=await resizeProfilePhoto(file);const updatedUser=await updateProfile({firstName:user?.firstName||'',lastName:user?.lastName||'',name:getName(user),phone:user?.phone||'',profile:{...(user?.profile||{}),avatarDataUrl}}).unwrap();saveSession(token,updatedUser);dispatch(setSession({token,user:updatedUser}))}catch{setPhotoError(c.photoError)}}
- async function handleLogout(){setLogoutError('');try{await logout().unwrap();clearStoredSession();dispatch(clearAuthSession());dispatch(baseApi.util.resetApiState());navigate('/sign-in',{replace:true})}catch(error){setLogoutError(getApiErrorMessage(error))}}
- function handleCabinetSwitch(){const next=managerCabinet?'employee':'manager';if(!setCabinetMode(next,user))return;dispatch(baseApi.util.resetApiState());navigate('/',{replace:true})}
- async function enablePush(){setPushError('');if(!canPush){setPushError(c.pushUnsupported);return}if(isIos()&&!isStandalone()){setPushError(c.pushInstall);return}try{const permission=await Notification.requestPermission();if(permission!=='granted'){setPushError(c.pushDenied);return}const registration=await navigator.serviceWorker.register('/sw.js',{scope:'/'});await navigator.serviceWorker.ready;let subscription=await registration.pushManager.getSubscription();if(!subscription){const publicKey=pushSettings.data?.publicKey;if(!publicKey)throw new Error('Push key unavailable');subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:applicationServerKey(publicKey)})}await savePush(subscription.toJSON()).unwrap();setPushEnabled(true);await pushSettings.refetch()}catch(error){setPushError(getApiErrorMessage(error)||c.pushError)}}
- async function disablePush(){setPushError('');if(!canPush)return;try{const registration=await navigator.serviceWorker.getRegistration('/');const subscription=registration?await registration.pushManager.getSubscription():null;if(subscription){await deletePush({endpoint:subscription.endpoint}).unwrap();await subscription.unsubscribe()}setPushEnabled(false);await pushSettings.refetch()}catch(error){setPushError(getApiErrorMessage(error)||c.pushError)}}
- let pushCopy=pushEnabled?c.pushEnabled:c.pushDisabled;if(!canPush)pushCopy=c.pushUnsupported;else if(isIos()&&!isStandalone())pushCopy=c.pushInstall;else if(Notification.permission==='denied')pushCopy=c.pushDenied;
- return <section className="moreHub pageStack">
-  <header className="moreHubHeader appTop"><div className="appTitleBlock"><h1>{c.title}</h1><p>{c.copy}</p></div></header>
-  <section className="moreHubProfile screenCard"><button className={`moreHubAvatar${avatar?' has-photo':''}`} type="button" onClick={()=>photoInputRef.current?.click()} disabled={updateState.isLoading} aria-label={c.changePhoto}>{avatar?<img src={avatar} alt=""/>:<span>{initials(user)}</span>}<i aria-hidden="true"><SvgIcon name="edit"/></i></button><Link className="moreHubProfileMain" to="/profile?section=personal&from=settings" aria-label={t('profile.personalDetails')}><span className="moreHubProfileText"><strong>{getName(user)}</strong><small>{user?.email||''}</small><em>{[companyName,roleLabel].filter(Boolean).join(' · ')}</em></span><span className="moreHubProfileChevron" aria-hidden="true">›</span></Link><button className="moreHubChangePhoto" type="button" onClick={()=>photoInputRef.current?.click()} disabled={updateState.isLoading}>{updateState.isLoading?'…':c.changePhoto}</button><input ref={photoInputRef} className="moreHubPhotoInput" type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoChange}/></section>
-  {photoError?<p className="moreHubPhotoError">{photoError}</p>:null}
-  {managerAccess?<SettingsGroup title={c.cabinetGroup}><SettingsRow onClick={handleCabinetSwitch} icon={managerCabinet?'clock':'building'} tone="work" title={managerCabinet?c.employeeCabinet:c.managerCabinet} copy={managerCabinet?c.employeeCabinetCopy:c.managerCabinetCopy}/></SettingsGroup>:null}
-  {managerCabinet?<><SettingsGroup title={c.companyGroup}><SettingsRow to="/company-settings?section=identity&from=settings" icon="building" tone="company" title={c.identity} copy={c.identityCopy}/><SettingsRow to="/company-settings?section=billing&from=settings" icon="receipt" tone="billing" title={c.billing} copy={c.billingCopy}/></SettingsGroup><SettingsGroup title={c.workGroup}><SettingsRow to="/company-settings?section=work&from=settings" icon="clock" tone="work" title={c.work} copy={c.workCopy}/></SettingsGroup></>:<SettingsGroup title={c.workGroup}><SettingsRow to="/profile?section=work&from=settings" icon="clock" tone="work" title={c.myWork} copy={c.myWorkCopy}/></SettingsGroup>}
-  <SettingsGroup title={c.notificationGroup}><div className="moreHubPushRow"><span className="moreHubPushIcon" aria-hidden="true">🔔</span><span className="moreHubRowText"><strong>{c.pushTitle}</strong><small>{pushCopy}</small></span><button className={`moreHubPushButton${pushEnabled?' is-enabled':''}`} type="button" onClick={pushEnabled?disablePush:enablePush} disabled={pushBusy||pushSettings.isLoading||!canPush}>{pushBusy?c.pushWorking:pushEnabled?c.pushDisable:c.pushEnable}</button></div>{pushError?<p className="moreHubPushError">{pushError}</p>:null}</SettingsGroup>
-  <SettingsGroup title={c.accountGroup}><SettingsRow to="/profile?section=language&from=settings" icon="globe" tone="language" title={t('settings.languageCard.title')} copy={c.languageCopy}/><SettingsRow to="/profile?section=password&from=settings" icon="lock" tone="security" title={t('profile.changePassword')} copy={c.securityCopy}/>{!managerCabinet?<SettingsRow to="/tax-information" icon="receipt" tone="billing" title={c.tax} copy={c.taxCopy}/>:null}</SettingsGroup>
-  <div className="moreHubAccountActions">{logoutError?<p className="moreHubLogoutError">{logoutError}</p>:null}<button className="moreHubSignOut" type="button" onClick={handleLogout} disabled={logoutState.isLoading}><SvgIcon name="logout"/><span>{logoutState.isLoading?t('profile.signingOut'):c.signOut}</span></button><Link className="moreHubDeleteAccount" to="/profile?section=account&from=settings"><SvgIcon name="trash"/><span><strong>{t('profile.deleteAccount')}</strong><small>{c.deleteAccountCopy}</small></span></Link></div>
-  <p className="moreHubVersion">WorkTrack · {c.version} 1.0.0</p>
- </section>;
+function getCompanyName(user) {
+  return user?.activeMembership?.company?.name || user?.activeCompany?.name || user?.company?.name || '';
+}
+
+function initials(user) {
+  return [user?.firstName, user?.lastName]
+    .filter(Boolean)
+    .map(value => value[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase() || getName(user).slice(0, 1).toUpperCase();
+}
+
+function SettingsRow({ to, icon, title, copy, tone = 'default' }) {
+  return (
+    <Link to={to} className={`moreHubRow moreHubRow--${tone}`}>
+      <span className="moreHubIcon"><SvgIcon name={icon} /></span>
+      <span className="moreHubRowText"><strong>{title}</strong><small>{copy}</small></span>
+      <span className="moreHubChevron" aria-hidden="true">›</span>
+    </Link>
+  );
+}
+
+function SettingsGroup({ title, children }) {
+  return <section className="moreHubGroup"><h2>{title}</h2><div className="moreHubMenu screenCard">{children}</div></section>;
+}
+
+export function MoreHubPage() {
+  const user = useSelector(selectUser);
+  const { language, t } = useI18n();
+  const c = COPY[language] || COPY.uk;
+  const managerCabinet = isManagerCabinet(user);
+  const avatar = user?.profile?.avatarDataUrl || '';
+  const companyName = getCompanyName(user);
+  const roleLabel = managerCabinet ? t('profile.manager') : t('profile.employee');
+
+  return (
+    <section className="moreHub pageStack">
+      <header className="moreHubHeader appTop">
+        <div className="appTitleBlock"><h1>{c.title}</h1><p>{c.copy}</p></div>
+      </header>
+
+      <Link className="moreHubProfile screenCard moreHubProfile--link" to="/profile?section=personal&from=settings" aria-label={c.personal}>
+        <span className={`moreHubAvatar${avatar ? ' has-photo' : ''}`}>
+          {avatar ? <img src={avatar} alt="" /> : <span>{initials(user)}</span>}
+        </span>
+        <span className="moreHubProfileMain">
+          <span className="moreHubProfileText">
+            <strong>{getName(user)}</strong>
+            <small>{user?.email || ''}</small>
+            <em>{[companyName, roleLabel].filter(Boolean).join(' · ')}</em>
+          </span>
+          <span className="moreHubProfileChevron" aria-hidden="true">›</span>
+        </span>
+      </Link>
+
+      {managerCabinet ? (
+        <>
+          <SettingsGroup title={c.companyGroup}>
+            <SettingsRow to="/company-settings?section=identity&from=settings" icon="building" tone="company" title={c.identity} copy={c.identityCopy} />
+            <SettingsRow to="/company-settings?section=billing&from=settings" icon="receipt" tone="billing" title={c.billing} copy={c.billingCopy} />
+          </SettingsGroup>
+          <SettingsGroup title={c.workGroup}>
+            <SettingsRow to="/company-settings?section=work&from=settings" icon="clock" tone="work" title={c.work} copy={c.workCopy} />
+          </SettingsGroup>
+        </>
+      ) : (
+        <SettingsGroup title={c.workGroup}>
+          <SettingsRow to="/profile?section=work&from=settings" icon="clock" tone="work" title={c.myWork} copy={c.myWorkCopy} />
+        </SettingsGroup>
+      )}
+
+      <SettingsGroup title={c.accountGroup}>
+        <SettingsRow to="/profile?section=personal&from=settings" icon="user" title={c.personal} copy={c.personalCopy} />
+        <SettingsRow to="/profile?section=notifications&from=settings" icon="bell" title={c.notifications} copy={c.notificationsCopy} />
+        <SettingsRow to="/profile?section=language&from=settings" icon="globe" tone="language" title={t('settings.languageCard.title')} copy={c.languageCopy} />
+        <SettingsRow to="/profile?section=password&from=settings" icon="lock" tone="security" title={t('profile.changePassword')} copy={c.securityCopy} />
+        {!managerCabinet ? <SettingsRow to="/tax-information" icon="receipt" tone="billing" title={c.tax} copy={c.taxCopy} /> : null}
+        <SettingsRow to="/profile?section=account&from=settings" icon="logout" title={c.account} copy={c.accountCopy} />
+      </SettingsGroup>
+
+      <p className="moreHubVersion">WorkTrack · {c.version} 1.0.0</p>
+    </section>
+  );
 }
