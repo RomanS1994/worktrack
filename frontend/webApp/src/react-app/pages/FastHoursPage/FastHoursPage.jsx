@@ -12,28 +12,7 @@ import {
   useUpdateDefaultProjectMutation,
   useUpdateWorkEntryMutation,
 } from '../../features/worktrack/worktrackApi.js';
-import { FAST_HOURS_COPY } from './fastHoursCopy.js';
-import {
-  HOURS,
-  MINUTES,
-  calculateHours,
-  closestMinute,
-  dateLocked,
-  dayEntries,
-  entryLocked,
-  fmtDayParts,
-  fmtLong,
-  fmtWeekRange,
-  formatBreak,
-  formatHours,
-  formatHoursShort,
-  getDayTotal,
-  initialWeek,
-  localeFor,
-  shiftWeek,
-  weekStartNow,
-} from './fastHoursUtils.js';
-import { SummaryStat, TimeField, UiIcon, WheelColumn } from './FastHoursUi.jsx';
+import { FAST_HOURS_COPY,HOURS,MINUTES,SummaryStat,TimeField,UiIcon,WheelColumn,calculateHours,closestMinute,dateLocked,dayEntries,entryLocked,fmtDayParts,fmtLong,fmtWeekRange,formatBreak,formatHours,formatHoursShort,getDayTotal,initialWeek,localeFor,shiftWeek,weekStartNow } from './fastHoursSupport.jsx';
 import './FastHoursPage.css';
 import './FastHoursPage.compact.css';
 import './FastHoursPage.defaultProject.css';
@@ -41,9 +20,9 @@ import './FastHoursPage.defaultProject.css';
 export function FastHoursPage(){
  const{language}=useI18n(),c=FAST_HOURS_COPY[language]||FAST_HOURS_COPY.uk,current=useMemo(weekStartNow,[]);const[weekStart,setWeekStart]=useState(()=>initialWeek(current));const{data,error,isFetching}=useGetWeekEntriesQuery({weekStart});const{data:rulesData}=useGetWorkRulesQuery();const projectsQuery=useGetProjectsQuery();const{data:defaultProjectData}=useGetDefaultProjectQuery();const projects=(projectsQuery.data?.projects||[]).filter(p=>p.isActive);const[updateDefaultProject,defaultProjectState]=useUpdateDefaultProjectMutation();const[createEntry,createState]=useCreateWorkEntryMutation();const[updateEntry,updateState]=useUpdateWorkEntryMutation();const[deleteEntry,deleteState]=useDeleteWorkEntryMutation();const[submitWeek,submitState]=useSubmitWeekMutation();
  const[editorOpen,setEditorOpen]=useState(false),[editingId,setEditingId]=useState(''),[editingDate,setEditingDate]=useState(''),[projectId,setProjectId]=useState(''),[startTime,setStartTime]=useState('07:00'),[endTime,setEndTime]=useState('18:00'),[note,setNote]=useState(''),[quickOpen,setQuickOpen]=useState(false),[projectPickerOpen,setProjectPickerOpen]=useState(false),[quickProject,setQuickProject]=useState(''),[quickStart,setQuickStart]=useState('07:00'),[quickEnd,setQuickEnd]=useState('18:00'),[selectedDays,setSelectedDays]=useState([0,1,2,3,4]),[message,setMessage]=useState(''),[actionError,setActionError]=useState(''),[timePicker,setTimePicker]=useState(null);
- const days=data?.week?.days||[],entries=data?.entries||[],submissions=data?.submissions||[],editableEntries=entries.filter(e=>!entryLocked(e)),status=data?.submission?.status||'DRAFT',locked=editableEntries.length===0&&entries.length>0&&entries.every(entryLocked),hasLockedDays=days.some(d=>dateLocked(d.date,submissions)),busy=isFetching||defaultProjectState.isLoading||createState.isLoading||updateState.isLoading||deleteState.isLoading||submitState.isLoading,breakMinutes=Number(rulesData?.workRules?.breakMinutes||0),standardDailyHours=Number(rulesData?.workRules?.standardDailyHours||8),weeklyNorm=standardDailyHours*5,weekTotal=entries.reduce((s,e)=>s+(Number(e.hours)||0),0),overtime=days.reduce((s,d)=>s+Math.max(0,getDayTotal(entries,d.date)-standardDailyHours),0),progress=Math.max(0,Math.min(100,weeklyNorm?weekTotal/weeklyNorm*100:0)),calculatedGross=calculateHours(startTime,endTime),calculatedBreak=calculatedGross>breakMinutes/60?breakMinutes:0,calculatedNet=Math.max(0,calculatedGross-calculatedBreak/60),quickGross=calculateHours(quickStart,quickEnd),quickBreak=quickGross>breakMinutes/60?breakMinutes:0,quickNet=Math.max(0,quickGross-quickBreak/60),configuredDefaultId=defaultProjectData?.projectId||'',primaryProject=projects.find(p=>p.id===configuredDefaultId)||projects[0],selectedProject=projectId||primaryProject?.id||'',selectedQuickProject=quickProject||primaryProject?.id||'',editingEntry=entries.find(e=>e.id===editingId),editorLocked=editingId?entryLocked(editingEntry):dateLocked(editingDate,submissions);
+ const days=data?.week?.days||[],entries=data?.entries||[],submissions=data?.submissions||[],editableEntries=entries.filter(e=>!entryLocked(e)),status=data?.submission?.status||'DRAFT',hasLockedDays=days.some(d=>dateLocked(d.date,submissions)),busy=isFetching||defaultProjectState.isLoading||createState.isLoading||updateState.isLoading||deleteState.isLoading||submitState.isLoading,breakMinutes=Number(rulesData?.workRules?.breakMinutes||0),standardDailyHours=Number(rulesData?.workRules?.standardDailyHours||8),weeklyNorm=standardDailyHours*5,weekTotal=entries.reduce((s,e)=>s+(Number(e.hours)||0),0),overtime=days.reduce((s,d)=>s+Math.max(0,getDayTotal(entries,d.date)-standardDailyHours),0),progress=Math.max(0,Math.min(100,weeklyNorm?weekTotal/weeklyNorm*100:0)),calculatedGross=calculateHours(startTime,endTime),calculatedBreak=calculatedGross>breakMinutes/60?breakMinutes:0,calculatedNet=Math.max(0,calculatedGross-calculatedBreak/60),quickGross=calculateHours(quickStart,quickEnd),quickBreak=quickGross>breakMinutes/60?breakMinutes:0,quickNet=Math.max(0,quickGross-quickBreak/60),configuredDefaultId=defaultProjectData?.projectId||'',primaryProject=projects.find(p=>p.id===configuredDefaultId)||projects[0],selectedProject=projectId||primaryProject?.id||'',selectedQuickProject=quickProject||primaryProject?.id||'',editingEntry=entries.find(e=>e.id===editingId),editorLocked=editingId?entryLocked(editingEntry):dateLocked(editingDate,submissions);
  function resetMessages(){setMessage('');setActionError('')}function openNew(d){if(dateLocked(d,submissions))return;resetMessages();setEditingId('');setEditingDate(d);setProjectId(primaryProject?.id||'');setStartTime('07:00');setEndTime('18:00');setNote('');setEditorOpen(true)}function openExisting(e){resetMessages();setEditingId(e.id);setEditingDate(e.workDate);setProjectId(e.projectId||e.project?.id||'');setStartTime(e.startTime||'07:00');setEndTime(e.endTime||'18:00');setNote(e.note||'');setEditorOpen(true)}function changeWeek(a){setEditorOpen(false);setQuickOpen(false);setProjectPickerOpen(false);setWeekStart(shiftWeek(weekStart,a))}
- function openTimePicker(target,value){const[h='00',m='00']=(value||'00:00').split(':');setTimePicker({target,hour:h,minute:closestMinute(m),initial:value})}
+ function openTimePicker(target,value){const[h='00',m='00']=(value||'00:00').split(':');setTimePicker({target,hour:h,minute:closestMinute(m)})}
  function closeTimePicker(){setTimePicker(null)}
  function applyTimePicker(){if(!timePicker)return;const value=`${timePicker.hour}:${timePicker.minute}`;({start:setStartTime,end:setEndTime,quickStart:setQuickStart,quickEnd:setQuickEnd}[timePicker.target])?.(value);setTimePicker(null)}
  function resetTimePicker(){if(!timePicker)return;const fallback=timePicker.target==='start'||timePicker.target==='quickStart'?'07:00':'18:00';const[h,m]=fallback.split(':');setTimePicker(v=>({...v,hour:h,minute:m}))}
