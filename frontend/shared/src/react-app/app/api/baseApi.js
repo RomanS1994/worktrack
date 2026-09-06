@@ -23,7 +23,9 @@ function resolveBaseUrl() {
     );
   }
 
-  return import.meta.env.VITE_API_BASE_URL || '/api';
+  // Production must stay same-origin so the refresh cookie remains first-party,
+  // especially in iOS Safari/PWA where third-party cookies may be blocked.
+  return '/api';
 }
 
 let refreshWarningShownSinceSuccess = false;
