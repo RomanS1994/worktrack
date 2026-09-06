@@ -103,7 +103,7 @@
     box-sizing: border-box;
     height: 100%;
     min-height: 0;
-    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+    padding-bottom: 72px;
     overflow: hidden;
   }
 
@@ -151,7 +151,7 @@
   }
 
   .appLayout--chat .appLayout-workspaceBody {
-    padding: 12px 0 calc(68px + env(safe-area-inset-bottom));
+    padding: 12px 0 64px;
   }
 
   .appLayout--chat .pageContainer {
