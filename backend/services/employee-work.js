@@ -2,9 +2,9 @@ import { randomUUID } from 'node:crypto';
 
 import { createAuditLog } from '../db/prisma-helpers.js';
 import { normalizeText, nowIso } from '../validation/common.js';
+import { getWeekRange, serializeWeek } from './week-utils.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const EDITABLE_ENTRY_STATUSES = new Set(['DRAFT', 'REJECTED']);
 const LOCKED_SUBMISSION_STATUSES = ['SUBMITTED', 'APPROVED'];
 
@@ -51,30 +51,7 @@ function monthSegment(range, key) {
 }
 
 export function getEmployeeWeekRange(value = new Date()) {
-  const source = value instanceof Date ? value : parseDate(value, 'Invalid week start');
-  const dayStart = startOfUtcDay(source);
-  const utcDay = dayStart.getUTCDay();
-  const mondayOffset = utcDay === 0 ? -6 : 1 - utcDay;
-  const weekStart = addDays(dayStart, mondayOffset);
-  const nextWeekStart = addDays(weekStart, 7);
-  const weekEnd = addDays(weekStart, 6);
-  return {
-    weekStart,
-    weekEnd,
-    nextWeekStart,
-    days: Array.from({ length: 7 }, (_, index) => {
-      const date = addDays(weekStart, index);
-      return { date, dateKey: toIsoDate(date), label: WEEKDAY_LABELS[date.getUTCDay()] };
-    }),
-  };
-}
-
-function serializeWeek(range) {
-  return {
-    weekStart: toIsoDate(range.weekStart),
-    weekEnd: toIsoDate(range.weekEnd),
-    days: range.days.map(day => ({ date: day.dateKey, label: day.label })),
-  };
+  return getWeekRange(value);
 }
 
 function normalizeHoursString(value) {
