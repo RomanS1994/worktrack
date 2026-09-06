@@ -74,28 +74,30 @@ export async function toggleChatReaction(client, context, body = {}) {
   if (!messageRows[0]?.id) throw new Error('Chat message not found');
 
   const existingRows = await client.$queryRaw`
-    SELECT 1
+    SELECT emoji
       FROM chat_message_reactions
      WHERE message_id = ${messageId}
        AND membership_id = ${membership.id}
-       AND emoji = ${emoji}
-     LIMIT 1
+     ORDER BY created_at DESC
+  `;
+  const currentEmoji = existingRows[0]?.emoji || '';
+
+  await client.$executeRaw`
+    DELETE FROM chat_message_reactions
+     WHERE message_id = ${messageId}
+       AND membership_id = ${membership.id}
   `;
 
-  if (existingRows.length) {
-    await client.$executeRaw`
-      DELETE FROM chat_message_reactions
-       WHERE message_id = ${messageId}
-         AND membership_id = ${membership.id}
-         AND emoji = ${emoji}
-    `;
-    return { ok: true, messageId, emoji, active: false };
+  if (currentEmoji === emoji) {
+    return { ok: true, messageId, emoji, active: false, replacedEmoji: '' };
   }
 
   await client.$executeRaw`
     INSERT INTO chat_message_reactions (message_id, membership_id, emoji)
     VALUES (${messageId}, ${membership.id}, ${emoji})
-    ON CONFLICT (message_id, membership_id, emoji) DO NOTHING
+    ON CONFLICT (message_id, membership_id) DO UPDATE SET
+      emoji = EXCLUDED.emoji,
+      created_at = CURRENT_TIMESTAMP
   `;
-  return { ok: true, messageId, emoji, active: true };
+  return { ok: true, messageId, emoji, active: true, replacedEmoji: currentEmoji };
 }
