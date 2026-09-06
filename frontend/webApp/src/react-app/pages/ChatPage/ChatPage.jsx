@@ -17,9 +17,9 @@ import { useI18n } from '@shared/app/i18n/useI18n.js';
 import './ChatPage.css';
 
 const COPY = {
-  uk:{title:'Чат компанії',subtitle:'Спільний чат для всієї команди',online:'онлайн',placeholder:'Написати повідомлення…',send:'Надіслати',older:'Завантажити старіші',empty:'Поки що повідомлень немає.',today:'Сьогодні',yesterday:'Вчора',newMessages:'Нові повідомлення',scrollNew:'Нові повідомлення',delete:'Видалити',deleteConfirm:'Видалити це повідомлення?',typing:'друкує…',delivered:'Доставлено',read:'Прочитано',reply:'Відповісти',replyingTo:'Відповідь',cancelReply:'Скасувати відповідь',deletedMessage:'Повідомлення видалено'},
-  cs:{title:'Firemní chat',subtitle:'Společný chat pro celý tým',online:'online',placeholder:'Napsat zprávu…',send:'Odeslat',older:'Načíst starší',empty:'Zatím zde nejsou žádné zprávy.',today:'Dnes',yesterday:'Včera',newMessages:'Nové zprávy',scrollNew:'Nové zprávy',delete:'Smazat',deleteConfirm:'Smazat tuto zprávu?',typing:'píše…',delivered:'Doručeno',read:'Přečteno',reply:'Odpovědět',replyingTo:'Odpověď',cancelReply:'Zrušit odpověď',deletedMessage:'Zpráva byla smazána'},
-  en:{title:'Company chat',subtitle:'Shared chat for the whole team',online:'online',placeholder:'Write a message…',send:'Send',older:'Load older',empty:'No messages yet.',today:'Today',yesterday:'Yesterday',newMessages:'New messages',scrollNew:'New messages',delete:'Delete',deleteConfirm:'Delete this message?',typing:'is typing…',delivered:'Delivered',read:'Read',reply:'Reply',replyingTo:'Replying to',cancelReply:'Cancel reply',deletedMessage:'Message deleted'},
+  uk:{title:'Чат компанії',subtitle:'Спільний чат для всієї команди',online:'онлайн',placeholder:'Написати повідомлення…',send:'Надіслати',older:'Завантажити старіші',empty:'Поки що повідомлень немає.',today:'Сьогодні',yesterday:'Вчора',newMessages:'Нові повідомлення',scrollNew:'Нові повідомлення',delete:'Видалити',deleteConfirm:'Видалити повідомлення?',deleteConfirmCopy:'Цю дію неможливо скасувати.',cancel:'Скасувати',typing:'друкує…',delivered:'Доставлено',read:'Прочитано',reply:'Відповісти',replyingTo:'Відповідь',cancelReply:'Скасувати відповідь',deletedMessage:'Повідомлення видалено'},
+  cs:{title:'Firemní chat',subtitle:'Společný chat pro celý tým',online:'online',placeholder:'Napsat zprávu…',send:'Odeslat',older:'Načíst starší',empty:'Zatím zde nejsou žádné zprávy.',today:'Dnes',yesterday:'Včera',newMessages:'Nové zprávy',scrollNew:'Nové zprávy',delete:'Smazat',deleteConfirm:'Smazat zprávu?',deleteConfirmCopy:'Tuto akci nelze vrátit zpět.',cancel:'Zrušit',typing:'píše…',delivered:'Doručeno',read:'Přečteno',reply:'Odpovědět',replyingTo:'Odpověď',cancelReply:'Zrušit odpověď',deletedMessage:'Zpráva byla smazána'},
+  en:{title:'Company chat',subtitle:'Shared chat for the whole team',online:'online',placeholder:'Write a message…',send:'Send',older:'Load older',empty:'No messages yet.',today:'Today',yesterday:'Yesterday',newMessages:'New messages',scrollNew:'New messages',delete:'Delete',deleteConfirm:'Delete message?',deleteConfirmCopy:'This action cannot be undone.',cancel:'Cancel',typing:'is typing…',delivered:'Delivered',read:'Read',reply:'Reply',replyingTo:'Replying to',cancelReply:'Cancel reply',deletedMessage:'Message deleted'},
 };
 
 function localeFor(language){return language==='cs'?'cs-CZ':language==='en'?'en-GB':'uk-UA'}
@@ -48,9 +48,10 @@ export function ChatPage(){
   const [sendMessage,sendState]=useSendChatMessageMutation();
   const [sendTyping]=useSendChatTypingMutation();
   const [markRead]=useMarkChatReadMutation();
-  const [deleteMessage]=useDeleteChatMessageMutation();
+  const [deleteMessage,deleteState]=useDeleteChatMessageMutation();
   const [text,setText]=useState('');
   const [replyTo,setReplyTo]=useState(null);
+  const [deleteTarget,setDeleteTarget]=useState(null);
   const [older,setOlder]=useState([]);
   const [hasMoreOlder,setHasMoreOlder]=useState(null);
   const [showNewMessages,setShowNewMessages]=useState(false);
@@ -146,6 +147,13 @@ export function ChatPage(){
     if(highlightTimerRef.current)window.clearTimeout(highlightTimerRef.current);
     void sendTyping({typing:false});
   },[sendTyping]);
+
+  useEffect(()=>{
+    if(!deleteTarget)return undefined;
+    function handleKey(event){if(event.key==='Escape'&&!deleteState.isLoading)setDeleteTarget(null)}
+    window.addEventListener('keydown',handleKey);
+    return()=>window.removeEventListener('keydown',handleKey);
+  },[deleteTarget,deleteState.isLoading]);
 
   function markLatestRead(){
     const newest=latest[latest.length-1];
@@ -255,11 +263,21 @@ export function ChatPage(){
     }
   }
 
-  async function remove(item){
+  function remove(item){
     if(item.authorMembershipId!==membershipId&&role!=='MANAGER')return;
-    if(!window.confirm(c.deleteConfirm))return;
-    await deleteMessage(item.id).unwrap();
-    if(replyTo?.id===item.id)setReplyTo(null);
+    setDeleteTarget(item);
+  }
+
+  async function confirmDelete(){
+    if(!deleteTarget||deleteState.isLoading)return;
+    const target=deleteTarget;
+    try{
+      await deleteMessage(target.id).unwrap();
+      if(replyTo?.id===target.id)setReplyTo(null);
+      setDeleteTarget(null);
+    }catch{
+      // Keep the modal open so the user can retry or cancel.
+    }
   }
 
   function isReadByOther(item){
@@ -293,5 +311,16 @@ export function ChatPage(){
       {replyTo?<div className="companyChatComposerReply"><span><strong>{c.replyingTo}: {replyTo.author?.name||'-'}</strong><small>{replyTo.body}</small></span><button type="button" onClick={()=>setReplyTo(null)} aria-label={c.cancelReply}>×</button></div>:null}
       <textarea ref={composerRef} rows="1" maxLength="4000" value={text} onChange={handleTextChange} placeholder={c.placeholder}/><button type="submit" disabled={!text.trim()||sendState.isLoading}>{sendState.isLoading?'…':c.send}</button>
     </form>
+    {deleteTarget?<div className="companyChatDeleteBackdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget&&!deleteState.isLoading)setDeleteTarget(null)}}>
+      <div className="companyChatDeleteDialog" role="alertdialog" aria-modal="true" aria-labelledby="chat-delete-title" aria-describedby="chat-delete-copy">
+        <div className="companyChatDeleteIcon" aria-hidden="true">×</div>
+        <h2 id="chat-delete-title">{c.deleteConfirm}</h2>
+        <p id="chat-delete-copy">{c.deleteConfirmCopy}</p>
+        <div className="companyChatDeleteActions">
+          <button type="button" className="isCancel" disabled={deleteState.isLoading} onClick={()=>setDeleteTarget(null)}>{c.cancel}</button>
+          <button type="button" className="isDelete" disabled={deleteState.isLoading} onClick={confirmDelete}>{deleteState.isLoading?'…':c.delete}</button>
+        </div>
+      </div>
+    </div>:null}
   </section>;
 }
