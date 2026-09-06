@@ -10,6 +10,10 @@ export const chatApi = baseApi.injectEndpoints({
       query: () => '/chat/presence',
       providesTags: [{ type: 'Notifications', id: 'CHAT_PRESENCE' }],
     }),
+    getChatReadStates: builder.query({
+      query: () => '/chat/read-states',
+      providesTags: [{ type: 'Notifications', id: 'CHAT_READ_STATES' }],
+    }),
     getChatMessages: builder.query({
       query: ({ before = '', limit = 50 } = {}) => ({
         url: '/chat/messages',
@@ -23,6 +27,9 @@ export const chatApi = baseApi.injectEndpoints({
         { type: 'Notifications', id: 'CHAT_MESSAGES' },
         { type: 'Notifications', id: 'CHAT_SUMMARY' },
       ],
+    }),
+    sendChatTyping: builder.mutation({
+      query: body => ({ url: '/chat/typing', method: 'POST', body }),
     }),
     markChatRead: builder.mutation({
       query: body => ({ url: '/chat/read', method: 'POST', body }),
@@ -41,9 +48,11 @@ export const chatApi = baseApi.injectEndpoints({
 export const {
   useGetChatSummaryQuery,
   useGetChatPresenceQuery,
+  useGetChatReadStatesQuery,
   useGetChatMessagesQuery,
   useLazyGetChatMessagesQuery,
   useSendChatMessageMutation,
+  useSendChatTypingMutation,
   useMarkChatReadMutation,
   useDeleteChatMessageMutation,
 } = chatApi;
