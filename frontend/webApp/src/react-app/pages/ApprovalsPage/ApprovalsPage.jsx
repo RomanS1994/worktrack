@@ -16,10 +16,24 @@ import {
   useRejectSubmissionMutation,
   useUpdateManagerWorkEntryMutation,
 } from '../../features/worktrack/worktrackApi.js';
+import { ModalBackdrop } from './ModalBackdrop.jsx';
+import {
+  calculateShiftHours,
+  formatEntryDate,
+  formatHours,
+  formatLongDate,
+  formatPeriod,
+  formatSignedHours,
+  getEmployeeName,
+  getMismatchReason,
+  isWeekStillOpen,
+  mismatchCountLabel,
+  PROBLEM_STATUSES,
+  sortEntries,
+} from './approvalsUtils.js';
 import './ApprovalsPage.css';
 
 const LOCALES = { uk: 'uk-UA', en: 'en-GB', cs: 'cs-CZ' };
-const PROBLEM_STATUSES = new Set(['MISMATCH', 'MISSING_MANAGER', 'MISSING_EMPLOYEE']);
 const COPY = {
   uk: {
     back: 'Назад до списку',
@@ -94,146 +108,6 @@ const COPY = {
     back: 'Back to list', workEntries: 'Work entries', totalHours: 'Total hours', comparisonLoading: 'Comparing entries with the timesheet…', comparisonFailed: 'The entries could not be compared with the timesheet.', mismatchHint: 'Check the entries before approval', mismatchWithTimesheet: 'Timesheet mismatch', editEntry: 'Edit entry', viewMismatch: 'Review mismatch', deleteEntry: 'Delete entry', deleteConfirm: 'Delete this employee entry? This action cannot be undone.', clearWeek: 'Clear week', clearConfirm: 'Clear this employee week? All entries and the submitted week will be deleted.', deleted: 'Entry deleted.', cleared: 'Week cleared.', saved: 'Changes saved.', approved: 'Week approved.', rejected: 'Week returned to the employee.', reject: 'Reject', approve: hours => `Approve ${hours}`, earlyApproveTitle: 'This week is not finished yet', earlyApproveText: 'The employee submitted hours before the end of the week. If you approve them now, only the hours already submitted will be locked and the employee will not be able to add hours for the rest of this week.', earlyApproveQuestion: 'Do you really want to approve the hours now?', earlyApproveConfirm: 'Approve anyway', earlyApproveCancel: 'Not yet', mismatchTitle: 'Timesheet mismatch', approvalEntry: 'Approval entry', timesheetEntry: 'In timesheet', difference: 'Difference', mismatchReason: 'Reason for mismatch', whatToDo: 'What should I do?', whatToDoText: 'Edit the entry or change the hours in the timesheet if needed.', close: 'Close', openTimesheet: 'Open timesheet', hoursDiffer: 'The number of hours does not match', breakDiffers: 'The lunch break does not match', projectDiffers: 'The project does not match', missingManager: 'There is no timesheet entry for this day', missingEmployee: 'There is no approval entry for this day', moreInApproval: 'more in approval', moreInTimesheet: 'more in timesheet', editTitle: 'Edit work entry', project: 'Project / site', from: 'From', to: 'To', hours: 'Hours', netHours: 'After lunch', note: 'Note', notePlaceholder: 'For example: installation, service, extra work…', save: 'Save changes', saving: 'Saving…', noProjects: 'No active projects', invalidTime: 'Check the start and end time.', invalidHours: 'Enter hours between 0.01 and 24.', rejectTitle: 'Reject this week?', rejectText: 'Tell the employee what needs to be corrected before resubmitting.', rejectionReason: 'Reason for rejection', rejectionPlaceholder: "For example: correct Thursday's hours and resubmit the week.", confirmReject: 'Reject and send', managerOnlyProject: 'Missing approval entry', minutes: 'min', weekActions: 'Week actions', entryActions: 'Entry actions', processing: 'Please wait…',
   },
 };
-
-function getEmployeeName(submission, fallback) {
-  const employee = submission?.employee;
-  return employee?.name || employee?.email || fallback;
-}
-
-function parseDate(value) {
-  return value ? new Date(`${value}T00:00:00.000Z`) : null;
-}
-
-function getLocalDateKey(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function isWeekStillOpen(submission) {
-  const weekEnd = String(submission?.weekEnd || '');
-  return /^\d{4}-\d{2}-\d{2}$/.test(weekEnd) && getLocalDateKey() <= weekEnd;
-}
-
-function cleanFormattedDate(value, locale) {
-  return value.replace(/\s+р\.$/u, '').replace(/\s+/g, ' ').trim();
-}
-
-function formatPeriod(submission, locale) {
-  const start = parseDate(submission?.weekStart);
-  const end = parseDate(submission?.weekEnd);
-  if (!start || !end) return '—';
-
-  if (start.getUTCFullYear() === end.getUTCFullYear() && start.getUTCMonth() === end.getUTCMonth()) {
-    const endParts = new Intl.DateTimeFormat(locale, {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      timeZone: 'UTC',
-    }).formatToParts(end);
-    const month = endParts.find(part => part.type === 'month')?.value || '';
-    const year = endParts.find(part => part.type === 'year')?.value || '';
-    return `${start.getUTCDate()} – ${end.getUTCDate()} ${month} ${year}`.trim();
-  }
-
-  const formatter = new Intl.DateTimeFormat(locale, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    timeZone: 'UTC',
-  });
-  return `${cleanFormattedDate(formatter.format(start), locale)} – ${cleanFormattedDate(formatter.format(end), locale)}`;
-}
-
-function formatLongDate(value, locale) {
-  const date = parseDate(value);
-  if (!date) return '';
-  const formatted = cleanFormattedDate(new Intl.DateTimeFormat(locale, {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).format(date), locale);
-  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
-}
-
-function formatEntryDate(value, locale) {
-  const date = parseDate(value);
-  if (!date) return { weekday: '', day: '' };
-  const weekday = new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' })
-    .format(date)
-    .replaceAll('.', '');
-  return {
-    weekday: weekday.charAt(0).toUpperCase() + weekday.slice(1),
-    day: String(date.getUTCDate()),
-  };
-}
-
-function formatHours(value) {
-  if (value == null || value === '') return '—';
-  const amount = Number(value);
-  return Number.isFinite(amount) ? `${amount.toFixed(2)} h` : '—';
-}
-
-function formatSignedHours(value) {
-  if (value == null || !Number.isFinite(Number(value))) return '—';
-  const amount = Number(value);
-  return `${amount > 0 ? '+' : ''}${amount.toFixed(2)} h`;
-}
-
-function sortEntries(entries = []) {
-  return [...entries].sort((first, second) => {
-    const dateComparison = String(first.workDate).localeCompare(String(second.workDate));
-    if (dateComparison) return dateComparison;
-    return String(first.startTime || '').localeCompare(String(second.startTime || ''));
-  });
-}
-
-function mismatchCountLabel(count, language) {
-  if (language === 'en') return `${count} ${count === 1 ? 'entry has' : 'entries have'} a mismatch`;
-  if (language === 'cs') return count === 1 ? 'Nesrovnalost v 1 záznamu' : `Nesrovnalosti v ${count} záznamech`;
-  return count === 1 ? 'Є невідповідності у 1 записі' : `Є невідповідності у ${count} записах`;
-}
-
-function getMismatchReason(day, copy) {
-  if (!day) return '';
-  if (day.status === 'MISSING_MANAGER') return copy.missingManager;
-  if (day.status === 'MISSING_EMPLOYEE') return copy.missingEmployee;
-
-  const reasons = [];
-  if (day.reasons?.includes('hours')) {
-    const difference = Number(day.employeeHours || 0) - Number(day.managerHours || 0);
-    const side = difference >= 0 ? copy.moreInApproval : copy.moreInTimesheet;
-    reasons.push(`${copy.hoursDiffer} (${formatSignedHours(Math.abs(difference))} ${side})`);
-  }
-  if (day.reasons?.includes('break')) {
-    reasons.push(`${copy.breakDiffers} (${day.employeeBreakMinutes ?? 0} / ${day.managerBreakMinutes ?? 0} ${copy.minutes})`);
-  }
-  if (day.reasons?.includes('project')) reasons.push(copy.projectDiffers);
-  return reasons.join(' · ');
-}
-
-function calculateShiftHours(startTime, endTime, breakMinutes) {
-  if (!/^\d{2}:\d{2}$/.test(startTime || '') || !/^\d{2}:\d{2}$/.test(endTime || '')) return null;
-  const [startHour, startMinute] = startTime.split(':').map(Number);
-  const [endHour, endMinute] = endTime.split(':').map(Number);
-  if (startHour > 23 || endHour > 23 || startMinute > 59 || endMinute > 59) return null;
-  const start = startHour * 60 + startMinute;
-  let end = endHour * 60 + endMinute;
-  if (end <= start) end += 24 * 60;
-  const grossMinutes = end - start;
-  if (grossMinutes <= 0 || grossMinutes > 1440) return null;
-  const lunch = grossMinutes > breakMinutes ? breakMinutes : 0;
-  return Math.max(0, (grossMinutes - lunch) / 60);
-}
-
-function ModalBackdrop({ children, className = '', onClose }) {
-  return <div className={`approvalModalBackdrop ${className}`} onMouseDown={event => {
-    if (event.target === event.currentTarget) onClose();
-  }}>{children}</div>;
-}
 
 export function ApprovalsPage() {
   const navigate = useNavigate();
