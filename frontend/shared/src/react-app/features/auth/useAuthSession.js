@@ -7,7 +7,6 @@ import {
   getStoredUser,
   getToken,
   saveSession,
-  shouldRefreshStoredSession,
 } from './authStorage.js';
 import {
   clearSession as clearAuthSession,
@@ -20,7 +19,7 @@ import { readStoredLanguage } from '../../app/i18n/languageStorage.js';
 
 let sessionBootstrapPromise = null;
 
-// Відновлює сесію з локального сховища без запиту до бекенда.
+// Відновлює сесію з локального сховища до завершення перевірки на сервері.
 function restoreStoredSession(dispatch) {
   const token = getToken();
   const user = getStoredUser();
@@ -49,6 +48,18 @@ function applyRefreshedSession(dispatch, response) {
   dispatch(setSession({ token: nextToken, user: nextUser }));
   dispatch(setSessionError({ type: '', message: '' }));
   return true;
+}
+
+function requestSessionRefresh(refreshSession) {
+  if (!sessionBootstrapPromise) {
+    sessionBootstrapPromise = refreshSession()
+      .unwrap()
+      .finally(() => {
+        sessionBootstrapPromise = null;
+      });
+  }
+
+  return sessionBootstrapPromise;
 }
 
 function t(key) {
@@ -88,52 +99,55 @@ export function useAuthSession() {
 
   useEffect(() => {
     let isActive = true;
+    let hasSession = restoreStoredSession(dispatch);
+    let lastForegroundSyncAt = 0;
 
-    const restoredFromStorage = restoreStoredSession(dispatch);
+    const syncSession = ({ initialize = false } = {}) => {
+      requestSessionRefresh(refreshSession)
+        .then(response => {
+          if (!isActive) return;
 
-    if (restoredFromStorage && !shouldRefreshStoredSession()) {
-      dispatch(setSessionInitialized());
-      return () => {
-        isActive = false;
-      };
-    }
+          hasSession = applyRefreshedSession(dispatch, response) || hasSession;
+          if (initialize) dispatch(setSessionInitialized());
+        })
+        .catch(error => {
+          if (!isActive) return;
 
-    if (!sessionBootstrapPromise) {
-      sessionBootstrapPromise = refreshSession()
-        .unwrap()
-        .finally(() => {
-          sessionBootstrapPromise = null;
-        });
-    }
-
-    sessionBootstrapPromise
-      .then(response => {
-        if (!isActive) {
-          return;
-        }
-
-        applyRefreshedSession(dispatch, response);
-        dispatch(setSessionInitialized());
-      })
-      .catch(error => {
-        if (!isActive) {
-          return;
-        }
-
-        if (error?.status === 401) {
-          if (restoredFromStorage) {
-            handleExpiredStoredSession(dispatch);
-          } else {
-            dispatch(setSessionInitialized());
+          if (error?.status === 401) {
+            if (hasSession) {
+              handleExpiredStoredSession(dispatch);
+            } else if (initialize) {
+              dispatch(setSessionInitialized());
+            }
+            return;
           }
-          return;
-        }
 
-        handleSessionBootstrapFailure(dispatch, restoredFromStorage);
-      });
+          if (initialize) {
+            handleSessionBootstrapFailure(dispatch, hasSession);
+          }
+        });
+    };
+
+    // Завжди звіряємо користувача з сервером при запуску застосунку.
+    // Це важливо для змін ролі/доступу, зроблених іншим менеджером.
+    syncSession({ initialize: true });
+
+    const syncOnForeground = () => {
+      if (!hasSession || document.visibilityState === 'hidden') return;
+
+      const now = Date.now();
+      if (now - lastForegroundSyncAt < 2000) return;
+      lastForegroundSyncAt = now;
+      syncSession();
+    };
+
+    window.addEventListener('focus', syncOnForeground);
+    document.addEventListener('visibilitychange', syncOnForeground);
 
     return () => {
       isActive = false;
+      window.removeEventListener('focus', syncOnForeground);
+      document.removeEventListener('visibilitychange', syncOnForeground);
     };
   }, [dispatch, refreshSession]);
 }
