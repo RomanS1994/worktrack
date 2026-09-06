@@ -15,12 +15,11 @@ import { getMessage } from '../i18n/messages.js';
 import { readStoredLanguage } from '../i18n/languageStorage.js';
 
 function resolveBaseUrl() {
+  const testBaseUrl = import.meta.env.VITE_API_BASE_URL_TEST;
+  if (testBaseUrl) return testBaseUrl;
+
   if (import.meta.env.DEV) {
-    return (
-      import.meta.env.VITE_API_BASE_URL_TEST ||
-      import.meta.env.VITE_API_BASE_URL ||
-      'http://localhost:3001/api'
-    );
+    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
   }
 
   // Production must stay same-origin so the refresh cookie remains first-party,
