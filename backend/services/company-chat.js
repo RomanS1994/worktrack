@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { getChatReactions } from './chat-reactions.js';
 
 function getMembership(context) {
   const membership = context?.activeMembership;
@@ -119,7 +120,15 @@ export async function listChatMessages(client, context, { before = '', limit = 5
       );
 
   const ordered = rows.map(serializeRow).reverse();
-  return { messages: ordered, hasMore: rows.length === safeLimit };
+  if (!ordered.length) return { messages: [], hasMore: false };
+
+  const reactionPayload = await getChatReactions(client, context, ordered.map(item => item.id));
+  const messages = ordered.map(item => ({
+    ...item,
+    reactions: reactionPayload.byMessage[item.id] || [],
+  }));
+
+  return { messages, hasMore: rows.length === safeLimit };
 }
 
 export async function getChatSummary(client, context) {
