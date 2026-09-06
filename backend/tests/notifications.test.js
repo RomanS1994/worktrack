@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  createNotification,
   listNotifications,
   markNotificationRead,
   notifyEmployeeAboutReview,
@@ -86,6 +87,44 @@ test('employee submission notifies only active managers in the same company', as
   assert.deepEqual(created.map(item => item.recipientMembershipId), ['manager-1', 'manager-2']);
   assert.ok(created.every(item => item.companyId === 'company-1'));
   assert.ok(created.every(item => item.href === '/approvals'));
+});
+
+test('notification creation skips inactive or deleted recipients', async () => {
+  let recipientWhere = null;
+  let createCalls = 0;
+  const client = {
+    companyMembership: {
+      findFirst: async query => {
+        recipientWhere = query.where;
+        return null;
+      },
+    },
+    notification: {
+      create: async () => {
+        createCalls += 1;
+        return null;
+      },
+    },
+  };
+
+  const result = await createNotification(client, {
+    companyId: 'company-1',
+    recipientMembershipId: 'deleted-manager-1',
+    type: 'invoice.sent',
+    title: 'Invoice received',
+    message: 'Test',
+    href: '/manager/invoices',
+  });
+
+  assert.equal(result, null);
+  assert.equal(createCalls, 0);
+  assert.deepEqual(recipientWhere, {
+    id: 'deleted-manager-1',
+    companyId: 'company-1',
+    status: 'ACTIVE',
+    deletedAt: null,
+    user: { is: { deletedAt: null } },
+  });
 });
 
 test('manager review notification opens the reviewed week in Hours', async () => {
