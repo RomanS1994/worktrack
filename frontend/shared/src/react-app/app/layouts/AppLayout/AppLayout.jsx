@@ -1,4 +1,5 @@
 import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 
 import { AuthSessionErrorModal } from '../../components/AuthSessionErrorModal/AuthSessionErrorModal.jsx';
 import { BottomTabs } from '../../components/BottomTabs/BottomTabs.jsx';
@@ -14,13 +15,16 @@ import './AppLayout.css';
 import './BackgroundRedesign.css';
 
 export function AppLayout({ children }) {
+  const location = useLocation();
   const token = useSelector(selectToken);
   const user = useSelector(selectUser);
   const showWorkspaceNav = Boolean(token && user && hasActiveCompanyAccess(user));
+  const isChatPage = location.pathname === '/chat';
   const layoutClassName = [
     'appLayout',
     'appLayout--workspace',
     showWorkspaceNav ? 'appLayout--withNav' : '',
+    isChatPage ? 'appLayout--chat' : '',
   ].filter(Boolean).join(' ');
 
   return (
