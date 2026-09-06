@@ -28,6 +28,9 @@ export function ChatLiveSync() {
       if (event === 'read') {
         tags.push({ type: 'Notifications', id: 'CHAT_READ_STATES' });
       }
+      if (event === 'reaction') {
+        tags.push({ type: 'Notifications', id: 'CHAT_REACTIONS' });
+      }
       if (event !== 'typing') dispatch(baseApi.util.invalidateTags(tags));
       window.dispatchEvent(new CustomEvent('worktrack:chat-live', { detail: { event, payload } }));
     };
@@ -62,6 +65,7 @@ export function ChatLiveSync() {
           { type: 'Notifications', id: 'CHAT_SUMMARY' },
           { type: 'Notifications', id: 'CHAT_PRESENCE' },
           { type: 'Notifications', id: 'CHAT_READ_STATES' },
+          { type: 'Notifications', id: 'CHAT_REACTIONS' },
         ]));
         void start();
       } else {
