@@ -4,10 +4,12 @@ import test from 'node:test';
 import {
   createNotification,
   listNotifications,
+  localizePushNotification,
   markNotificationRead,
   notifyEmployeeAboutReview,
   notifyEmployeeApprovalReopened,
   notifyManagersAboutSubmission,
+  savePushSubscription,
 } from '../services/notifications.js';
 
 function context(overrides = {}) {
@@ -15,11 +17,27 @@ function context(overrides = {}) {
     user: { id: 'employee-user-1', name: 'Anna Novak' },
     activeMembership: {
       id: 'employee-membership-1',
+      userId: 'employee-user-1',
       companyId: 'company-1',
       role: 'EMPLOYEE',
       status: 'ACTIVE',
       ...overrides,
     },
+  };
+}
+
+function notification(overrides = {}) {
+  return {
+    id: 'notification-1',
+    companyId: 'company-1',
+    recipientMembershipId: 'employee-membership-1',
+    type: 'weekly_submission.approved',
+    title: 'Week approved',
+    message: 'Your work for 2026-08-17 - 2026-08-23 was approved.',
+    href: '/hours?date=2026-08-17',
+    readAt: null,
+    createdAt: new Date('2026-08-18T10:00:00.000Z'),
+    ...overrides,
   };
 }
 
@@ -29,19 +47,7 @@ test('notification list is scoped to the active company membership', async () =>
     notification: {
       findMany: async query => {
         where = query.where;
-        return [
-          {
-            id: 'notification-1',
-            companyId: 'company-1',
-            recipientMembershipId: 'employee-membership-1',
-            type: 'weekly_submission.approved',
-            title: 'Week approved',
-            message: 'Approved',
-            href: '/hours',
-            readAt: null,
-            createdAt: new Date('2026-08-18T10:00:00.000Z'),
-          },
-        ];
+        return [notification({ message: 'Approved', href: '/hours' })];
       },
     },
   };
@@ -180,6 +186,71 @@ test('reopened approval notifies the employee and opens the affected week', asyn
   assert.equal(created.recipientMembershipId, 'employee-membership-1');
   assert.equal(created.type, 'weekly_submission.reopened');
   assert.equal(created.href, '/hours?date=2026-08-17');
+});
+
+test('push notification copy is localized per device language', () => {
+  const approvedUk = localizePushNotification(notification(), 'uk');
+  assert.equal(approvedUk.title, 'Тиждень погоджено');
+  assert.equal(approvedUk.message, 'Ваші години за 2026-08-17 – 2026-08-23 погоджено.');
+
+  const reopenedCs = localizePushNotification(notification({
+    type: 'weekly_submission.reopened',
+    title: 'Approval cancelled',
+    message: 'Your work for 2026-08-17 - 2026-08-23 was returned to review.',
+  }), 'cs');
+  assert.equal(reopenedCs.title, 'Schválení bylo zrušeno');
+  assert.equal(reopenedCs.message, 'Vaše práce za období 2026-08-17 – 2026-08-23 byla vrácena ke kontrole.');
+
+  const invoiceUk = localizePushNotification(notification({
+    type: 'invoice.viewed',
+    title: 'Invoice WT-2026-0001 viewed',
+    message: 'Your employer opened the invoice.',
+    href: '/invoices',
+  }), 'uk');
+  assert.equal(invoiceUk.title, 'Фактуру WT-2026-0001 переглянуто');
+  assert.equal(invoiceUk.message, 'Роботодавець відкрив вашу фактуру.');
+});
+
+test('push localization preserves chat content and custom rejection reason', () => {
+  const chat = localizePushNotification(notification({
+    type: 'chat.message',
+    title: 'Anna Novak',
+    message: 'Ahoj, zítra v 7:00?',
+    href: '/chat',
+  }), 'uk');
+  assert.equal(chat.title, 'Anna Novak');
+  assert.equal(chat.message, 'Ahoj, zítra v 7:00?');
+
+  const rejected = localizePushNotification(notification({
+    type: 'weekly_submission.rejected',
+    title: 'Week needs changes',
+    message: 'Prosím oprav pátek.',
+  }), 'uk');
+  assert.equal(rejected.title, 'Потрібні зміни в тижні');
+  assert.equal(rejected.message, 'Prosím oprav pátek.');
+});
+
+test('push subscription stores normalized device language', async () => {
+  let updatedProfile = null;
+  const client = {
+    user: {
+      findUnique: async () => ({ profile: {} }),
+      update: async query => {
+        updatedProfile = query.data.profile;
+        return query.data;
+      },
+    },
+  };
+
+  await savePushSubscription(client, context(), {
+    endpoint: 'https://push.example/subscription-1',
+    keys: { p256dh: 'key', auth: 'auth' },
+    language: 'cs',
+  }, 'Test Browser');
+
+  assert.equal(updatedProfile.pushSubscriptions.length, 1);
+  assert.equal(updatedProfile.pushSubscriptions[0].language, 'cs');
+  assert.equal(updatedProfile.pushSubscriptions[0].membershipId, 'employee-membership-1');
 });
 
 test('mark read cannot target a notification outside the active membership', async () => {
