@@ -10,6 +10,15 @@ import {
   savePushSubscription,
 } from '../services/notifications.js';
 
+function cookieValue(request, name) {
+  const raw = String(request.headers?.cookie || '');
+  for (const part of raw.split(';')) {
+    const [key, ...rest] = part.trim().split('=');
+    if (key === name) return decodeURIComponent(rest.join('='));
+  }
+  return '';
+}
+
 export async function handleNotificationRoutes(request, response, { pathName }) {
   if (request.method === 'GET' && pathName === '/api/notifications') {
     const context = await getAuthContext(request, response);
@@ -34,8 +43,14 @@ export async function handleNotificationRoutes(request, response, { pathName }) 
     const context = await getAuthContext(request, response);
     if (!context) return true;
     const body = await readJsonBody(request);
+    const language = body?.language || cookieValue(request, 'worktrack-language');
     const payload = await runStoreTransaction({
-      prisma: client => savePushSubscription(client, context, body, request.headers['user-agent'] || ''),
+      prisma: client => savePushSubscription(
+        client,
+        context,
+        { ...body, language },
+        request.headers['user-agent'] || '',
+      ),
     });
     sendJson(response, 200, payload);
     return true;
