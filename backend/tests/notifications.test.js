@@ -5,6 +5,7 @@ import {
   listNotifications,
   markNotificationRead,
   notifyEmployeeAboutReview,
+  notifyEmployeeApprovalReopened,
   notifyManagersAboutSubmission,
 } from '../services/notifications.js';
 
@@ -112,6 +113,33 @@ test('manager review notification opens the reviewed week in Hours', async () =>
 
   assert.equal(created.companyId, 'company-1');
   assert.equal(created.recipientMembershipId, 'employee-membership-1');
+  assert.equal(created.href, '/hours?date=2026-08-17');
+});
+
+test('reopened approval notifies the employee and opens the affected week', async () => {
+  let created = null;
+  const client = {
+    notification: {
+      create: async query => {
+        created = query.data;
+        return query.data;
+      },
+    },
+  };
+
+  await notifyEmployeeApprovalReopened(
+    client,
+    context({ id: 'manager-membership-1', role: 'MANAGER' }),
+    {
+      employeeMembershipId: 'employee-membership-1',
+      weekStart: '2026-08-17',
+      weekEnd: '2026-08-23',
+    },
+  );
+
+  assert.equal(created.companyId, 'company-1');
+  assert.equal(created.recipientMembershipId, 'employee-membership-1');
+  assert.equal(created.type, 'weekly_submission.reopened');
   assert.equal(created.href, '/hours?date=2026-08-17');
 });
 
