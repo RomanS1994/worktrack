@@ -6,6 +6,7 @@ import {
   hasEmployeeAccess,
   hasManagerAccess,
 } from '../../../features/auth/authAccess.js';
+import { useCabinetMode } from '../../../features/auth/cabinetMode.js';
 import {
   selectSessionInitialized,
   selectToken,
@@ -21,6 +22,7 @@ export function ProtectedRoute({
   const initialized = useSelector(selectSessionInitialized);
   const token = useSelector(selectToken);
   const user = useSelector(selectUser);
+  const cabinetMode = useCabinetMode(user);
   const location = useLocation();
 
   if (!initialized) {
@@ -39,11 +41,11 @@ export function ProtectedRoute({
     return <Navigate to="/profile" replace />;
   }
 
-  if (requireManager && !hasManagerAccess(user)) {
+  if (requireManager && (!hasManagerAccess(user) || cabinetMode !== 'manager')) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (requireEmployee && !hasEmployeeAccess(user)) {
+  if (requireEmployee && (!hasEmployeeAccess(user) || cabinetMode !== 'employee')) {
     return <Navigate to="/dashboard" replace />;
   }
 
