@@ -31,6 +31,23 @@ function applyOptimisticReaction(draft, { messageId, emoji }) {
   message.reactions = reactions.filter(item => Number(item.count || 0) > 0);
 }
 
+function upsertServerMessage(draft, message) {
+  if (!message?.id || !Array.isArray(draft?.messages)) return;
+  const nextMessage = {
+    ...message,
+    reactions: Array.isArray(message.reactions) ? message.reactions : [],
+  };
+  const index = draft.messages.findIndex(
+    item => item.id === nextMessage.id
+      || (nextMessage.clientMessageId && item.clientMessageId === nextMessage.clientMessageId),
+  );
+  if (index >= 0) {
+    draft.messages[index] = nextMessage;
+  } else {
+    draft.messages.push(nextMessage);
+  }
+}
+
 export const chatApi = baseApi.injectEndpoints({
   endpoints: builder => ({
     getChatSummary: builder.query({
@@ -70,10 +87,19 @@ export const chatApi = baseApi.injectEndpoints({
     }),
     sendChatMessage: builder.mutation({
       query: body => ({ url: '/chat/messages', method: 'POST', body }),
-      invalidatesTags: [
-        { type: 'Notifications', id: 'CHAT_MESSAGES' },
-        { type: 'Notifications', id: 'CHAT_SUMMARY' },
-      ],
+      async onQueryStarted(_body, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if (!data?.message) return;
+          dispatch(
+            chatApi.util.updateQueryData('getChatMessages', { limit: 50 }, draft => {
+              upsertServerMessage(draft, data.message);
+            }),
+          );
+        } catch {
+          // The ChatPage restores the local pending message text on failure.
+        }
+      },
     }),
     toggleChatReaction: builder.mutation({
       query: body => ({ url: '/chat/reactions', method: 'POST', body }),
@@ -89,7 +115,6 @@ export const chatApi = baseApi.injectEndpoints({
           patch.undo();
         }
       },
-      invalidatesTags: [{ type: 'Notifications', id: 'CHAT_MESSAGES' }],
     }),
     sendChatTyping: builder.mutation({
       query: body => ({ url: '/chat/typing', method: 'POST', body }),
@@ -113,10 +138,6 @@ export const chatApi = baseApi.injectEndpoints({
           patch.undo();
         }
       },
-      invalidatesTags: [
-        { type: 'Notifications', id: 'CHAT_MESSAGES' },
-        { type: 'Notifications', id: 'CHAT_SUMMARY' },
-      ],
     }),
   }),
 });
