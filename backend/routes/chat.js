@@ -56,7 +56,11 @@ export async function handleChatRoutes(request, response, { url, pathName }) {
     });
     broadcastCompanyChat(context.activeMembership.companyId, 'message', payload.message);
     if (!payload.duplicate) {
-      void runStoreRead({ prisma: client => notifyCompanyAboutChatMessage(client, context, payload.message) });
+      void runStoreRead({
+        prisma: client => notifyCompanyAboutChatMessage(client, context, payload.message),
+      }).catch(error => {
+        console.warn('Chat notification delivery failed:', error instanceof Error ? error.message : String(error));
+      });
     }
     sendJson(response, payload.duplicate ? 200 : 201, payload);
     return true;
