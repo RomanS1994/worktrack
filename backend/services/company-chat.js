@@ -222,39 +222,41 @@ export async function getChatMessageContext(client, context, messageId, { radius
 
 export async function getChatSummary(client, context) {
   const membership = getMembership(context);
-  const stateRows = await client.$queryRaw`
-    SELECT last_read_at AS "lastReadAt"
-      FROM chat_read_states
-     WHERE membership_id = ${membership.id}
-     LIMIT 1
+  const rows = await client.$queryRaw`
+    WITH read_state AS (
+      SELECT last_read_at
+        FROM chat_read_states
+       WHERE membership_id = ${membership.id}
+       LIMIT 1
+    ),
+    latest_message AS (
+      SELECT created_at
+        FROM chat_messages
+       WHERE company_id = ${membership.companyId}
+         AND deleted_at IS NULL
+       ORDER BY created_at DESC, id DESC
+       LIMIT 1
+    )
+    SELECT
+      (
+        SELECT COUNT(*)::int
+          FROM chat_messages m
+         WHERE m.company_id = ${membership.companyId}
+           AND m.author_membership_id <> ${membership.id}
+           AND m.deleted_at IS NULL
+           AND m.created_at > COALESCE(
+             (SELECT last_read_at FROM read_state),
+             TIMESTAMP 'epoch'
+           )
+      ) AS "unreadCount",
+      (SELECT created_at FROM latest_message) AS "lastMessageAt",
+      (SELECT last_read_at FROM read_state) AS "lastReadAt"
   `;
-  const countRows = await client.$queryRaw`
-    SELECT COUNT(*)::int AS count
-      FROM chat_messages m
-     WHERE m.company_id = ${membership.companyId}
-       AND m.author_membership_id <> ${membership.id}
-       AND m.deleted_at IS NULL
-       AND m.created_at > COALESCE(
-         (SELECT s.last_read_at
-            FROM chat_read_states s
-           WHERE s.membership_id = ${membership.id}
-           LIMIT 1),
-         TIMESTAMP 'epoch'
-       )
-  `;
-  const latestRows = await client.$queryRaw`
-    SELECT created_at AS "createdAt"
-      FROM chat_messages
-     WHERE company_id = ${membership.companyId}
-       AND deleted_at IS NULL
-     ORDER BY created_at DESC, id DESC
-     LIMIT 1
-  `;
-  const lastReadAt = stateRows[0]?.lastReadAt ? new Date(stateRows[0].lastReadAt) : null;
+  const row = rows[0] || {};
   return {
-    unreadCount: Number(countRows[0]?.count || 0),
-    lastMessageAt: latestRows[0]?.createdAt ? new Date(latestRows[0].createdAt).toISOString() : '',
-    lastReadAt: lastReadAt ? lastReadAt.toISOString() : '',
+    unreadCount: Number(row.unreadCount || 0),
+    lastMessageAt: row.lastMessageAt ? new Date(row.lastMessageAt).toISOString() : '',
+    lastReadAt: row.lastReadAt ? new Date(row.lastReadAt).toISOString() : '',
   };
 }
 
