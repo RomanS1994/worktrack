@@ -32,7 +32,7 @@ export function ChatPage(){
   const role=user?.activeMembership?.role||'';
   const {language}=useI18n();
   const c=COPY[language]||COPY.uk;
-  const {data,isLoading,isFetching}=useGetChatMessagesQuery({limit:50},{pollingInterval:15000});
+  const {data,isLoading}=useGetChatMessagesQuery({limit:50},{pollingInterval:15000});
   const [loadOlder,{isFetching:loadingOlder}]=useLazyGetChatMessagesQuery();
   const [sendMessage,sendState]=useSendChatMessageMutation();
   const [markRead]=useMarkChatReadMutation();
@@ -94,7 +94,6 @@ export function ChatPage(){
           <footer><time>{formatTime(item.createdAt,language)}</time>{mine||role==='MANAGER'?<button type="button" onClick={()=>remove(item)}>{c.delete}</button>:null}</footer>
         </div>
       </article>})}
-      {isFetching&&!isLoading?<span className="companyChatSync" aria-hidden="true">•</span>:null}
     </div>
     <form className="companyChatComposer" onSubmit={submit}><textarea rows="1" maxLength="4000" value={text} onChange={e=>setText(e.target.value)} placeholder={c.placeholder}/><button type="submit" disabled={!text.trim()||sendState.isLoading}>{sendState.isLoading?'…':c.send}</button></form>
   </section>;
