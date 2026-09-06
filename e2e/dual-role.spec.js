@@ -41,8 +41,11 @@ test('Roman submits his week, Misha approves it, Roman sees approved', async ({ 
 
   await login(page, romanEmail);
   await setCabinet(page, 'employee');
-  await page.goto(`${APP}/hours`);
 
+  await page.goto(`${APP}/employees`);
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  await page.goto(`${APP}/hours`);
   const draftStatus = page.getByText(/Чернетка|Draft|Koncept/).first();
   await expect(draftStatus).toBeVisible();
 
@@ -54,8 +57,11 @@ test('Roman submits his week, Misha approves it, Roman sees approved', async ({ 
   await resetBrowserSession(page, context);
   await login(page, mishaEmail);
   await setCabinet(page, 'manager');
-  await page.goto(`${APP}/approvals`);
 
+  await page.goto(`${APP}/hours`);
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  await page.goto(`${APP}/approvals`);
   const romanSubmission = page.getByRole('button', { name: /Roman E2E/i }).first();
   await expect(romanSubmission).toBeVisible();
   await romanSubmission.click();
@@ -69,7 +75,7 @@ test('Roman submits his week, Misha approves it, Roman sees approved', async ({ 
     await earlyConfirm.click();
   }
 
-  await expect(page.getByText(/Тиждень погоджено|Week approved|Týden schválen/i)).toBeVisible();
+  await expect(page.getByText(/Тиждень погоджено|Week approved|Týden schváлен/i)).toBeVisible();
 
   await resetBrowserSession(page, context);
   await login(page, romanEmail);
