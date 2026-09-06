@@ -6,7 +6,11 @@ export function ChatFab() {
   const location = useLocation();
   const navigate = useNavigate();
   const hidden = ['/chat', '/sign-in', '/register'].includes(location.pathname);
-  const { data } = useGetChatSummaryQuery(undefined, { skip: hidden, pollingInterval: 15000 });
+  const { data } = useGetChatSummaryQuery(undefined, {
+    skip: hidden,
+    pollingInterval: 15000,
+    refetchOnMountOrArgChange: true,
+  });
   if (hidden) return null;
   const unread = Math.max(0, Number(data?.unreadCount || 0));
   return (
