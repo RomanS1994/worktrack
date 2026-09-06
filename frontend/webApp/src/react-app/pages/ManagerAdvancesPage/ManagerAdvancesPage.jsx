@@ -7,6 +7,7 @@ import { useI18n } from '@shared/app/i18n/useI18n.js';
 import { formatCzk, getLocalDateKey, resolveLocale } from '../../app/formatters.js';
 import { useDeleteManagerAdvanceMutation, useGetManagerAdvancesQuery } from '../../features/worktrack/worktrackApi.js';
 import './ManagerAdvancesPage.css';
+import './ManagerAdvancesCompact.css';
 
 const COPY={
  uk:{title:'Залоги',subtitle:'Залоги віднімаються від чистої зарплати працівника.',month:'Місяць',add:'Додати залог',employee:'Працівник',allEmployees:'Всі працівники',amount:'Сума',received:'Видано за місяць',count:'Кількість залогів',active:'Активних залогів',payments:'виплат',history:'Історія залогів',empty:'За цей місяць залогів немає',delete:'Видалити',confirmDelete:'Видалити цей залог?',status:'Статус',activeStatus:'Активний',balance:'Залишок',impact:'Впливає на чисту зарплату',impactText:'Ця сума буде віднята від майбутніх виплат працівнику.'},
