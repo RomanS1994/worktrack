@@ -37,7 +37,7 @@ export const chatApi = baseApi.injectEndpoints({
     }),
     toggleChatReaction: builder.mutation({
       query: body => ({ url: '/chat/reactions', method: 'POST', body }),
-      invalidatesTags: [{ type: 'Notifications', id: 'CHAT_REACTIONS' }],
+      invalidatesTags: [{ type: 'Notifications', id: 'CHAT_MESSAGES' }],
     }),
     sendChatTyping: builder.mutation({
       query: body => ({ url: '/chat/typing', method: 'POST', body }),
@@ -51,7 +51,6 @@ export const chatApi = baseApi.injectEndpoints({
       invalidatesTags: [
         { type: 'Notifications', id: 'CHAT_MESSAGES' },
         { type: 'Notifications', id: 'CHAT_SUMMARY' },
-        { type: 'Notifications', id: 'CHAT_REACTIONS' },
       ],
     }),
   }),
