@@ -21,17 +21,26 @@
 
   /* Typography */
   --font-app: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
-  --font-size-page-title: 24px;
-  --font-size-section-title: 17px;
-  --font-size-card-title: 15px;
-  --font-size-body: 14px;
-  --font-size-secondary: 12px;
-  --font-size-label: 12px;
-  --font-size-caption: 11px;
+  --font-size-page-title: 26px;
+  --font-size-section-title: 18px;
+  --font-size-card-title: 16px;
+  --font-size-body: 15px;
+  --font-size-secondary: 14px;
+  --font-size-label: 13px;
+  --font-size-caption: 12px;
   --weight-regular: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
   --weight-bold: 700;
+
+  /* Legacy aliases while page styles are migrated to the canonical tokens. */
+  --font-page-title: var(--font-size-page-title);
+  --font-section-title: var(--font-size-section-title);
+  --font-card-title: var(--font-size-card-title);
+  --font-body: var(--font-size-body);
+  --font-secondary: var(--font-size-secondary);
+  --font-label: var(--font-size-label);
+  --font-caption: var(--font-size-caption);
 
   /* Spacing: 4 / 8 / 12 / 16 / 20 / 24 / 32 */
   --space-1: 4px;
@@ -359,7 +368,10 @@ article > .compactHeader h2 {
     --font-size-page-title: 28px;
     --font-size-section-title: 18px;
     --font-size-card-title: 16px;
+    --font-size-body: 15px;
     --font-size-secondary: 13px;
+    --font-size-label: 13px;
+    --font-size-caption: 12px;
   }
 }
 
