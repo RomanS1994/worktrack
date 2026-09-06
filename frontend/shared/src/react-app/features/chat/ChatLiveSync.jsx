@@ -17,11 +17,15 @@ export function ChatLiveSync() {
     let retryId = null;
     let stopped = false;
 
-    const invalidate = () => {
-      dispatch(baseApi.util.invalidateTags([
+    const invalidate = event => {
+      const tags = [
         { type: 'Notifications', id: 'CHAT_MESSAGES' },
         { type: 'Notifications', id: 'CHAT_SUMMARY' },
-      ]));
+      ];
+      if (event === 'presence' || event === 'ready') {
+        tags.push({ type: 'Notifications', id: 'CHAT_PRESENCE' });
+      }
+      dispatch(baseApi.util.invalidateTags(tags));
     };
 
     const start = async () => {
