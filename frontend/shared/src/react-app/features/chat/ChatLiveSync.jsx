@@ -17,7 +17,7 @@ export function ChatLiveSync() {
     let retryId = null;
     let stopped = false;
 
-    const invalidate = event => {
+    const handleEvent = (event, payload) => {
       const tags = [
         { type: 'Notifications', id: 'CHAT_MESSAGES' },
         { type: 'Notifications', id: 'CHAT_SUMMARY' },
@@ -25,12 +25,16 @@ export function ChatLiveSync() {
       if (event === 'presence' || event === 'ready') {
         tags.push({ type: 'Notifications', id: 'CHAT_PRESENCE' });
       }
-      dispatch(baseApi.util.invalidateTags(tags));
+      if (event === 'read') {
+        tags.push({ type: 'Notifications', id: 'CHAT_READ_STATES' });
+      }
+      if (event !== 'typing') dispatch(baseApi.util.invalidateTags(tags));
+      window.dispatchEvent(new CustomEvent('worktrack:chat-live', { detail: { event, payload } }));
     };
 
     const start = async () => {
       try {
-        await connectChatStream({ signal: controller.signal, onEvent: invalidate });
+        await connectChatStream({ signal: controller.signal, onEvent: handleEvent });
       } catch {
         if (!stopped && !controller.signal.aborted) retryId = window.setTimeout(start, 3000);
       }
