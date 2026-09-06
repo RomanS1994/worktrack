@@ -225,18 +225,46 @@ export async function createChatMessage(client, context, body = {}) {
 
 export async function markChatRead(client, context, body = {}) {
   const membership = getMembership(context);
-  const requested = body.readAt ? new Date(body.readAt) : new Date();
-  if (Number.isNaN(requested.getTime())) throw new Error('Invalid read timestamp');
+  const messageId = String(body.messageId || '').trim().slice(0, 120);
+  let readAt = null;
+
+  if (messageId) {
+    const rows = await client.$queryRaw`
+      SELECT created_at AS "createdAt"
+        FROM chat_messages
+       WHERE id = ${messageId}
+         AND company_id = ${membership.companyId}
+         AND deleted_at IS NULL
+       LIMIT 1
+    `;
+    if (!rows[0]?.createdAt) throw new Error('Chat message not found');
+    readAt = new Date(rows[0].createdAt);
+  } else {
+    const requested = body.readAt ? new Date(body.readAt) : new Date();
+    if (Number.isNaN(requested.getTime())) throw new Error('Invalid read timestamp');
+    const latestRows = await client.$queryRaw`
+      SELECT created_at AS "createdAt"
+        FROM chat_messages
+       WHERE company_id = ${membership.companyId}
+         AND deleted_at IS NULL
+       ORDER BY created_at DESC
+       LIMIT 1
+    `;
+    if (!latestRows[0]?.createdAt) return { ok: true, lastReadAt: '' };
+    const latestAt = new Date(latestRows[0].createdAt);
+    readAt = requested.getTime() > latestAt.getTime() ? latestAt : requested;
+  }
+
   await client.$executeRaw`
     INSERT INTO chat_read_states (membership_id, company_id, last_read_at, updated_at)
-    VALUES (${membership.id}, ${membership.companyId}, ${requested}, CURRENT_TIMESTAMP)
+    VALUES (${membership.id}, ${membership.companyId}, ${readAt}, CURRENT_TIMESTAMP)
     ON CONFLICT (membership_id)
     DO UPDATE SET
       company_id = EXCLUDED.company_id,
       last_read_at = GREATEST(chat_read_states.last_read_at, EXCLUDED.last_read_at),
       updated_at = CURRENT_TIMESTAMP
   `;
-  return { ok: true, lastReadAt: requested.toISOString() };
+  return { ok: true, lastReadAt: readAt.toISOString() };
 }
 
 export async function deleteChatMessage(client, context, messageId) {
