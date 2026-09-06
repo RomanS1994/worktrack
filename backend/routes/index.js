@@ -4,6 +4,7 @@ import { handleBillingRoutes } from './billing.js';
 import { handleChatRoutes } from './chat.js';
 import { handleCompanySettingsRoutes } from './company-settings.js';
 import { handleDefaultProjectRoutes } from './default-project.js';
+import { handleEmployeeFinancePdfRoutes } from './employee-finance-pdf.js';
 import { handleEmployeeWorkRoutes } from './employee-work.js';
 import { handleExpenseRoutes } from './expenses.js';
 import { handleInvoicePdfRoutes } from './invoice-pdf.js';
@@ -23,6 +24,7 @@ const routeHandlers = [
   handleChatRoutes,
   handleNotificationRoutes,
   handleInvoicePdfRoutes,
+  handleEmployeeFinancePdfRoutes,
   handleBillingRoutes,
   handleDefaultProjectRoutes,
   handleWorkRulesRoutes,
