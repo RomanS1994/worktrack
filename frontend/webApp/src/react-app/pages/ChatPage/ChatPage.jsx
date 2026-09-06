@@ -66,7 +66,7 @@ export function ChatPage(){
   const onlineCount=Math.max(0,Number(presence?.onlineCount)||0);
   const typingList=Object.values(typingUsers);
   const typingLabel=typingList.length?`${typingList.slice(0,2).map(item=>item.name).join(', ')} ${c.typing}`:'';
-  const subtitle=typingLabel||(?:onlineCount>0?`${c.subtitle} · ${onlineCount} ${c.online}`:c.subtitle);
+  const subtitle=typingLabel||(onlineCount>0?`${c.subtitle} · ${onlineCount} ${c.online}`:c.subtitle);
   const messages=useMemo(()=>{
     const map=new Map();
     [...older,...latest].forEach(item=>map.set(item.id,item));
