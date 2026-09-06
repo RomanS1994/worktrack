@@ -8,6 +8,7 @@ import { formatCzk, getLocalDateKey, resolveLocale } from '../../app/formatters.
 import { openExpenseReceipt, prepareExpenseReceipt, uploadExpenseReceipt } from '../../features/worktrack/expenseReceipt.js';
 import { useDeleteManagerExpenseMutation, useGetManagerExpensesQuery } from '../../features/worktrack/worktrackApi.js';
 import './ManagerExpensesPage.css';
+import './ManagerExpensesCompact.css';
 
 const CATEGORIES = {
   MATERIALS: { uk: 'Матеріали', cs: 'Materiál', en: 'Materials' },
