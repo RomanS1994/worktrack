@@ -2,24 +2,24 @@
 
 .fastHoursPage{position:relative}
 
-/* Primary project selector follows the same compact language as Time / Week. */
+/* Primary project selector: compact trigger + anchored dropdown. */
 .fastProjectCard{
   position:relative;
   z-index:20;
   display:grid;
-  grid-template-columns:38px minmax(0,1fr) 36px;
+  grid-template-columns:34px minmax(0,1fr) 30px;
   align-items:center;
-  gap:10px;
-  padding:10px 14px;
-  border-radius:17px;
+  gap:9px;
+  padding:7px 9px;
+  border-radius:var(--radius-md);
   anchor-name:--primary-project-card;
 }
 
 .fastProjectIcon{
-  width:36px;
-  height:36px;
-  border-radius:11px;
-  font-size:20px;
+  width:32px;
+  height:32px;
+  border-radius:var(--radius-sm);
+  font-size:18px;
 }
 
 .fastProjectCard>div{
@@ -30,10 +30,10 @@
 
 .fastProjectCard>div>strong{
   overflow:hidden;
-  font-size:14px;
+  font-size:13px;
   line-height:1.15;
-  font-weight:800;
-  letter-spacing:-.015em;
+  font-weight:var(--weight-semibold);
+  letter-spacing:-.01em;
   text-overflow:ellipsis;
   white-space:nowrap;
 }
@@ -41,9 +41,9 @@
 .fastProjectCard>div>small{
   overflow:hidden;
   color:var(--muted);
-  font-size:10px;
-  line-height:1.25;
-  font-weight:650;
+  font-size:var(--font-size-caption);
+  line-height:1.2;
+  font-weight:var(--weight-medium);
   text-overflow:ellipsis;
   white-space:nowrap;
 }
@@ -51,14 +51,14 @@
 .fastProjectCard>button{
   position:relative;
   justify-self:end;
-  width:34px;
-  height:34px;
-  min-width:34px;
-  min-height:34px;
+  width:30px;
+  height:30px;
+  min-width:30px;
+  min-height:30px;
   padding:0;
   overflow:hidden;
   border:0;
-  border-radius:10px;
+  border-radius:var(--radius-sm);
   background:rgba(17,24,39,.035);
   box-shadow:none;
   color:transparent;
@@ -71,10 +71,10 @@
   inset:0;
   display:grid;
   place-items:center;
-  color:#111827;
-  font-size:21px;
+  color:var(--text);
+  font-size:18px;
   line-height:1;
-  font-weight:700;
+  font-weight:var(--weight-semibold);
   transform:translateY(-2px);
   transition:transform 160ms ease;
 }
@@ -88,28 +88,28 @@
 .fastProjectCard>button:active:not(:disabled){transform:none}
 .fastProjectCard:has(+ .fastProjectPicker)>button::before{transform:translateY(2px) rotate(180deg)}
 
-/* Fallback: when anchor positioning is unavailable, keep the menu below the card. */
+/* Fallback keeps the menu directly below the trigger. */
 .fastProjectPicker{
   position:relative;
   z-index:40;
-  width:calc(100% - 24px);
-  margin:-9px 12px 0;
-  padding:5px;
+  width:calc(100% - 16px);
+  margin:-6px 8px 0;
+  padding:4px;
   overflow:hidden;
-  border:1px solid rgba(15,23,42,.08);
-  border-radius:14px;
+  border:1px solid var(--line);
+  border-radius:var(--radius-md);
   background:rgba(255,255,255,.99);
-  box-shadow:0 10px 24px rgba(15,23,42,.10);
+  box-shadow:var(--shadow-overlay);
   backdrop-filter:blur(18px);
   -webkit-backdrop-filter:blur(18px);
 }
 
-/* On modern Safari/iOS the picker floats directly under the selector and does not push the week list down. */
+/* Modern Safari/iOS: float exactly under the trigger without moving the day list. */
 @supports (position-anchor:--primary-project-card){
   .fastProjectPicker{
     position:fixed;
     position-anchor:--primary-project-card;
-    top:calc(anchor(bottom) + 6px);
+    top:calc(anchor(bottom) + 5px);
     left:anchor(left);
     right:auto;
     width:anchor-size(width);
@@ -124,12 +124,12 @@
   display:grid;
   grid-template-columns:minmax(0,1fr) auto;
   align-items:center;
-  gap:10px;
+  gap:8px;
   width:100%;
-  min-height:42px;
-  padding:6px 9px;
+  min-height:40px;
+  padding:6px 8px;
   border:0;
-  border-radius:10px;
+  border-radius:var(--radius-sm);
   background:transparent;
   box-shadow:none;
   text-align:left;
@@ -141,7 +141,7 @@
   box-shadow:none;
 }
 
-.fastProjectPicker>div>button.is-active{background:#ecfdf3}
+.fastProjectPicker>div>button.is-active{background:var(--accent-soft)}
 
 .fastProjectPicker>div>button>span{
   display:grid;
@@ -153,9 +153,9 @@
   overflow:hidden;
   color:var(--text);
   font-size:12px;
-  line-height:1.15;
-  font-weight:800;
-  letter-spacing:-.01em;
+  line-height:1.2;
+  font-weight:var(--weight-semibold);
+  letter-spacing:-.005em;
   text-overflow:ellipsis;
   white-space:nowrap;
 }
@@ -163,9 +163,9 @@
 .fastProjectPicker>div>button small{
   overflow:hidden;
   color:var(--muted);
-  font-size:9px;
+  font-size:var(--font-size-caption);
   line-height:1.2;
-  font-weight:600;
+  font-weight:var(--weight-regular);
   text-overflow:ellipsis;
   white-space:nowrap;
 }
@@ -175,37 +175,33 @@
   align-items:center;
   min-height:22px;
   padding:0 7px;
-  border-radius:999px;
+  border-radius:var(--radius-full);
   background:rgba(22,163,74,.08);
-  color:#15803d;
-  font-size:8px;
+  color:var(--accent-strong);
+  font-size:10px;
   line-height:1;
-  font-weight:800;
+  font-weight:var(--weight-semibold);
   white-space:nowrap;
 }
 
 .fastProjectPicker i{
   color:#9aa4b2;
   font-style:normal;
-  font-size:17px;
+  font-size:16px;
 }
 
 @media(max-width:430px){
   .fastProjectCard{
-    grid-template-columns:34px minmax(0,1fr) 30px;
-    gap:9px;
-    padding:9px 12px;
+    grid-template-columns:32px minmax(0,1fr) 28px;
+    gap:8px;
+    padding:7px 8px;
   }
-  .fastProjectIcon{width:34px;height:34px;border-radius:10px;font-size:19px}
-  .fastProjectCard>div>strong{font-size:13px}
-  .fastProjectCard>div>small{font-size:10px}
-  .fastProjectCard>button{width:30px;height:30px;min-width:30px;min-height:30px;border-radius:9px}
-  .fastProjectCard>button::before{font-size:19px}
-  .fastProjectPicker{width:calc(100% - 20px);margin:-8px 10px 0;padding:4px;border-radius:13px}
-  .fastProjectPicker>div>button{min-height:40px;padding:6px 8px}
-  .fastProjectPicker>div>button strong{font-size:12px}
-  .fastProjectPicker>div>button small{font-size:9px}
-  .fastProjectPicker b{min-height:21px;padding:0 6px;font-size:8px}
+  .fastProjectIcon{width:30px;height:30px}
+  .fastProjectCard>div>strong{font-size:12px}
+  .fastProjectCard>button{width:28px;height:28px;min-width:28px;min-height:28px}
+  .fastProjectCard>button::before{font-size:17px}
+  .fastProjectPicker{width:calc(100% - 12px);margin:-5px 6px 0;padding:4px}
+  .fastProjectPicker>div>button{min-height:40px;padding:6px 7px}
   @supports (position-anchor:--primary-project-card){
     .fastProjectPicker{width:anchor-size(width);margin:0}
   }
