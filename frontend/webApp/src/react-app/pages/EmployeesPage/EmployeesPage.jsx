@@ -16,9 +16,9 @@ import './EmployeesPage.css';
 const EMPTY_EMPLOYEE_FORM = { firstName: '', lastName: '', email: '', temporaryPassword: '', hourlyRateCzk: '' };
 const EMPTY_EMPLOYEES = [];
 const ACCESS_COPY = {
-  uk: { access:'Доступ', employeeCabinet:'Кабінет працівника', managerCabinet:'Кабінет менеджера', alwaysEnabled:'Завжди доступний', enabled:'Доступ відкрито', disabled:'Доступ закрито', grant:'Відкрити доступ', revoke:'Забрати доступ', granted:'Менеджерський доступ відкрито.', revoked:'Менеджерський доступ забрано.' },
-  cs: { access:'Přístup', employeeCabinet:'Kabinet pracovníka', managerCabinet:'Kabinet manažera', alwaysEnabled:'Vždy dostupný', enabled:'Přístup povolen', disabled:'Přístup zakázán', grant:'Povolit přístup', revoke:'Odebrat přístup', granted:'Přístup manažera byl povolen.', revoked:'Přístup manažera byl odebrán.' },
-  en: { access:'Access', employeeCabinet:'Employee cabinet', managerCabinet:'Manager cabinet', alwaysEnabled:'Always available', enabled:'Access enabled', disabled:'Access disabled', grant:'Grant access', revoke:'Revoke access', granted:'Manager access granted.', revoked:'Manager access revoked.' },
+  uk: { access:'Доступ', employeeCabinet:'Кабінет працівника', managerCabinet:'Кабінет менеджера', managerBadge:'Менеджер', alwaysEnabled:'Завжди доступний', enabled:'Доступ відкрито', disabled:'Доступ закрито', grant:'Відкрити доступ', revoke:'Забрати доступ', granted:'Менеджерський доступ відкрито.', revoked:'Менеджерський доступ забрано.' },
+  cs: { access:'Přístup', employeeCabinet:'Kabinet pracovníka', managerCabinet:'Kabinet manažera', managerBadge:'Manažer', alwaysEnabled:'Vždy dostupný', enabled:'Přístup povolen', disabled:'Přístup zakázán', grant:'Povolit přístup', revoke:'Odebrat přístup', granted:'Přístup manažera byl povolen.', revoked:'Přístup manažera byl odebrán.' },
+  en: { access:'Access', employeeCabinet:'Employee cabinet', managerCabinet:'Manager cabinet', managerBadge:'Manager', alwaysEnabled:'Always available', enabled:'Access enabled', disabled:'Access disabled', grant:'Grant access', revoke:'Revoke access', granted:'Manager access granted.', revoked:'Manager access revoked.' },
 };
 
 function getEmployeeName(employee, fallback) { return employee?.name || employee?.email || fallback; }
@@ -165,9 +165,9 @@ export function EmployeesPage() {
           <span className="employeeCard-content">
             <span className="employeeCard-titleRow">
               <strong className="employeeCard-name">{employeeName}</strong>
-              {managerAccess?<em className="employeeCard-role">{ac.managerCabinet}</em>:null}
             </span>
             <span className="employeeCard-email">{employee.email}</span>
+            {managerAccess?<em className="employeeCard-role">{ac.managerBadge}</em>:null}
           </span>
           <span className="employeeCard-chevron" aria-hidden="true">›</span>
         </button>
