@@ -6,8 +6,6 @@ const DEFAULT_PREFERENCES = {
 };
 
 function categoryForType(type = '') {
-  // A submitted week is actionable work for managers, so it belongs to Team.
-  // Review results belong to the employee's Work hours notifications.
   if (type === 'weekly_submission.submitted') return 'team';
   if (type.startsWith('weekly_submission.')) return 'hours';
   if (
@@ -57,14 +55,43 @@ async function readPushPreferences() {
   }
 }
 
+async function shouldShowNotification(type, preferences) {
+  const category = categoryForType(String(type || ''));
+  if (preferences.categories?.[category] === false) return { show: false, reason: 'category' };
+  if (isWithinQuietHours(preferences.quietHours)) return { show: false, reason: 'quiet' };
+  return { show: true, reason: '' };
+}
+
 self.addEventListener('message', event => {
-  if (event.data?.type !== 'WORKTRACK_PUSH_PREFERENCES') return;
-  event.waitUntil((async () => {
-    const cache = await caches.open(PUSH_PREFERENCES_CACHE);
-    await cache.put(PUSH_PREFERENCES_KEY, new Response(JSON.stringify(event.data.preferences || DEFAULT_PREFERENCES), {
-      headers: { 'content-type': 'application/json' },
-    }));
-  })());
+  if (event.data?.type === 'WORKTRACK_PUSH_PREFERENCES') {
+    event.waitUntil((async () => {
+      const cache = await caches.open(PUSH_PREFERENCES_CACHE);
+      await cache.put(PUSH_PREFERENCES_KEY, new Response(JSON.stringify(event.data.preferences || DEFAULT_PREFERENCES), {
+        headers: { 'content-type': 'application/json' },
+      }));
+    })());
+    return;
+  }
+
+  if (event.data?.type === 'WORKTRACK_TEST_NOTIFICATION') {
+    event.waitUntil((async () => {
+      const preferences = await readPushPreferences();
+      const decision = await shouldShowNotification('system.test', preferences);
+      if (!decision.show) {
+        event.ports?.[0]?.postMessage({ shown: false, reason: decision.reason });
+        return;
+      }
+      const payload = event.data.payload || {};
+      await self.registration.showNotification(payload.title || 'WorkTrack', {
+        body: payload.body || '',
+        icon: '/shared/assets/worktrack-icon-192.png',
+        badge: '/shared/assets/worktrack-icon-192.png',
+        tag: 'worktrack-test-notification',
+        data: { href: payload.href || '/more' },
+      });
+      event.ports?.[0]?.postMessage({ shown: true, reason: '' });
+    })());
+  }
 });
 
 self.addEventListener('push', event => {
@@ -77,9 +104,8 @@ self.addEventListener('push', event => {
 
   event.waitUntil((async () => {
     const preferences = await readPushPreferences();
-    const category = categoryForType(String(data.type || ''));
-    if (preferences.categories?.[category] === false) return;
-    if (isWithinQuietHours(preferences.quietHours)) return;
+    const decision = await shouldShowNotification(data.type, preferences);
+    if (!decision.show) return;
 
     const title = data.title || 'WorkTrack';
     const options = {
