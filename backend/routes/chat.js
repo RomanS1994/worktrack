@@ -8,7 +8,7 @@ import {
   listChatMessages,
   markChatRead,
 } from '../services/company-chat.js';
-import { broadcastCompanyChat, subscribeToCompanyChat } from '../services/chat-live.js';
+import { broadcastCompanyChat, getCompanyChatPresence, subscribeToCompanyChat } from '../services/chat-live.js';
 import { notifyCompanyAboutChatMessage } from '../services/chat-push.js';
 
 export async function handleChatRoutes(request, response, { url, pathName }) {
@@ -18,7 +18,17 @@ export async function handleChatRoutes(request, response, { url, pathName }) {
   if (!context) return true;
 
   if (request.method === 'GET' && pathName === '/api/chat/stream') {
-    subscribeToCompanyChat(request, response, context.activeMembership.companyId);
+    subscribeToCompanyChat(
+      request,
+      response,
+      context.activeMembership.companyId,
+      context.activeMembership.id,
+    );
+    return true;
+  }
+
+  if (request.method === 'GET' && pathName === '/api/chat/presence') {
+    sendJson(response, 200, getCompanyChatPresence(context.activeMembership.companyId));
     return true;
   }
 
