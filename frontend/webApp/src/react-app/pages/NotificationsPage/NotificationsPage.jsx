@@ -1,8 +1,12 @@
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { RequestLoadingState } from '@shared/app/components/RequestLoader/RequestLoader.jsx';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
+import { selectUser } from '@shared/features/auth/authSlice.js';
+import { hasManagerAccess } from '@shared/features/auth/authAccess.js';
+import { setCabinetMode } from '@shared/features/auth/cabinetMode.js';
 import {
   useGetNotificationsQuery,
   useMarkAllNotificationsReadMutation,
@@ -11,6 +15,17 @@ import {
 import './NotificationsPage.css';
 
 const LOCALES = { uk: 'uk-UA', cs: 'cs-CZ', en: 'en-GB' };
+const MANAGER_NOTIFICATION_TYPES = new Set([
+  'weekly_submission.submitted',
+  'invoice.sent',
+  'invoice.cancelled',
+]);
+const EMPLOYEE_NOTIFICATION_TYPES = new Set([
+  'weekly_submission.approved',
+  'weekly_submission.rejected',
+  'invoice.viewed',
+  'invoice.paid',
+]);
 const INVOICE_COPY = {
   uk: {
     sentTitle: number => `Отримано фактуру ${number}`,
@@ -60,6 +75,16 @@ function extractInvoiceNumber(notification) {
   const title = String(notification?.title || '');
   const match = title.match(/Invoice\s+([^\s]+)(?:\s|$)/i);
   return match?.[1] || '';
+}
+
+function cabinetForNotification(notification) {
+  const type = String(notification?.type || '');
+  const href = String(notification?.href || '');
+  if (MANAGER_NOTIFICATION_TYPES.has(type)) return 'manager';
+  if (EMPLOYEE_NOTIFICATION_TYPES.has(type)) return 'employee';
+  if (href.startsWith('/manager/') || ['/approvals', '/employees', '/projects', '/company-settings'].includes(href)) return 'manager';
+  if (href.startsWith('/invoices') || href.startsWith('/hours') || href === '/calendar' || href === '/tax-information') return 'employee';
+  return '';
 }
 
 function localizeNotification(notification, t, language) {
@@ -112,6 +137,7 @@ function localizeNotification(notification, t, language) {
 
 export function NotificationsPage() {
   const { language, t } = useI18n();
+  const user = useSelector(selectUser);
   const locale = LOCALES[language] || LOCALES.uk;
   const { data, error, isLoading } = useGetNotificationsQuery(undefined, { pollingInterval: 60000 });
   const notifications = Array.isArray(data?.notifications) ? data.notifications : [];
@@ -120,6 +146,9 @@ export function NotificationsPage() {
   const [markAllRead, markAllState] = useMarkAllNotificationsReadMutation();
 
   async function openNotification(notification) {
+    const nextCabinet = cabinetForNotification(notification);
+    if (nextCabinet === 'employee') setCabinetMode('employee', user);
+    if (nextCabinet === 'manager' && hasManagerAccess(user)) setCabinetMode('manager', user);
     if (!notification?.readAt) {
       try { await markRead(notification.id).unwrap(); } catch { /* Navigation should still work. */ }
     }
