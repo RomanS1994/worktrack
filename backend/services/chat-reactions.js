@@ -44,13 +44,15 @@ export async function getChatReactions(client, context, messageIds = []) {
     const list = grouped[messageId] || (grouped[messageId] = []);
     let reaction = list.find(item => item.emoji === row.emoji);
     if (!reaction) {
-      reaction = { emoji: row.emoji, count: 0, mine: false, names: [] };
+      reaction = { emoji: row.emoji, count: 0, mine: false, names: [], members: [] };
       list.push(reaction);
     }
     reaction.count += 1;
-    reaction.mine ||= row.membershipId === membership.id;
+    const isMine = row.membershipId === membership.id;
+    reaction.mine ||= isMine;
     const name = row.name || row.email || 'User';
     if (!reaction.names.includes(name)) reaction.names.push(name);
+    reaction.members.push({ membershipId: row.membershipId, name, mine: isMine });
   }
 
   return { byMessage: grouped };
