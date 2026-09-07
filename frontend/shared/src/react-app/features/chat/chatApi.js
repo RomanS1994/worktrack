@@ -1,17 +1,100 @@
 import { baseApi } from '../../app/api/baseApi.js';
 
-function applyOptimisticReaction(draft, { messageId, emoji }) {
+function normalizeMembers(reaction) {
+  return Array.isArray(reaction?.members) ? reaction.members : [];
+}
+
+function normalizeNames(reaction) {
+  return Array.isArray(reaction?.names) ? reaction.names : [];
+}
+
+function removeMemberFromReaction(reaction, membershipId) {
+  const members = normalizeMembers(reaction);
+  const removed = members.find(member => member.membershipId === membershipId);
+  reaction.members = members.filter(member => member.membershipId !== membershipId);
+  if (removed?.name) {
+    const stillUsed = reaction.members.some(member => member.name === removed.name);
+    if (!stillUsed) reaction.names = normalizeNames(reaction).filter(name => name !== removed.name);
+  }
+  reaction.count = Math.max(0, Number(reaction.count || 0) - (removed ? 1 : 0));
+}
+
+function addMemberToReaction(reaction, member) {
+  const members = normalizeMembers(reaction);
+  if (!members.some(item => item.membershipId === member.membershipId)) {
+    reaction.members = [...members, member];
+    reaction.count = Number(reaction.count || 0) + 1;
+  }
+  if (member.name && !normalizeNames(reaction).includes(member.name)) {
+    reaction.names = [...normalizeNames(reaction), member.name];
+  }
+}
+
+export function applyReactionEvent(draft, payload, currentMembershipId = '') {
+  const messageId = String(payload?.messageId || '');
+  const emoji = String(payload?.emoji || '');
+  const actorMembershipId = String(payload?.membershipId || '');
+  if (!messageId || !emoji || !actorMembershipId || !Array.isArray(draft?.messages)) return;
+
+  const message = draft.messages.find(item => item.id === messageId);
+  if (!message) return;
+
+  let reactions = Array.isArray(message.reactions) ? message.reactions : [];
+  const replacedEmoji = String(payload?.replacedEmoji || '');
+  const member = {
+    membershipId: actorMembershipId,
+    name: payload?.member?.name || payload?.name || 'User',
+    avatarDataUrl: payload?.member?.avatarDataUrl || payload?.avatarDataUrl || '',
+    mine: actorMembershipId === currentMembershipId,
+  };
+
+  for (const reaction of reactions) {
+    const hasActor = normalizeMembers(reaction).some(item => item.membershipId === actorMembershipId);
+    if (!hasActor) continue;
+    if (reaction.emoji === emoji && payload.active) continue;
+    removeMemberFromReaction(reaction, actorMembershipId);
+    reaction.mine = normalizeMembers(reaction).some(item => item.mine);
+  }
+
+  if (replacedEmoji) {
+    const replaced = reactions.find(item => item.emoji === replacedEmoji);
+    if (replaced && normalizeMembers(replaced).some(item => item.membershipId === actorMembershipId)) {
+      removeMemberFromReaction(replaced, actorMembershipId);
+      replaced.mine = normalizeMembers(replaced).some(item => item.mine);
+    }
+  }
+
+  if (payload.active) {
+    let target = reactions.find(item => item.emoji === emoji);
+    if (!target) {
+      target = { messageId, emoji, count: 0, mine: false, names: [], members: [] };
+      reactions.push(target);
+    }
+    target.messageId ||= messageId;
+    addMemberToReaction(target, member);
+    target.mine = normalizeMembers(target).some(item => item.mine);
+  }
+
+  reactions = reactions.filter(item => Number(item.count || 0) > 0);
+  message.reactions = reactions;
+}
+
+function applyOptimisticReaction(draft, { messageId, emoji, member }) {
   const message = draft?.messages?.find(item => item.id === messageId);
   if (!message) return;
 
   const reactions = Array.isArray(message.reactions) ? message.reactions : [];
   const currentMine = reactions.find(item => item.mine);
+  const optimisticMember = member?.membershipId ? { ...member, mine: true } : null;
 
   if (currentMine?.emoji === emoji) {
     currentMine.count = Math.max(0, Number(currentMine.count || 0) - 1);
     currentMine.mine = false;
     if (Array.isArray(currentMine.members)) {
-      currentMine.members = currentMine.members.filter(member => !member.mine);
+      currentMine.members = currentMine.members.filter(item => !item.mine);
+    }
+    if (optimisticMember?.name) {
+      currentMine.names = normalizeNames(currentMine).filter(name => name !== optimisticMember.name);
     }
     if (currentMine.count <= 0) {
       message.reactions = reactions.filter(item => item !== currentMine);
@@ -23,7 +106,10 @@ function applyOptimisticReaction(draft, { messageId, emoji }) {
     currentMine.count = Math.max(0, Number(currentMine.count || 0) - 1);
     currentMine.mine = false;
     if (Array.isArray(currentMine.members)) {
-      currentMine.members = currentMine.members.filter(member => !member.mine);
+      currentMine.members = currentMine.members.filter(item => !item.mine);
+    }
+    if (optimisticMember?.name) {
+      currentMine.names = normalizeNames(currentMine).filter(name => name !== optimisticMember.name);
     }
   }
 
@@ -35,6 +121,14 @@ function applyOptimisticReaction(draft, { messageId, emoji }) {
   next.messageId ||= messageId;
   next.count = Number(next.count || 0) + 1;
   next.mine = true;
+  if (optimisticMember) {
+    if (!normalizeMembers(next).some(item => item.membershipId === optimisticMember.membershipId)) {
+      next.members = [...normalizeMembers(next), optimisticMember];
+    }
+    if (optimisticMember.name && !normalizeNames(next).includes(optimisticMember.name)) {
+      next.names = [...normalizeNames(next), optimisticMember.name];
+    }
+  }
   message.reactions = reactions.filter(item => Number(item.count || 0) > 0);
 }
 
