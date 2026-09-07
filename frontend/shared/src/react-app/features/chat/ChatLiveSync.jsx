@@ -5,6 +5,17 @@ import { selectToken, selectUser } from '../auth/authSlice.js';
 import { hasActiveCompanyAccess } from '../auth/authAccess.js';
 import { connectChatStream } from './chatLive.js';
 
+const CHAT_SYNC_TAGS = [
+  { type: 'Notifications', id: 'CHAT_MESSAGES' },
+  { type: 'Notifications', id: 'CHAT_SUMMARY' },
+  { type: 'Notifications', id: 'CHAT_PRESENCE' },
+  { type: 'Notifications', id: 'CHAT_READ_STATES' },
+];
+
+function emitConnectionState(state) {
+  window.dispatchEvent(new CustomEvent('worktrack:chat-connection', { detail: { state } }));
+}
+
 export function ChatLiveSync() {
   const dispatch = useDispatch();
   const token = useSelector(selectToken);
@@ -17,16 +28,15 @@ export function ChatLiveSync() {
     let controller = null;
     let retryId = null;
     let stopped = false;
+    let connected = false;
+
+    const syncAll = () => dispatch(baseApi.util.invalidateTags(CHAT_SYNC_TAGS));
 
     const handleEvent = (event, payload) => {
       const tags = [];
       const ownMessage = event === 'message' && payload?.authorMembershipId === membershipId;
-      const ownReaction = event === 'reaction' && payload?.membershipId === membershipId;
-      const ownDelete = event === 'delete' && payload?.membershipId === membershipId;
 
-      if ((event === 'message' && !ownMessage)
-        || (event === 'delete' && !ownDelete)
-        || (event === 'reaction' && !ownReaction)) {
+      if ((event === 'message' && !ownMessage) || event === 'delete' || event === 'reaction') {
         tags.push({ type: 'Notifications', id: 'CHAT_MESSAGES' });
       }
 
@@ -43,12 +53,9 @@ export function ChatLiveSync() {
       }
 
       if (event === 'ready') {
-        tags.push(
-          { type: 'Notifications', id: 'CHAT_MESSAGES' },
-          { type: 'Notifications', id: 'CHAT_SUMMARY' },
-          { type: 'Notifications', id: 'CHAT_PRESENCE' },
-          { type: 'Notifications', id: 'CHAT_READ_STATES' },
-        );
+        connected = true;
+        emitConnectionState('connected');
+        syncAll();
       }
 
       if (tags.length) dispatch(baseApi.util.invalidateTags(tags));
@@ -60,10 +67,26 @@ export function ChatLiveSync() {
       retryId = null;
       controller?.abort();
       controller = null;
+      connected = false;
+    };
+
+    const scheduleRetry = () => {
+      if (stopped || document.visibilityState !== 'visible' || !navigator.onLine) return;
+      emitConnectionState('reconnecting');
+      retryId = window.setTimeout(() => {
+        retryId = null;
+        void start();
+      }, 3000);
     };
 
     const start = async () => {
       if (stopped || document.visibilityState !== 'visible' || controller) return;
+      if (!navigator.onLine) {
+        emitConnectionState('offline');
+        return;
+      }
+
+      emitConnectionState(connected ? 'reconnecting' : 'connecting');
       controller = new AbortController();
       const activeController = controller;
       try {
@@ -73,30 +96,45 @@ export function ChatLiveSync() {
       } finally {
         if (controller === activeController) controller = null;
       }
-      if (!stopped && !activeController.signal.aborted && document.visibilityState === 'visible') {
-        retryId = window.setTimeout(start, 3000);
+
+      if (!stopped && !activeController.signal.aborted) {
+        connected = false;
+        if (!navigator.onLine) emitConnectionState('offline');
+        else scheduleRetry();
       }
     };
 
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        dispatch(baseApi.util.invalidateTags([
-          { type: 'Notifications', id: 'CHAT_MESSAGES' },
-          { type: 'Notifications', id: 'CHAT_SUMMARY' },
-          { type: 'Notifications', id: 'CHAT_PRESENCE' },
-          { type: 'Notifications', id: 'CHAT_READ_STATES' },
-        ]));
+        syncAll();
         void start();
       } else {
         stopConnection();
       }
     };
 
+    const handleOnline = () => {
+      emitConnectionState('connecting');
+      syncAll();
+      void start();
+    };
+
+    const handleOffline = () => {
+      stopConnection();
+      emitConnectionState('offline');
+    };
+
     document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    emitConnectionState(navigator.onLine ? 'connecting' : 'offline');
     void start();
+
     return () => {
       stopped = true;
       document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
       stopConnection();
     };
   }, [dispatch, enabled, membershipId]);
