@@ -38,8 +38,7 @@ export function AppLayout({ children }) {
     const syncViewport = () => {
       const visualHeight = Math.round(viewport?.height || window.innerHeight);
       const offsetTop = Math.max(0, Math.round(viewport?.offsetTop || 0));
-      const visibleBottom = visualHeight + offsetTop;
-      const keyboardInset = Math.max(0, stableViewportHeight - visibleBottom);
+      const keyboardInset = Math.max(0, stableViewportHeight - visualHeight);
       const keyboardOpen = keyboardInset > 120;
 
       if (!keyboardOpen && visualHeight > stableViewportHeight) {
@@ -47,6 +46,7 @@ export function AppLayout({ children }) {
       }
 
       element.style.setProperty('--chat-visual-height', `${visualHeight}px`);
+      element.style.setProperty('--chat-visual-offset-top', `${offsetTop}px`);
       element.classList.toggle('appLayout--keyboardOpen', keyboardOpen);
     };
 
@@ -60,6 +60,7 @@ export function AppLayout({ children }) {
       viewport?.removeEventListener('scroll', syncViewport);
       window.removeEventListener('resize', syncViewport);
       element.style.removeProperty('--chat-visual-height');
+      element.style.removeProperty('--chat-visual-offset-top');
       element.classList.remove('appLayout--keyboardOpen');
     };
   }, [isChatPage]);
