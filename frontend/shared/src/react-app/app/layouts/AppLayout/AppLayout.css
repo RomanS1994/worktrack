@@ -99,6 +99,10 @@
     overflow: hidden;
   }
 
+  .appLayout--chat.appLayout--keyboardOpen {
+    top: var(--chat-visual-offset-top, 0px);
+  }
+
   .appLayout--chat .appLayout-workspaceBody {
     box-sizing: border-box;
     height: 100%;
