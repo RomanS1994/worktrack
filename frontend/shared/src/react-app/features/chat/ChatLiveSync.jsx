@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { baseApi } from '../../app/api/baseApi.js';
 import { selectToken, selectUser } from '../auth/authSlice.js';
 import { hasActiveCompanyAccess } from '../auth/authAccess.js';
+import { getChatConnectionState, setChatConnectionState } from './chatConnectionState.js';
 import { connectChatStream } from './chatLive.js';
 
 const CHAT_SYNC_TAGS = [
@@ -11,10 +12,6 @@ const CHAT_SYNC_TAGS = [
   { type: 'Notifications', id: 'CHAT_PRESENCE' },
   { type: 'Notifications', id: 'CHAT_READ_STATES' },
 ];
-
-function emitConnectionState(state) {
-  window.dispatchEvent(new CustomEvent('worktrack:chat-connection', { detail: { state } }));
-}
 
 export function ChatLiveSync() {
   const dispatch = useDispatch();
@@ -28,7 +25,7 @@ export function ChatLiveSync() {
     let controller = null;
     let retryId = null;
     let stopped = false;
-    let connected = false;
+    let connected = getChatConnectionState() === 'connected';
 
     const syncAll = () => dispatch(baseApi.util.invalidateTags(CHAT_SYNC_TAGS));
 
@@ -54,7 +51,7 @@ export function ChatLiveSync() {
 
       if (event === 'ready') {
         connected = true;
-        emitConnectionState('connected');
+        setChatConnectionState('connected');
         syncAll();
       }
 
@@ -72,7 +69,7 @@ export function ChatLiveSync() {
 
     const scheduleRetry = () => {
       if (stopped || document.visibilityState !== 'visible' || !navigator.onLine) return;
-      emitConnectionState('reconnecting');
+      setChatConnectionState('reconnecting');
       retryId = window.setTimeout(() => {
         retryId = null;
         void start();
@@ -82,11 +79,11 @@ export function ChatLiveSync() {
     const start = async () => {
       if (stopped || document.visibilityState !== 'visible' || controller) return;
       if (!navigator.onLine) {
-        emitConnectionState('offline');
+        setChatConnectionState('offline');
         return;
       }
 
-      emitConnectionState(connected ? 'reconnecting' : 'connecting');
+      setChatConnectionState(connected ? 'reconnecting' : 'connecting');
       controller = new AbortController();
       const activeController = controller;
       try {
@@ -99,7 +96,7 @@ export function ChatLiveSync() {
 
       if (!stopped && !activeController.signal.aborted) {
         connected = false;
-        if (!navigator.onLine) emitConnectionState('offline');
+        if (!navigator.onLine) setChatConnectionState('offline');
         else scheduleRetry();
       }
     };
@@ -114,20 +111,20 @@ export function ChatLiveSync() {
     };
 
     const handleOnline = () => {
-      emitConnectionState('connecting');
+      setChatConnectionState('connecting');
       syncAll();
       void start();
     };
 
     const handleOffline = () => {
       stopConnection();
-      emitConnectionState('offline');
+      setChatConnectionState('offline');
     };
 
     document.addEventListener('visibilitychange', handleVisibility);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    emitConnectionState(navigator.onLine ? 'connecting' : 'offline');
+    setChatConnectionState(navigator.onLine ? 'connecting' : 'offline');
     void start();
 
     return () => {
