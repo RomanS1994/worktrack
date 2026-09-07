@@ -41,6 +41,11 @@ export function ChatLiveSync() {
 
     const syncAll = () => dispatch(baseApi.util.invalidateTags(CHAT_SYNC_TAGS));
 
+    const syncThenPrefetchMessages = () => {
+      syncAll();
+      prefetchMessages();
+    };
+
     const handleEvent = (event, payload) => {
       const tags = [];
       const ownMessage = event === 'message' && payload?.authorMembershipId === membershipId;
@@ -64,7 +69,7 @@ export function ChatLiveSync() {
       if (event === 'ready') {
         connected = true;
         setChatConnectionState('connected');
-        syncAll();
+        syncThenPrefetchMessages();
       }
 
       if (tags.length) dispatch(baseApi.util.invalidateTags(tags));
@@ -115,8 +120,7 @@ export function ChatLiveSync() {
 
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        prefetchMessages();
-        syncAll();
+        syncThenPrefetchMessages();
         void start();
       } else {
         stopConnection();
@@ -125,8 +129,7 @@ export function ChatLiveSync() {
 
     const handleOnline = () => {
       setChatConnectionState('connecting');
-      prefetchMessages();
-      syncAll();
+      syncThenPrefetchMessages();
       void start();
     };
 
