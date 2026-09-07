@@ -10,6 +10,9 @@ function applyOptimisticReaction(draft, { messageId, emoji }) {
   if (currentMine?.emoji === emoji) {
     currentMine.count = Math.max(0, Number(currentMine.count || 0) - 1);
     currentMine.mine = false;
+    if (Array.isArray(currentMine.members)) {
+      currentMine.members = currentMine.members.filter(member => !member.mine);
+    }
     if (currentMine.count <= 0) {
       message.reactions = reactions.filter(item => item !== currentMine);
     }
@@ -19,13 +22,17 @@ function applyOptimisticReaction(draft, { messageId, emoji }) {
   if (currentMine) {
     currentMine.count = Math.max(0, Number(currentMine.count || 0) - 1);
     currentMine.mine = false;
+    if (Array.isArray(currentMine.members)) {
+      currentMine.members = currentMine.members.filter(member => !member.mine);
+    }
   }
 
   let next = reactions.find(item => item.emoji === emoji);
   if (!next) {
-    next = { emoji, count: 0, mine: false, names: [] };
+    next = { messageId, emoji, count: 0, mine: false, names: [], members: [] };
     reactions.push(next);
   }
+  next.messageId ||= messageId;
   next.count = Number(next.count || 0) + 1;
   next.mine = true;
   message.reactions = reactions.filter(item => Number(item.count || 0) > 0);
