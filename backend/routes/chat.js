@@ -14,6 +14,11 @@ import { getChatReactions, toggleChatReaction } from '../services/chat-reactions
 import { broadcastCompanyChat, getCompanyChatPresence, subscribeToCompanyChat } from '../services/chat-live.js';
 import { notifyCompanyAboutChatMessage } from '../services/chat-push.js';
 
+function avatarFromProfile(profile) {
+  if (!profile || typeof profile !== 'object' || Array.isArray(profile)) return '';
+  return typeof profile.avatarDataUrl === 'string' ? profile.avatarDataUrl : '';
+}
+
 export async function handleChatRoutes(request, response, { url, pathName }) {
   if (!pathName.startsWith('/api/chat')) return false;
 
@@ -56,6 +61,12 @@ export async function handleChatRoutes(request, response, { url, pathName }) {
       emoji: payload.emoji,
       membershipId: context.activeMembership.id,
       active: payload.active,
+      replacedEmoji: payload.replacedEmoji || '',
+      member: {
+        membershipId: context.activeMembership.id,
+        name: context.user?.name || context.user?.email || 'User',
+        avatarDataUrl: avatarFromProfile(context.user?.profile),
+      },
     });
     sendJson(response, 200, payload);
     return true;
