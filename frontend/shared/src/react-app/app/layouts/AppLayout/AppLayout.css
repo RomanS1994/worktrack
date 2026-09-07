@@ -94,8 +94,8 @@
   }
 
   .appLayout--chat {
-    height: 100dvh;
-    min-height: 100dvh;
+    height: var(--chat-visual-height, 100dvh);
+    min-height: var(--chat-visual-height, 100dvh);
     overflow: hidden;
   }
 
@@ -116,6 +116,15 @@
 
   .appLayout--chat .pageContainer {
     padding-bottom: 0;
+  }
+
+  .appLayout--chat.appLayout--keyboardOpen .appLayout-workspaceBody {
+    padding-bottom: 0;
+  }
+
+  .appLayout--chat.appLayout--keyboardOpen .bottomTabs,
+  .appLayout--chat.appLayout--keyboardOpen .chatFab {
+    display: none;
   }
 }
 
@@ -152,6 +161,10 @@
 
   .appLayout--chat .appLayout-workspaceBody {
     padding: 12px 0 72px;
+  }
+
+  .appLayout--chat.appLayout--keyboardOpen .appLayout-workspaceBody {
+    padding: 12px 0 0;
   }
 
   .appLayout--chat .pageContainer {
