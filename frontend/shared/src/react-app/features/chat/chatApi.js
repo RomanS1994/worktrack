@@ -97,7 +97,7 @@ export const chatApi = baseApi.injectEndpoints({
             }),
           );
         } catch {
-          // The ChatPage restores the local pending message text on failure.
+          // ChatPage owns per-message pending/failed UI so concurrent sends do not overwrite the composer.
         }
       },
     }),
