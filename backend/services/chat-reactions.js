@@ -12,6 +12,11 @@ function getMembership(context) {
   return membership;
 }
 
+function avatarFromProfile(profile) {
+  if (!profile || typeof profile !== 'object' || Array.isArray(profile)) return '';
+  return typeof profile.avatarDataUrl === 'string' ? profile.avatarDataUrl : '';
+}
+
 function normalizeMessageIds(value) {
   const source = Array.isArray(value) ? value : String(value || '').split(',');
   return [...new Set(source.map(item => String(item || '').trim()).filter(Boolean))].slice(0, 100);
@@ -27,7 +32,8 @@ export async function getChatReactions(client, context, messageIds = []) {
            r.membership_id AS "membershipId",
            r.emoji,
            u.name AS "name",
-           u.email AS "email"
+           u.email AS "email",
+           u.profile AS "profile"
       FROM chat_message_reactions r
       JOIN chat_messages m ON m.id = r.message_id
       JOIN company_memberships cm ON cm.id = r.membership_id
@@ -52,7 +58,12 @@ export async function getChatReactions(client, context, messageIds = []) {
     reaction.mine ||= isMine;
     const name = row.name || row.email || 'User';
     if (!reaction.names.includes(name)) reaction.names.push(name);
-    reaction.members.push({ membershipId: row.membershipId, name, mine: isMine });
+    reaction.members.push({
+      membershipId: row.membershipId,
+      name,
+      mine: isMine,
+      avatarDataUrl: avatarFromProfile(row.profile),
+    });
   }
 
   return { byMessage: grouped };
