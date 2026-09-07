@@ -84,6 +84,7 @@ export function ChatPage(){
   const typingExpiryTimersRef=useRef(new Map());
   const highlightTimerRef=useRef(null);
   const longPressTimerRef=useRef(null);
+  const viewportRafRef=useRef(null);
 
   const latest=data?.messages||[];
   const newestMessageId=latest[latest.length-1]?.id||'';
@@ -99,7 +100,9 @@ export function ChatPage(){
 
   useEffect(()=>{if(data&&hasMoreOlder===null)setHasMoreOlder(Boolean(data.hasMore))},[data,hasMoreOlder]);
   useLayoutEffect(()=>{const el=listRef.current;if(!el)return;if(keepBottomAfterPruneRef.current){el.scrollTop=el.scrollHeight;keepBottomAfterPruneRef.current=false;return}const pending=pendingOlderScrollRef.current;if(!pending)return;el.scrollTop=pending.previousTop+(el.scrollHeight-pending.previousHeight);pendingOlderScrollRef.current=null},[older.length]);
+  useLayoutEffect(()=>{const el=composerRef.current;if(!el)return;el.style.height='auto';const nextHeight=Math.min(el.scrollHeight,108);el.style.height=`${Math.max(42,nextHeight)}px`;el.style.overflowY=el.scrollHeight>108?'auto':'hidden'},[text]);
 
+  useEffect(()=>{const viewport=window.visualViewport;if(!viewport)return undefined;const keepBottomVisible=()=>{if(viewportRafRef.current)window.cancelAnimationFrame(viewportRafRef.current);viewportRafRef.current=window.requestAnimationFrame(()=>{viewportRafRef.current=null;if(!nearBottomRef.current)return;const el=listRef.current;if(el)el.scrollTop=el.scrollHeight})};viewport.addEventListener('resize',keepBottomVisible);return()=>{viewport.removeEventListener('resize',keepBottomVisible);if(viewportRafRef.current)window.cancelAnimationFrame(viewportRafRef.current)}},[]);
   useEffect(()=>{const timers=typingExpiryTimersRef.current;function handleLive(event){const detail=event.detail||{};const payload=detail.payload||{};if(detail.event==='typing'&&payload.membershipId&&payload.membershipId!==membershipId){const id=payload.membershipId;const previous=timers.get(id);if(previous)window.clearTimeout(previous);if(payload.typing){setTypingUsers(current=>({...current,[id]:{name:payload.name||'User'}}));timers.set(id,window.setTimeout(()=>{setTypingUsers(current=>{const next={...current};delete next[id];return next});timers.delete(id)},4000))}else{setTypingUsers(current=>{const next={...current};delete next[id];return next});timers.delete(id)}}if(detail.event==='read'&&payload.membershipId&&payload.membershipId!==membershipId&&payload.lastReadAt)setLiveReadStates(current=>({...current,[payload.membershipId]:payload.lastReadAt}))}window.addEventListener('worktrack:chat-live',handleLive);return()=>{window.removeEventListener('worktrack:chat-live',handleLive);for(const timer of timers.values())window.clearTimeout(timer);timers.clear()}},[membershipId]);
   useEffect(()=>()=>{if(typingStopTimerRef.current)window.clearTimeout(typingStopTimerRef.current);if(highlightTimerRef.current)window.clearTimeout(highlightTimerRef.current);if(longPressTimerRef.current)window.clearTimeout(longPressTimerRef.current);void sendTyping({typing:false})},[sendTyping]);
   useEffect(()=>{if(!deleteTarget&&!reactionDetails&&!actionTarget)return undefined;function handleKey(event){if(event.key!=='Escape')return;if(deleteTarget&&!deleteState.isLoading)setDeleteTarget(null);if(reactionDetails)setReactionDetails(null);if(actionTarget)setActionTarget(null)}window.addEventListener('keydown',handleKey);return()=>window.removeEventListener('keydown',handleKey)},[deleteTarget,deleteState.isLoading,reactionDetails,actionTarget]);
