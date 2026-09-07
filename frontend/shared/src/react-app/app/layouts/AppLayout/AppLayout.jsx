@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
@@ -17,6 +18,7 @@ export function AppLayout({ children }) {
   const location = useLocation();
   const token = useSelector(selectToken);
   const user = useSelector(selectUser);
+  const layoutRef = useRef(null);
   const showWorkspaceNav = Boolean(token && user && hasActiveCompanyAccess(user));
   const isChatPage = location.pathname === '/chat';
   const layoutClassName = [
@@ -26,8 +28,35 @@ export function AppLayout({ children }) {
     isChatPage ? 'appLayout--chat' : '',
   ].filter(Boolean).join(' ');
 
+  useEffect(() => {
+    if (!isChatPage) return undefined;
+    const viewport = window.visualViewport;
+    const element = layoutRef.current;
+    if (!element) return undefined;
+
+    const syncViewport = () => {
+      const visualHeight = Math.round(viewport?.height || window.innerHeight);
+      const keyboardInset = Math.max(0, Math.round(window.innerHeight - visualHeight - (viewport?.offsetTop || 0)));
+      element.style.setProperty('--chat-visual-height', `${visualHeight}px`);
+      element.classList.toggle('appLayout--keyboardOpen', keyboardInset > 120);
+    };
+
+    syncViewport();
+    viewport?.addEventListener('resize', syncViewport);
+    viewport?.addEventListener('scroll', syncViewport);
+    window.addEventListener('resize', syncViewport);
+
+    return () => {
+      viewport?.removeEventListener('resize', syncViewport);
+      viewport?.removeEventListener('scroll', syncViewport);
+      window.removeEventListener('resize', syncViewport);
+      element.style.removeProperty('--chat-visual-height');
+      element.classList.remove('appLayout--keyboardOpen');
+    };
+  }, [isChatPage]);
+
   return (
-    <div className={layoutClassName}>
+    <div className={layoutClassName} ref={layoutRef}>
       <GlobalRequestLoader />
       <AuthSessionErrorModal />
       <SessionNotice />
