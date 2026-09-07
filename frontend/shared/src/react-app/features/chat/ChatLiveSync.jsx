@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { baseApi } from '../../app/api/baseApi.js';
 import { selectToken, selectUser } from '../auth/authSlice.js';
 import { hasActiveCompanyAccess } from '../auth/authAccess.js';
-import { chatApi } from './chatApi.js';
+import { applyReactionEvent, chatApi } from './chatApi.js';
 import { getChatConnectionState, setChatConnectionState } from './chatConnectionState.js';
 import { connectChatStream } from './chatLive.js';
 
@@ -49,9 +49,18 @@ export function ChatLiveSync() {
     const handleEvent = (event, payload) => {
       const tags = [];
       const ownMessage = event === 'message' && payload?.authorMembershipId === membershipId;
+      const ownReaction = event === 'reaction' && payload?.membershipId === membershipId;
 
-      if ((event === 'message' && !ownMessage) || event === 'delete' || event === 'reaction') {
+      if ((event === 'message' && !ownMessage) || event === 'delete') {
         tags.push({ type: 'Notifications', id: 'CHAT_MESSAGES' });
+      }
+
+      if (event === 'reaction' && !ownReaction) {
+        dispatch(
+          chatApi.util.updateQueryData('getChatMessages', { limit: 50 }, draft => {
+            applyReactionEvent(draft, payload, membershipId);
+          }),
+        );
       }
 
       if ((event === 'message' && !ownMessage) || event === 'delete') {
