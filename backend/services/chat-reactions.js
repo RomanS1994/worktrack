@@ -76,41 +76,56 @@ export async function toggleChatReaction(client, context, body = {}) {
   if (!messageId) throw new Error('Chat message is required');
   if (!ALLOWED_REACTIONS.has(emoji)) throw new Error('Unsupported chat reaction');
 
-  const messageRows = await client.$queryRaw`
-    SELECT id
-      FROM chat_messages
-     WHERE id = ${messageId}
-       AND company_id = ${membership.companyId}
-       AND deleted_at IS NULL
-     LIMIT 1
+  const rows = await client.$queryRaw`
+    WITH target AS (
+      SELECT id
+        FROM chat_messages
+       WHERE id = ${messageId}
+         AND company_id = ${membership.companyId}
+         AND deleted_at IS NULL
+       LIMIT 1
+    ),
+    existing AS (
+      SELECT emoji
+        FROM chat_message_reactions
+       WHERE message_id = ${messageId}
+         AND membership_id = ${membership.id}
+       LIMIT 1
+    ),
+    deleted AS (
+      DELETE FROM chat_message_reactions r
+       USING target
+       WHERE r.message_id = target.id
+         AND r.membership_id = ${membership.id}
+         AND r.emoji = ${emoji}
+      RETURNING r.emoji
+    ),
+    upserted AS (
+      INSERT INTO chat_message_reactions (message_id, membership_id, emoji)
+      SELECT target.id, ${membership.id}, ${emoji}
+        FROM target
+       WHERE COALESCE((SELECT emoji FROM existing LIMIT 1), '') <> ${emoji}
+      ON CONFLICT (message_id, membership_id) DO UPDATE SET
+        emoji = EXCLUDED.emoji,
+        created_at = CURRENT_TIMESTAMP
+      RETURNING emoji
+    )
+    SELECT
+      EXISTS(SELECT 1 FROM target) AS "messageExists",
+      COALESCE((SELECT emoji FROM existing LIMIT 1), '') AS "currentEmoji",
+      EXISTS(SELECT 1 FROM upserted) AS "active"
   `;
-  if (!messageRows[0]?.id) throw new Error('Chat message not found');
 
-  const existingRows = await client.$queryRaw`
-    SELECT emoji
-      FROM chat_message_reactions
-     WHERE message_id = ${messageId}
-       AND membership_id = ${membership.id}
-     ORDER BY created_at DESC
-  `;
-  const currentEmoji = existingRows[0]?.emoji || '';
+  const result = rows[0] || {};
+  if (!result.messageExists) throw new Error('Chat message not found');
 
-  await client.$executeRaw`
-    DELETE FROM chat_message_reactions
-     WHERE message_id = ${messageId}
-       AND membership_id = ${membership.id}
-  `;
-
-  if (currentEmoji === emoji) {
-    return { ok: true, messageId, emoji, active: false, replacedEmoji: '' };
-  }
-
-  await client.$executeRaw`
-    INSERT INTO chat_message_reactions (message_id, membership_id, emoji)
-    VALUES (${messageId}, ${membership.id}, ${emoji})
-    ON CONFLICT (message_id, membership_id) DO UPDATE SET
-      emoji = EXCLUDED.emoji,
-      created_at = CURRENT_TIMESTAMP
-  `;
-  return { ok: true, messageId, emoji, active: true, replacedEmoji: currentEmoji };
+  const currentEmoji = result.currentEmoji || '';
+  const active = Boolean(result.active);
+  return {
+    ok: true,
+    messageId,
+    emoji,
+    active,
+    replacedEmoji: active ? currentEmoji : '',
+  };
 }
