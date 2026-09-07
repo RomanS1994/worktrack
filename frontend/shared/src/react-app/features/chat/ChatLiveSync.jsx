@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { baseApi } from '../../app/api/baseApi.js';
 import { selectToken, selectUser } from '../auth/authSlice.js';
 import { hasActiveCompanyAccess } from '../auth/authAccess.js';
+import { chatApi } from './chatApi.js';
 import { getChatConnectionState, setChatConnectionState } from './chatConnectionState.js';
 import { connectChatStream } from './chatLive.js';
 
@@ -24,8 +25,19 @@ export function ChatLiveSync() {
     if (!enabled) return undefined;
     let controller = null;
     let retryId = null;
+    let prefetchId = null;
     let stopped = false;
     let connected = getChatConnectionState() === 'connected';
+
+    const prefetchMessages = () => {
+      dispatch(chatApi.util.prefetch('getChatMessages', { limit: 50 }, { ifOlderThan: 45 }));
+    };
+
+    if (typeof window.requestIdleCallback === 'function') {
+      prefetchId = window.requestIdleCallback(prefetchMessages, { timeout: 1200 });
+    } else {
+      prefetchId = window.setTimeout(prefetchMessages, 250);
+    }
 
     const syncAll = () => dispatch(baseApi.util.invalidateTags(CHAT_SYNC_TAGS));
 
@@ -103,6 +115,7 @@ export function ChatLiveSync() {
 
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
+        prefetchMessages();
         syncAll();
         void start();
       } else {
@@ -112,6 +125,7 @@ export function ChatLiveSync() {
 
     const handleOnline = () => {
       setChatConnectionState('connecting');
+      prefetchMessages();
       syncAll();
       void start();
     };
@@ -132,6 +146,10 @@ export function ChatLiveSync() {
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      if (prefetchId !== null) {
+        if (typeof window.cancelIdleCallback === 'function') window.cancelIdleCallback(prefetchId);
+        else window.clearTimeout(prefetchId);
+      }
       stopConnection();
     };
   }, [dispatch, enabled, membershipId]);
