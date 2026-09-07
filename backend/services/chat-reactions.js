@@ -44,7 +44,7 @@ export async function getChatReactions(client, context, messageIds = []) {
     const list = grouped[messageId] || (grouped[messageId] = []);
     let reaction = list.find(item => item.emoji === row.emoji);
     if (!reaction) {
-      reaction = { emoji: row.emoji, count: 0, mine: false, names: [], members: [] };
+      reaction = { messageId, emoji: row.emoji, count: 0, mine: false, names: [], members: [] };
       list.push(reaction);
     }
     reaction.count += 1;
