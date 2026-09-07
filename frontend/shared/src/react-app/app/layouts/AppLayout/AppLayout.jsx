@@ -33,12 +33,21 @@ export function AppLayout({ children }) {
     const viewport = window.visualViewport;
     const element = layoutRef.current;
     if (!element) return undefined;
+    let stableViewportHeight = Math.round(viewport?.height || window.innerHeight);
 
     const syncViewport = () => {
       const visualHeight = Math.round(viewport?.height || window.innerHeight);
-      const keyboardInset = Math.max(0, Math.round(window.innerHeight - visualHeight - (viewport?.offsetTop || 0)));
+      const offsetTop = Math.max(0, Math.round(viewport?.offsetTop || 0));
+      const visibleBottom = visualHeight + offsetTop;
+      const keyboardInset = Math.max(0, stableViewportHeight - visibleBottom);
+      const keyboardOpen = keyboardInset > 120;
+
+      if (!keyboardOpen && visualHeight > stableViewportHeight) {
+        stableViewportHeight = visualHeight;
+      }
+
       element.style.setProperty('--chat-visual-height', `${visualHeight}px`);
-      element.classList.toggle('appLayout--keyboardOpen', keyboardInset > 120);
+      element.classList.toggle('appLayout--keyboardOpen', keyboardOpen);
     };
 
     syncViewport();
