@@ -16,7 +16,9 @@ test('month-boundary weeks submit and lock only the active calendar-month segmen
     readFile(fastHoursSupportPath, 'utf8'),
   ]);
 
-  assert.match(employeeWorkSource, /const targetMonth = monthKey\(draftEntries\[0\]\.workDate\)/);
+  assert.match(employeeWorkSource, /const requestedMonth = \/\^\\d\{4\}-\\d\{2\}\$\/\.test\(String\(payload\.month \|\| ''\)\)/);
+  assert.match(employeeWorkSource, /const availableMonths = new Set\(draftEntries\.map\(entry => monthKey\(entry\.workDate\)\)\)/);
+  assert.match(employeeWorkSource, /const targetMonth = requestedMonth && availableMonths\.has\(requestedMonth\)[\s\S]*?\? requestedMonth[\s\S]*?: monthKey\(draftEntries\[0\]\.workDate\)/);
   assert.match(employeeWorkSource, /draftEntries\.filter\(entry => monthKey\(entry\.workDate\) === targetMonth\)/);
   assert.match(employeeWorkSource, /const segment = monthSegment\(range, targetMonth\)/);
   assert.match(employeeWorkSource, /weekStart: segment\.start/);
