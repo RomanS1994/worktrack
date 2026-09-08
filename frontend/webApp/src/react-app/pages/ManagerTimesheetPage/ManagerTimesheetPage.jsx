@@ -25,6 +25,7 @@ function cellClass(status) {
 }
 
 function problemLabel(day) {
+  if (day.isCurrentMonth === false) return 'Інший місяць';
   if (day.status === 'MISSING_MANAGER') return 'Немає запису менеджера';
   if (day.status === 'MISSING_EMPLOYEE') return 'Немає запису працівника';
   const labels = [];
@@ -35,7 +36,7 @@ function problemLabel(day) {
 }
 
 function problemDetails(day) {
-  if (day.status === 'EMPTY') return [];
+  if (day.status === 'EMPTY' || day.status === 'OUTSIDE_MONTH') return [];
   if (day.status === 'MATCH') return [{ tone: 'ok', title: 'Все сходиться', text: 'Записи менеджера і працівника збігаються.' }];
   if (day.status === 'MISSING_MANAGER') return [{ tone: 'warning', title: 'Немає вашого запису', text: `Працівник записав ${day.employeeHours ?? '—'} год.` }];
   if (day.status === 'MISSING_EMPLOYEE') return [{ tone: 'warning', title: 'Немає запису працівника', text: `У вашому табелі є ${day.managerHours ?? '—'} год.` }];
@@ -67,8 +68,10 @@ function weekLabel(week) {
   if (!week.length) return '';
   const first = new Date(`${week[0].date}T12:00:00`);
   const last = new Date(`${week.at(-1).date}T12:00:00`);
-  const monthName = new Intl.DateTimeFormat('uk-UA', { month: 'long' }).format(last);
-  return `${first.getDate()}–${last.getDate()} ${monthName}`;
+  const firstMonth = new Intl.DateTimeFormat('uk-UA', { month: 'long' }).format(first);
+  const lastMonth = new Intl.DateTimeFormat('uk-UA', { month: 'long' }).format(last);
+  if (first.getMonth() === last.getMonth()) return `${first.getDate()}–${last.getDate()} ${lastMonth}`;
+  return `${first.getDate()} ${firstMonth} — ${last.getDate()} ${lastMonth}`;
 }
 
 export function ManagerTimesheetPage() {
@@ -110,7 +113,7 @@ export function ManagerTimesheetPage() {
   }
 
   function openCell(row, day) {
-    if (row.canEdit === false) return;
+    if (row.canEdit === false || day?.isCurrentMonth === false) return;
     setSelected({ row, day });
     setHours(day.managerHours == null ? '' : String(day.managerHours));
     setBreakMinutes(day.managerBreakMinutes == null ? '' : String(day.managerBreakMinutes));
@@ -127,7 +130,7 @@ export function ManagerTimesheetPage() {
 
     const row = rows.find(item => item.employeeId === targetEmployeeId);
     const day = row?.days?.find(item => item.date === targetDate);
-    if (!row || !day) return;
+    if (!row || !day || day.isCurrentMonth === false) return;
 
     const targetWeek = weeks.findIndex(week => week.some(item => item.date === targetDate));
     if (targetWeek >= 0) setWeekIndex(targetWeek);
@@ -137,7 +140,7 @@ export function ManagerTimesheetPage() {
 
   async function submitCell(event) {
     event.preventDefault();
-    if (!selected) return;
+    if (!selected || selected.day?.isCurrentMonth === false) return;
     await saveCell({
       employeeId: selected.row.employeeId,
       date: selected.day.date,
@@ -150,7 +153,7 @@ export function ManagerTimesheetPage() {
   }
 
   async function clearCell() {
-    if (!selected) return;
+    if (!selected || selected.day?.isCurrentMonth === false) return;
     await saveCell({
       employeeId: selected.row.employeeId,
       date: selected.day.date,
@@ -188,10 +191,10 @@ export function ManagerTimesheetPage() {
       <section className="managerTimesheetDesktop screenCard">
         <div className="managerTimesheetScroll">
           <table>
-            <thead><tr><th className="employeeColumn">Працівник</th>{days.map(day => <th key={day.date}><span>{day.day}</span><small>{new Intl.DateTimeFormat('uk-UA', { weekday: 'short' }).format(new Date(`${day.date}T00:00:00`))}</small></th>)}<th className="totalColumn">Разом</th></tr></thead>
+            <thead><tr><th className="employeeColumn">Працівник</th>{days.map(day => <th className={day.isCurrentMonth === false ? 'is-outside-month' : ''} key={day.date}><span>{day.day}</span><small>{new Intl.DateTimeFormat('uk-UA', { weekday: 'short' }).format(new Date(`${day.date}T00:00:00`))}</small></th>)}<th className="totalColumn">Разом</th></tr></thead>
             <tbody>{rows.map(row => <tr key={row.employeeId}>
               <th className="employeeColumn"><span className="employeeName">{row.name}</span>{row.problems ? <small className="employeeProblems">⚠ {row.problems}</small> : <small className="employeeOk">✓</small>}</th>
-              {row.days.map(day => <td key={day.date}><button type="button" className={cellClass(day.status)} disabled={row.canEdit === false} onClick={() => openCell(row, day)} title={row.canEdit === false ? 'Власний контрольний рядок редагує інший менеджер' : problemLabel(day)}>{day.managerHours ?? '—'}</button></td>)}
+              {row.days.map(day => <td key={day.date}><button type="button" className={cellClass(day.status)} disabled={row.canEdit === false || day.isCurrentMonth === false} onClick={() => openCell(row, day)} title={day.isCurrentMonth === false ? 'Інший місяць' : row.canEdit === false ? 'Власний контрольний рядок редагує інший менеджер' : problemLabel(day)}>{day.managerHours ?? '—'}</button></td>)}
               <td className="totalColumn"><strong>{row.managerTotal}</strong><small> год</small></td>
             </tr>)}</tbody>
           </table>
@@ -208,7 +211,7 @@ export function ManagerTimesheetPage() {
         <div className="managerTimesheetMobileTable">
           <div className="managerTimesheetMobileHead">
             <span>Працівник</span>
-            {mobileWeek.map(day => <span key={day.date}><b>{day.day}</b><small>{new Intl.DateTimeFormat('uk-UA', { weekday: 'short' }).format(new Date(`${day.date}T00:00:00`))}</small></span>)}
+            {mobileWeek.map(day => <span className={day.isCurrentMonth === false ? 'is-outside-month' : ''} key={day.date}><b>{day.day}</b><small>{new Intl.DateTimeFormat('uk-UA', { weekday: 'short' }).format(new Date(`${day.date}T00:00:00`))}</small></span>)}
             <span>Разом</span>
           </div>
 
@@ -216,7 +219,8 @@ export function ManagerTimesheetPage() {
             <div className="managerTimesheetMobileEmployee"><strong>{initials(row.name)}</strong><small className={row.problems ? 'hasProblems' : 'isOk'}>{row.problems ? `⚠ ${row.problems}` : '✓'}</small></div>
             {mobileWeek.map(day => {
               const entry = row.days.find(item => item.date === day.date) || day;
-              return <button type="button" key={day.date} className={cellClass(entry.status)} disabled={row.canEdit === false} onClick={() => openCell(row, entry)} aria-label={`${row.name}, ${day.date}: ${row.canEdit === false ? 'власний контрольний рядок редагує інший менеджер' : problemLabel(entry)}`}>{entry.managerHours ?? '—'}</button>;
+              const outsideMonth = entry.isCurrentMonth === false;
+              return <button type="button" key={day.date} className={cellClass(entry.status)} disabled={outsideMonth || row.canEdit === false} onClick={() => openCell(row, entry)} aria-label={`${row.name}, ${day.date}: ${outsideMonth ? 'інший місяць' : row.canEdit === false ? 'власний контрольний рядок редагує інший менеджер' : problemLabel(entry)}`}>{outsideMonth ? '—' : entry.managerHours ?? '—'}</button>;
             })}
             <div className="managerTimesheetMobileTotal"><strong>{row.managerTotal}</strong><small>год</small></div>
           </div>)}
