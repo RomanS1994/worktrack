@@ -413,6 +413,7 @@ export async function deleteEmployeeWorkEntry(client, context, entryId) {
 export async function submitEmployeeWeek(client, context, payload = {}) {
   const membership = ensureEmployeeContext(context);
   const range = getEmployeeWeekRange(payload.weekStart || new Date());
+  const requestedMonth = /^\d{4}-\d{2}$/.test(String(payload.month || '')) ? String(payload.month) : '';
   const timestamp = new Date(nowIso());
 
   const draftEntries = await client.workEntry.findMany({
@@ -426,8 +427,12 @@ export async function submitEmployeeWeek(client, context, payload = {}) {
   });
   if (!draftEntries.length) throw new Error('No work entries to submit');
 
-  const targetMonth = monthKey(draftEntries[0].workDate);
+  const availableMonths = new Set(draftEntries.map(entry => monthKey(entry.workDate)));
+  const targetMonth = requestedMonth && availableMonths.has(requestedMonth)
+    ? requestedMonth
+    : monthKey(draftEntries[0].workDate);
   const entries = draftEntries.filter(entry => monthKey(entry.workDate) === targetMonth);
+  if (!entries.length) throw new Error('No work entries to submit for this month');
   const segment = monthSegment(range, targetMonth);
 
   let existingSubmission = await client.weeklySubmission.findFirst({
