@@ -1,13 +1,16 @@
 .companyChatBubble{position:relative}.companyChatBubble:has(.companyChatReactions){margin-bottom:10px}.companyChatReactions{position:absolute;z-index:2;left:8px;bottom:-13px;margin-top:0;flex-wrap:nowrap}.companyChatReactions button{min-height:22px;padding:1px 6px;background:#fff;box-shadow:0 2px 6px rgba(15,23,42,.08)}.isMine .companyChatReactions{left:auto;right:8px}@media(max-width:760px){.companyChatBubble:has(.companyChatReactions){margin-bottom:11px}.companyChatReactions{left:7px;bottom:-12px}.isMine .companyChatReactions{left:auto;right:7px}}
 
 /* Long-press action menu: reactions live above the actions, iOS-style. */
-.companyChatActionPanel{display:grid;gap:9px;width:min(100%,420px)}
+.companyChatActionPanel{display:grid;gap:8px;width:min(100%,420px)}
 .companyChatActionPanel .companyChatActionSheet{width:100%}
-.companyChatActionReactions{display:flex;align-items:center;justify-content:space-between;gap:2px;width:100%;min-height:58px;padding:6px 8px;border:1px solid rgba(255,255,255,.82);border-radius:999px;background:rgba(255,255,255,.98);box-shadow:0 12px 30px rgba(15,23,42,.16);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
-.companyChatActionReactions button{display:grid;place-items:center;flex:1 1 0;min-width:0;width:42px;height:44px;min-height:44px;padding:0;border:0;border-radius:999px;background:transparent;font-size:25px;line-height:1;transition:transform .14s ease,background-color .14s ease}
-.companyChatActionReactions button:active{transform:scale(.88);background:#f3f6f4}
-.companyChatActionReactions .companyChatActionReactionMore{flex:0 0 42px;border:1px solid rgba(148,163,184,.18);background:#f2f4f5;color:#59656e;font-family:inherit;font-size:27px;font-weight:400}
-.companyChatActionReactions.isExpanded{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;max-height:min(52dvh,360px);overflow-y:auto;padding:8px;border-radius:22px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
-.companyChatActionReactions.isExpanded button{width:100%;font-size:23px}
-@media(max-width:430px){.companyChatActionPanel{gap:8px}.companyChatActionReactions{min-height:56px;padding:5px 6px}.companyChatActionReactions button{height:42px;min-height:42px;font-size:24px}.companyChatActionReactions .companyChatActionReactionMore{flex-basis:40px;font-size:25px}.companyChatActionReactions.isExpanded{grid-template-columns:repeat(6,minmax(0,1fr));padding:7px;border-radius:20px}}
-@media(max-width:360px){.companyChatActionReactions{gap:0;padding-left:4px;padding-right:4px}.companyChatActionReactions button{font-size:22px}.companyChatActionReactions .companyChatActionReactionMore{flex-basis:38px}}
+.companyChatActionReactions{display:flex;align-items:center;justify-self:center;justify-content:center;gap:2px;width:min(100%,344px);min-height:56px;padding:5px 6px;border:1px solid rgba(255,255,255,.86);border-radius:999px;background:rgba(255,255,255,.98);box-shadow:0 10px 28px rgba(15,23,42,.15);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.companyChatActionReactions button{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:999px;background:transparent;font-size:25px;line-height:1;transition:transform .14s ease,background-color .14s ease}
+.companyChatActionReactions button:hover{background:#f4f7f5}
+.companyChatActionReactions button:active{transform:scale(.88);background:#eef3ef}
+.companyChatActionReactions button:focus-visible{outline:2px solid rgba(22,163,74,.45);outline-offset:1px}
+.companyChatActionReactions .companyChatActionReactionMore{border:1px solid rgba(148,163,184,.2);background:#f2f4f5;color:#59656e;font-family:inherit;font-size:27px;font-weight:400}
+.companyChatActionReactions.isExpanded{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;width:min(100%,344px);max-height:min(48dvh,320px);overflow-y:auto;padding:7px;border-radius:20px;overscroll-behavior:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.companyChatActionReactions.isExpanded::-webkit-scrollbar{display:none}
+.companyChatActionReactions.isExpanded button{width:100%;height:42px;min-height:42px;font-size:23px}
+@media(max-width:430px){.companyChatActionReactions{width:min(100%,336px);min-height:54px;padding:4px 5px}.companyChatActionReactions button{flex-basis:42px;width:42px;height:42px;min-height:42px;font-size:24px}.companyChatActionReactions .companyChatActionReactionMore{font-size:25px}.companyChatActionReactions.isExpanded{width:min(100%,336px);grid-template-columns:repeat(6,minmax(0,1fr));padding:6px;border-radius:19px}}
+@media(max-width:360px){.companyChatActionReactions{width:100%;gap:0;padding-left:3px;padding-right:3px}.companyChatActionReactions button{flex-basis:40px;width:40px;font-size:22px}.companyChatActionReactions.isExpanded{grid-template-columns:repeat(6,minmax(0,1fr));gap:2px}}
