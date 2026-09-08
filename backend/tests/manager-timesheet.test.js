@@ -89,6 +89,10 @@ function managerEntry(overrides = {}) {
   };
 }
 
+function dayFor(payload, date = '2026-08-10') {
+  return payload.rows[0]?.days.find(day => day.date === date);
+}
+
 test('manager timesheet preserves submitted net hours instead of deducting lunch again', async () => {
   const payload = await getManagerTimesheet(
     readClient({
@@ -99,7 +103,7 @@ test('manager timesheet preserves submitted net hours instead of deducting lunch
     { month: '2026-08' }
   );
 
-  const day = payload.rows[0].days[9];
+  const day = dayFor(payload);
   assert.equal(day.employeeHours, 8);
   assert.equal(day.managerHours, 8);
   assert.equal(day.status, 'MATCH');
@@ -118,7 +122,7 @@ test('manager timesheet does not add a quarter hour when a submitted entry has a
     { month: '2026-08' }
   );
 
-  const day = payload.rows[0].days[9];
+  const day = dayFor(payload);
   assert.equal(day.employeeHours, 10.25);
   assert.equal(day.managerHours, 10.25);
   assert.equal(day.difference, 0);
@@ -129,22 +133,8 @@ test('manager timesheet ignores draft entries when comparing submitted worker ho
   const payload = await getManagerTimesheet(
     readClient({
       workEntries: [
-        workEntry({
-          id: 'submitted-entry',
-          hours: '10.50',
-          grossHours: '11.00',
-          breakMinutes: 30,
-          status: 'SUBMITTED',
-        }),
-        workEntry({
-          id: 'draft-entry',
-          projectId: 'project-b',
-          project: { name: 'Brno' },
-          hours: '0.24',
-          grossHours: '0.24',
-          breakMinutes: 0,
-          status: 'DRAFT',
-        }),
+        workEntry({ id: 'submitted-entry', hours: '10.50', grossHours: '11.00', breakMinutes: 30, status: 'SUBMITTED' }),
+        workEntry({ id: 'draft-entry', projectId: 'project-b', project: { name: 'Brno' }, hours: '0.24', grossHours: '0.24', breakMinutes: 0, status: 'DRAFT' }),
       ],
       managerEntries: [managerEntry({ hours: '10.50', breakMinutes: 30 })],
     }),
@@ -152,7 +142,7 @@ test('manager timesheet ignores draft entries when comparing submitted worker ho
     { month: '2026-08' }
   );
 
-  const day = payload.rows[0].days[9];
+  const day = dayFor(payload);
   assert.equal(day.employeeHours, 10.5);
   assert.equal(day.managerHours, 10.5);
   assert.equal(day.status, 'MATCH');
@@ -163,24 +153,8 @@ test('manager timesheet prefers weekly submitted entries over orphan approved im
   const payload = await getManagerTimesheet(
     readClient({
       workEntries: [
-        workEntry({
-          id: 'live-submitted-entry',
-          weeklySubmissionId: 'submission-1',
-          hours: '10.50',
-          grossHours: '11.00',
-          breakMinutes: 30,
-          status: 'SUBMITTED',
-        }),
-        workEntry({
-          id: 'orphan-import-entry',
-          weeklySubmissionId: null,
-          projectId: 'project-b',
-          project: { name: 'Brno' },
-          hours: '0.24',
-          grossHours: '0.24',
-          breakMinutes: 0,
-          status: 'APPROVED',
-        }),
+        workEntry({ id: 'live-submitted-entry', weeklySubmissionId: 'submission-1', hours: '10.50', grossHours: '11.00', breakMinutes: 30, status: 'SUBMITTED' }),
+        workEntry({ id: 'orphan-import-entry', weeklySubmissionId: null, projectId: 'project-b', project: { name: 'Brno' }, hours: '0.24', grossHours: '0.24', breakMinutes: 0, status: 'APPROVED' }),
       ],
       managerEntries: [managerEntry({ hours: '10.50', breakMinutes: 30 })],
     }),
@@ -188,7 +162,7 @@ test('manager timesheet prefers weekly submitted entries over orphan approved im
     { month: '2026-08' }
   );
 
-  const day = payload.rows[0].days[9];
+  const day = dayFor(payload);
   assert.equal(day.employeeHours, 10.5);
   assert.equal(day.managerHours, 10.5);
   assert.equal(day.status, 'MATCH');
@@ -197,15 +171,12 @@ test('manager timesheet prefers weekly submitted entries over orphan approved im
 
 test('manager timesheet pinpoints a half-hour mismatch', async () => {
   const payload = await getManagerTimesheet(
-    readClient({
-      workEntries: [workEntry()],
-      managerEntries: [managerEntry({ hours: '7.50' })],
-    }),
+    readClient({ workEntries: [workEntry()], managerEntries: [managerEntry({ hours: '7.50' })] }),
     context(),
     { month: '2026-08' }
   );
 
-  const day = payload.rows[0].days[9];
+  const day = dayFor(payload);
   assert.equal(day.status, 'MISMATCH');
   assert.deepEqual(day.reasons, ['hours']);
   assert.equal(day.difference, -0.5);
@@ -222,7 +193,7 @@ test('manager timesheet reports lunch and project differences separately', async
     { month: '2026-08' }
   );
 
-  const day = payload.rows[0].days[9];
+  const day = dayFor(payload);
   assert.equal(day.employeeHours, 8);
   assert.equal(day.managerHours, 8);
   assert.equal(day.status, 'MISMATCH');
@@ -231,25 +202,38 @@ test('manager timesheet reports lunch and project differences separately', async
 });
 
 test('manager timesheet distinguishes which side is missing', async () => {
-  const missingManager = await getManagerTimesheet(
-    readClient({ workEntries: [workEntry()] }),
-    context(),
-    { month: '2026-08' }
-  );
-  assert.equal(missingManager.rows[0].days[9].status, 'MISSING_MANAGER');
+  const missingManager = await getManagerTimesheet(readClient({ workEntries: [workEntry()] }), context(), { month: '2026-08' });
+  assert.equal(dayFor(missingManager).status, 'MISSING_MANAGER');
 
-  const missingEmployee = await getManagerTimesheet(
-    readClient({ managerEntries: [managerEntry()] }),
-    context(),
-    { month: '2026-08' }
-  );
-  assert.equal(missingEmployee.rows[0].days[9].status, 'MISSING_EMPLOYEE');
+  const missingEmployee = await getManagerTimesheet(readClient({ managerEntries: [managerEntry()] }), context(), { month: '2026-08' });
+  assert.equal(dayFor(missingEmployee).status, 'MISSING_EMPLOYEE');
 });
 
-test('manager timesheet hides an inactive employee even when the selected month has data', async () => {
+test('manager timesheet pads every month to complete Monday-Sunday calendar weeks', async () => {
+  const payload = await getManagerTimesheet(readClient(), context(), { month: '2026-08' });
+  const days = payload.rows[0].days;
+
+  assert.equal(days.length % 7, 0);
+  assert.equal(days[0].date, '2026-07-27');
+  assert.equal(new Date(`${days[0].date}T00:00:00.000Z`).getUTCDay(), 1);
+  assert.equal(days.at(-1).date, '2026-09-06');
+  assert.equal(new Date(`${days.at(-1).date}T00:00:00.000Z`).getUTCDay(), 0);
+
+  const july31 = dayFor(payload, '2026-07-31');
+  const september1 = dayFor(payload, '2026-09-01');
+  assert.equal(july31.isCurrentMonth, false);
+  assert.equal(july31.status, 'OUTSIDE_MONTH');
+  assert.equal(july31.managerHours, null);
+  assert.equal(september1.isCurrentMonth, false);
+  assert.equal(september1.status, 'OUTSIDE_MONTH');
+
+  const august10 = dayFor(payload, '2026-08-10');
+  assert.equal(august10.isCurrentMonth, true);
+});
+
+test('manager timesheet summary and totals ignore adjacent-month calendar cells', async () => {
   const payload = await getManagerTimesheet(
     readClient({
-      employees: [employee({ status: 'INACTIVE' })],
       workEntries: [workEntry()],
       managerEntries: [managerEntry()],
     }),
@@ -257,50 +241,47 @@ test('manager timesheet hides an inactive employee even when the selected month 
     { month: '2026-08' }
   );
 
+  assert.equal(payload.rows[0].employeeTotal, 8);
+  assert.equal(payload.rows[0].managerTotal, 8);
+  assert.equal(payload.summary.matched, 1);
+  assert.equal(payload.summary.mismatches, 0);
+  assert.equal(payload.summary.missing, 0);
+});
+
+test('manager timesheet hides an inactive employee even when the selected month has data', async () => {
+  const payload = await getManagerTimesheet(
+    readClient({ employees: [employee({ status: 'INACTIVE' })], workEntries: [workEntry()], managerEntries: [managerEntry()] }),
+    context(),
+    { month: '2026-08' }
+  );
   assert.equal(payload.rows.length, 0);
   assert.equal(payload.summary.employees, 0);
 });
 
 test('manager timesheet hides a soft-deleted employee even when the selected month has data', async () => {
   const payload = await getManagerTimesheet(
-    readClient({
-      employees: [employee({ deletedAt: new Date('2026-08-20T00:00:00.000Z') })],
-      workEntries: [workEntry()],
-    }),
+    readClient({ employees: [employee({ deletedAt: new Date('2026-08-20T00:00:00.000Z') })], workEntries: [workEntry()] }),
     context(),
     { month: '2026-08' }
   );
-
   assert.equal(payload.rows.length, 0);
   assert.equal(payload.summary.employees, 0);
 });
 
 test('manager timesheet hides an employee whose user account was deleted', async () => {
   const payload = await getManagerTimesheet(
-    readClient({
-      employees: [employee({ user: { name: 'Old Worker', email: 'old@example.com', deletedAt: new Date('2026-08-20T00:00:00.000Z') } })],
-      workEntries: [workEntry()],
-    }),
+    readClient({ employees: [employee({ user: { name: 'Old Worker', email: 'old@example.com', deletedAt: new Date('2026-08-20T00:00:00.000Z') } })], workEntries: [workEntry()] }),
     context(),
     { month: '2026-08' }
   );
-
   assert.equal(payload.rows.length, 0);
   assert.equal(payload.summary.employees, 0);
 });
 
 test('manager timesheet rejects non-numeric hour input instead of deleting a cell', async () => {
-  const client = {
-    companyMembership: { findFirst: async () => ({ id: 'employee-1' }) },
-  };
-
+  const client = { companyMembership: { findFirst: async () => ({ id: 'employee-1' }) } };
   await assert.rejects(
-    upsertManagerTimesheetCell(client, context(), 'employee-1', {
-      date: '2026-08-10',
-      hours: 'wrong',
-      breakMinutes: '',
-      projectId: '',
-    }),
+    upsertManagerTimesheetCell(client, context(), 'employee-1', { date: '2026-08-10', hours: 'wrong', breakMinutes: '', projectId: '' }),
     /Invalid hours/
   );
 });
@@ -316,10 +297,7 @@ test('manager timesheet clears an existing manager control entry', async () => {
   };
 
   const result = await upsertManagerTimesheetCell(client, context(), 'employee-1', {
-    date: '2026-08-10',
-    hours: '',
-    breakMinutes: '',
-    projectId: '',
+    date: '2026-08-10', hours: '', breakMinutes: '', projectId: '',
   });
 
   assert.deepEqual(result, { deleted: true });
