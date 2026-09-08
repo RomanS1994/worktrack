@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 function parseMonth(value) {
   const raw = String(value || '').trim();
   if (!/^\d{4}-\d{2}$/.test(raw)) throw new Error('Invalid month');
@@ -20,6 +22,31 @@ function parseDate(value) {
 
 function isoDate(value) {
   return new Date(value).toISOString().slice(0, 10);
+}
+
+function addDays(value, amount) {
+  return new Date(value.getTime() + amount * DAY_MS);
+}
+
+function calendarDaysForMonth(period) {
+  const firstWeekday = period.start.getUTCDay();
+  const daysBackToMonday = firstWeekday === 0 ? 6 : firstWeekday - 1;
+  const calendarStart = addDays(period.start, -daysBackToMonday);
+  const lastDay = addDays(period.end, -1);
+  const lastWeekday = lastDay.getUTCDay();
+  const daysForwardToSunday = lastWeekday === 0 ? 0 : 7 - lastWeekday;
+  const calendarEnd = addDays(lastDay, daysForwardToSunday);
+  const count = Math.round((calendarEnd.getTime() - calendarStart.getTime()) / DAY_MS) + 1;
+
+  return Array.from({ length: count }, (_, index) => {
+    const date = addDays(calendarStart, index);
+    return {
+      date,
+      dateKey: isoDate(date),
+      day: date.getUTCDate(),
+      isCurrentMonth: date >= period.start && date < period.end,
+    };
+  });
 }
 
 function toNumber(value) {
@@ -63,6 +90,7 @@ function preferSubmittedEntries(entries) {
 
 export async function getManagerTimesheet(client, context, { month }) {
   const period = parseMonth(month);
+  const calendarDays = calendarDaysForMonth(period);
   const manager = context.activeMembership || context.membership || context;
   const companyId = manager.companyId;
 
@@ -147,7 +175,6 @@ export async function getManagerTimesheet(client, context, { month }) {
     visibleManagerEntries.map(entry => [`${entry.employeeMembershipId}:${isoDate(entry.workDate)}`, entry])
   );
 
-  const daysInMonth = new Date(Date.UTC(period.year, period.month, 0)).getUTCDate();
   let matched = 0;
   let mismatches = 0;
   let missing = 0;
@@ -157,8 +184,27 @@ export async function getManagerTimesheet(client, context, { month }) {
     let managerTotal = 0;
     let problems = 0;
 
-    const days = Array.from({ length: daysInMonth }, (_, index) => {
-      const date = `${period.raw}-${String(index + 1).padStart(2, '0')}`;
+    const days = calendarDays.map(calendarDay => {
+      const { date: dayDate, dateKey: date, day, isCurrentMonth } = calendarDay;
+      if (!isCurrentMonth) {
+        return {
+          date,
+          day,
+          isCurrentMonth: false,
+          status: 'OUTSIDE_MONTH',
+          reasons: [],
+          employeeHours: null,
+          managerHours: null,
+          difference: null,
+          employeeBreakMinutes: null,
+          managerBreakMinutes: null,
+          employeeProjects: [],
+          employeeProjectIds: [],
+          managerProjectId: null,
+          note: '',
+        };
+      }
+
       const key = `${employee.id}:${date}`;
       const employeeEntry = employeeDayMap.get(key);
       const managerEntry = managerDayMap.get(key);
@@ -202,7 +248,8 @@ export async function getManagerTimesheet(client, context, { month }) {
 
       return {
         date,
-        day: index + 1,
+        day,
+        isCurrentMonth: true,
         status,
         reasons,
         employeeHours,
@@ -221,7 +268,6 @@ export async function getManagerTimesheet(client, context, { month }) {
       employeeId: employee.id,
       name: employeeName(employee),
       status: employee.status,
-      // Every active membership row is editable, including the manager's own row.
       canEdit: true,
       employeeTotal: round2(employeeTotal),
       managerTotal: round2(managerTotal),
