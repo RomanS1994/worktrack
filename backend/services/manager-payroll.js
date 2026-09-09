@@ -1,4 +1,5 @@
 import { calculateNetWorkEntries, calculateNetWorkSummary } from './work-time-calculation.js';
+import { getWeekRange } from './week-utils.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const PERIOD_TYPES = new Set(['week', 'month']);
@@ -27,10 +28,9 @@ function resolvePeriod(typeInput, anchorInput) {
     start = new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth(), 1));
     next = new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth() + 1, 1));
   } else {
-    const day = anchor.getUTCDay();
-    const mondayOffset = day === 0 ? -6 : 1 - day;
-    start = new Date(anchor.getTime() + mondayOffset * DAY_MS);
-    next = new Date(start.getTime() + 7 * DAY_MS);
+    const range = getWeekRange(anchor);
+    start = range.weekStart;
+    next = range.nextWeekStart;
   }
   const end = new Date(next.getTime() - DAY_MS);
   return { type, anchor: toDateKey(anchor), start, end, next, startKey: toDateKey(start), endKey: toDateKey(end) };
