@@ -73,15 +73,14 @@ function distributeDayNetHourHundredths(dayEntries, netTotal, grossTotal) {
     };
   });
 
-  let assignedTotal = allocations.reduce((sum, item) => sum + item.assigned, 0);
-  let remaining = Math.max(0, netTotal - assignedTotal);
+  const assignedTotal = allocations.reduce((sum, item) => sum + item.assigned, 0);
+  const remaining = Math.max(0, netTotal - assignedTotal);
   const priority = [...allocations].sort((a, b) =>
     b.remainder - a.remainder || a.key.localeCompare(b.key)
   );
 
   for (let index = 0; index < remaining; index += 1) {
     priority[index % priority.length].assigned += 1;
-    assignedTotal += 1;
   }
 
   return dayEntries.map((entry, index) => ({
