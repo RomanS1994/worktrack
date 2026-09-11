@@ -1,4 +1,5 @@
 import { getManagerPayroll } from './manager-payroll.js';
+import { calculateNetWorkSummary } from './work-time-calculation.js';
 import { getWeekRange, serializeWeek } from './week-utils.js';
 
 function employeeName(user) {
@@ -74,6 +75,22 @@ export async function getManagerDashboard(client, context, now = new Date()) {
   const ownStatus = employeeStatuses.find(item => item.id === membership.id) || null;
   const ownPayroll = payroll.employees?.find(item => item.id === membership.id) || null;
 
+  let ownSummary = ownPayroll?.summary || null;
+  if (client.workEntry?.findMany) {
+    const ownEntries = await client.workEntry.findMany({
+      where: {
+        companyId: membership.companyId,
+        employeeMembershipId: membership.id,
+        workDate: { gte: range.weekStart, lt: new Date(range.weekEnd.getTime() + 24 * 60 * 60 * 1000) },
+        status: { in: ['DRAFT', 'SUBMITTED', 'APPROVED'] },
+      },
+      orderBy: { workDate: 'asc' },
+    });
+    ownSummary = calculateNetWorkSummary(ownEntries, membership.hourlyRateCzk ?? '0', payroll.workRules || {});
+  }
+
+  const ownSalaryCzk = (Number(ownSummary?.confirmedSalaryCzk || 0) + Number(ownSummary?.predictedSalaryCzk || 0)).toFixed(2);
+
   return {
     role: 'MANAGER',
     company: payroll.company,
@@ -83,9 +100,10 @@ export async function getManagerDashboard(client, context, now = new Date()) {
       submittedAt: ownStatus?.submittedAt || '',
       reviewedAt: ownStatus?.reviewedAt || '',
       rejectionReason: ownStatus?.rejectionReason || '',
-      totalHours: ownPayroll?.summary?.totalHours || '0.00',
-      approvedHours: ownPayroll?.summary?.approvedHours || '0.00',
-      pendingHours: ownPayroll?.summary?.pendingHours || '0.00',
+      totalHours: ownSummary?.totalHours || '0.00',
+      approvedHours: ownSummary?.approvedHours || '0.00',
+      pendingHours: ownSummary?.pendingHours || '0.00',
+      salaryCzk: ownSalaryCzk,
     },
     summary: {
       employeeCount: employees.length,
