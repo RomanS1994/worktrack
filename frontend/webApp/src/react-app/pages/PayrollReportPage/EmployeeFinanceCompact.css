@@ -10,18 +10,34 @@
 .employeeFinance-hero,.employeeFinance-card{border-radius:var(--radius-lg,18px);box-shadow:var(--shadow-sm)}
 .employeeFinance-hero{padding:var(--space-4,16px)}
 .employeeFinance-heroTop strong{font-size:clamp(28px,7vw,36px);font-weight:var(--weight-bold,700);letter-spacing:-.035em}
+.employeeFinance-heroTop small{line-height:1.45}
 .employeeFinance-status{min-height:28px;padding:0 9px;font-size:var(--font-size-caption,11px);font-weight:var(--weight-semibold,600)}
 .employeeFinance-progress{height:5px;margin-top:var(--space-3,12px)}
 .employeeFinance-progressMeta{margin-top:6px;font-size:var(--font-size-caption,11px)}
 .employeeFinance-card{padding:var(--space-3,12px) var(--space-4,16px)}
-.employeeFinance-card h2{margin-bottom:var(--space-1,4px);font-size:var(--font-size-card-title,15px)}
-.employeeFinance-breakdownRow,.employeeFinance-totalRow{min-height:38px}
-.employeeFinance-breakdownRow strong,.employeeFinance-breakdownRow b,.employeeFinance-totalRow strong,.employeeFinance-totalRow b{font-size:var(--font-size-secondary,12px)}
+.employeeFinance-card h2{margin-bottom:var(--space-2,8px);font-size:var(--font-size-card-title,15px)}
+.employeeFinance-statusRow{display:grid;grid-template-columns:9px minmax(0,1fr) auto;align-items:center;gap:11px;min-height:53px;padding:7px 0;color:var(--text)}
+.employeeFinance-statusRow+.employeeFinance-statusRow{border-top:1px solid rgba(17,24,39,.055)}
+.employeeFinance-statusDot{width:9px;height:9px;border-radius:50%;background:#16a34a}
+.employeeFinance-statusRow.is-pending .employeeFinance-statusDot{background:#f59e0b}
+.employeeFinance-statusRow.is-draft .employeeFinance-statusDot{background:#64748b}
+.employeeFinance-statusRow>div{display:grid;gap:2px;min-width:0}
+.employeeFinance-statusRow>div>span{font-size:var(--font-size-body,14px);font-weight:var(--weight-medium,500);line-height:1.3}
+.employeeFinance-statusRow small{color:var(--muted);font-size:var(--font-size-secondary,12px)}
+.employeeFinance-statusRow strong{font-size:var(--font-size-body,14px);font-weight:var(--weight-semibold,600);white-space:nowrap;font-variant-numeric:tabular-nums}
+.employeeFinance-recordedTotal,.employeeFinance-advanceLine{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--line);font-size:var(--font-size-body,14px)}
+.employeeFinance-recordedTotal{margin-top:7px;font-weight:var(--weight-semibold,600)}
+.employeeFinance-recordedTotal strong,.employeeFinance-advanceLine strong{white-space:nowrap;font-variant-numeric:tabular-nums}
+.employeeFinance-advanceLine{padding:6px 0;border-top:0;color:var(--muted)}
+.employeeFinance-payable{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px;padding:13px;border-radius:var(--radius-md,14px);background:#ecfdf5}
+.employeeFinance-payable>div{display:grid;gap:3px;min-width:0}
+.employeeFinance-payable span{font-size:var(--font-size-card-title,15px);font-weight:var(--weight-bold,700)}
+.employeeFinance-payable small{font-size:var(--font-size-secondary,12px);color:var(--muted);line-height:1.3}
+.employeeFinance-payable strong{color:#15803d;font-size:clamp(16px,4vw,21px);font-weight:var(--weight-bold,700);white-space:nowrap;font-variant-numeric:tabular-nums}
 .employeeFinance-rateCard{padding:var(--space-2,8px) var(--space-3,12px)}
-.employeeFinance-taxNote{margin:0;padding:8px 10px;border-radius:var(--radius-sm,10px);font-size:var(--font-size-caption,11px)}
+.employeeFinance-taxNote{margin:0;padding:8px 10px;border-radius:var(--radius-sm,10px);font-size:var(--font-size-secondary,12px);line-height:1.5}
 .employeeFinance-actions{grid-template-columns:minmax(0,1.45fr) minmax(104px,.75fr);gap:var(--space-2,8px)}
 .employeeFinance-actions button{min-height:var(--control-height-touch,44px);border-radius:var(--radius-md,14px);font-size:var(--font-size-secondary,12px);font-weight:var(--weight-semibold,600)}
-
 @media(max-width:480px){
   .employeeFinance{gap:10px}
   .employeeFinance-heading h1{font-size:22px}
@@ -36,15 +52,17 @@
   .employeeFinance-progressMeta{gap:6px}
   .employeeFinance-progressMeta span:last-child{text-align:right}
   .employeeFinance-card{padding:11px 13px}
-  .employeeFinance-breakdownRow,.employeeFinance-totalRow{min-height:36px}
+  .employeeFinance-statusRow{gap:9px;min-height:50px}
+  .employeeFinance-payable{padding:11px;gap:8px}
+  .employeeFinance-payable small{font-size:11px}
   .employeeFinance-actions{grid-template-columns:minmax(0,1fr) auto}
   .employeeFinance-actions button{min-height:42px;padding-inline:12px}
   .employeeFinance-secondaryAction{min-width:92px}
 }
-
 @media(max-width:380px){
   .employeeFinance-heading h1{font-size:21px}
   .employeeFinance-heroTop strong{font-size:28px}
   .employeeFinance-progressMeta{font-size:10px}
+  .employeeFinance-payable{align-items:flex-start;flex-direction:column}
   .employeeFinance-actions{grid-template-columns:1fr}
 }
