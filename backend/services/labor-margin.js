@@ -24,7 +24,8 @@ export function calculateLaborMargin(entries = [], payRateCzk = 0, customerRateC
   let totalMarginCents = 0;
   let totalRevenueCents = 0;
   let totalPayCents = 0;
-  for (const entry of calculateNetWorkEntries(entries, rules)) {
+  const eligibleEntries = entries.filter(entry => entry.status !== 'REJECTED');
+  for (const entry of calculateNetWorkEntries(eligibleEntries, rules)) {
     const hoursHundredths = Math.round(Number(entry.netHours || 0) * 100);
     const pay = entry.hourlyRateCzk == null ? defaultPay : cents(entry.hourlyRateCzk);
     const customer = entry.customerRateCzk == null ? defaultCustomer : cents(entry.customerRateCzk);
