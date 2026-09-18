@@ -7,13 +7,13 @@ import './ManagerPayrollAdvances.css';
 
 const COPY = {
   uk: {
-    accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати', approvedTitle: 'Погоджені години', approvedHint: 'Знайдіть будь-яке попереднє погодження за працівником або місяцем і, за потреби, поверніть його назад на перевірку.', reopen: 'Скасувати погодження', reopenConfirm: 'Скасувати погодження цих годин і повернути їх у статус «На перевірці»?', reopened: 'Погодження скасовано. Години знову очікують перевірки.', noApproved: 'Немає погоджених подань за вибраними фільтрами.', employeeFilter: 'Працівник', allEmployees: 'Усі працівники', monthFilter: 'Місяць', allMonths: 'Усі місяці', resetFilters: 'Скинути', shown: 'Знайдено', rollbackFailed: 'Не вдалося скасувати погодження.', showHistory: 'Історія погоджень', hideHistory: 'Сховати історію',
+    accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати', approvedTitle: 'Погоджені години', approvedHint: 'Знайдіть будь-яке попереднє погодження за працівником або місяцем і, за потреби, поверніть його назад на перевірку.', reopen: 'Скасувати погодження', reopenConfirm: 'Скасувати погодження цих годин і повернути їх у статус «На перевірці»?', reopened: 'Погодження скасовано. Години знову очікують перевірки.', noApproved: 'Немає погоджених подань за вибраними фільтрами.', employeeFilter: 'Працівник', allEmployees: 'Усі працівники', monthFilter: 'Місяць', allMonths: 'Усі місяці', resetFilters: 'Скинути', shown: 'Знайдено', rollbackFailed: 'Не вдалося скасувати погодження.', showHistory: 'Історія погоджень', hideHistory: 'Сховати історію', showEmployees: 'Показати працівників', hideEmployees: 'Згорнути працівників',
   },
   cs: {
-    accrued: 'Nárok', advances: 'Zálohy', netPay: 'K výplatě', approvedTitle: 'Schválené hodiny', approvedHint: 'Najděte libovolné dřívější schválení podle zaměstnance nebo měsíce a v případě potřeby jej vraťte ke kontrole.', reopen: 'Zrušit schválení', reopenConfirm: 'Zrušit schválení těchto hodin a vrátit je do stavu ke kontrole?', reopened: 'Schválení bylo zrušeno. Hodiny znovu čekají na kontrolu.', noApproved: 'Pro zvolené filtry nejsou žádná schválená podání.', employeeFilter: 'Zaměstnanec', allEmployees: 'Všichni zaměstnanci', monthFilter: 'Měsíc', allMonths: 'Všechny měsíce', resetFilters: 'Resetovat', shown: 'Nalezeno', rollbackFailed: 'Schválení se nepodařilo zrušit.', showHistory: 'Historie schválení', hideHistory: 'Skrýt historii',
+    accrued: 'Nárok', advances: 'Zálohy', netPay: 'K výplatě', approvedTitle: 'Schválené hodiny', approvedHint: 'Najděte libovolné dřívější schválení podle zaměstnance nebo měsíce a v případě potřeby jej vraťte ke kontrole.', reopen: 'Zrušit schválení', reopenConfirm: 'Zrušit schválení těchto hodin a vrátit je do stavu ke kontrole?', reopened: 'Schválení bylo zrušeno. Hodiny znovu čekají na kontrolu.', noApproved: 'Pro zvolené filtry nejsou žádná schválená podání.', employeeFilter: 'Zaměstnanec', allEmployees: 'Všichni zaměstnanci', monthFilter: 'Měsíc', allMonths: 'Všechny měsíce', resetFilters: 'Resetovat', shown: 'Nalezeno', rollbackFailed: 'Schválení se nepodařilo zrušit.', showHistory: 'Historie schválení', hideHistory: 'Skrýt historii', showEmployees: 'Zobrazit zaměstnance', hideEmployees: 'Sbalit zaměstnance',
   },
   en: {
-    accrued: 'Accrued', advances: 'Advances', netPay: 'Net pay', approvedTitle: 'Approved hours', approvedHint: 'Find any previous approval by employee or month and return it to review if it needs correction.', reopen: 'Undo approval', reopenConfirm: 'Undo approval for these hours and return them to review?', reopened: 'Approval undone. The hours are pending review again.', noApproved: 'No approved submissions match the selected filters.', employeeFilter: 'Employee', allEmployees: 'All employees', monthFilter: 'Month', allMonths: 'All months', resetFilters: 'Reset', shown: 'Found', rollbackFailed: 'Could not undo approval.', showHistory: 'Approval history', hideHistory: 'Hide history',
+    accrued: 'Accrued', advances: 'Advances', netPay: 'Net pay', approvedTitle: 'Approved hours', approvedHint: 'Find any previous approval by employee or month and return it to review if it needs correction.', reopen: 'Undo approval', reopenConfirm: 'Undo approval for these hours and return them to review?', reopened: 'Approval undone. The hours are pending review again.', noApproved: 'No approved submissions match the selected filters.', employeeFilter: 'Employee', allEmployees: 'All employees', monthFilter: 'Month', allMonths: 'All months', resetFilters: 'Reset', shown: 'Found', rollbackFailed: 'Could not undo approval.', showHistory: 'Approval history', hideHistory: 'Hide history', showEmployees: 'Show employees', hideEmployees: 'Collapse employees',
   },
 };
 
@@ -79,6 +79,7 @@ export function ManagerPayrollDashboard({
   t,
 }) {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
+  const [employeesOpen, setEmployeesOpen] = useState(true);
   const [approvedOpen, setApprovedOpen] = useState(false);
   const [approvedEmployeeId, setApprovedEmployeeId] = useState('');
   const [approvedMonth, setApprovedMonth] = useState('');
@@ -172,8 +173,14 @@ export function ManagerPayrollDashboard({
       </section>
 
       <section className="managerPayrollMobile-employees">
-        <header><h2>{t('payroll.breakdown')}</h2><span>{employees.length} {t('payroll.employees').toLowerCase()}</span></header>
-        <div className="managerPayrollMobile-list">
+        <header>
+          <h2>{t('payroll.breakdown')}</h2>
+          <button type="button" className="managerPayrollMobile-employeesToggle" aria-expanded={employeesOpen} aria-controls="manager-payroll-employee-list" aria-label={employeesOpen ? copy.hideEmployees : copy.showEmployees} onClick={() => setEmployeesOpen(open => !open)}>
+            <span>{employees.length} {t('payroll.employees').toLowerCase()}</span>
+            <span aria-hidden="true">{employeesOpen ? '⌃' : '⌄'}</span>
+          </button>
+        </header>
+        {employeesOpen ? <div className="managerPayrollMobile-list" id="manager-payroll-employee-list">
           {employees.map(employee => {
             const isSelected = employee.id === selectedEmployeeId;
             const employeeAccrued = accruedAmount(employee.summary);
@@ -191,7 +198,7 @@ export function ManagerPayrollDashboard({
               </button>
             );
           })}
-        </div>
+        </div> : null}
       </section>
 
       <section className={`managerPayrollHistoryDisclosure${approvedOpen ? ' is-open' : ''}`}>
