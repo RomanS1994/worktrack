@@ -1,20 +1,12 @@
 import { useMemo, useState } from 'react';
 
-import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { formatCzk, formatHours } from '../../app/formatters.js';
-import { useGetManagerSubmissionsQuery, useReopenSubmissionMutation } from '../../features/worktrack/worktrackApi.js';
 import './ManagerPayrollAdvances.css';
 
 const COPY = {
-  uk: {
-    accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати', approvedTitle: 'Погоджені години', approvedHint: 'Знайдіть будь-яке попереднє погодження за працівником або місяцем і, за потреби, поверніть його назад на перевірку.', reopen: 'Скасувати погодження', reopenConfirm: 'Скасувати погодження цих годин і повернути їх у статус «На перевірці»?', reopened: 'Погодження скасовано. Години знову очікують перевірки.', noApproved: 'Немає погоджених подань за вибраними фільтрами.', employeeFilter: 'Працівник', allEmployees: 'Усі працівники', monthFilter: 'Місяць', allMonths: 'Усі місяці', resetFilters: 'Скинути', shown: 'Знайдено', rollbackFailed: 'Не вдалося скасувати погодження.', showHistory: 'Історія погоджень', hideHistory: 'Сховати історію', showEmployees: 'Показати працівників', hideEmployees: 'Згорнути працівників',
-  },
-  cs: {
-    accrued: 'Nárok', advances: 'Zálohy', netPay: 'K výplatě', approvedTitle: 'Schválené hodiny', approvedHint: 'Najděte libovolné dřívější schválení podle zaměstnance nebo měsíce a v případě potřeby jej vraťte ke kontrole.', reopen: 'Zrušit schválení', reopenConfirm: 'Zrušit schválení těchto hodin a vrátit je do stavu ke kontrole?', reopened: 'Schválení bylo zrušeno. Hodiny znovu čekají na kontrolu.', noApproved: 'Pro zvolené filtry nejsou žádná schválená podání.', employeeFilter: 'Zaměstnanec', allEmployees: 'Všichni zaměstnanci', monthFilter: 'Měsíc', allMonths: 'Všechny měsíce', resetFilters: 'Resetovat', shown: 'Nalezeno', rollbackFailed: 'Schválení se nepodařilo zrušit.', showHistory: 'Historie schválení', hideHistory: 'Skrýt historii', showEmployees: 'Zobrazit zaměstnance', hideEmployees: 'Sbalit zaměstnance',
-  },
-  en: {
-    accrued: 'Accrued', advances: 'Advances', netPay: 'Net pay', approvedTitle: 'Approved hours', approvedHint: 'Find any previous approval by employee or month and return it to review if it needs correction.', reopen: 'Undo approval', reopenConfirm: 'Undo approval for these hours and return them to review?', reopened: 'Approval undone. The hours are pending review again.', noApproved: 'No approved submissions match the selected filters.', employeeFilter: 'Employee', allEmployees: 'All employees', monthFilter: 'Month', allMonths: 'All months', resetFilters: 'Reset', shown: 'Found', rollbackFailed: 'Could not undo approval.', showHistory: 'Approval history', hideHistory: 'Hide history', showEmployees: 'Show employees', hideEmployees: 'Collapse employees',
-  },
+  uk: { accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати', showEmployees: 'Показати працівників', hideEmployees: 'Згорнути працівників' },
+  cs: { accrued: 'Nárok', advances: 'Zálohy', netPay: 'K výplatě', showEmployees: 'Zobrazit zaměstnance', hideEmployees: 'Sbalit zaměstnance' },
+  en: { accrued: 'Accrued', advances: 'Advances', netPay: 'Net pay', showEmployees: 'Show employees', hideEmployees: 'Collapse employees' },
 };
 
 function copyForLocale(locale = '') {
@@ -23,13 +15,7 @@ function copyForLocale(locale = '') {
 }
 
 function initials(name = '') {
-  return String(name)
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map(part => part[0]?.toUpperCase() || '')
-    .join('') || '—';
+  return String(name).trim().split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]?.toUpperCase() || '').join('') || '—';
 }
 
 function WalletIcon() {
@@ -45,23 +31,6 @@ function WalletIcon() {
 function accruedAmount(summary) {
   if (summary?.accruedSalaryCzk != null) return Number(summary.accruedSalaryCzk || 0);
   return Number(summary?.confirmedSalaryCzk || 0) + Number(summary?.predictedSalaryCzk || 0);
-}
-
-function submissionName(submission) {
-  return submission?.employee?.name || submission?.employee?.email || '—';
-}
-
-function submissionPeriod(submission, locale) {
-  if (!submission?.weekStart || !submission?.weekEnd) return '—';
-  const fmt = value => new Intl.DateTimeFormat(locale || 'uk-UA', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`));
-  return `${fmt(submission.weekStart)} – ${fmt(submission.weekEnd)}`;
-}
-
-function submissionTouchesMonth(submission, month) {
-  if (!month) return true;
-  const start = String(submission?.weekStart || '').slice(0, 7);
-  const end = String(submission?.weekEnd || '').slice(0, 7);
-  return start === month || end === month;
 }
 
 export function ManagerPayrollDashboard({
@@ -80,11 +49,6 @@ export function ManagerPayrollDashboard({
 }) {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
   const [employeesOpen, setEmployeesOpen] = useState(true);
-  const [approvedOpen, setApprovedOpen] = useState(false);
-  const [approvedEmployeeId, setApprovedEmployeeId] = useState('');
-  const [approvedMonth, setApprovedMonth] = useState('');
-  const [reopenMessage, setReopenMessage] = useState('');
-  const [reopenError, setReopenError] = useState('');
   const selectedEmployee = useMemo(
     () => employees.find(employee => employee.id === selectedEmployeeId) || null,
     [employees, selectedEmployeeId],
@@ -97,44 +61,10 @@ export function ManagerPayrollDashboard({
   const pending = Number(visibleSummary?.predictedSalaryCzk || 0);
   const approvedHours = visibleSummary?.approvedHours || 0;
   const pendingHours = visibleSummary?.pendingHours || 0;
-  const approvedQuery = useGetManagerSubmissionsQuery({ status: 'APPROVED' }, { skip: !approvedOpen });
-  const [reopenSubmission, reopenState] = useReopenSubmissionMutation();
-  const allApprovedSubmissions = useMemo(
-    () => (Array.isArray(approvedQuery.data?.submissions) ? approvedQuery.data.submissions : []),
-    [approvedQuery.data],
-  );
-  const approvedSubmissions = useMemo(
-    () => allApprovedSubmissions.filter(submission => (
-      (!approvedEmployeeId || submission.employeeMembershipId === approvedEmployeeId) &&
-      submissionTouchesMonth(submission, approvedMonth)
-    )),
-    [allApprovedSubmissions, approvedEmployeeId, approvedMonth],
-  );
 
   const toggleEmployee = employeeId => {
     setSelectedEmployeeId(current => current === employeeId ? null : employeeId);
   };
-
-  function resetApprovedFilters() {
-    setApprovedEmployeeId('');
-    setApprovedMonth('');
-  }
-
-  async function undoApproval(submission) {
-    if (!submission?.id || reopenState.isLoading || !window.confirm(copy.reopenConfirm)) return;
-    setReopenMessage('');
-    setReopenError('');
-    try {
-      const result = await reopenSubmission(submission.id).unwrap();
-      if (result?.submission?.status !== 'SUBMITTED') throw new Error(copy.rollbackFailed);
-      await approvedQuery.refetch();
-      setReopenMessage(`${copy.reopened} ${submissionName(submission)} · ${submissionPeriod(submission, locale)}`);
-    } catch (error) {
-      const message = getApiErrorMessage(error) || copy.rollbackFailed;
-      setReopenError(message);
-      window.alert(message);
-    }
-  }
 
   return (
     <div className="managerPayrollMobile noPrint">
@@ -198,32 +128,6 @@ export function ManagerPayrollDashboard({
               </button>
             );
           })}
-        </div> : null}
-      </section>
-
-      <section className={`managerPayrollHistoryDisclosure${approvedOpen ? ' is-open' : ''}`}>
-        <button className="managerPayrollHistoryTrigger" type="button" aria-expanded={approvedOpen} onClick={() => setApprovedOpen(value => !value)}>
-          <span><strong>{copy.showHistory}</strong><small>{copy.approvedHint}</small></span><b aria-hidden="true">{approvedOpen ? '⌃' : '›'}</b>
-        </button>
-        {approvedOpen ? <div className="managerPayrollHistoryBody">
-          <div className="managerPayrollHistoryMeta"><span>{copy.shown}: {approvedSubmissions.length}</span><button type="button" onClick={() => setApprovedOpen(false)}>{copy.hideHistory}</button></div>
-          <div className="managerPayrollMobile-approvedFilters">
-            <label><span>{copy.employeeFilter}</span><select value={approvedEmployeeId} onChange={event => setApprovedEmployeeId(event.target.value)}><option value="">{copy.allEmployees}</option>{employees.map(employee => <option value={employee.id} key={employee.id}>{employee.name}</option>)}</select></label>
-            <label><span>{copy.monthFilter}</span><input type="month" value={approvedMonth} onChange={event => setApprovedMonth(event.target.value)} aria-label={copy.monthFilter} /></label>
-            {(approvedEmployeeId || approvedMonth) ? <button type="button" className="managerPayrollMobile-resetApproved" onClick={resetApprovedFilters}>{copy.resetFilters}</button> : null}
-          </div>
-          {reopenMessage ? <p className="statusNote is-success">{reopenMessage}</p> : null}
-          {reopenError ? <p className="statusNote is-error">{reopenError}</p> : null}
-          <div className="managerPayrollMobile-list">
-            {approvedQuery.isLoading ? <p className="statusNote">…</p> : null}
-            {approvedQuery.error ? <p className="statusNote is-error">{getApiErrorMessage(approvedQuery.error)}</p> : null}
-            {!approvedQuery.isLoading && !approvedQuery.error && !approvedSubmissions.length ? <p className="statusNote">{copy.noApproved}</p> : null}
-            {approvedSubmissions.map(submission => <button type="button" className="managerPayrollMobile-employee managerPayrollMobile-approvedSubmission" key={submission.id} disabled={reopenState.isLoading} onClick={() => undoApproval(submission)}>
-              <div className="managerPayrollMobile-avatar" aria-hidden="true">{initials(submissionName(submission))}</div>
-              <div className="managerPayrollMobile-person"><strong>{submissionName(submission)}</strong><span>{submissionPeriod(submission, locale)} · {formatHours(submission.summary?.totalHours || 0, locale)}</span></div>
-              <strong className="managerPayrollMobile-historyAction">{copy.reopen}</strong>
-            </button>)}
-          </div>
         </div> : null}
       </section>
     </div>
