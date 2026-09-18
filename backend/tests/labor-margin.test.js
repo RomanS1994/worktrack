@@ -18,3 +18,11 @@ test('uses historical rate snapshots when available', () => {
   const result = calculateLaborMargin([{ workDate: '2026-09-18', hours: '2.00', hourlyRateCzk: '200.00', customerRateCzk: '290.00' }], 220, 300);
   assert.equal(result.marginCzk, '180.00');
 });
+
+test('does not count rejected entries or deduct their breaks from valid hours', () => {
+  const result = calculateLaborMargin([
+    { workDate: '2026-09-18', hours: '8.00', status: 'APPROVED', breakMinutes: 60 },
+    { workDate: '2026-09-18', hours: '8.00', status: 'REJECTED', breakMinutes: 120 },
+  ], 220, 300);
+  assert.deepEqual(result, { revenueCzk: '2100.00', payCzk: '1540.00', marginCzk: '560.00' });
+});
