@@ -34,7 +34,7 @@ function client() {
       count: async query => {
         assert.equal(query.where.companyId, 'company-1');
         assert.equal(query.where.status, 'SUBMITTED');
-        assert.equal(query.where.weekStart.toISOString(), '2026-08-17T00:00:00.000Z');
+        assert.deepEqual(query.where.employeeMembershipId, { not: 'manager-1' });
         return 1;
       },
     },
