@@ -1,4 +1,5 @@
 import { calculateNetWorkEntries, calculateNetWorkSummary } from './work-time-calculation.js';
+import { calculateLaborMargin } from './labor-margin.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const PERIOD_TYPES = new Set(['week', 'month']);
@@ -123,11 +124,17 @@ export async function getManagerPayroll(client, context, query = {}) {
   let predictedSalary = 0;
   let advances = 0;
   let employeesWithHours = 0;
+  let totalRevenue = 0;
+  let totalMargin = 0;
 
   const employees = memberships.map(membership => {
     const entries = membership.workEntries || [];
-    const baseSummary = calculateNetWorkSummary(entries, membership.hourlyRateCzk ?? '0', rules);
-    const rates = rateMeta(entries, membership.hourlyRateCzk ?? '0', rules);
+    const payRate = membership.hourlyRateCzk ?? '0';
+    // An unset customer rate means the employee's pay rate, never an invented margin.
+    const customerRate = membership.customerRateCzk ?? payRate;
+    const baseSummary = calculateNetWorkSummary(entries, payRate, rules);
+    const rates = rateMeta(entries, payRate, rules);
+    const labor = calculateLaborMargin(entries, payRate, customerRate, rules);
     const employeeAdvances = advanceByEmployee.get(membership.id) || 0;
     const employeeConfirmed = toHundredths(baseSummary.confirmedSalaryCzk);
     const employeePredicted = toHundredths(baseSummary.predictedSalaryCzk);
@@ -140,6 +147,8 @@ export async function getManagerPayroll(client, context, query = {}) {
     confirmedSalary += employeeConfirmed;
     predictedSalary += employeePredicted;
     advances += employeeAdvances;
+    totalRevenue += toHundredths(labor.revenueCzk);
+    totalMargin += toHundredths(labor.marginCzk);
 
     return {
       id: membership.id,
@@ -149,10 +158,13 @@ export async function getManagerPayroll(client, context, query = {}) {
       status: membership.status,
       canAccessManagerCabinet: membership.role === 'MANAGER',
       hourlyRateCzk: membership.hourlyRateCzk == null ? '0.00' : String(membership.hourlyRateCzk),
+      customerRateCzk: String(customerRate),
       effectiveRateCzk: rates.effectiveRateCzk,
       mixedRates: rates.mixedRates,
       summary: {
         ...baseSummary,
+        revenueCzk: labor.revenueCzk,
+        laborMarginCzk: labor.marginCzk,
         accruedSalaryCzk: formatHundredths(employeeAccrued),
         advancesCzk: formatHundredths(employeeAdvances),
         netPayCzk: formatHundredths(employeeNetPay),
@@ -178,6 +190,8 @@ export async function getManagerPayroll(client, context, query = {}) {
       accruedSalaryCzk: formatHundredths(accruedSalary),
       advancesCzk: formatHundredths(advances),
       netPayCzk: formatHundredths(Math.max(accruedSalary - advances, 0)),
+      revenueCzk: formatHundredths(totalRevenue),
+      laborMarginCzk: formatHundredths(totalMargin),
     },
   };
 }
