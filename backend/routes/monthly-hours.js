@@ -47,12 +47,24 @@ export async function handleMonthlyHoursRoutes(request, response, { pathName, ur
       let totalHours = 0;
       let approvedHours = 0;
       let pendingHours = 0;
+      let submittedHours = 0;
+      let draftHours = 0;
+      let draftAmountCzk = 0;
+      let submittedAmountCzk = 0;
 
       const rows = entries.map(entry => {
         const hours = Number(entry.hours || 0);
         totalHours += hours;
         if (entry.status === 'APPROVED') approvedHours += hours;
-        else if (entry.status === 'DRAFT' || entry.status === 'SUBMITTED') pendingHours += hours;
+        else if (entry.status === 'DRAFT') {
+          pendingHours += hours;
+          draftHours += hours;
+          draftAmountCzk += moneyFromHours(hours, rate);
+        } else if (entry.status === 'SUBMITTED') {
+          pendingHours += hours;
+          submittedHours += hours;
+          submittedAmountCzk += moneyFromHours(hours, rate);
+        }
 
         return {
           id: entry.id,
@@ -70,8 +82,12 @@ export async function handleMonthlyHoursRoutes(request, response, { pathName, ur
           totalHours: numberString(totalHours),
           approvedHours: numberString(approvedHours),
           pendingHours: numberString(pendingHours),
+          submittedHours: numberString(submittedHours),
+          draftHours: numberString(draftHours),
           approvedAmountCzk: numberString(moneyFromHours(approvedHours, rate)),
           pendingAmountCzk: numberString(moneyFromHours(pendingHours, rate)),
+          submittedAmountCzk: numberString(submittedAmountCzk),
+          draftAmountCzk: numberString(draftAmountCzk),
         },
       };
     },
