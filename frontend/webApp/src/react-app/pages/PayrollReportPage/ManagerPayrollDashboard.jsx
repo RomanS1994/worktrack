@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { formatCzk, formatHours } from '../../app/formatters.js';
 import './ManagerPayrollAdvances.css';
+import './ManagerPayrollEmployeesToggle.css';
 
 const COPY = {
   uk: { accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати', laborMargin: 'Дохід із працівників', showEmployees: 'Показати працівників', hideEmployees: 'Згорнути працівників' },
@@ -108,8 +109,10 @@ export function ManagerPayrollDashboard({
         <header>
           <h2>{t('payroll.breakdown')}</h2>
           <button type="button" className="managerPayrollMobile-employeesToggle" aria-expanded={employeesOpen} aria-controls="manager-payroll-employee-list" aria-label={employeesOpen ? copy.hideEmployees : copy.showEmployees} onClick={() => setEmployeesOpen(open => !open)}>
-            <span>{employees.length} {t('payroll.employees').toLowerCase()}</span>
-            <span aria-hidden="true">{employeesOpen ? '⌃' : '⌄'}</span>
+            <svg className="managerPayrollMobile-employeesToggleIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 20v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+            <span className="managerPayrollMobile-employeesToggleCount">{employees.length}</span>
+            <span className="managerPayrollMobile-employeesToggleLabel">{t('payroll.employees').toLowerCase()}</span>
+            <svg className="managerPayrollMobile-employeesToggleChevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
           </button>
         </header>
         {employeesOpen ? <div className="managerPayrollMobile-list" id="manager-payroll-employee-list">
