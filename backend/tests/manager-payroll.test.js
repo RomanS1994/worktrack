@@ -202,6 +202,30 @@ test('manager payroll keeps historical customer rate snapshots after membership 
   assert.equal(payload.employees[0].effectiveCustomerRateCzk, '300.00');
 });
 
+test('manager payroll repairs legacy fallback customer snapshots for margin only', async () => {
+  const client = createClient({
+    memberships: [{
+      id: 'membership-1', userId: 'employee-1', companyId: 'company-1', role: 'EMPLOYEE', status: 'ACTIVE', deletedAt: null,
+      hourlyRateCzk: '250.00', customerRateCzk: '300.00', user: { firstName: 'Anna', email: 'anna@example.com', deletedAt: null },
+      workEntries: [{
+        id: 'a1',
+        employeeMembershipId: 'membership-1',
+        workDate: new Date('2026-09-18T00:00:00.000Z'),
+        createdAt: new Date('2026-09-18T12:00:00.000Z'),
+        status: 'APPROVED',
+        hours: '10.00',
+        hourlyRateCzk: '250.00',
+        customerRateCzk: '250.00',
+      }],
+    }],
+  });
+  const payload = await getManagerPayroll(client, createManagerContext(), { period: 'month', anchor: '2026-09-18' });
+  assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '2500.00');
+  assert.equal(payload.employees[0].summary.laborMarginCzk, '500.00');
+  assert.equal(payload.employees[0].effectiveRateCzk, '250.00');
+  assert.equal(payload.employees[0].effectiveCustomerRateCzk, '300.00');
+});
+
 test('manager payroll separates approved and submitted labor margin', async () => {
   const client = createClient({
     memberships: [{

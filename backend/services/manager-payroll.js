@@ -1,5 +1,5 @@
 import { calculateNetWorkEntries, calculateNetWorkSummary } from './work-time-calculation.js';
-import { calculateLaborMargin } from './labor-margin.js';
+import { calculateLaborMargin, resolveLaborCustomerRateCzk } from './labor-margin.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const PERIOD_TYPES = new Set(['week', 'month']);
@@ -62,6 +62,20 @@ function rateMeta(entries = [], fallbackRate = 0, rules = {}, field = 'hourlyRat
   const totalHours = normalized.reduce((sum, entry) => sum + entry.hours, 0);
   const totalPay = normalized.reduce((sum, entry) => sum + entry.hours * entry.rate, 0);
   const effectiveRate = totalHours > 0 ? totalPay / totalHours : fallback;
+  return {
+    mixedRates: uniqueRates.length > 1,
+    effectiveRateCzk: Number.isFinite(effectiveRate) ? effectiveRate.toFixed(2) : '0.00',
+  };
+}
+
+function customerRateMeta(entries = [], payRate = 0, customerRate = payRate, rules = {}) {
+  const normalized = calculateNetWorkEntries(entries, rules)
+    .map(entry => ({ hours: Number(entry.netHours || 0), rate: Number(resolveLaborCustomerRateCzk(entry, payRate, customerRate)) }))
+    .filter(entry => entry.hours > 0 && Number.isFinite(entry.rate) && entry.rate >= 0);
+  const uniqueRates = [...new Set(normalized.map(entry => entry.rate.toFixed(2)))];
+  const totalHours = normalized.reduce((sum, entry) => sum + entry.hours, 0);
+  const totalPay = normalized.reduce((sum, entry) => sum + entry.hours * entry.rate, 0);
+  const effectiveRate = totalHours > 0 ? totalPay / totalHours : Number(customerRate || 0);
   return {
     mixedRates: uniqueRates.length > 1,
     effectiveRateCzk: Number.isFinite(effectiveRate) ? effectiveRate.toFixed(2) : '0.00',
@@ -138,7 +152,7 @@ export async function getManagerPayroll(client, context, query = {}) {
     const customerRate = membership.customerRateCzk ?? payRate;
     const baseSummary = calculateNetWorkSummary(entries, payRate, rules);
     const rates = rateMeta(entries, payRate, rules);
-    const customerRates = rateMeta(entries, customerRate, rules, 'customerRateCzk');
+    const customerRates = customerRateMeta(entries, payRate, customerRate, rules);
     const labor = calculateLaborMargin(entries, payRate, customerRate, rules);
     const employeeAdvances = advanceByEmployee.get(membership.id) || 0;
     const employeeConfirmed = toHundredths(baseSummary.confirmedSalaryCzk);

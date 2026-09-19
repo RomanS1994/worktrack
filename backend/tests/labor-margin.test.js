@@ -24,6 +24,34 @@ test('uses historical rate snapshots when available', () => {
   assert.equal(result.marginCzk, '180.00');
 });
 
+test('uses current customer rate for legacy fallback snapshots created before customer pricing existed', () => {
+  const result = calculateLaborMargin([
+    {
+      workDate: '2026-09-18',
+      createdAt: '2026-09-18T12:00:00.000Z',
+      hours: '10.00',
+      hourlyRateCzk: '250.00',
+      customerRateCzk: '250.00',
+      status: 'APPROVED',
+    },
+  ], 250, 300);
+  assert.equal(result.marginCzk, '500.00');
+});
+
+test('keeps explicit equal-rate snapshots created after customer pricing launch at zero margin', () => {
+  const result = calculateLaborMargin([
+    {
+      workDate: '2026-09-19',
+      createdAt: '2026-09-19T12:00:00.000Z',
+      hours: '10.00',
+      hourlyRateCzk: '250.00',
+      customerRateCzk: '250.00',
+      status: 'APPROVED',
+    },
+  ], 250, 300);
+  assert.equal(result.marginCzk, '0.00');
+});
+
 test('does not count draft entries', () => {
   const result = calculateLaborMargin([
     { workDate: '2026-09-18', hours: '8.00', hourlyRateCzk: '220.00', customerRateCzk: '300.00', status: 'DRAFT' },

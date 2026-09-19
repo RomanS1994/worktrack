@@ -1,5 +1,7 @@
 import { calculateNetWorkEntries } from './work-time-calculation.js';
 
+const CUSTOMER_RATE_SNAPSHOT_RELEASE_MS = Date.parse('2026-09-19T00:30:00.000Z');
+
 function cents(value) {
   const amount = Number(String(value ?? '0').replace(',', '.'));
   if (!Number.isFinite(amount) || amount < 0) throw new Error('Invalid hourly rate');
@@ -10,6 +12,31 @@ function money(value) {
   const sign = value < 0 ? '-' : '';
   const absolute = Math.abs(value);
   return `${sign}${Math.floor(absolute / 100)}.${String(absolute % 100).padStart(2, '0')}`;
+}
+
+function timestamp(value) {
+  if (!value) return null;
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function isLegacyFallbackCustomerSnapshot(entry, payCents, customerCents, defaultCustomerCents) {
+  const createdAt = timestamp(entry?.createdAt);
+  return createdAt != null
+    && createdAt < CUSTOMER_RATE_SNAPSHOT_RELEASE_MS
+    && customerCents === payCents
+    && defaultCustomerCents !== payCents;
+}
+
+export function resolveLaborCustomerRateCzk(entry = {}, payRateCzk = 0, customerRateCzk = payRateCzk) {
+  const defaultCustomer = cents(customerRateCzk);
+  const defaultPay = cents(payRateCzk);
+  const pay = entry.hourlyRateCzk == null ? defaultPay : cents(entry.hourlyRateCzk);
+  const snapshotCustomer = entry.customerRateCzk == null ? defaultCustomer : cents(entry.customerRateCzk);
+  const customer = isLegacyFallbackCustomerSnapshot(entry, pay, snapshotCustomer, defaultCustomer)
+    ? defaultCustomer
+    : snapshotCustomer;
+  return money(customer);
 }
 
 /**
@@ -32,7 +59,10 @@ export function calculateLaborMargin(entries = [], payRateCzk = 0, customerRateC
   for (const entry of calculateNetWorkEntries(eligibleEntries, rules)) {
     const hoursHundredths = Math.round(Number(entry.netHours || 0) * 100);
     const pay = entry.hourlyRateCzk == null ? defaultPay : cents(entry.hourlyRateCzk);
-    const customer = entry.customerRateCzk == null ? defaultCustomer : cents(entry.customerRateCzk);
+    const snapshotCustomer = entry.customerRateCzk == null ? defaultCustomer : cents(entry.customerRateCzk);
+    const customer = isLegacyFallbackCustomerSnapshot(entry, pay, snapshotCustomer, defaultCustomer)
+      ? defaultCustomer
+      : snapshotCustomer;
     const revenue = Math.round(hoursHundredths * customer / 100);
     const salary = Math.round(hoursHundredths * pay / 100);
     totalRevenueCents += revenue;
