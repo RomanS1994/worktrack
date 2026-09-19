@@ -200,7 +200,7 @@ test('manager payroll calculates labor margin from manager timesheet hours inste
     }],
   });
   const payload = await getManagerPayroll(client, createManagerContext(), { period: 'month', anchor: '2026-09-17' });
-  assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '25000.00');
+  assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '2500.00');
   assert.equal(payload.employees[0].summary.laborMarginCzk, '500.00');
 });
 
@@ -216,6 +216,27 @@ test('manager payroll deducts lunch from manager timesheet labor margin', async 
   });
   const payload = await getManagerPayroll(client, createManagerContext(), { period: 'month', anchor: '2026-09-17' });
   assert.equal(payload.employees[0].summary.laborMarginCzk, '450.00');
+});
+
+test('manager payroll uses the same net manager timesheet hours for salary and labor margin', async () => {
+  const client = createClient({
+    breakMinutes: 60,
+    memberships: [{
+      id: 'membership-1', userId: 'employee-1', companyId: 'company-1', role: 'EMPLOYEE', status: 'ACTIVE', deletedAt: null,
+      hourlyRateCzk: '250.00', customerRateCzk: '300.00', user: { firstName: 'Dima', lastName: 'Vasenkov', email: 'dima@example.com', deletedAt: null },
+      workEntries: [{ id: 'a1', employeeMembershipId: 'membership-1', workDate: new Date('2026-09-14T00:00:00.000Z'), status: 'APPROVED', hours: '57.00' }],
+      employeeManagerTimesheetEntries: [
+        { id: 'm1', employeeMembershipId: 'membership-1', workDate: new Date('2026-09-14T00:00:00.000Z'), hours: '19.00', hourlyRateCzk: '250.00', customerRateCzk: '300.00' },
+        { id: 'm2', employeeMembershipId: 'membership-1', workDate: new Date('2026-09-15T00:00:00.000Z'), hours: '19.00', hourlyRateCzk: '250.00', customerRateCzk: '300.00' },
+        { id: 'm3', employeeMembershipId: 'membership-1', workDate: new Date('2026-09-16T00:00:00.000Z'), hours: '19.00', hourlyRateCzk: '250.00', customerRateCzk: '300.00' },
+      ],
+    }],
+  });
+  const payload = await getManagerPayroll(client, createManagerContext(), { period: 'week', anchor: '2026-09-14' });
+  assert.equal(payload.employees[0].summary.approvedHours, '54.00');
+  assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '13500.00');
+  assert.equal(payload.employees[0].summary.laborMarginCzk, '2700.00');
+  assert.equal(payload.employees[0].summary.netPayCzk, '13500.00');
 });
 
 test('manager payroll keeps historical customer rate snapshots after membership rate changes', async () => {

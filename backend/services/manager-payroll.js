@@ -82,7 +82,7 @@ function customerRateMeta(entries = [], payRate = 0, customerRate = payRate, rul
   };
 }
 
-function managerMarginEntries(entries = [], membership = {}) {
+function managerPayrollEntries(entries = [], membership = {}) {
   const payRate = membership.hourlyRateCzk ?? '0';
   const customerRate = membership.customerRateCzk ?? payRate;
   return entries
@@ -170,15 +170,15 @@ export async function getManagerPayroll(client, context, query = {}) {
   let predictedMargin = 0;
 
   const employees = memberships.map(membership => {
-    const entries = membership.workEntries || [];
-    const laborEntries = managerMarginEntries(membership.employeeManagerTimesheetEntries || [], membership);
+    const payrollEntries = managerPayrollEntries(membership.employeeManagerTimesheetEntries || [], membership);
+    const entries = payrollEntries.length ? payrollEntries : (membership.workEntries || []);
     const payRate = membership.hourlyRateCzk ?? '0';
     // An unset customer rate means the employee's pay rate, never an invented margin.
     const customerRate = membership.customerRateCzk ?? payRate;
     const baseSummary = calculateNetWorkSummary(entries, payRate, rules);
-    const rates = rateMeta(laborEntries, payRate, rules);
-    const customerRates = customerRateMeta(laborEntries, payRate, customerRate, rules);
-    const labor = calculateLaborMargin(laborEntries, payRate, customerRate, rules);
+    const rates = rateMeta(entries, payRate, rules);
+    const customerRates = customerRateMeta(entries, payRate, customerRate, rules);
+    const labor = calculateLaborMargin(entries, payRate, customerRate, rules);
     const employeeAdvances = advanceByEmployee.get(membership.id) || 0;
     const employeeConfirmed = toHundredths(baseSummary.confirmedSalaryCzk);
     const employeePredicted = toHundredths(baseSummary.predictedSalaryCzk);
