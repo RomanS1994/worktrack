@@ -17,7 +17,9 @@ function context() {
 }
 
 function client() {
+  const payrollQueries = [];
   return {
+    payrollQueries,
     company: {
       findUnique: async () => ({ breakMinutes: 0, standardDailyHours: '8.00' }),
     },
@@ -41,11 +43,19 @@ function client() {
     companyMembership: {
       findMany: async query => {
         if (query.include?.workEntries) {
+          payrollQueries.push(query);
+          assert.deepEqual(query.include.workEntries.where.workDate, {
+            gte: new Date('2026-08-01T00:00:00.000Z'),
+            lt: new Date('2026-09-01T00:00:00.000Z'),
+          });
           return [
             {
               id: 'employee-1', userId: 'user-1', companyId: 'company-1', role: 'EMPLOYEE', status: 'ACTIVE', hourlyRateCzk: '200.00', createdAt: new Date(),
               user: { firstName: 'Anna', lastName: 'Novak', email: 'anna@example.com', deletedAt: null },
-              workEntries: [{ id: 'e1', workDate: new Date('2026-08-17T00:00:00.000Z'), status: 'APPROVED', hours: '8.00' }],
+              workEntries: [
+                { id: 'e1', workDate: new Date('2026-08-17T00:00:00.000Z'), status: 'APPROVED', hours: '8.00' },
+                { id: 'e2', workDate: new Date('2026-08-05T00:00:00.000Z'), status: 'APPROVED', hours: '4.00' },
+              ],
             },
             {
               id: 'employee-2', userId: 'user-2', companyId: 'company-1', role: 'EMPLOYEE', status: 'ACTIVE', hourlyRateCzk: '300.00', createdAt: new Date(),
@@ -79,16 +89,21 @@ function client() {
 }
 
 test('manager dashboard is scoped to current week and categorizes employees', async () => {
-  const payload = await getManagerDashboard(client(), context(), new Date('2026-08-19T12:00:00.000Z'));
+  const testClient = client();
+  const payload = await getManagerDashboard(testClient, context(), new Date('2026-08-19T12:00:00.000Z'));
 
   assert.equal(payload.week.weekStart, '2026-08-17');
   assert.equal(payload.week.weekEnd, '2026-08-23');
+  assert.equal(payload.period.type, 'month');
+  assert.equal(payload.period.start, '2026-08-01');
+  assert.equal(payload.period.end, '2026-08-31');
   assert.equal(payload.summary.employeeCount, 3);
   assert.equal(payload.summary.activeProjectCount, 3);
   assert.equal(payload.summary.pendingSubmissions, 1);
   assert.equal(payload.summary.notSubmittedCount, 1);
   assert.equal(payload.summary.needsChangesCount, 1);
-  assert.equal(payload.summary.confirmedSalaryCzk, '1600.00');
+  assert.equal(payload.summary.confirmedSalaryCzk, '2400.00');
+  assert.equal(testClient.payrollQueries.length, 1);
   assert.equal(payload.team.notSubmitted[0].name, 'Petr Dvorak');
   assert.equal(payload.team.needsChanges[0].rejectionReason, 'Fix Friday');
 });

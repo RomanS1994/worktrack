@@ -20,8 +20,9 @@ export async function getManagerDashboard(client, context, now = new Date()) {
 
   const range = getWeekRange(now);
   const week = serializeWeek(range);
+  const monthAnchor = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const [payroll, activeProjectCount, pendingSubmissions, employees] = await Promise.all([
-    getManagerPayroll(client, context, { period: 'week', anchor: week.weekStart }),
+    getManagerPayroll(client, context, { period: 'month', anchor: monthAnchor.toISOString().slice(0, 10) }),
     client.project.count({
       where: {
         companyId: membership.companyId,
@@ -76,11 +77,13 @@ export async function getManagerDashboard(client, context, now = new Date()) {
 
   let ownSummary = ownPayroll?.summary || null;
   if (client.workEntry?.findMany) {
+    const monthStart = new Date(`${payroll.period.start}T00:00:00.000Z`);
+    const monthEndExclusive = new Date(new Date(`${payroll.period.end}T00:00:00.000Z`).getTime() + 24 * 60 * 60 * 1000);
     const ownEntries = await client.workEntry.findMany({
       where: {
         companyId: membership.companyId,
         employeeMembershipId: membership.id,
-        workDate: { gte: range.weekStart, lt: new Date(range.weekEnd.getTime() + 24 * 60 * 60 * 1000) },
+        workDate: { gte: monthStart, lt: monthEndExclusive },
         status: { in: ['DRAFT', 'SUBMITTED', 'APPROVED'] },
       },
       orderBy: { workDate: 'asc' },
@@ -94,6 +97,7 @@ export async function getManagerDashboard(client, context, now = new Date()) {
     role: 'MANAGER',
     company: payroll.company,
     week,
+    period: payroll.period,
     self: {
       status: ownStatus?.status || 'NOT_SUBMITTED',
       submittedAt: ownStatus?.submittedAt || '',
