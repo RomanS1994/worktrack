@@ -78,6 +78,9 @@ export async function getManagerEmployees(client, context, now = new Date()) {
       canAccessManagerCabinet: employee.role === 'MANAGER',
       status: employee.status,
       hourlyRateCzk: employee.hourlyRateCzk == null ? '0.00' : String(employee.hourlyRateCzk),
+      customerRateCzk: employee.customerRateCzk == null
+        ? (employee.hourlyRateCzk == null ? '0.00' : String(employee.hourlyRateCzk))
+        : String(employee.customerRateCzk),
       pendingSubmissions: Array.isArray(employee.weeklySubmissions) ? employee.weeklySubmissions.length : 0,
       user: serializeUser(employee.user),
       email: employee.user?.email || '',

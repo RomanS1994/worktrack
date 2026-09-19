@@ -323,6 +323,10 @@ export async function createEmployeeWorkEntry(client, context, payload = {}) {
       weeklySubmissionId: null,
       workDate,
       hours: normalizeHoursString(payload.hours),
+      hourlyRateCzk: membership.hourlyRateCzk == null ? null : String(membership.hourlyRateCzk),
+      customerRateCzk: membership.customerRateCzk == null
+        ? (membership.hourlyRateCzk == null ? null : String(membership.hourlyRateCzk))
+        : String(membership.customerRateCzk),
       status: 'DRAFT',
       createdAt: timestamp,
       updatedAt: timestamp,

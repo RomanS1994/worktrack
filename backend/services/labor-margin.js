@@ -24,7 +24,11 @@ export function calculateLaborMargin(entries = [], payRateCzk = 0, customerRateC
   let totalMarginCents = 0;
   let totalRevenueCents = 0;
   let totalPayCents = 0;
-  const eligibleEntries = entries.filter(entry => entry.status !== 'REJECTED');
+  let confirmedRevenueCents = 0;
+  let predictedRevenueCents = 0;
+  let confirmedMarginCents = 0;
+  let predictedMarginCents = 0;
+  const eligibleEntries = entries.filter(entry => ['SUBMITTED', 'APPROVED'].includes(entry.status));
   for (const entry of calculateNetWorkEntries(eligibleEntries, rules)) {
     const hoursHundredths = Math.round(Number(entry.netHours || 0) * 100);
     const pay = entry.hourlyRateCzk == null ? defaultPay : cents(entry.hourlyRateCzk);
@@ -34,10 +38,21 @@ export function calculateLaborMargin(entries = [], payRateCzk = 0, customerRateC
     totalRevenueCents += revenue;
     totalPayCents += salary;
     totalMarginCents += revenue - salary;
+    if (entry.status === 'APPROVED') {
+      confirmedRevenueCents += revenue;
+      confirmedMarginCents += revenue - salary;
+    } else if (entry.status === 'SUBMITTED') {
+      predictedRevenueCents += revenue;
+      predictedMarginCents += revenue - salary;
+    }
   }
   return {
     revenueCzk: money(totalRevenueCents),
     payCzk: money(totalPayCents),
     marginCzk: money(totalMarginCents),
+    confirmedRevenueCzk: money(confirmedRevenueCents),
+    predictedRevenueCzk: money(predictedRevenueCents),
+    confirmedMarginCzk: money(confirmedMarginCents),
+    predictedMarginCzk: money(predictedMarginCents),
   };
 }

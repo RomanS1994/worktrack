@@ -113,6 +113,7 @@ model CompanyMembership {
   userId             String
   role               MembershipRole
   hourlyRateCzk      Decimal?         @db.Decimal(10, 2)
+  customerRateCzk    Decimal?         @db.Decimal(10, 2)
   status             MembershipStatus @default(ACTIVE)
   deletedAt          DateTime?
   createdAt          DateTime         @default(now())
@@ -169,6 +170,7 @@ model WorkEntry {
   workDate             DateTime
   hours                Decimal         @db.Decimal(5, 2)
   hourlyRateCzk        Decimal?        @db.Decimal(10, 2)
+  customerRateCzk      Decimal?        @db.Decimal(10, 2)
   grossHours           Decimal?        @db.Decimal(5, 2)
   breakMinutes         Int             @default(0)
   startTime            String?

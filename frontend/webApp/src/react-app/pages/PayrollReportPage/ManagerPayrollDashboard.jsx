@@ -4,9 +4,9 @@ import { formatCzk, formatHours } from '../../app/formatters.js';
 import './ManagerPayrollAdvances.css';
 
 const COPY = {
-  uk: { accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати', showEmployees: 'Показати працівників', hideEmployees: 'Згорнути працівників' },
-  cs: { accrued: 'Nárok', advances: 'Zálohy', netPay: 'K výplatě', showEmployees: 'Zobrazit zaměstnance', hideEmployees: 'Sbalit zaměstnance' },
-  en: { accrued: 'Accrued', advances: 'Advances', netPay: 'Net pay', showEmployees: 'Show employees', hideEmployees: 'Collapse employees' },
+  uk: { accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати', laborMargin: 'Дохід із працівників', showEmployees: 'Показати працівників', hideEmployees: 'Згорнути працівників' },
+  cs: { accrued: 'Nárok', advances: 'Zálohy', netPay: 'K výplatě', laborMargin: 'Výnos ze zaměstnanců', showEmployees: 'Zobrazit zaměstnance', hideEmployees: 'Sbalit zaměstnance' },
+  en: { accrued: 'Accrued', advances: 'Advances', netPay: 'Net pay', laborMargin: 'Employee margin', showEmployees: 'Show employees', hideEmployees: 'Collapse employees' },
 };
 
 function copyForLocale(locale = '') {
@@ -58,6 +58,7 @@ export function ManagerPayrollDashboard({
   const accrued = accruedAmount(visibleSummary);
   const advances = Number(visibleSummary?.advancesCzk || 0);
   const netPay = Number(visibleSummary?.netPayCzk ?? Math.max(accrued - advances, 0));
+  const laborMargin = Number(visibleSummary?.laborMarginCzk || 0);
   const pending = Number(visibleSummary?.predictedSalaryCzk || 0);
   const approvedHours = visibleSummary?.approvedHours || 0;
   const pendingHours = visibleSummary?.pendingHours || 0;
@@ -95,6 +96,7 @@ export function ManagerPayrollDashboard({
           <div><span>{copy.accrued}</span><strong>{formatCzk(accrued, locale)}</strong></div>
           <div className="is-advance"><span>{copy.advances}</span><strong>− {formatCzk(advances, locale)}</strong></div>
           <div className="is-net"><span>{copy.netPay}</span><strong>{formatCzk(netPay, locale)}</strong></div>
+          <div className="is-margin"><span>{copy.laborMargin}</span><strong>{formatCzk(laborMargin, locale)}</strong></div>
         </div>
         <div className="managerPayrollMobile-hours">
           <span><i className="is-confirmed" /> <b>{formatHours(approvedHours, locale)}</b> {t('payroll.confirmed').toLowerCase()}</span>
@@ -118,12 +120,13 @@ export function ManagerPayrollDashboard({
               <button type="button" className={`managerPayrollMobile-employee${isSelected ? ' is-selected' : ''}`} key={employee.id} onClick={() => toggleEmployee(employee.id)} aria-pressed={isSelected}>
                 <div className="managerPayrollMobile-avatar" aria-hidden="true">{initials(employee.name)}</div>
                 <div className="managerPayrollMobile-person"><strong>{employee.name}</strong><span>{employee.mixedRates ? '—' : `${formatCzk(employee.effectiveRateCzk ?? employee.hourlyRateCzk, locale)}/год`}</span></div>
-                <strong className="managerPayrollMobile-rowNet">{formatCzk(employee.summary?.netPayCzk, locale)}</strong>
+                <div className="managerPayrollMobile-rowMoney"><strong>{formatCzk(employee.summary?.netPayCzk, locale)}</strong><span>{formatCzk(employee.summary?.laborMarginCzk, locale)}</span></div>
                 <span className="managerPayrollMobile-chevron" aria-hidden="true">{isSelected ? '⌃' : '›'}</span>
                 {isSelected ? <div className="managerPayrollMobile-employeeAmounts is-net-pay">
                   <div><span>{copy.accrued}</span><strong>{formatCzk(employeeAccrued, locale)}</strong></div>
                   <div className="is-advance"><span>{copy.advances}</span><strong>− {formatCzk(employee.summary?.advancesCzk, locale)}</strong></div>
                   <div className="is-net"><span>{copy.netPay}</span><strong>{formatCzk(employee.summary?.netPayCzk, locale)}</strong></div>
+                  <div className="is-margin"><span>{copy.laborMargin}</span><strong>{formatCzk(employee.summary?.laborMarginCzk, locale)}</strong></div>
                 </div> : null}
               </button>
             );

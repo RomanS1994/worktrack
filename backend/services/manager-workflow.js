@@ -127,6 +127,9 @@ function serializeEmployeeMembership(membership) {
     canAccessManagerCabinet: membership.role === 'MANAGER',
     status: membership.status,
     hourlyRateCzk: membership.hourlyRateCzk == null ? '0.00' : String(membership.hourlyRateCzk),
+    customerRateCzk: membership.customerRateCzk == null
+      ? (membership.hourlyRateCzk == null ? '0.00' : String(membership.hourlyRateCzk))
+      : String(membership.customerRateCzk),
     pendingSubmissions: Array.isArray(membership.weeklySubmissions) ? membership.weeklySubmissions.length : 0,
     user: serializeUserSummary(user),
     email: user?.email || '',
@@ -227,6 +230,11 @@ export async function createManagerEmployee(client, context, payload = {}) {
   const email = normalizeEmail(payload.email);
   const temporaryPassword = String(payload.temporaryPassword || payload.password || '');
   const hourlyRateCzk = normalizeMoneyString(payload.hourlyRateCzk);
+  const hasCustomerRate = Object.prototype.hasOwnProperty.call(payload, 'customerRateCzk')
+    && normalizeText(payload.customerRateCzk);
+  const customerRateCzk = hasCustomerRate
+    ? normalizeMoneyString(payload.customerRateCzk)
+    : hourlyRateCzk;
   if (!firstName) throw new Error('First name is required');
   if (!lastName) throw new Error('Last name is required');
   if (!email) throw new Error('Email is required');
@@ -264,6 +272,7 @@ export async function createManagerEmployee(client, context, payload = {}) {
       userId: user.id,
       role: payload.canAccessManagerCabinet === true ? 'MANAGER' : 'EMPLOYEE',
       hourlyRateCzk,
+      customerRateCzk,
       status: 'ACTIVE',
       createdAt: timestamp,
       updatedAt: timestamp,
@@ -277,7 +286,12 @@ export async function createManagerEmployee(client, context, payload = {}) {
     targetUserId: user.id,
     entityType: 'company_membership',
     entityId: membership.id,
-    after: { companyId: managerMembership.companyId, role: membership.role, hourlyRateCzk: membership.hourlyRateCzk },
+    after: {
+      companyId: managerMembership.companyId,
+      role: membership.role,
+      hourlyRateCzk: membership.hourlyRateCzk,
+      customerRateCzk: membership.customerRateCzk,
+    },
   });
   return serializeEmployeeMembership(membership);
 }
@@ -292,6 +306,7 @@ export async function updateEmployeeMembership(client, context, employeeMembersh
 
   const data = { updatedAt: new Date(nowIso()) };
   if (Object.prototype.hasOwnProperty.call(payload, 'hourlyRateCzk')) data.hourlyRateCzk = normalizeMoneyString(payload.hourlyRateCzk);
+  if (Object.prototype.hasOwnProperty.call(payload, 'customerRateCzk')) data.customerRateCzk = normalizeMoneyString(payload.customerRateCzk);
   if (Object.prototype.hasOwnProperty.call(payload, 'canAccessManagerCabinet')) {
     const managerAccess = payload.canAccessManagerCabinet === true;
     if (existing.role === 'MANAGER' && !managerAccess) {

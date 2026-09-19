@@ -25,6 +25,7 @@ function employee(id = 'employee-1') {
     status: 'ACTIVE',
     deletedAt: null,
     hourlyRateCzk: '300.00',
+    customerRateCzk: '360.00',
     createdAt: new Date('2026-08-01T00:00:00.000Z'),
     user: {
       id: `user-${id}`,
@@ -61,7 +62,24 @@ test('manager employee list uses company break rules for weekly summaries', asyn
   assert.equal(payload.employees[0].summary.totalHours, '8.00');
   assert.equal(payload.employees[0].summary.approvedHours, '8.00');
   assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '2400.00');
+  assert.equal(payload.employees[0].customerRateCzk, '360.00');
   assert.equal(payload.employees[0].pendingSubmissions, 1);
+});
+
+test('manager employee list falls back customer rate to pay rate when unset', async () => {
+  const client = {
+    company: {
+      findUnique: async () => ({ breakMinutes: 0, standardDailyHours: '8.00' }),
+    },
+    companyMembership: {
+      findMany: async () => [{ ...employee(), customerRateCzk: null }],
+    },
+  };
+
+  const payload = await getManagerEmployees(client, context(), new Date('2026-08-26T12:00:00.000Z'));
+
+  assert.equal(payload.employees[0].hourlyRateCzk, '300.00');
+  assert.equal(payload.employees[0].customerRateCzk, '300.00');
 });
 
 test('manager employee list excludes deleted memberships at the database query', async () => {

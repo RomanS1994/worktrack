@@ -687,6 +687,7 @@ test('manager creates employee membership only inside current company', async ()
   assert.equal(employee.companyId, seed.companyA.id);
   assert.equal(employee.role, 'EMPLOYEE');
   assert.equal(employee.hourlyRateCzk, '275.00');
+  assert.equal(employee.customerRateCzk, '275.00');
   assert.equal(client.state.users.find(user => user.email === 'jane@example.com').mustChangePassword, true);
 });
 
@@ -853,6 +854,7 @@ test('hourly rate belongs to CompanyMembership, not global User', async () => {
 
 test('sanitized login payload exposes correct role and company context', async () => {
   const seed = createSeed();
+  seed.managerMembershipA.customerRateCzk = '500.00';
   const user = await buildSanitizedUser(null, seed.managerA, {
     memberships: [seed.managerMembershipA],
     activeMembership: seed.managerMembershipA,
@@ -864,6 +866,7 @@ test('sanitized login payload exposes correct role and company context', async (
   assert.equal(user.role, 'MANAGER');
   assert.equal(user.activeCompany.id, seed.companyA.id);
   assert.equal(user.activeMembership.id, seed.managerMembershipA.id);
+  assert.equal(Object.hasOwn(user.activeMembership, 'customerRateCzk'), false);
 });
 
 test('WorkEntry and WeeklySubmission flow works after membership migration', async () => {

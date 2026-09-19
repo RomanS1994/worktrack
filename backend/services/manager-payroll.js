@@ -126,6 +126,10 @@ export async function getManagerPayroll(client, context, query = {}) {
   let employeesWithHours = 0;
   let totalRevenue = 0;
   let totalMargin = 0;
+  let confirmedRevenue = 0;
+  let predictedRevenue = 0;
+  let confirmedMargin = 0;
+  let predictedMargin = 0;
 
   const employees = memberships.map(membership => {
     const entries = membership.workEntries || [];
@@ -149,6 +153,10 @@ export async function getManagerPayroll(client, context, query = {}) {
     advances += employeeAdvances;
     totalRevenue += toHundredths(labor.revenueCzk);
     totalMargin += toHundredths(labor.marginCzk);
+    confirmedRevenue += toHundredths(labor.confirmedRevenueCzk);
+    predictedRevenue += toHundredths(labor.predictedRevenueCzk);
+    confirmedMargin += toHundredths(labor.confirmedMarginCzk);
+    predictedMargin += toHundredths(labor.predictedMarginCzk);
 
     return {
       id: membership.id,
@@ -165,6 +173,10 @@ export async function getManagerPayroll(client, context, query = {}) {
         ...baseSummary,
         revenueCzk: labor.revenueCzk,
         laborMarginCzk: labor.marginCzk,
+        confirmedRevenueCzk: labor.confirmedRevenueCzk,
+        predictedRevenueCzk: labor.predictedRevenueCzk,
+        confirmedLaborMarginCzk: labor.confirmedMarginCzk,
+        predictedLaborMarginCzk: labor.predictedMarginCzk,
         accruedSalaryCzk: formatHundredths(employeeAccrued),
         advancesCzk: formatHundredths(employeeAdvances),
         netPayCzk: formatHundredths(employeeNetPay),
@@ -192,6 +204,10 @@ export async function getManagerPayroll(client, context, query = {}) {
       netPayCzk: formatHundredths(Math.max(accruedSalary - advances, 0)),
       revenueCzk: formatHundredths(totalRevenue),
       laborMarginCzk: formatHundredths(totalMargin),
+      confirmedRevenueCzk: formatHundredths(confirmedRevenue),
+      predictedRevenueCzk: formatHundredths(predictedRevenue),
+      confirmedLaborMarginCzk: formatHundredths(confirmedMargin),
+      predictedLaborMarginCzk: formatHundredths(predictedMargin),
     },
   };
 }

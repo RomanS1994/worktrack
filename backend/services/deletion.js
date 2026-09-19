@@ -38,6 +38,9 @@ function restoredEmployeePayload(membership, user) {
     role: membership.role,
     status: membership.status,
     hourlyRateCzk: membership.hourlyRateCzk == null ? '0.00' : String(membership.hourlyRateCzk),
+    customerRateCzk: membership.customerRateCzk == null
+      ? (membership.hourlyRateCzk == null ? '0.00' : String(membership.hourlyRateCzk))
+      : String(membership.customerRateCzk),
     pendingSubmissions: 0,
     user: {
       id: user?.id || membership.userId,
@@ -82,6 +85,9 @@ export async function restoreDeletedManagerEmployee(client, context, payload = {
   const firstName = String(payload.firstName || '').trim();
   const lastName = String(payload.lastName || '').trim();
   const hourlyRateCzk = normalizeRate(payload.hourlyRateCzk);
+  const customerRateCzk = String(payload.customerRateCzk ?? '').trim()
+    ? normalizeRate(payload.customerRateCzk)
+    : hourlyRateCzk;
   const updatedUser = await client.user.update({
     where: { id: user.id },
     data: {
@@ -98,6 +104,7 @@ export async function restoreDeletedManagerEmployee(client, context, payload = {
       status: 'ACTIVE',
       deletedAt: null,
       hourlyRateCzk,
+      customerRateCzk,
     },
   });
 
@@ -111,11 +118,17 @@ export async function restoreDeletedManagerEmployee(client, context, payload = {
       status: membership.status,
       deletedAt: membership.deletedAt,
       hourlyRateCzk: membership.hourlyRateCzk == null ? '0.00' : String(membership.hourlyRateCzk),
+      customerRateCzk: membership.customerRateCzk == null
+        ? (membership.hourlyRateCzk == null ? '0.00' : String(membership.hourlyRateCzk))
+        : String(membership.customerRateCzk),
     },
     after: {
       status: restored.status,
       deletedAt: null,
       hourlyRateCzk: restored.hourlyRateCzk == null ? '0.00' : String(restored.hourlyRateCzk),
+      customerRateCzk: restored.customerRateCzk == null
+        ? (restored.hourlyRateCzk == null ? '0.00' : String(restored.hourlyRateCzk))
+        : String(restored.customerRateCzk),
     },
   });
 

@@ -98,16 +98,15 @@ test('manager payroll calculates a selected week and employee breakdown', async 
   assert.deepEqual(query.include.workEntries.where.status.in, ['SUBMITTED', 'APPROVED']);
 
   assert.equal(payload.employees[0].name, 'Anna Novak');
-  assert.deepEqual(payload.employees[0].summary, {
-    totalHours: '12.00',
-    approvedHours: '8.00',
-    pendingHours: '4.00',
-    confirmedSalaryCzk: '1600.00',
-    predictedSalaryCzk: '800.00',
-    accruedSalaryCzk: '2400.00',
-    advancesCzk: '0.00',
-    netPayCzk: '2400.00',
-  });
+  assert.equal(payload.employees[0].summary.totalHours, '12.00');
+  assert.equal(payload.employees[0].summary.approvedHours, '8.00');
+  assert.equal(payload.employees[0].summary.pendingHours, '4.00');
+  assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '1600.00');
+  assert.equal(payload.employees[0].summary.predictedSalaryCzk, '800.00');
+  assert.equal(payload.employees[0].summary.accruedSalaryCzk, '2400.00');
+  assert.equal(payload.employees[0].summary.advancesCzk, '0.00');
+  assert.equal(payload.employees[0].summary.netPayCzk, '2400.00');
+  assert.equal(payload.employees[0].summary.laborMarginCzk, '0.00');
   assert.equal(payload.employees[1].name, 'Boris Worker');
   assert.equal(payload.summary.employeeCount, 2);
   assert.equal(payload.summary.employeesWithHours, 2);
@@ -169,6 +168,51 @@ test('manager payroll uses the rate snapshot stored on each work entry', async (
   });
   const payload = await getManagerPayroll(client, createManagerContext(), { period: 'week', anchor: '2026-08-17' });
   assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '1600.00');
+});
+
+test('manager payroll calculates labor margin from customer and pay rates', async () => {
+  const client = createClient({
+    memberships: [{
+      id: 'membership-1', userId: 'employee-1', companyId: 'company-1', role: 'EMPLOYEE', status: 'ACTIVE', deletedAt: null,
+      hourlyRateCzk: '220.00', customerRateCzk: '300.00', user: { firstName: 'Anna', email: 'anna@example.com', deletedAt: null },
+      workEntries: [{ id: 'a1', employeeMembershipId: 'membership-1', workDate: new Date('2026-08-17T00:00:00.000Z'), status: 'APPROVED', hours: '51.00' }],
+    }],
+  });
+  const payload = await getManagerPayroll(client, createManagerContext(), { period: 'week', anchor: '2026-08-17' });
+  assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '11220.00');
+  assert.equal(payload.employees[0].summary.laborMarginCzk, '4080.00');
+  assert.equal(payload.employees[0].summary.confirmedLaborMarginCzk, '4080.00');
+  assert.equal(payload.summary.laborMarginCzk, '4080.00');
+});
+
+test('manager payroll keeps historical customer rate snapshots after membership rate changes', async () => {
+  const client = createClient({
+    memberships: [{
+      id: 'membership-1', userId: 'employee-1', companyId: 'company-1', role: 'EMPLOYEE', status: 'ACTIVE', deletedAt: null,
+      hourlyRateCzk: '260.00', customerRateCzk: '360.00', user: { firstName: 'Anna', email: 'anna@example.com', deletedAt: null },
+      workEntries: [{ id: 'a1', employeeMembershipId: 'membership-1', workDate: new Date('2026-08-17T00:00:00.000Z'), status: 'APPROVED', hours: '10.00', hourlyRateCzk: '220.00', customerRateCzk: '300.00' }],
+    }],
+  });
+  const payload = await getManagerPayroll(client, createManagerContext(), { period: 'week', anchor: '2026-08-17' });
+  assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '2200.00');
+  assert.equal(payload.employees[0].summary.laborMarginCzk, '800.00');
+});
+
+test('manager payroll separates approved and submitted labor margin', async () => {
+  const client = createClient({
+    memberships: [{
+      id: 'membership-1', userId: 'employee-1', companyId: 'company-1', role: 'EMPLOYEE', status: 'ACTIVE', deletedAt: null,
+      hourlyRateCzk: '200.00', customerRateCzk: '250.00', user: { firstName: 'Anna', email: 'anna@example.com', deletedAt: null },
+      workEntries: [
+        { id: 'a1', employeeMembershipId: 'membership-1', workDate: new Date('2026-08-17T00:00:00.000Z'), status: 'APPROVED', hours: '4.00' },
+        { id: 'a2', employeeMembershipId: 'membership-1', workDate: new Date('2026-08-18T00:00:00.000Z'), status: 'SUBMITTED', hours: '6.00' },
+      ],
+    }],
+  });
+  const payload = await getManagerPayroll(client, createManagerContext(), { period: 'week', anchor: '2026-08-17' });
+  assert.equal(payload.employees[0].summary.confirmedLaborMarginCzk, '200.00');
+  assert.equal(payload.employees[0].summary.predictedLaborMarginCzk, '300.00');
+  assert.equal(payload.employees[0].summary.laborMarginCzk, '500.00');
 });
 
 test('manager payroll keeps approved-only earnings payable', async () => {

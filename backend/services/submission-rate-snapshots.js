@@ -1,5 +1,8 @@
 export async function freezeSubmissionHourlyRateSnapshots(client, membership, submission) {
   const hourlyRateCzk = membership?.hourlyRateCzk == null ? null : String(membership.hourlyRateCzk);
+  const customerRateCzk = membership?.customerRateCzk == null
+    ? hourlyRateCzk
+    : String(membership.customerRateCzk);
   if (hourlyRateCzk == null || !submission?.id) {
     return { count: 0 };
   }
@@ -9,8 +12,11 @@ export async function freezeSubmissionHourlyRateSnapshots(client, membership, su
       companyId: membership.companyId,
       employeeMembershipId: membership.id,
       weeklySubmissionId: submission.id,
-      hourlyRateCzk: null,
+      OR: [
+        { hourlyRateCzk: null },
+        { customerRateCzk: null },
+      ],
     },
-    data: { hourlyRateCzk },
+    data: { hourlyRateCzk, customerRateCzk },
   });
 }

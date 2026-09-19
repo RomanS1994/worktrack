@@ -43,7 +43,7 @@
   .managerPayrollMobile-employees h2{margin:0;font-size:17px;line-height:1.15;font-weight:850}
   .managerPayrollMobile-employees>header>span{padding:5px 9px;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:10px;font-weight:750}
   .managerPayrollMobile-list{display:grid;gap:9px}
-  .managerPayrollMobile-employee{position:relative;display:grid;grid-template-columns:38px minmax(0,1fr) 18px;gap:10px 11px;width:100%;min-height:0;padding:13px 14px;border:1px solid var(--line);border-radius:17px;background:#fff;box-shadow:0 6px 18px rgba(15,23,42,.035);color:inherit;text-align:left;transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease,transform .16s ease}
+  .managerPayrollMobile-employee{position:relative;display:grid;grid-template-columns:38px minmax(0,1fr) auto 18px;gap:10px 11px;width:100%;min-height:0;padding:13px 14px;border:1px solid var(--line);border-radius:17px;background:#fff;box-shadow:0 6px 18px rgba(15,23,42,.035);color:inherit;text-align:left;transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease,transform .16s ease}
   .managerPayrollMobile-employee.is-selected{border-color:rgba(22,163,74,.28);background:#fbfffc;box-shadow:0 8px 22px rgba(22,163,74,.07)}
   .managerPayrollMobile-employee:active{transform:scale(.992)}
   .managerPayrollMobile-avatar{display:grid;width:38px;height:38px;place-items:center;border-radius:50%;background:#edf9f0;color:#15803d;font-size:12px;font-weight:850}
@@ -51,6 +51,9 @@
   .managerPayrollMobile-person{display:grid;align-content:center;gap:2px;min-width:0}
   .managerPayrollMobile-person strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;line-height:1.15;font-weight:850}
   .managerPayrollMobile-person span{color:#667085;font-size:10px}
+  .managerPayrollMobile-rowMoney{display:grid;align-content:center;gap:2px;text-align:right}
+  .managerPayrollMobile-rowMoney strong{font-size:12px;line-height:1.1;white-space:nowrap}
+  .managerPayrollMobile-rowMoney span{color:#15803d;font-size:10px;font-weight:800;white-space:nowrap}
   .managerPayrollMobile-chevron{align-self:start;justify-self:end;color:#334155;font-size:24px;line-height:1;font-weight:700}
   .managerPayrollMobile-employee.is-selected .managerPayrollMobile-chevron{color:#15803d;font-size:18px;margin-top:2px}
   .managerPayrollMobile-employeeAmounts{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:2px;padding-top:10px;border-top:1px solid rgba(17,24,39,.07)}
@@ -73,7 +76,7 @@
   .managerPayrollMobile-wallet{right:16px;top:16px;width:42px;height:42px}
   .managerPayrollMobile-wallet svg{width:24px;height:24px}
   .managerPayrollMobile-moneyGrid,.managerPayrollMobile-hours{gap:12px}
-  .managerPayrollMobile-employee{grid-template-columns:36px minmax(0,1fr) 16px;padding:12px}
+  .managerPayrollMobile-employee{grid-template-columns:36px minmax(0,1fr) auto 16px;padding:12px}
   .managerPayrollMobile-avatar{width:36px;height:36px}
   .managerPayrollMobile-employeeAmounts{gap:12px}.managerPayrollMobile-employeeAmounts>div+div{padding-left:12px}
 }

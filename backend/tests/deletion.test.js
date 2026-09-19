@@ -87,7 +87,7 @@ test('rehiring the same email restores the old membership id and history anchor'
     id: 'employee-user-1', email: 'employee@example.com', firstName: 'Old', lastName: 'Name', name: 'Old Name', phone: '', deletedAt: null,
   };
   const membership = {
-    id: 'employee-1', companyId: 'company-1', userId: user.id, role: 'EMPLOYEE', status: 'INACTIVE', deletedAt, hourlyRateCzk: '250.00',
+    id: 'employee-1', companyId: 'company-1', userId: user.id, role: 'EMPLOYEE', status: 'INACTIVE', deletedAt, hourlyRateCzk: '250.00', customerRateCzk: '300.00',
   };
   const client = {
     user: {
@@ -102,13 +102,14 @@ test('rehiring the same email restores the old membership id and history anchor'
   };
 
   const restored = await restoreDeletedManagerEmployee(client, managerContext(), {
-    firstName: 'New', lastName: 'Worker', email: 'EMPLOYEE@example.com', hourlyRateCzk: '320',
+    firstName: 'New', lastName: 'Worker', email: 'EMPLOYEE@example.com', hourlyRateCzk: '320', customerRateCzk: '390',
   });
 
   assert.equal(restored.id, 'employee-1');
   assert.equal(restored.status, 'ACTIVE');
   assert.equal(restored.hourlyRateCzk, '320.00');
-  assert.deepEqual(membershipUpdate, { status: 'ACTIVE', deletedAt: null, hourlyRateCzk: '320.00' });
+  assert.equal(restored.customerRateCzk, '390.00');
+  assert.deepEqual(membershipUpdate, { status: 'ACTIVE', deletedAt: null, hourlyRateCzk: '320.00', customerRateCzk: '390.00' });
 });
 
 test('rehire helper ignores a merely deactivated employee', async () => {
