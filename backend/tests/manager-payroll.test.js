@@ -182,6 +182,8 @@ test('manager payroll calculates labor margin from customer and pay rates', asyn
   assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '11220.00');
   assert.equal(payload.employees[0].summary.laborMarginCzk, '4080.00');
   assert.equal(payload.employees[0].summary.confirmedLaborMarginCzk, '4080.00');
+  assert.equal(payload.employees[0].effectiveRateCzk, '220.00');
+  assert.equal(payload.employees[0].effectiveCustomerRateCzk, '300.00');
   assert.equal(payload.summary.laborMarginCzk, '4080.00');
 });
 
@@ -196,6 +198,8 @@ test('manager payroll keeps historical customer rate snapshots after membership 
   const payload = await getManagerPayroll(client, createManagerContext(), { period: 'week', anchor: '2026-08-17' });
   assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '2200.00');
   assert.equal(payload.employees[0].summary.laborMarginCzk, '800.00');
+  assert.equal(payload.employees[0].effectiveRateCzk, '220.00');
+  assert.equal(payload.employees[0].effectiveCustomerRateCzk, '300.00');
 });
 
 test('manager payroll separates approved and submitted labor margin', async () => {

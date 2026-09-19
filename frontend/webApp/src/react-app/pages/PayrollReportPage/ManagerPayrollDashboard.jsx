@@ -5,9 +5,9 @@ import './ManagerPayrollAdvances.css';
 import './ManagerPayrollEmployeesToggle.css';
 
 const COPY = {
-  uk: { accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати', laborMargin: 'Дохід із працівників', showEmployees: 'Показати працівників', hideEmployees: 'Згорнути працівників' },
-  cs: { accrued: 'Nárok', advances: 'Zálohy', netPay: 'K výplatě', laborMargin: 'Výnos ze zaměstnanců', showEmployees: 'Zobrazit zaměstnance', hideEmployees: 'Sbalit zaměstnance' },
-  en: { accrued: 'Accrued', advances: 'Advances', netPay: 'Net pay', laborMargin: 'Employee margin', showEmployees: 'Show employees', hideEmployees: 'Collapse employees' },
+  uk: { accrued: 'Нараховано', advances: 'Залоги', netPay: 'До виплати', laborMargin: 'Дохід із працівників', marginShort: 'дохід', multipleRates: 'Кілька ставок', rateUnit: 'Kč/год', showEmployees: 'Показати працівників', hideEmployees: 'Згорнути працівників' },
+  cs: { accrued: 'Nárok', advances: 'Zálohy', netPay: 'K výplatě', laborMargin: 'Výnos ze zaměstnanců', marginShort: 'výnos', multipleRates: 'Více sazeb', rateUnit: 'Kč/h', showEmployees: 'Zobrazit zaměstnance', hideEmployees: 'Sbalit zaměstnance' },
+  en: { accrued: 'Accrued', advances: 'Advances', netPay: 'Net pay', laborMargin: 'Employee margin', marginShort: 'margin', multipleRates: 'Multiple rates', rateUnit: 'CZK/h', showEmployees: 'Show employees', hideEmployees: 'Collapse employees' },
 };
 
 function copyForLocale(locale = '') {
@@ -32,6 +32,13 @@ function WalletIcon() {
 function accruedAmount(summary) {
   if (summary?.accruedSalaryCzk != null) return Number(summary.accruedSalaryCzk || 0);
   return Number(summary?.confirmedSalaryCzk || 0) + Number(summary?.predictedSalaryCzk || 0);
+}
+
+function ratePair(employee, locale, copy) {
+  if (employee.mixedRates || employee.mixedCustomerRates) return copy.multipleRates;
+  const payRate = employee.effectiveRateCzk ?? employee.hourlyRateCzk;
+  const customerRate = employee.effectiveCustomerRateCzk ?? employee.customerRateCzk ?? payRate;
+  return `${formatCzk(payRate, locale)} → ${formatCzk(customerRate, locale)} ${copy.rateUnit}`;
 }
 
 export function ManagerPayrollDashboard({
@@ -122,8 +129,8 @@ export function ManagerPayrollDashboard({
             return (
               <button type="button" className={`managerPayrollMobile-employee${isSelected ? ' is-selected' : ''}`} key={employee.id} onClick={() => toggleEmployee(employee.id)} aria-pressed={isSelected}>
                 <div className="managerPayrollMobile-avatar" aria-hidden="true">{initials(employee.name)}</div>
-                <div className="managerPayrollMobile-person"><strong>{employee.name}</strong><span>{employee.mixedRates ? '—' : `${formatCzk(employee.effectiveRateCzk ?? employee.hourlyRateCzk, locale)}/год`}</span></div>
-                <div className="managerPayrollMobile-rowMoney"><strong>{formatCzk(employee.summary?.netPayCzk, locale)}</strong><span>{formatCzk(employee.summary?.laborMarginCzk, locale)}</span></div>
+                <div className="managerPayrollMobile-person"><strong>{employee.name}</strong><span>{ratePair(employee, locale, copy)}</span></div>
+                <div className="managerPayrollMobile-rowMoney"><strong>{formatCzk(employee.summary?.netPayCzk, locale)}</strong><span>{copy.marginShort} {formatCzk(employee.summary?.laborMarginCzk, locale)}</span></div>
                 <span className="managerPayrollMobile-chevron" aria-hidden="true">{isSelected ? '⌃' : '›'}</span>
                 {isSelected ? <div className="managerPayrollMobile-employeeAmounts is-net-pay">
                   <div><span>{copy.accrued}</span><strong>{formatCzk(employeeAccrued, locale)}</strong></div>

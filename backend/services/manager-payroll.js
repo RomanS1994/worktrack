@@ -53,10 +53,10 @@ function getEmployeeName(user) {
   return fullName || user?.name || user?.email || 'Employee';
 }
 
-function rateMeta(entries = [], fallbackRate = 0, rules = {}) {
+function rateMeta(entries = [], fallbackRate = 0, rules = {}, field = 'hourlyRateCzk') {
   const fallback = Number(fallbackRate || 0);
   const normalized = calculateNetWorkEntries(entries, rules)
-    .map(entry => ({ hours: Number(entry.netHours || 0), rate: Number(entry.hourlyRateCzk ?? fallback) }))
+    .map(entry => ({ hours: Number(entry.netHours || 0), rate: Number(entry[field] ?? fallback) }))
     .filter(entry => entry.hours > 0 && Number.isFinite(entry.rate) && entry.rate >= 0);
   const uniqueRates = [...new Set(normalized.map(entry => entry.rate.toFixed(2)))];
   const totalHours = normalized.reduce((sum, entry) => sum + entry.hours, 0);
@@ -138,6 +138,7 @@ export async function getManagerPayroll(client, context, query = {}) {
     const customerRate = membership.customerRateCzk ?? payRate;
     const baseSummary = calculateNetWorkSummary(entries, payRate, rules);
     const rates = rateMeta(entries, payRate, rules);
+    const customerRates = rateMeta(entries, customerRate, rules, 'customerRateCzk');
     const labor = calculateLaborMargin(entries, payRate, customerRate, rules);
     const employeeAdvances = advanceByEmployee.get(membership.id) || 0;
     const employeeConfirmed = toHundredths(baseSummary.confirmedSalaryCzk);
@@ -168,7 +169,9 @@ export async function getManagerPayroll(client, context, query = {}) {
       hourlyRateCzk: membership.hourlyRateCzk == null ? '0.00' : String(membership.hourlyRateCzk),
       customerRateCzk: String(customerRate),
       effectiveRateCzk: rates.effectiveRateCzk,
+      effectiveCustomerRateCzk: customerRates.effectiveRateCzk,
       mixedRates: rates.mixedRates,
+      mixedCustomerRates: customerRates.mixedRates,
       summary: {
         ...baseSummary,
         revenueCzk: labor.revenueCzk,
