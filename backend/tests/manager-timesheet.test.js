@@ -97,7 +97,7 @@ test('manager timesheet preserves submitted net hours instead of deducting lunch
   const payload = await getManagerTimesheet(
     readClient({
       workEntries: [workEntry({ hours: '8.00', grossHours: '8.50', breakMinutes: 30 })],
-      managerEntries: [managerEntry({ hours: '8.50', breakMinutes: 30 })],
+      managerEntries: [managerEntry({ hours: '8.00', breakMinutes: 30 })],
     }),
     context(),
     { month: '2026-08' }
@@ -106,12 +106,12 @@ test('manager timesheet preserves submitted net hours instead of deducting lunch
   const day = dayFor(payload);
   assert.equal(day.employeeHours, 8);
   assert.equal(day.employeeNetHours, 8);
-  assert.equal(day.managerHours, 8.5);
+  assert.equal(day.managerHours, 8);
   assert.equal(day.managerNetHours, 8);
   assert.equal(day.netDifference, 0);
   assert.equal(day.status, 'MATCH');
   assert.deepEqual(day.reasons, []);
-  assert.equal(payload.rows[0].managerTotal, 8.5);
+  assert.equal(payload.rows[0].managerTotal, 8);
   assert.equal(payload.rows[0].managerNetTotal, 8);
   assert.equal(payload.summary.matched, 1);
   assert.equal(payload.summary.problems, 0);
@@ -121,7 +121,7 @@ test('manager timesheet does not add a quarter hour when a submitted entry has a
   const payload = await getManagerTimesheet(
     readClient({
       workEntries: [workEntry({ hours: '10.25', grossHours: '10.50', breakMinutes: 15 })],
-      managerEntries: [managerEntry({ hours: '10.50', breakMinutes: 15 })],
+      managerEntries: [managerEntry({ hours: '10.25', breakMinutes: 15 })],
     }),
     context(),
     { month: '2026-08' }
@@ -129,7 +129,7 @@ test('manager timesheet does not add a quarter hour when a submitted entry has a
 
   const day = dayFor(payload);
   assert.equal(day.employeeHours, 10.25);
-  assert.equal(day.managerHours, 10.5);
+  assert.equal(day.managerHours, 10.25);
   assert.equal(day.managerNetHours, 10.25);
   assert.equal(day.netDifference, 0);
   assert.equal(day.status, 'MATCH');
@@ -142,7 +142,7 @@ test('manager timesheet ignores draft entries when comparing submitted worker ho
         workEntry({ id: 'submitted-entry', hours: '10.50', grossHours: '11.00', breakMinutes: 30, status: 'SUBMITTED' }),
         workEntry({ id: 'draft-entry', projectId: 'project-b', project: { name: 'Brno' }, hours: '0.24', grossHours: '0.24', breakMinutes: 0, status: 'DRAFT' }),
       ],
-      managerEntries: [managerEntry({ hours: '11.00', breakMinutes: 30 })],
+      managerEntries: [managerEntry({ hours: '10.50', breakMinutes: 30 })],
     }),
     context(),
     { month: '2026-08' }
@@ -162,7 +162,7 @@ test('manager timesheet prefers weekly submitted entries over orphan approved im
         workEntry({ id: 'live-submitted-entry', weeklySubmissionId: 'submission-1', hours: '10.50', grossHours: '11.00', breakMinutes: 30, status: 'SUBMITTED' }),
         workEntry({ id: 'orphan-import-entry', weeklySubmissionId: null, projectId: 'project-b', project: { name: 'Brno' }, hours: '0.24', grossHours: '0.24', breakMinutes: 0, status: 'APPROVED' }),
       ],
-      managerEntries: [managerEntry({ hours: '11.00', breakMinutes: 30 })],
+      managerEntries: [managerEntry({ hours: '10.50', breakMinutes: 30 })],
     }),
     context(),
     { month: '2026-08' }
@@ -194,7 +194,7 @@ test('manager timesheet reports lunch and project differences separately', async
   const payload = await getManagerTimesheet(
     readClient({
       workEntries: [workEntry({ hours: '8.00', grossHours: '8.50', breakMinutes: 30 })],
-      managerEntries: [managerEntry({ hours: '9.00', breakMinutes: 60, projectId: 'project-b' })],
+      managerEntries: [managerEntry({ hours: '8.00', breakMinutes: 60, projectId: 'project-b' })],
     }),
     context(),
     { month: '2026-08' }
@@ -202,30 +202,30 @@ test('manager timesheet reports lunch and project differences separately', async
 
   const day = dayFor(payload);
   assert.equal(day.employeeHours, 8);
-  assert.equal(day.managerHours, 9);
+  assert.equal(day.managerHours, 8);
   assert.equal(day.managerNetHours, 8);
   assert.equal(day.status, 'MISMATCH');
   assert.deepEqual(day.reasons, ['break', 'project']);
   assert.deepEqual(day.employeeProjects, ['Praha 5']);
 });
 
-test('manager timesheet shows net manager hours using the company default lunch break', async () => {
+test('manager timesheet does not reduce manager hours by the company default lunch break', async () => {
   const payload = await getManagerTimesheet(
     readClient({
       breakMinutes: 30,
       workEntries: [workEntry({ hours: '11.00', grossHours: '11.50', breakMinutes: 30 })],
-      managerEntries: [managerEntry({ hours: '11.50', breakMinutes: null })],
+      managerEntries: [managerEntry({ hours: '11.00', breakMinutes: null })],
     }),
     context(),
     { month: '2026-08' }
   );
 
   const day = dayFor(payload);
-  assert.equal(day.managerHours, 11.5);
+  assert.equal(day.managerHours, 11);
   assert.equal(day.managerNetHours, 11);
   assert.equal(day.netDifference, 0);
   assert.equal(day.status, 'MATCH');
-  assert.equal(payload.rows[0].managerTotal, 11.5);
+  assert.equal(payload.rows[0].managerTotal, 11);
   assert.equal(payload.rows[0].managerNetTotal, 11);
 });
 

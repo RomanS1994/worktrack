@@ -64,10 +64,9 @@ function sameNumber(a, b) {
   return Math.abs(Number(a) - Number(b)) < 0.001;
 }
 
-function managerNetHours(hours, breakMinutes, defaultBreakMinutes) {
+function managerNetHours(hours) {
   if (hours == null) return null;
-  const minutes = breakMinutes == null ? defaultBreakMinutes : Number(breakMinutes || 0);
-  return round2(Math.max(0, Number(hours || 0) - (minutes / 60)));
+  return round2(hours);
 }
 
 function employeeName(membership) {
@@ -232,7 +231,7 @@ export async function getManagerTimesheet(client, context, { month }) {
       const employeeBreakMinutes = employeeEntry ? employeeEntry.breakMinutes : null;
       const managerBreakMinutes = managerEntry?.breakMinutes == null ? null : Number(managerEntry.breakMinutes);
       const employeeNetHours = employeeHours;
-      const managerNetHoursValue = managerNetHours(managerHours, managerBreakMinutes, defaultBreakMinutes);
+      const managerNetHoursValue = managerNetHours(managerHours);
       const employeeProjectIds = employeeEntry ? [...employeeEntry.projectIds] : [];
       const employeeProjectNames = employeeEntry ? [...employeeEntry.projectNames] : [];
       const managerProjectId = managerEntry?.projectId || null;

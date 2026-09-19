@@ -204,18 +204,18 @@ test('manager payroll calculates labor margin from manager timesheet hours inste
   assert.equal(payload.employees[0].summary.laborMarginCzk, '500.00');
 });
 
-test('manager payroll deducts lunch from manager timesheet labor margin', async () => {
+test('manager payroll does not deduct lunch again from manager timesheet labor margin', async () => {
   const client = createClient({
     breakMinutes: 60,
     memberships: [{
       id: 'membership-1', userId: 'employee-1', companyId: 'company-1', role: 'EMPLOYEE', status: 'ACTIVE', deletedAt: null,
       hourlyRateCzk: '250.00', customerRateCzk: '300.00', user: { firstName: 'Anna', email: 'anna@example.com', deletedAt: null },
       workEntries: [],
-      employeeManagerTimesheetEntries: [{ id: 'm1', employeeMembershipId: 'membership-1', workDate: new Date('2026-09-17T00:00:00.000Z'), hours: '10.00', hourlyRateCzk: '250.00', customerRateCzk: '300.00' }],
+      employeeManagerTimesheetEntries: [{ id: 'm1', employeeMembershipId: 'membership-1', workDate: new Date('2026-09-17T00:00:00.000Z'), hours: '10.00', breakMinutes: 60, hourlyRateCzk: '250.00', customerRateCzk: '300.00' }],
     }],
   });
   const payload = await getManagerPayroll(client, createManagerContext(), { period: 'month', anchor: '2026-09-17' });
-  assert.equal(payload.employees[0].summary.laborMarginCzk, '450.00');
+  assert.equal(payload.employees[0].summary.laborMarginCzk, '500.00');
 });
 
 test('manager payroll uses the same net manager timesheet hours for salary and labor margin', async () => {
@@ -226,9 +226,9 @@ test('manager payroll uses the same net manager timesheet hours for salary and l
       hourlyRateCzk: '250.00', customerRateCzk: '300.00', user: { firstName: 'Dima', lastName: 'Vasenkov', email: 'dima@example.com', deletedAt: null },
       workEntries: [{ id: 'a1', employeeMembershipId: 'membership-1', workDate: new Date('2026-09-14T00:00:00.000Z'), status: 'APPROVED', hours: '57.00' }],
       employeeManagerTimesheetEntries: [
-        { id: 'm1', employeeMembershipId: 'membership-1', workDate: new Date('2026-09-14T00:00:00.000Z'), hours: '19.00', hourlyRateCzk: '250.00', customerRateCzk: '300.00' },
-        { id: 'm2', employeeMembershipId: 'membership-1', workDate: new Date('2026-09-15T00:00:00.000Z'), hours: '19.00', hourlyRateCzk: '250.00', customerRateCzk: '300.00' },
-        { id: 'm3', employeeMembershipId: 'membership-1', workDate: new Date('2026-09-16T00:00:00.000Z'), hours: '19.00', hourlyRateCzk: '250.00', customerRateCzk: '300.00' },
+        { id: 'm1', employeeMembershipId: 'membership-1', workDate: new Date('2026-09-14T00:00:00.000Z'), hours: '18.00', breakMinutes: 60, hourlyRateCzk: '250.00', customerRateCzk: '300.00' },
+        { id: 'm2', employeeMembershipId: 'membership-1', workDate: new Date('2026-09-15T00:00:00.000Z'), hours: '18.00', breakMinutes: 60, hourlyRateCzk: '250.00', customerRateCzk: '300.00' },
+        { id: 'm3', employeeMembershipId: 'membership-1', workDate: new Date('2026-09-16T00:00:00.000Z'), hours: '18.00', breakMinutes: 60, hourlyRateCzk: '250.00', customerRateCzk: '300.00' },
       ],
     }],
   });

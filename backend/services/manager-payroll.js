@@ -93,7 +93,7 @@ function managerPayrollEntries(entries = [], membership = {}) {
       projectId: entry.projectId,
       workDate: entry.workDate,
       hours: entry.hours,
-      breakMinutes: entry.breakMinutes,
+      breakMinutes: 0,
       hourlyRateCzk: entry.hourlyRateCzk ?? payRate,
       customerRateCzk: entry.customerRateCzk ?? customerRate,
       status: 'APPROVED',
