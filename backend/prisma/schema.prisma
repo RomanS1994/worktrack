@@ -206,6 +206,8 @@ model ManagerTimesheetEntry {
   workDate             DateTime @db.Date
   hours                Decimal? @db.Decimal(5, 2)
   breakMinutes         Int?
+  hourlyRateCzk        Decimal? @db.Decimal(10, 2)
+  customerRateCzk      Decimal? @db.Decimal(10, 2)
   projectId            String?
   note                 String?
   createdAt            DateTime @default(now())

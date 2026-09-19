@@ -65,6 +65,16 @@ function dateKey(month, day) {
   return { value, date };
 }
 
+function rateSnapshot(membership) {
+  const hourlyRateCzk = membership?.hourlyRateCzk == null ? null : String(membership.hourlyRateCzk);
+  return {
+    hourlyRateCzk,
+    customerRateCzk: membership?.customerRateCzk == null
+      ? hourlyRateCzk
+      : String(membership.customerRateCzk),
+  };
+}
+
 async function findEmployee(tx, companyId, spec) {
   const aliases = [spec.name, ...(spec.aliases || [])].map(normalizedName).filter(Boolean);
   const memberships = await tx.companyMembership.findMany({
@@ -133,9 +143,11 @@ async function importPayload(payload, apply) {
               workDate: date,
             },
           },
+          select: { id: true, hourlyRateCzk: true, customerRateCzk: true },
         });
 
         if (apply) {
+          const rates = rateSnapshot(membership);
           const data = {
             companyId: manager.companyId,
             employeeMembershipId: membership.id,
@@ -143,6 +155,8 @@ async function importPayload(payload, apply) {
             workDate: date,
             hours: entry.hours.toFixed(2),
             breakMinutes: null,
+            hourlyRateCzk: existing?.hourlyRateCzk == null ? rates.hourlyRateCzk : String(existing.hourlyRateCzk),
+            customerRateCzk: existing?.customerRateCzk == null ? rates.customerRateCzk : String(existing.customerRateCzk),
             projectId: null,
             note: normalizeText(payload.note) || 'Імпорт з таблиці менеджера',
           };

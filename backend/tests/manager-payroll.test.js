@@ -96,6 +96,8 @@ test('manager payroll calculates a selected week and employee breakdown', async 
   assert.equal(query.include.workEntries.where.workDate.gte.toISOString(), '2026-08-17T00:00:00.000Z');
   assert.equal(query.include.workEntries.where.workDate.lt.toISOString(), '2026-08-24T00:00:00.000Z');
   assert.deepEqual(query.include.workEntries.where.status.in, ['SUBMITTED', 'APPROVED']);
+  assert.equal(query.include.employeeManagerTimesheetEntries.where.workDate.gte.toISOString(), '2026-08-17T00:00:00.000Z');
+  assert.equal(query.include.employeeManagerTimesheetEntries.where.workDate.lt.toISOString(), '2026-08-24T00:00:00.000Z');
 
   assert.equal(payload.employees[0].name, 'Anna Novak');
   assert.equal(payload.employees[0].summary.totalHours, '12.00');
@@ -176,6 +178,7 @@ test('manager payroll calculates labor margin from customer and pay rates', asyn
       id: 'membership-1', userId: 'employee-1', companyId: 'company-1', role: 'EMPLOYEE', status: 'ACTIVE', deletedAt: null,
       hourlyRateCzk: '220.00', customerRateCzk: '300.00', user: { firstName: 'Anna', email: 'anna@example.com', deletedAt: null },
       workEntries: [{ id: 'a1', employeeMembershipId: 'membership-1', workDate: new Date('2026-08-17T00:00:00.000Z'), status: 'APPROVED', hours: '51.00' }],
+      employeeManagerTimesheetEntries: [{ id: 'm1', employeeMembershipId: 'membership-1', workDate: new Date('2026-08-17T00:00:00.000Z'), hours: '51.00', hourlyRateCzk: '220.00', customerRateCzk: '300.00' }],
     }],
   });
   const payload = await getManagerPayroll(client, createManagerContext(), { period: 'week', anchor: '2026-08-17' });
@@ -187,12 +190,41 @@ test('manager payroll calculates labor margin from customer and pay rates', asyn
   assert.equal(payload.summary.laborMarginCzk, '4080.00');
 });
 
+test('manager payroll calculates labor margin from manager timesheet hours instead of employee work entries', async () => {
+  const client = createClient({
+    memberships: [{
+      id: 'membership-1', userId: 'employee-1', companyId: 'company-1', role: 'EMPLOYEE', status: 'ACTIVE', deletedAt: null,
+      hourlyRateCzk: '250.00', customerRateCzk: '300.00', user: { firstName: 'Anna', email: 'anna@example.com', deletedAt: null },
+      workEntries: [{ id: 'a1', employeeMembershipId: 'membership-1', workDate: new Date('2026-09-17T00:00:00.000Z'), status: 'APPROVED', hours: '100.00' }],
+      employeeManagerTimesheetEntries: [{ id: 'm1', employeeMembershipId: 'membership-1', workDate: new Date('2026-09-17T00:00:00.000Z'), hours: '10.00', hourlyRateCzk: '250.00', customerRateCzk: '300.00' }],
+    }],
+  });
+  const payload = await getManagerPayroll(client, createManagerContext(), { period: 'month', anchor: '2026-09-17' });
+  assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '25000.00');
+  assert.equal(payload.employees[0].summary.laborMarginCzk, '500.00');
+});
+
+test('manager payroll deducts lunch from manager timesheet labor margin', async () => {
+  const client = createClient({
+    breakMinutes: 60,
+    memberships: [{
+      id: 'membership-1', userId: 'employee-1', companyId: 'company-1', role: 'EMPLOYEE', status: 'ACTIVE', deletedAt: null,
+      hourlyRateCzk: '250.00', customerRateCzk: '300.00', user: { firstName: 'Anna', email: 'anna@example.com', deletedAt: null },
+      workEntries: [],
+      employeeManagerTimesheetEntries: [{ id: 'm1', employeeMembershipId: 'membership-1', workDate: new Date('2026-09-17T00:00:00.000Z'), hours: '10.00', hourlyRateCzk: '250.00', customerRateCzk: '300.00' }],
+    }],
+  });
+  const payload = await getManagerPayroll(client, createManagerContext(), { period: 'month', anchor: '2026-09-17' });
+  assert.equal(payload.employees[0].summary.laborMarginCzk, '450.00');
+});
+
 test('manager payroll keeps historical customer rate snapshots after membership rate changes', async () => {
   const client = createClient({
     memberships: [{
       id: 'membership-1', userId: 'employee-1', companyId: 'company-1', role: 'EMPLOYEE', status: 'ACTIVE', deletedAt: null,
       hourlyRateCzk: '260.00', customerRateCzk: '360.00', user: { firstName: 'Anna', email: 'anna@example.com', deletedAt: null },
       workEntries: [{ id: 'a1', employeeMembershipId: 'membership-1', workDate: new Date('2026-08-17T00:00:00.000Z'), status: 'APPROVED', hours: '10.00', hourlyRateCzk: '220.00', customerRateCzk: '300.00' }],
+      employeeManagerTimesheetEntries: [{ id: 'm1', employeeMembershipId: 'membership-1', workDate: new Date('2026-08-17T00:00:00.000Z'), hours: '10.00', hourlyRateCzk: '220.00', customerRateCzk: '300.00' }],
     }],
   });
   const payload = await getManagerPayroll(client, createManagerContext(), { period: 'week', anchor: '2026-08-17' });
@@ -217,6 +249,15 @@ test('manager payroll repairs legacy fallback customer snapshots for margin only
         hourlyRateCzk: '250.00',
         customerRateCzk: '250.00',
       }],
+      employeeManagerTimesheetEntries: [{
+        id: 'm1',
+        employeeMembershipId: 'membership-1',
+        workDate: new Date('2026-09-18T00:00:00.000Z'),
+        createdAt: new Date('2026-09-18T12:00:00.000Z'),
+        hours: '10.00',
+        hourlyRateCzk: '250.00',
+        customerRateCzk: '250.00',
+      }],
     }],
   });
   const payload = await getManagerPayroll(client, createManagerContext(), { period: 'month', anchor: '2026-09-18' });
@@ -235,11 +276,15 @@ test('manager payroll separates approved and submitted labor margin', async () =
         { id: 'a1', employeeMembershipId: 'membership-1', workDate: new Date('2026-08-17T00:00:00.000Z'), status: 'APPROVED', hours: '4.00' },
         { id: 'a2', employeeMembershipId: 'membership-1', workDate: new Date('2026-08-18T00:00:00.000Z'), status: 'SUBMITTED', hours: '6.00' },
       ],
+      employeeManagerTimesheetEntries: [
+        { id: 'm1', employeeMembershipId: 'membership-1', workDate: new Date('2026-08-17T00:00:00.000Z'), hours: '4.00', hourlyRateCzk: '200.00', customerRateCzk: '250.00' },
+        { id: 'm2', employeeMembershipId: 'membership-1', workDate: new Date('2026-08-18T00:00:00.000Z'), hours: '6.00', hourlyRateCzk: '200.00', customerRateCzk: '250.00' },
+      ],
     }],
   });
   const payload = await getManagerPayroll(client, createManagerContext(), { period: 'week', anchor: '2026-08-17' });
-  assert.equal(payload.employees[0].summary.confirmedLaborMarginCzk, '200.00');
-  assert.equal(payload.employees[0].summary.predictedLaborMarginCzk, '300.00');
+  assert.equal(payload.employees[0].summary.confirmedLaborMarginCzk, '500.00');
+  assert.equal(payload.employees[0].summary.predictedLaborMarginCzk, '0.00');
   assert.equal(payload.employees[0].summary.laborMarginCzk, '500.00');
 });
 

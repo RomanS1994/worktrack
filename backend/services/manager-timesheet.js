@@ -69,6 +69,16 @@ function employeeName(membership) {
   return String(user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Employee');
 }
 
+function rateSnapshot(employee) {
+  const hourlyRateCzk = employee?.hourlyRateCzk == null ? null : String(employee.hourlyRateCzk);
+  return {
+    hourlyRateCzk,
+    customerRateCzk: employee?.customerRateCzk == null
+      ? hourlyRateCzk
+      : String(employee.customerRateCzk),
+  };
+}
+
 function preferSubmittedEntries(entries) {
   const groups = new Map();
 
@@ -298,7 +308,7 @@ export async function upsertManagerTimesheetCell(client, context, employeeMember
 
   const employee = await client.companyMembership.findFirst({
     where: { id: employeeMembershipId, companyId, status: 'ACTIVE', deletedAt: null },
-    select: { id: true },
+    select: { id: true, hourlyRateCzk: true, customerRateCzk: true },
   });
   if (!employee) throw new Error('Employee not found');
 
@@ -332,14 +342,21 @@ export async function upsertManagerTimesheetCell(client, context, employeeMember
 
   const existing = await client.managerTimesheetEntry.findUnique({
     where: { employeeMembershipId_workDate: { employeeMembershipId, workDate } },
-    select: { id: true, companyId: true },
+    select: { id: true, companyId: true, hourlyRateCzk: true, customerRateCzk: true },
   });
   if (existing && existing.companyId !== companyId) throw new Error('Timesheet entry belongs to another company');
+  const rates = rateSnapshot(employee);
+  const snapshotData = existing
+    ? {
+        hourlyRateCzk: existing.hourlyRateCzk == null ? rates.hourlyRateCzk : String(existing.hourlyRateCzk),
+        customerRateCzk: existing.customerRateCzk == null ? rates.customerRateCzk : String(existing.customerRateCzk),
+      }
+    : rates;
 
   const entry = existing
     ? await client.managerTimesheetEntry.update({
         where: { id: existing.id },
-        data: { managerMembershipId: manager.id, hours, breakMinutes, projectId, note },
+        data: { managerMembershipId: manager.id, hours, breakMinutes, projectId, note, ...snapshotData },
       })
     : await client.managerTimesheetEntry.create({
         data: {
@@ -350,6 +367,7 @@ export async function upsertManagerTimesheetCell(client, context, employeeMember
           workDate,
           hours,
           breakMinutes,
+          ...snapshotData,
           projectId,
           note,
         },

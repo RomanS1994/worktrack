@@ -82,6 +82,25 @@ function customerRateMeta(entries = [], payRate = 0, customerRate = payRate, rul
   };
 }
 
+function managerMarginEntries(entries = [], membership = {}) {
+  const payRate = membership.hourlyRateCzk ?? '0';
+  const customerRate = membership.customerRateCzk ?? payRate;
+  return entries
+    .filter(entry => entry?.hours != null)
+    .map(entry => ({
+      id: entry.id,
+      employeeMembershipId: entry.employeeMembershipId,
+      projectId: entry.projectId,
+      workDate: entry.workDate,
+      hours: entry.hours,
+      breakMinutes: entry.breakMinutes,
+      hourlyRateCzk: entry.hourlyRateCzk ?? payRate,
+      customerRateCzk: entry.customerRateCzk ?? customerRate,
+      status: 'APPROVED',
+      createdAt: entry.createdAt,
+    }));
+}
+
 export async function getManagerPayroll(client, context, query = {}) {
   const managerMembership = context?.activeMembership;
   if (!managerMembership || managerMembership.role !== 'MANAGER') throw new Error('Manager access is required');
@@ -98,6 +117,10 @@ export async function getManagerPayroll(client, context, query = {}) {
         user: true,
         workEntries: {
           where: { workDate: { gte: period.start, lt: period.next }, status: { in: ['SUBMITTED', 'APPROVED'] } },
+          orderBy: { workDate: 'asc' },
+        },
+        employeeManagerTimesheetEntries: {
+          where: { workDate: { gte: period.start, lt: period.next } },
           orderBy: { workDate: 'asc' },
         },
       },
@@ -125,6 +148,7 @@ export async function getManagerPayroll(client, context, query = {}) {
   const memberships = membershipRows.filter(membership =>
     membership.status === 'ACTIVE' ||
     (membership.workEntries || []).length > 0 ||
+    (membership.employeeManagerTimesheetEntries || []).length > 0 ||
     advanceByEmployee.has(membership.id)
   );
   const rules = {
@@ -147,13 +171,14 @@ export async function getManagerPayroll(client, context, query = {}) {
 
   const employees = memberships.map(membership => {
     const entries = membership.workEntries || [];
+    const laborEntries = managerMarginEntries(membership.employeeManagerTimesheetEntries || [], membership);
     const payRate = membership.hourlyRateCzk ?? '0';
     // An unset customer rate means the employee's pay rate, never an invented margin.
     const customerRate = membership.customerRateCzk ?? payRate;
     const baseSummary = calculateNetWorkSummary(entries, payRate, rules);
-    const rates = rateMeta(entries, payRate, rules);
-    const customerRates = customerRateMeta(entries, payRate, customerRate, rules);
-    const labor = calculateLaborMargin(entries, payRate, customerRate, rules);
+    const rates = rateMeta(laborEntries, payRate, rules);
+    const customerRates = customerRateMeta(laborEntries, payRate, customerRate, rules);
+    const labor = calculateLaborMargin(laborEntries, payRate, customerRate, rules);
     const employeeAdvances = advanceByEmployee.get(membership.id) || 0;
     const employeeConfirmed = toHundredths(baseSummary.confirmedSalaryCzk);
     const employeePredicted = toHundredths(baseSummary.predictedSalaryCzk);
