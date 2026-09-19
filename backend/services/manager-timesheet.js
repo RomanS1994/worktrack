@@ -64,6 +64,12 @@ function sameNumber(a, b) {
   return Math.abs(Number(a) - Number(b)) < 0.001;
 }
 
+function managerNetHours(hours, breakMinutes, defaultBreakMinutes) {
+  if (hours == null) return null;
+  const minutes = breakMinutes == null ? defaultBreakMinutes : Number(breakMinutes || 0);
+  return round2(Math.max(0, Number(hours || 0) - (minutes / 60)));
+}
+
 function employeeName(membership) {
   const user = membership.user || {};
   return String(user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Employee');
@@ -204,8 +210,11 @@ export async function getManagerTimesheet(client, context, { month }) {
           status: 'OUTSIDE_MONTH',
           reasons: [],
           employeeHours: null,
+          employeeNetHours: null,
           managerHours: null,
+          managerNetHours: null,
           difference: null,
+          netDifference: null,
           employeeBreakMinutes: null,
           managerBreakMinutes: null,
           employeeProjects: [],
@@ -222,6 +231,8 @@ export async function getManagerTimesheet(client, context, { month }) {
       const managerHours = managerEntry?.hours == null ? null : round2(managerEntry.hours);
       const employeeBreakMinutes = employeeEntry ? employeeEntry.breakMinutes : null;
       const managerBreakMinutes = managerEntry?.breakMinutes == null ? null : Number(managerEntry.breakMinutes);
+      const employeeNetHours = employeeHours;
+      const managerNetHoursValue = managerNetHours(managerHours, managerBreakMinutes, defaultBreakMinutes);
       const employeeProjectIds = employeeEntry ? [...employeeEntry.projectIds] : [];
       const employeeProjectNames = employeeEntry ? [...employeeEntry.projectNames] : [];
       const managerProjectId = managerEntry?.projectId || null;
@@ -240,7 +251,7 @@ export async function getManagerTimesheet(client, context, { month }) {
         status = 'MISSING_MANAGER';
         reasons.push('missingManager');
       } else {
-        if (!sameNumber(employeeHours, managerHours)) reasons.push('hours');
+        if (!sameNumber(employeeNetHours, managerNetHoursValue)) reasons.push('hours');
         if (managerBreakMinutes != null && employeeBreakMinutes != null && managerBreakMinutes !== employeeBreakMinutes) reasons.push('break');
         if (managerProjectId && (employeeProjectIds.length !== 1 || employeeProjectIds[0] !== managerProjectId)) reasons.push('project');
         status = reasons.length ? 'MISMATCH' : 'MATCH';
@@ -263,8 +274,11 @@ export async function getManagerTimesheet(client, context, { month }) {
         status,
         reasons,
         employeeHours,
+        employeeNetHours,
         managerHours,
+        managerNetHours: managerNetHoursValue,
         difference: employeeHours == null || managerHours == null ? null : round2(managerHours - employeeHours),
+        netDifference: employeeNetHours == null || managerNetHoursValue == null ? null : round2(managerNetHoursValue - employeeNetHours),
         employeeBreakMinutes,
         managerBreakMinutes,
         employeeProjects: employeeProjectNames,
@@ -281,7 +295,13 @@ export async function getManagerTimesheet(client, context, { month }) {
       canEdit: true,
       employeeTotal: round2(employeeTotal),
       managerTotal: round2(managerTotal),
+      employeeNetTotal: round2(days.reduce((sum, day) => sum + Number(day.employeeNetHours || 0), 0)),
+      managerNetTotal: round2(days.reduce((sum, day) => sum + Number(day.managerNetHours || 0), 0)),
       difference: round2(managerTotal - employeeTotal),
+      netDifference: round2(
+        days.reduce((sum, day) => sum + Number(day.managerNetHours || 0), 0)
+        - days.reduce((sum, day) => sum + Number(day.employeeNetHours || 0), 0)
+      ),
       problems,
       days,
     };

@@ -35,17 +35,33 @@ function problemLabel(day) {
   return labels.length ? `Різниця: ${labels.join(', ')}` : 'Невідповідність';
 }
 
+function displayEmployeeHours(day) {
+  return day?.employeeNetHours ?? day?.employeeHours ?? null;
+}
+
+function displayManagerHours(day) {
+  return day?.managerNetHours ?? day?.managerHours ?? null;
+}
+
+function displayDifference(day) {
+  return day?.netDifference ?? day?.difference ?? null;
+}
+
+function displayManagerTotal(row) {
+  return row?.managerNetTotal ?? row?.managerTotal ?? 0;
+}
+
 function problemDetails(day) {
   if (day.status === 'EMPTY' || day.status === 'OUTSIDE_MONTH') return [];
   if (day.status === 'MATCH') return [{ tone: 'ok', title: 'Все сходиться', text: 'Записи менеджера і працівника збігаються.' }];
-  if (day.status === 'MISSING_MANAGER') return [{ tone: 'warning', title: 'Немає вашого запису', text: `Працівник записав ${day.employeeHours ?? '—'} год.` }];
-  if (day.status === 'MISSING_EMPLOYEE') return [{ tone: 'warning', title: 'Немає запису працівника', text: `У вашому табелі є ${day.managerHours ?? '—'} год.` }];
+  if (day.status === 'MISSING_MANAGER') return [{ tone: 'warning', title: 'Немає вашого запису', text: `Працівник записав ${displayEmployeeHours(day) ?? '—'} год.` }];
+  if (day.status === 'MISSING_EMPLOYEE') return [{ tone: 'warning', title: 'Немає запису працівника', text: `У вашому табелі є ${displayManagerHours(day) ?? '—'} год.` }];
 
   const details = [];
   if (day.reasons?.includes('hours')) details.push({
     tone: 'danger',
     title: 'Не сходяться години',
-    text: `Працівник ${day.employeeHours ?? '—'} · Ви ${day.managerHours ?? '—'}${day.difference == null ? '' : ` · ${day.difference > 0 ? '+' : ''}${day.difference} год`}`,
+    text: `Працівник ${displayEmployeeHours(day) ?? '—'} · Ви ${displayManagerHours(day) ?? '—'}${displayDifference(day) == null ? '' : ` · ${displayDifference(day) > 0 ? '+' : ''}${displayDifference(day)} год`}`,
   });
   if (day.reasons?.includes('break')) details.push({
     tone: 'danger',
@@ -194,8 +210,8 @@ export function ManagerTimesheetPage() {
             <thead><tr><th className="employeeColumn">Працівник</th>{days.map(day => <th className={day.isCurrentMonth === false ? 'is-outside-month' : ''} key={day.date}><span>{day.day}</span><small>{new Intl.DateTimeFormat('uk-UA', { weekday: 'short' }).format(new Date(`${day.date}T00:00:00`))}</small></th>)}<th className="totalColumn">Разом</th></tr></thead>
             <tbody>{rows.map(row => <tr key={row.employeeId}>
               <th className="employeeColumn"><span className="employeeName">{row.name}</span>{row.problems ? <small className="employeeProblems">⚠ {row.problems}</small> : <small className="employeeOk">✓</small>}</th>
-              {row.days.map(day => <td key={day.date}><button type="button" className={cellClass(day.status)} disabled={row.canEdit === false || day.isCurrentMonth === false} onClick={() => openCell(row, day)} title={day.isCurrentMonth === false ? 'Інший місяць' : row.canEdit === false ? 'Власний контрольний рядок редагує інший менеджер' : problemLabel(day)}>{day.managerHours ?? '—'}</button></td>)}
-              <td className="totalColumn"><strong>{row.managerTotal}</strong><small> год</small></td>
+              {row.days.map(day => <td key={day.date}><button type="button" className={cellClass(day.status)} disabled={row.canEdit === false || day.isCurrentMonth === false} onClick={() => openCell(row, day)} title={day.isCurrentMonth === false ? 'Інший місяць' : row.canEdit === false ? 'Власний контрольний рядок редагує інший менеджер' : problemLabel(day)}>{displayManagerHours(day) ?? '—'}</button></td>)}
+              <td className="totalColumn"><strong>{displayManagerTotal(row)}</strong><small> год</small></td>
             </tr>)}</tbody>
           </table>
         </div>
@@ -220,9 +236,9 @@ export function ManagerTimesheetPage() {
             {mobileWeek.map(day => {
               const entry = row.days.find(item => item.date === day.date) || day;
               const outsideMonth = entry.isCurrentMonth === false;
-              return <button type="button" key={day.date} className={cellClass(entry.status)} disabled={outsideMonth || row.canEdit === false} onClick={() => openCell(row, entry)} aria-label={`${row.name}, ${day.date}: ${outsideMonth ? 'інший місяць' : row.canEdit === false ? 'власний контрольний рядок редагує інший менеджер' : problemLabel(entry)}`}>{outsideMonth ? '—' : entry.managerHours ?? '—'}</button>;
+              return <button type="button" key={day.date} className={cellClass(entry.status)} disabled={outsideMonth || row.canEdit === false} onClick={() => openCell(row, entry)} aria-label={`${row.name}, ${day.date}: ${outsideMonth ? 'інший місяць' : row.canEdit === false ? 'власний контрольний рядок редагує інший менеджер' : problemLabel(entry)}`}>{outsideMonth ? '—' : displayManagerHours(entry) ?? '—'}</button>;
             })}
-            <div className="managerTimesheetMobileTotal"><strong>{row.managerTotal}</strong><small>год</small></div>
+            <div className="managerTimesheetMobileTotal"><strong>{displayManagerTotal(row)}</strong><small>год</small></div>
           </div>)}
         </div>
       </section>
@@ -235,9 +251,9 @@ export function ManagerTimesheetPage() {
         <div className="managerTimesheetModalHead"><div><span>{selected.day.date}</span><h2>{selected.row.name}</h2></div><button type="button" onClick={() => setSelected(null)} aria-label="Закрити">×</button></div>
 
         <section className="managerTimesheetCompare">
-          <article><span>Працівник</span><strong>{selected.day.employeeHours ?? '—'} год</strong></article>
-          <article><span>Ви</span><strong>{selected.day.managerHours ?? '—'} год</strong></article>
-          <article className={selected.day.difference ? 'is-difference' : ''}><span>Різниця</span><strong>{selected.day.difference == null ? '—' : `${selected.day.difference > 0 ? '+' : ''}${selected.day.difference} год`}</strong></article>
+          <article><span>Працівник</span><strong>{displayEmployeeHours(selected.day) ?? '—'} год</strong></article>
+          <article><span>Ви</span><strong>{displayManagerHours(selected.day) ?? '—'} год</strong></article>
+          <article className={displayDifference(selected.day) ? 'is-difference' : ''}><span>Різниця</span><strong>{displayDifference(selected.day) == null ? '—' : `${displayDifference(selected.day) > 0 ? '+' : ''}${displayDifference(selected.day)} год`}</strong></article>
         </section>
 
         {selectedProblems.length ? <section className="managerTimesheetIssueList">

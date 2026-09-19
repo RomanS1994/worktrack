@@ -109,7 +109,9 @@ export function getMismatchReason(day, copy) {
 
   const reasons = [];
   if (day.reasons?.includes('hours')) {
-    const difference = Number(day.employeeHours || 0) - Number(day.managerHours || 0);
+    const employeeHours = day.employeeNetHours ?? day.employeeHours ?? 0;
+    const managerHours = day.managerNetHours ?? day.managerHours ?? 0;
+    const difference = Number(employeeHours || 0) - Number(managerHours || 0);
     const side = difference >= 0 ? copy.moreInApproval : copy.moreInTimesheet;
     reasons.push(`${copy.hoursDiffer} (${formatSignedHours(Math.abs(difference))} ${side})`);
   }

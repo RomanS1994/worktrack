@@ -34,6 +34,14 @@ import {
 import './ApprovalsPage.css';
 
 const LOCALES = { uk: 'uk-UA', en: 'en-GB', cs: 'cs-CZ' };
+function comparisonEmployeeHours(day) {
+  return day?.employeeNetHours ?? day?.employeeHours ?? null;
+}
+
+function comparisonManagerHours(day) {
+  return day?.managerNetHours ?? day?.managerHours ?? null;
+}
+
 const COPY = {
   uk: {
     back: 'Назад до списку',
@@ -559,9 +567,9 @@ export function ApprovalsPage() {
           <button type="button" aria-label={copy.close} onClick={() => setMismatchDate('')}>×</button>
         </header>
         <section className="approvalMismatchCompare">
-          <div><span><SvgIcon name="calendar" />{copy.approvalEntry}</span><strong>{formatHours(activeMismatch.employeeHours)}</strong></div>
-          <div><span><SvgIcon name="clock" />{copy.timesheetEntry}</span><strong>{formatHours(activeMismatch.managerHours)}</strong></div>
-          <div className="is-difference"><span><SvgIcon name="alert-triangle" />{copy.difference}</span><strong>{formatSignedHours(activeMismatch.employeeHours == null || activeMismatch.managerHours == null ? null : Number(activeMismatch.employeeHours) - Number(activeMismatch.managerHours))}</strong></div>
+          <div><span><SvgIcon name="calendar" />{copy.approvalEntry}</span><strong>{formatHours(comparisonEmployeeHours(activeMismatch))}</strong></div>
+          <div><span><SvgIcon name="clock" />{copy.timesheetEntry}</span><strong>{formatHours(comparisonManagerHours(activeMismatch))}</strong></div>
+          <div className="is-difference"><span><SvgIcon name="alert-triangle" />{copy.difference}</span><strong>{formatSignedHours(comparisonEmployeeHours(activeMismatch) == null || comparisonManagerHours(activeMismatch) == null ? null : Number(comparisonEmployeeHours(activeMismatch)) - Number(comparisonManagerHours(activeMismatch)))}</strong></div>
         </section>
         <section className="approvalMismatchReason"><span>{copy.mismatchReason}</span><p>{getMismatchReason(activeMismatch, copy)}</p></section>
         <section className="approvalMismatchHelp"><h3>{copy.whatToDo}</h3><p>{copy.whatToDoText}</p></section>
