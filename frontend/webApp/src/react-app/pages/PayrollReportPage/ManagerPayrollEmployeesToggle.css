@@ -1,7 +1,8 @@
-/* Employee breakdown disclosure — scoped to the manager's mobile payroll view. */
+/* Compact disclosure for the manager payroll breakdown (mobile only). */
 @media (max-width: 760px) {
   .managerPayrollMobile-employees > header {
     min-width: 0;
+    gap: 10px;
   }
 
   .managerPayrollMobile-employees > header h2 {
@@ -13,79 +14,87 @@
     flex: 0 0 auto;
     align-items: center;
     justify-content: center;
-    gap: 7px;
+    gap: 5px;
     min-height: 44px;
-    padding: 5px 10px;
-    border: 1px solid #ccebd8;
-    border-radius: 14px;
-    background: #f1fbf5;
-    color: #166534;
-    box-shadow: 0 2px 8px rgba(21, 128, 61, .035);
+    padding: 0 8px 0 13px;
+    border: 1px solid #dbe8df;
+    border-radius: 999px;
+    background: #fff;
+    color: #253449;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, .035);
     font: inherit;
     font-size: 12px;
-    font-weight: 750;
+    font-weight: 700;
     line-height: 1;
     white-space: nowrap;
     cursor: pointer;
-    transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
+    transition: background-color .16s ease, border-color .16s ease;
   }
 
-  .managerPayrollMobile-employeesToggle:hover {
-    background: #e8f8ee;
-    border-color: #b8e1c7;
-  }
-
-  .managerPayrollMobile-employeesToggle:active {
-    transform: scale(.98);
-  }
-
-  .managerPayrollMobile-employeesToggle:focus-visible {
-    outline: 3px solid rgba(22, 163, 74, .3);
-    outline-offset: 2px;
-  }
-
-  .managerPayrollMobile-employeesToggleIcon,
-  .managerPayrollMobile-employeesToggleChevron {
-    display: block;
-    width: 17px;
-    height: 17px;
-    flex: 0 0 auto;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.9;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+  /* The nearby section title already provides context: no extra people icon. */
+  .managerPayrollMobile-employeesToggleIcon {
+    display: none;
   }
 
   .managerPayrollMobile-employeesToggleCount {
-    display: grid;
-    min-width: 25px;
-    height: 25px;
-    place-items: center;
-    padding: 0 5px;
-    border-radius: 9px;
-    background: #fff;
+    display: inline;
+    min-width: 0;
+    height: auto;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
     color: #15803d;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 850;
     font-variant-numeric: tabular-nums;
   }
 
+  .managerPayrollMobile-employeesToggleLabel {
+    color: #334155;
+    font-size: 12px;
+    font-weight: 650;
+  }
+
   .managerPayrollMobile-employeesToggleChevron {
-    width: 14px;
-    height: 14px;
-    margin-left: 1px;
+    display: block;
+    flex: 0 0 auto;
+    width: 27px;
+    height: 27px;
+    margin-left: 5px;
+    padding: 6px;
+    border-radius: 50%;
+    background: #edf8f0;
+    color: #15803d;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
     transition: transform .16s ease;
   }
 
   .managerPayrollMobile-employeesToggle[aria-expanded="true"] .managerPayrollMobile-employeesToggleChevron {
     transform: rotate(180deg);
   }
+
+  .managerPayrollMobile-employeesToggle:hover {
+    background: #f8fcf9;
+    border-color: #bddbc9;
+  }
+
+  .managerPayrollMobile-employeesToggle:active {
+    background: #edf8f0;
+  }
+
+  .managerPayrollMobile-employeesToggle:focus-visible {
+    outline: 3px solid rgba(22, 163, 74, .3);
+    outline-offset: 2px;
+  }
 }
 
 @media (max-width: 380px) {
-  .managerPayrollMobile-employeesToggle { gap: 5px; padding-inline: 8px; }
-  .managerPayrollMobile-employeesToggleIcon { display: none; }
+  .managerPayrollMobile-employeesToggle { gap: 4px; padding-left: 10px; padding-right: 6px; }
+  .managerPayrollMobile-employeesToggleChevron { margin-left: 2px; }
   .managerPayrollMobile-employees h2 { font-size: 15px; }
 }
 
