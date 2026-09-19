@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { RequestLoadingState } from '@shared/app/components/RequestLoader/RequestLoader.jsx';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
-import { formatCzk, getLocalDateKey, resolveLocale } from '../../app/formatters.js';
+import { formatCzk, monthKeyFromAnchor, resolveLocale } from '../../app/formatters.js';
 import { openExpenseReceipt, prepareExpenseReceipt, uploadExpenseReceipt } from '../../features/worktrack/expenseReceipt.js';
 import { useDeleteManagerExpenseMutation, useGetManagerExpensesQuery } from '../../features/worktrack/worktrackApi.js';
 import './ManagerExpensesPage.css';
@@ -31,17 +31,13 @@ const COPY = {
   },
 };
 
-function monthKey() {
-  return getLocalDateKey().slice(0, 7);
-}
-
 export function ManagerExpensesPage() {
   const navigate = useNavigate();
   const { language } = useI18n();
   const copy = COPY[language] || COPY.uk;
   const locale = resolveLocale(language);
 
-  const [month, setMonth] = useState(monthKey());
+  const [month, setMonth] = useState(monthKeyFromAnchor());
   const [category, setCategory] = useState('');
   const [receiptLoadingId, setReceiptLoadingId] = useState('');
   const [receiptError, setReceiptError] = useState('');
@@ -132,7 +128,7 @@ export function ManagerExpensesPage() {
       <section className="managerExpenses-filters">
         <label>
           <span>{copy.month}</span>
-          <input type="month" value={month} onChange={e => setMonth(e.target.value || monthKey())} />
+          <input type="month" value={month} onChange={e => setMonth(e.target.value || monthKeyFromAnchor())} />
         </label>
         <label>
           <span>{copy.category}</span>
