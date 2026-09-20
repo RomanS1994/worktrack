@@ -27,6 +27,7 @@ import { ManagerTimesheetPage } from './pages/ManagerTimesheetPage/ManagerTimesh
 import { MoreHubPage } from './pages/MoreHubPage/MoreHubPage.jsx';
 import { NotificationSettingsPage } from './pages/NotificationSettingsPage/NotificationSettingsPage.jsx';
 import { NotificationsPage } from './pages/NotificationsPage/NotificationsPage.jsx';
+import { PartnerProgramsPage } from './pages/PartnerProgramsPage/PartnerProgramsPage.jsx';
 import { PayrollReportPage } from './pages/PayrollReportPage/PayrollReportPage.jsx';
 import './pages/PayrollReportPage/ManagerPayrollMobile.css';
 import { ProfilePage } from './pages/ProfilePage/ProfilePage.jsx';
@@ -42,6 +43,7 @@ export const router = createBrowserRouter([
       { path: 'sign-in', element: <GuestStage defaultMode="login" /> },
       { path: 'register', element: <GuestStage defaultMode="register" /> },
       { path: 'dashboard', element: <ProtectedRoute><DashboardPage /></ProtectedRoute> },
+      { path: 'partners', element: <ProtectedRoute><PartnerProgramsPage /></ProtectedRoute> },
       { path: 'chat', element: <ProtectedRoute><ChatPage /></ProtectedRoute> },
       {
         element: <ProtectedRoute requireEmployee><SectionShell section="time" /></ProtectedRoute>,
