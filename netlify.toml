@@ -3,6 +3,47 @@ command = "npm run build"
 publish = "dist"
 
 [[redirects]]
+from = "/pipestock/api/*"
+to = "https://pipestock-iznu.onrender.com/api/:splat"
+status = 200
+force = true
+
+[[redirects]]
+from = "/pipestock/assets/*"
+to = "https://pipestock.netlify.app/assets/:splat"
+status = 200
+
+[[redirects]]
+from = "/pipestock/materials/*"
+to = "https://pipestock.netlify.app/materials/:splat"
+status = 200
+
+[[redirects]]
+from = "/pipestock/pipestock-icon.webp"
+to = "https://pipestock.netlify.app/pipestock-icon.webp"
+status = 200
+
+[[redirects]]
+from = "/pipestock/apple-touch-icon.png"
+to = "https://pipestock.netlify.app/apple-touch-icon.png"
+status = 200
+
+[[redirects]]
+from = "/pipestock/manifest.webmanifest"
+to = "https://pipestock.netlify.app/manifest.webmanifest"
+status = 200
+
+[[redirects]]
+from = "/pipestock"
+to = "https://pipestock.netlify.app/pipestock"
+status = 200
+
+[[redirects]]
+from = "/pipestock/*"
+to = "https://pipestock.netlify.app/pipestock/:splat"
+status = 200
+
+[[redirects]]
 from = "/api/*"
 to = "https://worktrack-api-jc5m.onrender.com/api/:splat"
 status = 200
