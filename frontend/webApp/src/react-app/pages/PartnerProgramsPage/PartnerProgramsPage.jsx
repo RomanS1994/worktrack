@@ -6,9 +6,9 @@ import { useI18n } from '@shared/app/i18n/useI18n.js';
 import './PartnerProgramsPage.css';
 
 const COPY={
-  uk:{title:'Партнерські програми',copy:'Окремі робочі інструменти, які доповнюють WorkTrack.',materials:'Матеріали',pipeTitle:'PipeStock',pipeCopy:'Облік сантехнічних матеріалів, труб, фітингів і залишків для роботи на об’єктах.',open:'Відкрити PipeStock',back:'На головну',hint:'Відкриється як окремий веб-застосунок.'},
-  cs:{title:'Partnerské programy',copy:'Samostatné pracovní nástroje, které doplňují WorkTrack.',materials:'Materiál',pipeTitle:'PipeStock',pipeCopy:'Evidence instalatérského materiálu, trubek, tvarovek a skladových zůstatků pro zakázky.',open:'Otevřít PipeStock',back:'Na hlavní stránku',hint:'Otevře se jako samostatná webová aplikace.'},
-  en:{title:'Partner programs',copy:'Separate work tools that extend WorkTrack.',materials:'Materials',pipeTitle:'PipeStock',pipeCopy:'Track plumbing materials, pipes, fittings, and stock for job sites.',open:'Open PipeStock',back:'Back to dashboard',hint:'Opens as a separate web app.'},
+  uk:{title:'Партнерські програми',copy:'Окремі робочі інструменти, які доповнюють WorkTrack.',materials:'Матеріали',pipeTitle:'PipeStock',pipeCopy:'Облік сантехнічних матеріалів, труб, фітингів і залишків для роботи на об’єктах.',open:'Відкрити PipeStock',back:'На головну',hint:'Відкриється всередині WorkTrack без Safari-панелей.'},
+  cs:{title:'Partnerské programy',copy:'Samostatné pracovní nástroje, které doplňují WorkTrack.',materials:'Materiál',pipeTitle:'PipeStock',pipeCopy:'Evidence instalatérského materiálu, trubek, tvarovek a skladových zůstatků pro zakázky.',open:'Otevřít PipeStock',back:'Na hlavní stránku',hint:'Otevře se uvnitř WorkTrack bez panelů Safari.'},
+  en:{title:'Partner programs',copy:'Separate work tools that extend WorkTrack.',materials:'Materials',pipeTitle:'PipeStock',pipeCopy:'Track plumbing materials, pipes, fittings, and stock for job sites.',open:'Open PipeStock',back:'Back to dashboard',hint:'Opens inside WorkTrack without Safari controls.'},
 };
 
 export function PartnerProgramsPage(){
@@ -19,7 +19,7 @@ export function PartnerProgramsPage(){
     <section className="partnerProgramsHero screenCard">
       <span className="partnerProgramsHeroIcon"><SvgIcon name="globe"/></span>
       <div><small>{c.materials}</small><h2>{c.pipeTitle}</h2><p>{c.pipeCopy}</p></div>
-      <a className="partnerProgramsOpen" href="https://pipestock.netlify.app" target="_blank" rel="noreferrer">{c.open}</a>
+      <Link className="partnerProgramsOpen" to="/pipestock" reloadDocument>{c.open}</Link>
       <p className="partnerProgramsHint">{c.hint}</p>
     </section>
     <Link className="partnerProgramsBack" to="/dashboard">{c.back}</Link>
