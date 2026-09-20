@@ -14,8 +14,7 @@ import './DashboardPage.css';
 
 const EARNINGS_COPY={uk:{expected:'До виплати',thisMonth:'Цей місяць',remaining:'Залишилось',target:'год норми',open:'Відкрити фінанси'},cs:{expected:'K výplatě',thisMonth:'Tento měsíc',remaining:'Zbývá',target:'h normy',open:'Otevřít finance'},en:{expected:'Net payable',thisMonth:'This month',remaining:'Remaining',target:'h target',open:'Open finance'}};
 const SELF_COPY={uk:{title:'Мої години',salary:'Зарплата',NOT_SUBMITTED:'Не подано',SUBMITTED:'Очікує погодження',APPROVED:'Погоджено',REJECTED:'Потрібні виправлення'},cs:{title:'Moje hodiny',salary:'Mzda',NOT_SUBMITTED:'Neodesláno',SUBMITTED:'Čeká na schválení',APPROVED:'Schváleno',REJECTED:'Vyžaduje opravu'},en:{title:'My hours',salary:'Salary',NOT_SUBMITTED:'Not submitted',SUBMITTED:'Awaiting approval',APPROVED:'Approved',REJECTED:'Needs changes'}};
-const PARTNER_PROGRAMS=[{name:'PipeStock',url:'https://pipestock.netlify.app',tag:'Матеріали',description:{uk:'Облік сантехнічних матеріалів, труб і фітингів для роботи на об’єктах.',en:'Track plumbing materials, pipes, and fittings for job sites.',cs:'Evidence instalatérského materiálu, trubek a tvarovek pro zakázky.'}}];
-const PARTNER_COPY={uk:{eyebrow:'Партнерські програми',title:'Корисні інструменти для роботи',open:'Переглянути'},en:{eyebrow:'Partner programs',title:'Useful tools for work',open:'View'},cs:{eyebrow:'Partnerské programy',title:'Užitečné nástroje pro práci',open:'Zobrazit'}};
+const PARTNER_COPY={uk:{eyebrow:'Партнерські програми',title:'Корисні інструменти для роботи',description:'Відкрийте окрему сторінку з партнерськими сервісами для роботи.'},en:{eyebrow:'Partner programs',title:'Useful tools for work',description:'Open a dedicated page with partner services for work.'},cs:{eyebrow:'Partnerské programy',title:'Užitečné nástroje pro práci',description:'Otevřete samostatnou stránku s partnerskými službami pro práci.'}};
 function getDisplayName(user){return user?.firstName||user?.name||user?.email||'WorkTrack user'}
 function getFirstName(user){return String(getDisplayName(user)).split(/[\s@]/)[0]||''}
 function getGreeting(t){const hour=new Date().getHours();if(hour<12)return t('dashboard.goodMorning');if(hour<18)return t('dashboard.goodAfternoon');return t('dashboard.goodEvening')}
@@ -23,7 +22,7 @@ function getCompanyName(user,data,t){return data?.company?.name||user?.activeCom
 
 function PartnerProgramsBanner({language}){
  const copy=PARTNER_COPY[language]||PARTNER_COPY.uk;
- return <Link className="dashboardPartners" aria-labelledby="dashboardPartnersTitle" to="/partners"><div className="dashboardPartnersHeader"><small>{copy.eyebrow}</small><strong id="dashboardPartnersTitle">{copy.title}</strong></div><div className="dashboardPartnerList">{PARTNER_PROGRAMS.map(program=><span key={program.name} className="dashboardPartnerCard"><span className="dashboardPartnerIcon"><SvgIcon name="globe"/></span><span className="dashboardPartnerCopy"><small>{program.tag}</small><strong>{program.name}</strong><em>{program.description[language]||program.description.uk}</em></span><b>{copy.open}</b></span>)}</div></Link>;
+ return <Link className="dashboardPartners" aria-labelledby="dashboardPartnersTitle" to="/partners"><span className="dashboardPartnersIcon"><SvgIcon name="globe"/></span><span className="dashboardPartnersCopy"><small>{copy.eyebrow}</small><strong id="dashboardPartnersTitle">{copy.title}</strong><em>{copy.description}</em></span><b aria-hidden="true">›</b></Link>;
 }
 
 export function DashboardPage(){
