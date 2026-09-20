@@ -1,0 +1,14 @@
+.partnerProgramsPage{gap:16px;padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
+.partnerProgramsHeader{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px;padding:2px 2px 0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+.partnerProgramsHeader h1{margin:0;font-size:var(--font-size-page-title);line-height:1.06;letter-spacing:-.035em}
+.partnerProgramsHeader p{margin:5px 0 0;color:var(--muted);font-size:var(--font-size-secondary);line-height:1.35}
+.partnerProgramsHero{display:grid;gap:14px;padding:18px;border:1px solid rgba(22,163,74,.18);border-radius:24px;background:linear-gradient(145deg,#effbf4,#fff);box-shadow:0 8px 24px rgba(22,163,74,.06)}
+.partnerProgramsHeroIcon{display:grid;place-items:center;width:54px;height:54px;border-radius:17px;background:var(--accent-soft);color:var(--accent)}
+.partnerProgramsHeroIcon svg{width:26px;height:26px;stroke:currentColor;fill:none}
+.partnerProgramsHero small{display:inline-flex;width:max-content;margin-bottom:7px;padding:5px 10px;border-radius:999px;background:#eaf9ef;color:var(--accent);font-size:11px;font-weight:900;text-transform:uppercase}
+.partnerProgramsHero h2{margin:0;color:var(--text);font-size:26px;line-height:1.1;letter-spacing:-.035em}
+.partnerProgramsHero p{margin:7px 0 0;color:var(--muted);font-size:14px;line-height:1.45}
+.partnerProgramsOpen{display:grid;place-items:center;min-height:48px;border-radius:16px;background:#16a34a;color:#fff;font-size:15px;font-weight:800;text-decoration:none;box-shadow:0 12px 24px rgba(22,163,74,.16)}
+.partnerProgramsHint{margin:0!important;color:#64748b!important;font-size:12px!important;text-align:center}
+.partnerProgramsBack{display:grid;place-items:center;min-height:46px;border:1px solid var(--line);border-radius:16px;background:#fff;color:var(--text);font-size:14px;font-weight:800;text-decoration:none}
+@media(max-width:520px){.partnerProgramsPage{gap:13px}.partnerProgramsHero{padding:16px;border-radius:20px}.partnerProgramsHero h2{font-size:24px}.partnerProgramsOpen{min-height:46px}}
