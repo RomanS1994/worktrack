@@ -19,7 +19,7 @@ export function PartnerProgramsPage(){
     <section className="partnerProgramsHero screenCard">
       <span className="partnerProgramsHeroIcon"><SvgIcon name="globe"/></span>
       <div><small>{c.materials}</small><h2>{c.pipeTitle}</h2><p>{c.pipeCopy}</p></div>
-      <Link className="partnerProgramsOpen" to="/pipestock" reloadDocument>{c.open}</Link>
+      <Link className="partnerProgramsOpen" to="/pipestock?from=worktrack" reloadDocument>{c.open}</Link>
       <p className="partnerProgramsHint">{c.hint}</p>
     </section>
     <Link className="partnerProgramsBack" to="/dashboard">{c.back}</Link>
