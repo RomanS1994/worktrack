@@ -4,6 +4,7 @@ import { readJsonBody, sendJson } from '../lib/http.js';
 import {
   createEmployeeWorkEntry,
   deleteEmployeeWorkEntry,
+  getEmployeeMonth,
   getEmployeeWeek,
   submitEmployeeWeek,
   updateEmployeeWorkEntry,
@@ -91,29 +92,12 @@ async function enrichWorkEntries(client, payload, { hourlyRateCzk = '0.00', rule
     };
   }
 
-  const details = await client.workEntry.findMany({
-    where: { id: { in: entries.map(entry => entry.id) } },
-    select: {
-      id: true,
-      startTime: true,
-      endTime: true,
-      note: true,
-      grossHours: true,
-      breakMinutes: true,
-      hourlyRateCzk: true,
-    },
-  });
-  const byId = new Map(details.map(item => [item.id, item]));
-  const enrichedEntries = entries.map(entry => {
-    const detail = byId.get(entry.id);
-    return {
-      ...entry,
-      ...(detail || {}),
-      grossHours: detail?.grossHours == null ? entry.hours : String(detail.grossHours),
-      breakMinutes: Number(detail?.breakMinutes || 0),
-      hourlyRateCzk: detail?.hourlyRateCzk == null ? null : String(detail.hourlyRateCzk),
-    };
-  });
+  const enrichedEntries = entries.map(entry => ({
+    ...entry,
+    grossHours: entry.grossHours == null ? entry.hours : String(entry.grossHours),
+    breakMinutes: Number(entry.breakMinutes || 0),
+    hourlyRateCzk: entry.hourlyRateCzk == null ? null : String(entry.hourlyRateCzk),
+  }));
 
   return {
     ...payload,
@@ -123,6 +107,27 @@ async function enrichWorkEntries(client, payload, { hourlyRateCzk = '0.00', rule
 }
 
 export async function handleEmployeeWorkRoutes(request, response, { pathName, url }) {
+  if (request.method === 'GET' && pathName === '/api/work-entries/month') {
+    const context = await requireEmployee(request, response);
+    if (!context) return true;
+
+    const payload = await runStoreRead({
+      prisma: async client => {
+        const hourlyRateCzk = context.activeMembership.hourlyRateCzk == null
+          ? '0.00'
+          : String(context.activeMembership.hourlyRateCzk);
+        const rules = await getWorkRules(client, context);
+        return enrichWorkEntries(
+          client,
+          await getEmployeeMonth(client, context, url.searchParams.get('month')),
+          { hourlyRateCzk, rules },
+        );
+      },
+    });
+    sendJson(response, 200, payload);
+    return true;
+  }
+
   if (request.method === 'GET' && pathName === '/api/work-entries') {
     const context = await requireEmployee(request, response);
     if (!context) return true;

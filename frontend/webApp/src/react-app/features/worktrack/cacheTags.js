@@ -8,6 +8,7 @@ export const WORK_TOTAL_TAGS = [
 
 export const WORK_ENTRY_TAGS = [
   { type: 'WorkEntries', id: 'WEEK' },
+  { type: 'WorkEntries', id: 'MONTH' },
   ...WORK_TOTAL_TAGS,
 ];
 

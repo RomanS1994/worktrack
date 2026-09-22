@@ -41,6 +41,7 @@ const FRONTEND_API_CONTRACTS = [
   ['POST', '/api/manager/invoices/invoice-test/viewed'],
   ['POST', '/api/manager/invoices/invoice-test/paid'],
   ['GET', '/api/work-entries?weekStart=2026-08-17'],
+  ['GET', '/api/work-entries/month?month=2026-08'],
   ['POST', '/api/work-entries'],
   ['PATCH', '/api/work-entries/entry-test'],
   ['DELETE', '/api/work-entries/entry-test'],

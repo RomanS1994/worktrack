@@ -9,11 +9,6 @@ function getMembership(context) {
   return membership;
 }
 
-function avatarFromProfile(profile) {
-  if (!profile || typeof profile !== 'object' || Array.isArray(profile)) return '';
-  return typeof profile.avatarDataUrl === 'string' ? profile.avatarDataUrl : '';
-}
-
 function serializeRow(row) {
   return {
     id: row.id,
@@ -28,7 +23,7 @@ function serializeRow(row) {
       membershipId: row.authorMembershipId,
       name: row.authorName || row.authorEmail || 'User',
       role: row.authorRole || '',
-      avatarDataUrl: avatarFromProfile(row.authorProfile),
+      avatarDataUrl: '',
     },
     replyTo: row.replyToMessageId ? {
       id: row.replyToMessageId,
@@ -53,7 +48,6 @@ const messageSelect = `
   m.reply_to_message_id AS "replyToMessageId",
   u.name AS "authorName",
   u.email AS "authorEmail",
-  u.profile AS "authorProfile",
   cm.role::text AS "authorRole",
   rm.body AS "replyBody",
   rm.deleted_at AS "replyDeletedAt",

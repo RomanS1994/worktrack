@@ -35,6 +35,18 @@ function toIsoTimestamp(value) {
   return Number.isNaN(parsed.getTime()) ? '' : parsed.toISOString();
 }
 
+function parseMonth(value, message = 'Invalid month') {
+  const raw = normalizeText(value);
+  if (!/^\d{4}-\d{2}$/.test(raw)) throw new Error(message);
+  const [year, month] = raw.split('-').map(Number);
+  if (month < 1 || month > 12) throw new Error(message);
+  return {
+    key: raw,
+    start: new Date(Date.UTC(year, month - 1, 1)),
+    end: new Date(Date.UTC(year, month, 1)),
+  };
+}
+
 function monthKey(date) {
   return toIsoDate(date).slice(0, 7);
 }
@@ -187,6 +199,12 @@ export function serializeEmployeeWorkEntry(entry) {
     weeklySubmissionId: entry.weeklySubmissionId || '',
     workDate: toIsoDate(entry.workDate),
     hours: formatHundredths(decimalToHundredths(entry.hours)),
+    grossHours: entry.grossHours == null ? null : formatHundredths(decimalToHundredths(entry.grossHours)),
+    breakMinutes: Number(entry.breakMinutes || 0),
+    startTime: entry.startTime || '',
+    endTime: entry.endTime || '',
+    note: normalizeText(entry.note),
+    hourlyRateCzk: entry.hourlyRateCzk == null ? null : String(entry.hourlyRateCzk),
     status: entry.status,
     createdAt: toIsoTimestamp(entry.createdAt),
     updatedAt: toIsoTimestamp(entry.updatedAt),
@@ -299,6 +317,41 @@ export async function getEmployeeWeek(client, context, weekStartInput) {
     submission: representativeSubmission,
     submissions: serializedSubmissions,
     hasEditableEntries: editableEntries.length > 0,
+    summary: calculateWorkSummary(entries, membership.hourlyRateCzk ?? '0'),
+  };
+}
+
+export async function getEmployeeMonth(client, context, monthInput) {
+  const membership = ensureEmployeeContext(context);
+  const current = new Date();
+  const defaultMonth = `${current.getUTCFullYear()}-${String(current.getUTCMonth() + 1).padStart(2, '0')}`;
+  const month = parseMonth(monthInput || defaultMonth);
+
+  const [entries, submissions] = await Promise.all([
+    client.workEntry.findMany({
+      where: {
+        companyId: membership.companyId,
+        employeeMembershipId: membership.id,
+        workDate: { gte: month.start, lt: month.end },
+      },
+      include: { project: true },
+      orderBy: [{ workDate: 'asc' }, { createdAt: 'asc' }],
+    }),
+    client.weeklySubmission.findMany({
+      where: {
+        companyId: membership.companyId,
+        employeeMembershipId: membership.id,
+        weekStart: { lt: month.end },
+        weekEnd: { gte: month.start },
+      },
+      orderBy: [{ weekStart: 'asc' }, { createdAt: 'asc' }],
+    }),
+  ]);
+
+  return {
+    month: month.key,
+    entries: entries.map(serializeEmployeeWorkEntry),
+    submissions: submissions.map(serializeWeeklySubmission),
     summary: calculateWorkSummary(entries, membership.hourlyRateCzk ?? '0'),
   };
 }

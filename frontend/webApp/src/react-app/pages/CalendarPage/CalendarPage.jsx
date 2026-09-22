@@ -6,8 +6,8 @@ import { useI18n } from '@shared/app/i18n/useI18n.js';
 import {
   useCreateWorkEntryMutation,
   useDeleteWorkEntryMutation,
+  useGetMonthEntriesQuery,
   useGetProjectsQuery,
-  useGetWeekEntriesQuery,
   useGetWorkRulesQuery,
   useUpdateWorkEntryMutation,
 } from '../../features/worktrack/worktrackApi.js';
@@ -35,9 +35,9 @@ function getWeekdays(locale) { const monday = new Date('2026-08-17T00:00:00.000Z
 function formatHours(value) { const totalMinutes = Math.round((Number(value) || 0) * 60); return `${Math.floor(totalMinutes / 60)}h ${String(totalMinutes % 60).padStart(2, '0')}m`; }
 function getDayStatus(entries) { for (const status of STATUS_PRIORITY) if (entries.some(entry => entry.status === status)) return status; return ''; }
 function getDayTotal(entries) { return entries.reduce((sum, entry) => sum + (Number(entry.hours) || 0), 0); }
-function dedupeEntries(weekResults) { const byId = new Map(); weekResults.forEach(result => (result.data?.entries || []).forEach(entry => byId.set(entry.id, entry))); return Array.from(byId.values()); }
 function timeToMinutes(value) { if (!/^\d{2}:\d{2}$/.test(value || '')) return null; const [h,m] = value.split(':').map(Number); if (h > 23 || m > 59) return null; return h * 60 + m; }
 function calculateHours(startTime, endTime) { const start = timeToMinutes(startTime); let end = timeToMinutes(endTime); if (start == null || end == null) return 0; if (end <= start) end += 1440; return Math.round(((end - start) / 60) * 100) / 100; }
+function findSubmissionForWeek(submissions, weekStart) { return (submissions || []).find(item => item.weekStart === weekStart) || null; }
 function MonthStat({ label, value, tone='' }) { return <article className={`workCalendarStat ${tone ? `is-${tone}` : ''}`}><span>{label}</span><strong>{value}</strong></article>; }
 
 export function CalendarPage() {
@@ -60,6 +60,8 @@ export function CalendarPage() {
 
   const projectsQuery = useGetProjectsQuery();
   const { data:rulesData } = useGetWorkRulesQuery();
+  const monthKey = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
+  const monthEntriesQuery = useGetMonthEntriesQuery({ month:monthKey });
   const projects = (projectsQuery.data?.projects || []).filter(project => project.isActive);
   const [createEntry, createState] = useCreateWorkEntryMutation();
   const [updateEntry, updateState] = useUpdateWorkEntryMutation();
@@ -68,11 +70,9 @@ export function CalendarPage() {
   const configuredBreakMinutes = Number(rulesData?.workRules?.breakMinutes || 0);
 
   const gridStart = useMemo(() => getMonthGridStart(monthDate), [monthDate]);
-  const weekStarts = useMemo(() => Array.from({ length:6 }, (_, index) => toDateKey(addDays(gridStart, index * 7))), [gridStart]);
-  const week0 = useGetWeekEntriesQuery({ weekStart:weekStarts[0] }); const week1 = useGetWeekEntriesQuery({ weekStart:weekStarts[1] }); const week2 = useGetWeekEntriesQuery({ weekStart:weekStarts[2] }); const week3 = useGetWeekEntriesQuery({ weekStart:weekStarts[3] }); const week4 = useGetWeekEntriesQuery({ weekStart:weekStarts[4] }); const week5 = useGetWeekEntriesQuery({ weekStart:weekStarts[5] });
-  const weekResults = [week0, week1, week2, week3, week4, week5];
-  const entries = useMemo(() => dedupeEntries(weekResults), [week0.data, week1.data, week2.data, week3.data, week4.data, week5.data]);
-  const monthPrefix = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}-`;
+  const entries = useMemo(() => monthEntriesQuery.data?.entries || [], [monthEntriesQuery.data]);
+  const submissions = monthEntriesQuery.data?.submissions || [];
+  const monthPrefix = `${monthKey}-`;
   const monthEntries = useMemo(() => entries.filter(entry => entry.workDate.startsWith(monthPrefix)), [entries, monthPrefix]);
   const entriesByDate = useMemo(() => { const map = new Map(); entries.forEach(entry => { const current = map.get(entry.workDate) || []; current.push(entry); map.set(entry.workDate, current); }); return map; }, [entries]);
   const calendarDays = useMemo(() => Array.from({ length:42 }, (_, index) => { const date = addDays(gridStart, index); return { date, dateKey:toDateKey(date), inMonth:date.getUTCMonth() === monthDate.getMonth() }; }), [gridStart, monthDate]);
@@ -81,8 +81,8 @@ export function CalendarPage() {
   const selectedStatus = getDayStatus(selectedEntries);
   const selectedOvertime = Math.max(0, selectedHours - standardDailyHours);
   const selectedWeek = weekStartKey(selectedDateKey);
-  const selectedWeekResult = weekResults.find((_, index) => weekStarts[index] === selectedWeek);
-  const submissionStatus = selectedWeekResult?.data?.submission?.status || '';
+  const selectedSubmission = findSubmissionForWeek(submissions, selectedWeek);
+  const submissionStatus = selectedSubmission?.status || '';
   const locked = submissionStatus === 'SUBMITTED' || submissionStatus === 'APPROVED';
   const busy = createState.isLoading || updateState.isLoading || deleteState.isLoading;
   const calculatedGrossHours = calculateHours(startTime, endTime);
@@ -90,9 +90,9 @@ export function CalendarPage() {
   const calculatedNetHours = Math.max(0, calculatedGrossHours - calculatedBreakMinutes / 60);
 
   const totals = useMemo(() => { const total = monthEntries.reduce((sum, entry) => sum + (Number(entry.hours) || 0), 0); const approved = monthEntries.filter(entry => entry.status === 'APPROVED').reduce((sum, entry) => sum + (Number(entry.hours) || 0), 0); const submitted = monthEntries.filter(entry => entry.status === 'SUBMITTED').reduce((sum, entry) => sum + (Number(entry.hours) || 0), 0); const daily = new Map(); monthEntries.forEach(entry => daily.set(entry.workDate, (daily.get(entry.workDate) || 0) + (Number(entry.hours) || 0))); const overtime = Array.from(daily.values()).reduce((sum, hours) => sum + Math.max(0, hours - standardDailyHours), 0); return { total, approved, submitted, overtime }; }, [monthEntries, standardDailyHours]);
-  const isLoading = weekResults.some(result => result.isLoading || result.isFetching);
-  const firstError = weekResults.find(result => result.error)?.error;
-  const hasCompleteCalendar = !isLoading && !firstError && weekResults.every(result => result.data);
+  const isLoading = monthEntriesQuery.isLoading || monthEntriesQuery.isFetching;
+  const firstError = monthEntriesQuery.error;
+  const hasCompleteCalendar = !isLoading && !firstError && Boolean(monthEntriesQuery.data);
   const statusLabel = status => t(`common.${String(status || 'draft').toLowerCase()}`);
 
   function resetEditor() { setEditingId(''); setProjectId(projects[0]?.id || ''); setStartTime('07:00'); setEndTime('15:30'); setNote(''); setActionError(''); setActionMessage(''); }

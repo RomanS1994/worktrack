@@ -29,6 +29,7 @@ export const worktrackApi = baseApi.injectEndpoints({
     updateCompanySettings: builder.mutation({ query:body=>({url:'/company-settings',method:'PATCH',body}), invalidatesTags:[{type:'Company',id:'SETTINGS'},{type:'Me',id:'CURRENT'},...WORK_TOTAL_TAGS] }),
     getWorkRules: builder.query({ query:()=>'/work-rules', providesTags:[{type:'Company',id:'WORK_RULES'}] }),
     updateWorkRules: builder.mutation({ query:body=>({url:'/work-rules',method:'PATCH',body}), invalidatesTags:[{type:'Company',id:'WORK_RULES'},...INVOICE_AFFECTING_TAGS,{type:'Employees',id:'LIST'},{type:'WeeklySubmissions',id:'LIST'}] }),
+    getMonthEntries: builder.query({ query:(query={})=>({url:'/work-entries/month',params:query}), providesTags:result=>[{type:'WorkEntries',id:'MONTH'},...(Array.isArray(result?.entries)?result.entries:[]).map(entry=>({type:'WorkEntries',id:entry.id}))] }),
     getWeekEntries: builder.query({ query:(query={})=>({url:'/work-entries',params:query}), providesTags:result=>[{type:'WorkEntries',id:'WEEK'},...(Array.isArray(result?.entries)?result.entries:[]).map(entry=>({type:'WorkEntries',id:entry.id}))] }),
     createWorkEntry: builder.mutation({ query:payload=>({url:'/work-entries',method:'POST',body:payload}), invalidatesTags:INVOICE_AFFECTING_TAGS }),
     updateWorkEntry: builder.mutation({ query:({entryId,...body})=>({url:`/work-entries/${entryId}`,method:'PATCH',body}), invalidatesTags:(_r,_e,{entryId})=>withWorkEntry(entryId) }),
@@ -54,7 +55,7 @@ export const {
   useGetWorkSummaryQuery,useGetManagerPayrollQuery,useGetManagerAdvancesQuery,useCreateManagerAdvanceMutation,useDeleteManagerAdvanceMutation,useGetEmployeeAdvancesQuery,useGetManagerExpensesQuery,useCreateManagerExpenseMutation,useDeleteManagerExpenseMutation,useGetNotificationsQuery,useGetPushSettingsQuery,useSavePushSubscriptionMutation,useDeletePushSubscriptionMutation,useMarkNotificationReadMutation,useMarkAllNotificationsReadMutation,
   useGetProjectsQuery,useGetDefaultProjectQuery,useUpdateDefaultProjectMutation,useCreateProjectMutation,useUpdateProjectMutation,useDeactivateProjectMutation,useDeleteProjectMutation,useGetCompanySettingsQuery,useUpdateCompanySettingsMutation,
   useGetWorkRulesQuery,useUpdateWorkRulesMutation,
-  useGetWeekEntriesQuery,useCreateWorkEntryMutation,useUpdateWorkEntryMutation,useDeleteWorkEntryMutation,useSubmitWeekMutation,
+  useGetMonthEntriesQuery,useGetWeekEntriesQuery,useCreateWorkEntryMutation,useUpdateWorkEntryMutation,useDeleteWorkEntryMutation,useSubmitWeekMutation,
   useGetManagerEmployeesQuery,useCreateManagerEmployeeMutation,useUpdateManagerEmployeeMutation,useDeleteManagerEmployeeMutation,useResetManagerEmployeePasswordMutation,
   useGetManagerSubmissionsQuery,useGetManagerSubmissionQuery,useUpdateManagerWorkEntryMutation,useDeleteManagerWorkEntryMutation,useClearManagerSubmissionMutation,useApproveSubmissionMutation,useRejectSubmissionMutation,useReopenSubmissionMutation,
 } = worktrackApi;
