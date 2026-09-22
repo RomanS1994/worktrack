@@ -2,13 +2,26 @@
 .partnerProgramsHeader{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px;padding:2px 2px 0!important;border:0!important;background:transparent!important;box-shadow:none!important}
 .partnerProgramsHeader h1{margin:0;font-size:var(--font-size-page-title);line-height:1.06;letter-spacing:-.035em}
 .partnerProgramsHeader p{margin:5px 0 0;color:var(--muted);font-size:var(--font-size-secondary);line-height:1.35}
-.partnerProgramsHero{display:grid;gap:14px;padding:18px;border:1px solid rgba(22,163,74,.18);border-radius:24px;background:linear-gradient(145deg,#effbf4,#fff);box-shadow:0 8px 24px rgba(22,163,74,.06)}
-.partnerProgramsHeroIcon{display:grid;place-items:center;width:54px;height:54px;border-radius:17px;background:var(--accent-soft);color:var(--accent)}
-.partnerProgramsHeroIcon svg{width:26px;height:26px;stroke:currentColor;fill:none}
-.partnerProgramsHero small{display:inline-flex;width:max-content;margin-bottom:7px;padding:5px 10px;border-radius:999px;background:#eaf9ef;color:var(--accent);font-size:11px;font-weight:900;text-transform:uppercase}
-.partnerProgramsHero h2{margin:0;color:var(--text);font-size:26px;line-height:1.1;letter-spacing:-.035em}
-.partnerProgramsHero p{margin:7px 0 0;color:var(--muted);font-size:14px;line-height:1.45}
-.partnerProgramsOpen{display:grid;place-items:center;min-height:48px;border-radius:16px;background:#16a34a;color:#fff;font-size:15px;font-weight:800;text-decoration:none;box-shadow:0 12px 24px rgba(22,163,74,.16)}
-.partnerProgramsHint{margin:0!important;color:#64748b!important;font-size:12px!important;text-align:center}
-.partnerProgramsBack{display:grid;place-items:center;min-height:46px;border:1px solid var(--line);border-radius:16px;background:#fff;color:var(--text);font-size:14px;font-weight:800;text-decoration:none}
-@media(max-width:520px){.partnerProgramsPage{gap:13px}.partnerProgramsHero{padding:16px;border-radius:20px}.partnerProgramsHero h2{font-size:24px}.partnerProgramsOpen{min-height:46px}}
+/* PipeStock branding is intentionally scoped to this card; WorkTrack navigation keeps its own theme. */
+.partnerProgramsHero{--pipe-blue:#1676d2;--pipe-ink:#142b49;display:grid;gap:18px;overflow:hidden;padding:22px;border:1px solid #cfe4fc;border-radius:25px;background:radial-gradient(circle at 100% 0%,#dceeff 0,transparent 43%),linear-gradient(145deg,#f3f9ff,#fff 65%);box-shadow:0 12px 30px rgba(30,111,196,.08)}
+.partnerProgramsIdentity{display:flex;align-items:center;gap:14px;min-width:0}
+.partnerProgramsHeroIcon{display:grid;flex:none;place-items:center;width:66px;height:66px;border-radius:19px;background:linear-gradient(145deg,#39a5f7,#0869c5);color:#fff;box-shadow:0 8px 18px rgba(22,118,210,.16)}
+.partnerProgramsHeroIcon svg{width:39px;height:39px}
+.partnerProgramsName{min-width:0;flex:1}
+.partnerProgramsName h2{margin:0;color:var(--pipe-ink);font-size:clamp(24px,6vw,32px);line-height:1.08;letter-spacing:-.045em}
+.partnerProgramsName h2 span{color:var(--pipe-blue)}
+.partnerProgramsName small{display:block;margin-top:5px;color:#68809c;font-size:12px;font-weight:700}
+.partnerProgramsBadge{flex:none;padding:6px 10px;border-radius:999px;background:#e4f2ff;color:#1268b5;font-size:11px;font-weight:800}
+.partnerProgramsIntro h3{margin:0;color:var(--pipe-ink);font-size:20px;line-height:1.2;letter-spacing:-.025em}
+.partnerProgramsIntro p{margin:8px 0 0;color:#61738b;font-size:14px;line-height:1.5}
+.partnerProgramsFeatures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:14px 0;border-top:1px solid #e0edfb;border-bottom:1px solid #e0edfb}
+.partnerProgramsFeatures>div{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0;padding:0 7px;text-align:center;color:#526a86;font-size:11px;font-weight:650;line-height:1.3}
+.partnerProgramsFeatures>div+div{border-left:1px solid #d9e8f9}
+.partnerProgramsFeatures>div>span:first-child{display:grid;place-items:center;width:35px;height:35px;border-radius:12px;background:#e5f2ff;color:var(--pipe-blue);font-size:22px;line-height:1}
+.partnerProgramsOpen{display:flex;align-items:center;justify-content:center;gap:12px;min-height:50px;padding:0 16px;border-radius:15px;background:linear-gradient(110deg,#2289e5,#116cc8);color:#fff;font-size:15px;font-weight:800;text-decoration:none;box-shadow:0 10px 22px rgba(22,118,210,.18);transition:filter .15s ease}
+.partnerProgramsOpen:hover{filter:brightness(1.06)}
+.partnerProgramsOpen:focus-visible{outline:3px solid #7dbdff;outline-offset:3px}
+.partnerProgramsOpen span{font-size:20px;font-weight:500}
+.partnerProgramsHint{margin:0!important;color:#69809c!important;font-size:12px!important;text-align:center}
+@media(max-width:520px){.partnerProgramsPage{gap:13px}.partnerProgramsHero{padding:17px;gap:16px;border-radius:21px}.partnerProgramsHeroIcon{width:58px;height:58px;border-radius:16px}.partnerProgramsHeroIcon svg{width:34px;height:34px}.partnerProgramsIntro h3{font-size:18px}.partnerProgramsOpen{min-height:48px}}
+@media(max-width:350px){.partnerProgramsIdentity{gap:9px}.partnerProgramsBadge{padding:5px 7px;font-size:10px}.partnerProgramsFeatures>div{padding:0 3px;font-size:10px}}
