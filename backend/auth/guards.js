@@ -3,6 +3,27 @@ import { getBearerToken, sendError } from '../lib/http.js';
 import { normalizeText } from '../validation/common.js';
 import { verifyAccessToken } from './tokens.js';
 
+const AUTH_USER_SELECT = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  name: true,
+  phone: true,
+  mustChangePassword: true,
+  deletedAt: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
+const AUTH_COMPANY_SELECT = {
+  id: true,
+  name: true,
+  slug: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
 export function hasManagerAccess(value) {
   const role =
     typeof value === 'string'
@@ -43,7 +64,7 @@ async function loadMembershipContext(client, userId, requestedCompanyId = '') {
       deletedAt: null,
     },
     include: {
-      company: true,
+      company: { select: AUTH_COMPANY_SELECT },
     },
     orderBy: [
       {
@@ -97,7 +118,7 @@ export async function getAuthContext(request, response) {
           id: tokenClaims.sessionId,
         },
         include: {
-          user: true,
+          user: { select: AUTH_USER_SELECT },
         },
       });
 

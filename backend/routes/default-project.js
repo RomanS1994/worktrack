@@ -15,7 +15,11 @@ async function loadDefaultProject(client, context) {
   const companyId = context.activeMembership?.companyId;
   if (!companyId) return { projectId: '', project: null };
 
-  const projectId = String(getDefaultProjects(context.user.profile)[companyId] || '');
+  const user = await client.user.findUnique({
+    where: { id: context.user.id },
+    select: { profile: true },
+  });
+  const projectId = String(getDefaultProjects(user?.profile)[companyId] || '');
   if (!projectId) return { projectId: '', project: null };
 
   const project = await client.project.findFirst({
@@ -54,7 +58,11 @@ export async function handleDefaultProjectRoutes(request, response, { pathName }
         });
         if (!project) throw new Error('Project not found');
 
-        const profile = normalizeProfile(context.user.profile);
+        const user = await client.user.findUnique({
+          where: { id: context.user.id },
+          select: { profile: true },
+        });
+        const profile = normalizeProfile(user?.profile);
         await client.user.update({
           where: { id: context.user.id },
           data: {

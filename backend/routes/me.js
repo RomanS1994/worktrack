@@ -10,6 +10,21 @@ function normalizeProfile(value) {
   return value && typeof value === 'object' ? value : {};
 }
 
+const FULL_USER_SELECT = {
+  id: true,
+  email: true,
+  passwordHash: true,
+  firstName: true,
+  lastName: true,
+  name: true,
+  phone: true,
+  profile: true,
+  mustChangePassword: true,
+  deletedAt: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
 function splitDisplayName(name) {
   const parts = normalizeText(name).split(/\s+/).filter(Boolean);
   const firstName = parts.shift() || '';
@@ -68,14 +83,20 @@ async function handleUpdateMyProfile(request, response) {
   if (!context) return;
 
   const body = await readJsonBody(request);
-  const requestedName = normalizeText(body.name) || context.user.name;
+  const currentUser = await prisma.user.findUnique({
+    where: { id: context.user.id },
+    select: FULL_USER_SELECT,
+  });
+  if (!currentUser) throw new Error('User not found');
+
+  const requestedName = normalizeText(body.name) || currentUser.name;
   const requestedFirstName = normalizeText(body.firstName);
   const requestedLastName = normalizeText(body.lastName);
   const nameParts = splitDisplayName(requestedName);
   const hasPhoneInput = Object.prototype.hasOwnProperty.call(body, 'phone');
-  const nextPhone = hasPhoneInput ? normalizePhoneNumber(body.phone) : context.user.phone || '';
+  const nextPhone = hasPhoneInput ? normalizePhoneNumber(body.phone) : currentUser.phone || '';
   const nextProfile = {
-    ...normalizeProfile(context.user.profile),
+    ...normalizeProfile(currentUser.profile),
     ...normalizeProfile(body.profile),
   };
 
@@ -120,9 +141,9 @@ async function handleUpdateMyProfile(request, response) {
         entityType: 'profile',
         entityId: updatedUser.id,
         before: {
-          name: context.user.name,
-          phone: context.user.phone || '',
-          profile: context.user.profile,
+          name: currentUser.name,
+          phone: currentUser.phone || '',
+          profile: currentUser.profile,
         },
         after: {
           name: updatedUser.name,
@@ -154,7 +175,13 @@ async function handleChangeMyPassword(request, response) {
     throw new Error('New password must be at least 8 characters long');
   }
 
-  if (!verifyPassword(currentPassword, context.user.passwordHash)) {
+  const currentUser = await prisma.user.findUnique({
+    where: { id: context.user.id },
+    select: { passwordHash: true, mustChangePassword: true },
+  });
+  if (!currentUser) throw new Error('User not found');
+
+  if (!verifyPassword(currentPassword, currentUser.passwordHash)) {
     throw new Error('Current password is incorrect');
   }
 
@@ -192,7 +219,7 @@ async function handleChangeMyPassword(request, response) {
         entityType: 'user',
         entityId: context.user.id,
         before: {
-          mustChangePassword: Boolean(context.user.mustChangePassword),
+          mustChangePassword: Boolean(currentUser.mustChangePassword),
         },
         after: {
           mustChangePassword: false,
@@ -215,7 +242,13 @@ export async function handleMeRoutes(request, response, { pathName }) {
     const context = await getAuthContext(request, response);
     if (!context) return true;
 
-    const user = await buildSanitizedUser(prisma, context.user, {
+    const fullUser = await prisma.user.findUnique({
+      where: { id: context.user.id },
+      select: FULL_USER_SELECT,
+    });
+    if (!fullUser) throw new Error('User not found');
+
+    const user = await buildSanitizedUser(prisma, fullUser, {
       memberships: context.memberships,
       activeMembership: context.activeMembership,
       activeCompany: context.activeCompany,
