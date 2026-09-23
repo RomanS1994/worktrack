@@ -57,6 +57,18 @@ function calendarDaysForMonth(period) {
   });
 }
 
+function serializeCalendarDay(day) {
+  return {
+    date: day.dateKey,
+    day: day.day,
+    isCurrentMonth: day.isCurrentMonth,
+  };
+}
+
+function shouldKeepCompactDay(day) {
+  return day.status !== 'EMPTY' && day.status !== 'OUTSIDE_MONTH';
+}
+
 function toNumber(value) {
   if (value == null) return null;
   const number = Number(value);
@@ -111,7 +123,7 @@ function preferSubmittedEntries(entries) {
   return result;
 }
 
-export async function getManagerTimesheet(client, context, { month }) {
+export async function getManagerTimesheet(client, context, { month, compact = false } = {}) {
   const period = parseMonth(month);
   const calendarDays = calendarDaysForMonth(period);
   const manager = context.activeMembership || context.membership || context;
@@ -314,8 +326,16 @@ export async function getManagerTimesheet(client, context, { month }) {
     };
   });
 
+  const payloadRows = compact
+    ? rows.map(row => ({
+        ...row,
+        days: row.days.filter(shouldKeepCompactDay),
+      }))
+    : rows;
+
   return {
     month: period.raw,
+    ...(compact ? { compact: true, days: calendarDays.map(serializeCalendarDay) } : {}),
     projects,
     summary: {
       employees: rows.length,
@@ -324,7 +344,7 @@ export async function getManagerTimesheet(client, context, { month }) {
       missing,
       problems: mismatches + missing,
     },
-    rows,
+    rows: payloadRows,
   };
 }
 

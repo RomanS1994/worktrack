@@ -51,6 +51,47 @@ function displayManagerTotal(row) {
   return row?.managerNetTotal ?? row?.managerTotal ?? 0;
 }
 
+function emptyTimesheetDay(day) {
+  return {
+    date: day.date,
+    day: day.day,
+    isCurrentMonth: day.isCurrentMonth,
+    status: day.isCurrentMonth === false ? 'OUTSIDE_MONTH' : 'EMPTY',
+    reasons: [],
+    employeeHours: null,
+    employeeNetHours: null,
+    managerHours: null,
+    managerNetHours: null,
+    difference: null,
+    netDifference: null,
+    employeeBreakMinutes: null,
+    managerBreakMinutes: null,
+    employeeProjects: [],
+    employeeProjectIds: [],
+    managerProjectId: null,
+    note: '',
+  };
+}
+
+function normalizeTimesheetRows(data) {
+  const sourceRows = Array.isArray(data?.rows) ? data.rows : [];
+  const calendarDays = Array.isArray(data?.days) && data.days.length
+    ? data.days
+    : sourceRows[0]?.days || [];
+  if (!calendarDays.length || !data?.compact) return { rows: sourceRows, days: calendarDays };
+
+  return {
+    days: calendarDays,
+    rows: sourceRows.map(row => {
+      const daysByDate = new Map((row.days || []).map(day => [day.date, day]));
+      return {
+        ...row,
+        days: calendarDays.map(day => daysByDate.get(day.date) || emptyTimesheetDay(day)),
+      };
+    }),
+  };
+}
+
 function problemDetails(day) {
   if (day.status === 'EMPTY' || day.status === 'OUTSIDE_MONTH') return [];
   if (day.status === 'MATCH') return [{ tone: 'ok', title: 'Все сходиться', text: 'Записи менеджера і працівника збігаються.' }];
@@ -109,10 +150,9 @@ export function ManagerTimesheetPage() {
   const { data, error, isFetching } = useGetManagerTimesheetQuery(month);
   const [saveCell, { isLoading: isSaving, error: saveError }] = useSaveManagerTimesheetCellMutation();
 
-  const rows = data?.rows || [];
+  const { rows, days } = useMemo(() => normalizeTimesheetRows(data), [data]);
   const summary = data?.summary || {};
   const projects = data?.projects || [];
-  const days = rows[0]?.days || [];
   const label = useMemo(() => monthLabel(month), [month]);
   const weeks = useMemo(() => {
     const result = [];

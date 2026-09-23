@@ -208,7 +208,7 @@ async function enrichSubmissionHours(client, context, submissions) {
 export async function handleManagerRoutes(request, response, { pathName, url }) {
   if (request.method === 'GET' && pathName === '/api/manager/timesheet') {
     const context = await requireManager(request, response); if (!context) return true;
-    const payload = await runStoreRead({ prisma: client => getManagerTimesheet(client, context, { month: url.searchParams.get('month') }) });
+    const payload = await runStoreRead({ prisma: client => getManagerTimesheet(client, context, { month: url.searchParams.get('month'), compact: url.searchParams.get('compact') === '1' }) });
     sendJson(response, 200, payload); return true;
   }
 

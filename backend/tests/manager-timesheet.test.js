@@ -276,6 +276,24 @@ test('manager timesheet summary and totals ignore adjacent-month calendar cells'
   assert.equal(payload.summary.missing, 0);
 });
 
+test('manager timesheet compact mode sends calendar once and omits empty row cells', async () => {
+  const payload = await getManagerTimesheet(
+    readClient({
+      workEntries: [workEntry()],
+      managerEntries: [managerEntry()],
+    }),
+    context(),
+    { month: '2026-08', compact: true }
+  );
+
+  assert.equal(payload.compact, true);
+  assert.equal(payload.days.length, 42);
+  assert.equal(payload.days[0].date, '2026-07-27');
+  assert.equal(payload.rows[0].days.length, 1);
+  assert.equal(payload.rows[0].days[0].date, '2026-08-10');
+  assert.equal(payload.rows[0].days[0].status, 'MATCH');
+});
+
 test('manager timesheet hides an inactive employee even when the selected month has data', async () => {
   const payload = await getManagerTimesheet(
     readClient({ employees: [employee({ status: 'INACTIVE' })], workEntries: [workEntry()], managerEntries: [managerEntry()] }),

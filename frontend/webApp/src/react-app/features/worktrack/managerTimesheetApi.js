@@ -3,7 +3,7 @@ import { baseApi } from '@shared/app/api/baseApi.js';
 export const managerTimesheetApi = baseApi.injectEndpoints({
   endpoints: builder => ({
     getManagerTimesheet: builder.query({
-      query: month => ({ url: '/manager/timesheet', params: { month } }),
+      query: month => ({ url: '/manager/timesheet', params: { month, compact: 1 } }),
       providesTags: [{ type: 'WorkEntries', id: 'MANAGER_TIMESHEET' }],
     }),
     saveManagerTimesheetCell: builder.mutation({
