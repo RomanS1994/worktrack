@@ -190,6 +190,7 @@ model WorkEntry {
 
   @@unique([employeeMembershipId, projectId, workDate])
   @@index([companyId])
+  @@index([companyId, status, workDate])
   @@index([employeeMembershipId])
   @@index([employeeMembershipId, workDate])
   @@index([projectId])
@@ -295,6 +296,7 @@ model WeeklySubmission {
 
   @@unique([employeeMembershipId, weekStart])
   @@index([companyId])
+  @@index([companyId, status, weekStart])
   @@index([employeeMembershipId])
   @@index([reviewedByMembershipId])
   @@index([status])
