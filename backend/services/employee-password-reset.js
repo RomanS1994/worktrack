@@ -32,7 +32,7 @@ export async function resetEmployeePassword(
       },
     },
     include: {
-      user: true,
+      user: { select: { id: true, deletedAt: true } },
     },
   });
 

@@ -2,6 +2,15 @@ import { randomUUID } from 'node:crypto';
 
 import { calculateNetWorkEntries } from './work-time-calculation.js';
 
+const USER_SUMMARY_SELECT = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  name: true,
+  deletedAt: true,
+};
+
 function clean(value, max = 300) { return String(value ?? '').trim().slice(0, max); }
 function iso(value) { return value ? new Date(value).toISOString() : ''; }
 function dateOnly(value) { return new Date(value).toISOString().slice(0, 10); }
@@ -420,7 +429,7 @@ export async function listManagerInvoices(client, context) {
   const membership = managerMembership(context);
   const raw = await client.invoice.findMany({
     where: { companyId: membership.companyId, status: { not: 'DRAFT' } },
-    include: { items: true, employeeMembership: { include: { user: true } } },
+    include: { items: true, employeeMembership: { include: { user: { select: USER_SUMMARY_SELECT } } } },
     orderBy: { createdAt: 'desc' },
   });
   const invoices = raw.map(invoice => ({
@@ -438,7 +447,7 @@ export async function getManagerInvoice(client, context, invoiceId) {
   const membership = managerMembership(context);
   const invoice = await client.invoice.findFirst({
     where: { id: invoiceId, companyId: membership.companyId, status: { not: 'DRAFT' } },
-    include: { items: { orderBy: { workDate: 'asc' } }, employeeMembership: { include: { user: true } } },
+    include: { items: { orderBy: { workDate: 'asc' } }, employeeMembership: { include: { user: { select: USER_SUMMARY_SELECT } } } },
   });
   if (!invoice) throw new Error('Invoice not found');
   return {

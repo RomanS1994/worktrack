@@ -1,14 +1,19 @@
 import { calculateNetWorkSummary } from './work-time-calculation.js';
 import { getWeekRange, serializeWeek } from './week-utils.js';
 
+const EMPLOYEE_USER_SELECT = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  name: true,
+  phone: true,
+  deletedAt: true,
+};
+
 function employeeName(user) {
   const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim();
   return fullName || user?.name || user?.email || '';
-}
-
-function employeeAvatar(user) {
-  const profile = user?.profile && typeof user.profile === 'object' ? user.profile : {};
-  return profile.avatarDataUrl || profile.avatarUrl || profile.avatar || '';
 }
 
 function serializeUser(user) {
@@ -19,7 +24,7 @@ function serializeUser(user) {
     lastName: user?.lastName || '',
     name: user?.name || '',
     phone: user?.phone || '',
-    avatarDataUrl: employeeAvatar(user),
+    avatarDataUrl: '',
   };
 }
 
@@ -38,7 +43,7 @@ export async function getManagerEmployees(client, context, now = new Date()) {
         user: { is: { deletedAt: null } },
       },
       include: {
-        user: true,
+        user: { select: EMPLOYEE_USER_SELECT },
         workEntries: {
           where: {
             workDate: { gte: range.weekStart, lt: range.nextWeekStart },
@@ -87,7 +92,7 @@ export async function getManagerEmployees(client, context, now = new Date()) {
       firstName: employee.user?.firstName || '',
       lastName: employee.user?.lastName || '',
       name: employeeName(employee.user),
-      avatarDataUrl: employeeAvatar(employee.user),
+      avatarDataUrl: '',
       summary: calculateNetWorkSummary(employee.workEntries || [], employee.hourlyRateCzk || 0, rules),
     })),
   };

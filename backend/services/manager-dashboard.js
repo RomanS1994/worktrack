@@ -2,6 +2,15 @@ import { getManagerPayroll } from './manager-payroll.js';
 import { calculateNetWorkSummary } from './work-time-calculation.js';
 import { getWeekRange, serializeWeek } from './week-utils.js';
 
+const DASHBOARD_USER_SELECT = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  name: true,
+  deletedAt: true,
+};
+
 function employeeName(user) {
   const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim();
   return fullName || user?.name || user?.email || 'Employee';
@@ -44,7 +53,7 @@ export async function getManagerDashboard(client, context, now = new Date()) {
         user: { is: { deletedAt: null } },
       },
       include: {
-        user: true,
+        user: { select: DASHBOARD_USER_SELECT },
         weeklySubmissions: {
           where: { weekStart: range.weekStart },
           orderBy: { updatedAt: 'desc' },

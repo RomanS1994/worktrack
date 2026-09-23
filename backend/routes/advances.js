@@ -4,6 +4,15 @@ import { requireEmployee, requireManager } from '../auth/context.js';
 import { runStoreRead, runStoreTransaction } from '../db/store.js';
 import { readJsonBody, sendJson } from '../lib/http.js';
 
+const USER_SUMMARY_SELECT = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  name: true,
+  deletedAt: true,
+};
+
 function parseDate(value, fallback = new Date()) {
   const raw = String(value || '').trim() || fallback.toISOString().slice(0, 10);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) throw new Error('Invalid advance date');
@@ -53,7 +62,7 @@ export async function handleAdvanceRoutes(request, response, { pathName, url }) 
       const [employees, advances] = await Promise.all([
         client.companyMembership.findMany({
           where: { companyId: context.activeMembership.companyId, status: 'ACTIVE', deletedAt: null, user: { is: { deletedAt: null } } },
-          include: { user: true },
+          include: { user: { select: USER_SUMMARY_SELECT } },
           orderBy: { createdAt: 'asc' },
         }),
         client.salaryAdvance.findMany({
@@ -61,7 +70,7 @@ export async function handleAdvanceRoutes(request, response, { pathName, url }) 
             companyId: context.activeMembership.companyId,
             ...(month ? { paidAt: { gte: month.start, lt: month.end } } : {}),
           },
-          include: { employeeMembership: { include: { user: true } } },
+          include: { employeeMembership: { include: { user: { select: USER_SUMMARY_SELECT } } } },
           orderBy: [{ paidAt: 'desc' }, { createdAt: 'desc' }],
         }),
       ]);
@@ -92,7 +101,7 @@ export async function handleAdvanceRoutes(request, response, { pathName, url }) 
       if (!employee) throw new Error('Employee not found');
       return client.salaryAdvance.create({
         data: { id: randomUUID(), companyId: context.activeMembership.companyId, employeeMembershipId, managerMembershipId: context.activeMembership.id, amountCzk, paidAt, note: note || null },
-        include: { employeeMembership: { include: { user: true } } },
+        include: { employeeMembership: { include: { user: { select: USER_SUMMARY_SELECT } } } },
       });
     } });
     sendJson(response, 201, { advance: serialize(advance) }); return true;

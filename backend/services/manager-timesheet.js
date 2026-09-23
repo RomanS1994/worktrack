@@ -1,6 +1,14 @@
 import { randomUUID } from 'node:crypto';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const USER_SUMMARY_SELECT = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  name: true,
+  deletedAt: true,
+};
 
 function parseMonth(value) {
   const raw = String(value || '').trim();
@@ -117,7 +125,7 @@ export async function getManagerTimesheet(client, context, { month }) {
         deletedAt: null,
         user: { is: { deletedAt: null } },
       },
-      include: { user: true },
+      include: { user: { select: USER_SUMMARY_SELECT } },
       orderBy: { createdAt: 'asc' },
     }),
     client.workEntry.findMany({

@@ -7,6 +7,14 @@ import { readJsonBody, sendJson, setCorsHeaders } from '../lib/http.js';
 const CATEGORIES = new Set(['MATERIALS','TRANSPORT','FUEL','TOOLS','OFFICE','OTHER']);
 const RECEIPT_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const MAX_RECEIPT_BYTES = 2.5 * 1024 * 1024;
+const USER_SUMMARY_SELECT = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  name: true,
+  deletedAt: true,
+};
 
 function parseDate(value, fallback = new Date()) {
   const raw = String(value || '').trim() || fallback.toISOString().slice(0, 10);
@@ -95,7 +103,7 @@ const expenseListSelect = {
   receiptMimeType: true,
   receiptFileName: true,
   createdAt: true,
-  employeeMembership: { include: { user: true } },
+  employeeMembership: { include: { user: { select: USER_SUMMARY_SELECT } } },
 };
 
 export async function handleExpenseRoutes(request, response, { pathName, url }) {

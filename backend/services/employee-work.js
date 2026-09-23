@@ -7,6 +7,15 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const EDITABLE_ENTRY_STATUSES = new Set(['DRAFT', 'REJECTED']);
 const LOCKED_SUBMISSION_STATUSES = ['SUBMITTED', 'APPROVED'];
+const USER_SUMMARY_SELECT = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  name: true,
+  phone: true,
+  deletedAt: true,
+};
 
 function parseDate(value, message = 'Invalid work date') {
   const raw = normalizeText(value);
@@ -278,7 +287,7 @@ async function getSubmissionByCompany(client, companyId, submissionId) {
   const submission = await client.weeklySubmission.findFirst({
     where: { id: submissionId, companyId },
     include: {
-      employeeMembership: { include: { user: true } },
+      employeeMembership: { include: { user: { select: USER_SUMMARY_SELECT } } },
       workEntries: { include: { project: true }, orderBy: { workDate: 'asc' } },
     },
   });

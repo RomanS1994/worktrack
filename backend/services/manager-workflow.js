@@ -7,6 +7,15 @@ import { normalizeEmail, normalizeText, nowIso } from '../validation/common.js';
 const REVIEWABLE_STATUS = 'SUBMITTED';
 const WEEKLY_SUBMISSION_STATUS_VALUES = ['DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED'];
 const MEMBERSHIP_STATUS_VALUES = ['ACTIVE', 'INACTIVE'];
+const USER_SUMMARY_SELECT = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  name: true,
+  phone: true,
+  deletedAt: true,
+};
 
 function toIsoDate(value) {
   if (!value) return '';
@@ -194,7 +203,7 @@ async function getSubmissionByCompany(client, companyId, submissionId, notFoundM
   const submission = await client.weeklySubmission.findFirst({
     where: { id: submissionId, companyId },
     include: {
-      employeeMembership: { include: { user: true } },
+      employeeMembership: { include: { user: { select: USER_SUMMARY_SELECT } } },
       workEntries: { include: { project: true }, orderBy: { workDate: 'asc' } },
     },
   });
@@ -277,7 +286,7 @@ export async function createManagerEmployee(client, context, payload = {}) {
       createdAt: timestamp,
       updatedAt: timestamp,
     },
-    include: { user: true, workEntries: true, weeklySubmissions: true },
+    include: { user: { select: USER_SUMMARY_SELECT }, workEntries: true, weeklySubmissions: true },
   });
 
   await createAuditLog(client, {
@@ -300,7 +309,7 @@ export async function updateEmployeeMembership(client, context, employeeMembersh
   const managerMembership = ensureManagerContext(context);
   const existing = await client.companyMembership.findFirst({
     where: { id: employeeMembershipId, companyId: managerMembership.companyId, deletedAt: null },
-    include: { user: true },
+    include: { user: { select: USER_SUMMARY_SELECT } },
   });
   if (!existing) throw new Error('Employee not found');
 
@@ -326,7 +335,7 @@ export async function updateEmployeeMembership(client, context, employeeMembersh
   const membership = await client.companyMembership.update({
     where: { id: existing.id },
     data,
-    include: { user: true, workEntries: true, weeklySubmissions: true },
+    include: { user: { select: USER_SUMMARY_SELECT }, workEntries: true, weeklySubmissions: true },
   });
   await createAuditLog(client, {
     action: 'employee.updated',
@@ -350,7 +359,7 @@ export async function listManagerSubmissions(client, context, query = {}) {
       employeeMembership: { is: { deletedAt: null, user: { is: { deletedAt: null } } } },
     },
     include: {
-      employeeMembership: { include: { user: true } },
+      employeeMembership: { include: { user: { select: USER_SUMMARY_SELECT } } },
       workEntries: { include: { project: true }, orderBy: { workDate: 'asc' } },
     },
     orderBy: [{ submittedAt: 'desc' }, { weekStart: 'desc' }],
@@ -467,7 +476,7 @@ export async function reviewWeeklySubmission(client, context, submissionId, deci
       employeeMembership: { is: { deletedAt: null, user: { is: { deletedAt: null } } } },
     },
     include: {
-      employeeMembership: { include: { user: true } },
+      employeeMembership: { include: { user: { select: USER_SUMMARY_SELECT } } },
       workEntries: { include: { project: true } },
     },
   });

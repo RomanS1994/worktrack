@@ -1,5 +1,14 @@
 import { createAuditLog } from '../db/prisma-helpers.js';
 
+const USER_SUMMARY_SELECT = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  name: true,
+  deletedAt: true,
+};
+
 function getActiveMembership(context) {
   return context?.activeMembership || context?.membership || context || null;
 }
@@ -144,7 +153,7 @@ export async function deleteManagerEmployee(client, context, employeeMembershipI
       role: 'EMPLOYEE',
     },
     include: {
-      user: true,
+      user: { select: USER_SUMMARY_SELECT },
     },
   });
 
@@ -166,11 +175,11 @@ export async function deleteManagerEmployee(client, context, employeeMembershipI
 
   const deletedAt = employee.deletedAt || new Date();
   const archived = employee.deletedAt
-    ? employee
-    : await client.companyMembership.update({
+      ? employee
+      : await client.companyMembership.update({
         where: { id: employee.id },
         data: { status: 'INACTIVE', deletedAt },
-        include: { user: true },
+        include: { user: { select: USER_SUMMARY_SELECT } },
       });
 
   await createAuditLog(client, {

@@ -3,6 +3,14 @@ import { calculateLaborMargin, resolveLaborCustomerRateCzk } from './labor-margi
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const PERIOD_TYPES = new Set(['week', 'month']);
+const PAYROLL_USER_SELECT = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  name: true,
+  deletedAt: true,
+};
 
 function toDateKey(date) {
   return date.toISOString().slice(0, 10);
@@ -114,7 +122,7 @@ export async function getManagerPayroll(client, context, query = {}) {
         user: { is: { deletedAt: null } },
       },
       include: {
-        user: true,
+        user: { select: PAYROLL_USER_SELECT },
         workEntries: {
           where: { workDate: { gte: period.start, lt: period.next }, status: { in: ['SUBMITTED', 'APPROVED'] } },
           orderBy: { workDate: 'asc' },
