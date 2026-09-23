@@ -27,7 +27,8 @@ export async function getChatReactions(client, context, messageIds = []) {
            r.membership_id AS "membershipId",
            r.emoji,
            u.name AS "name",
-           u.email AS "email"
+           u.email AS "email",
+           u.profile ->> 'avatarDataUrl' AS "avatarDataUrl"
       FROM chat_message_reactions r
       JOIN chat_messages m ON m.id = r.message_id
       JOIN company_memberships cm ON cm.id = r.membership_id
@@ -56,7 +57,7 @@ export async function getChatReactions(client, context, messageIds = []) {
       membershipId: row.membershipId,
       name,
       mine: isMine,
-      avatarDataUrl: '',
+      avatarDataUrl: row.avatarDataUrl || '',
     });
   }
 

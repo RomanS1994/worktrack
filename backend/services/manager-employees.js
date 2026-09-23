@@ -8,6 +8,7 @@ const EMPLOYEE_USER_SELECT = {
   lastName: true,
   name: true,
   phone: true,
+  profile: true,
   deletedAt: true,
 };
 const EMPLOYEE_WEEK_ENTRY_SELECT = {
@@ -28,6 +29,9 @@ function employeeName(user) {
 }
 
 function serializeUser(user) {
+  const profile = user?.profile && typeof user.profile === 'object' && !Array.isArray(user.profile)
+    ? user.profile
+    : {};
   return {
     id: user?.id || '',
     email: user?.email || '',
@@ -35,7 +39,7 @@ function serializeUser(user) {
     lastName: user?.lastName || '',
     name: user?.name || '',
     phone: user?.phone || '',
-    avatarDataUrl: '',
+    avatarDataUrl: typeof profile.avatarDataUrl === 'string' ? profile.avatarDataUrl : '',
   };
 }
 
@@ -104,7 +108,7 @@ export async function getManagerEmployees(client, context, now = new Date()) {
       firstName: employee.user?.firstName || '',
       lastName: employee.user?.lastName || '',
       name: employeeName(employee.user),
-      avatarDataUrl: '',
+      avatarDataUrl: serializeUser(employee.user).avatarDataUrl,
       summary: calculateNetWorkSummary(employee.workEntries || [], employee.hourlyRateCzk || 0, rules),
     })),
   };

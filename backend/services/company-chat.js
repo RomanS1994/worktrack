@@ -23,7 +23,7 @@ function serializeRow(row) {
       membershipId: row.authorMembershipId,
       name: row.authorName || row.authorEmail || 'User',
       role: row.authorRole || '',
-      avatarDataUrl: '',
+      avatarDataUrl: row.authorAvatarDataUrl || '',
     },
     replyTo: row.replyToMessageId ? {
       id: row.replyToMessageId,
@@ -48,6 +48,7 @@ const messageSelect = `
   m.reply_to_message_id AS "replyToMessageId",
   u.name AS "authorName",
   u.email AS "authorEmail",
+  u.profile ->> 'avatarDataUrl' AS "authorAvatarDataUrl",
   cm.role::text AS "authorRole",
   rm.body AS "replyBody",
   rm.deleted_at AS "replyDeletedAt",

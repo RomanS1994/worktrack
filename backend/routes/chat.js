@@ -55,7 +55,19 @@ export async function handleChatRoutes(request, response, { url, pathName }) {
 
   if (request.method === 'POST' && pathName === '/api/chat/reactions') {
     const body = await readJsonBody(request);
-    const payload = await runStoreTransaction({ prisma: client => toggleChatReaction(client, context, body) });
+    const payload = await runStoreTransaction({
+      prisma: async client => {
+        const result = await toggleChatReaction(client, context, body);
+        const user = await client.user.findUnique({
+          where: { id: context.user.id },
+          select: { profile: true },
+        });
+        return {
+          ...result,
+          memberAvatarDataUrl: avatarFromProfile(user?.profile),
+        };
+      },
+    });
     broadcastCompanyChat(context.activeMembership.companyId, 'reaction', {
       messageId: payload.messageId,
       emoji: payload.emoji,
@@ -65,10 +77,11 @@ export async function handleChatRoutes(request, response, { url, pathName }) {
       member: {
         membershipId: context.activeMembership.id,
         name: context.user?.name || context.user?.email || 'User',
-        avatarDataUrl: avatarFromProfile(context.user?.profile),
+        avatarDataUrl: payload.memberAvatarDataUrl || '',
       },
     });
-    sendJson(response, 200, payload);
+    const { memberAvatarDataUrl, ...responsePayload } = payload;
+    sendJson(response, 200, responsePayload);
     return true;
   }
 
