@@ -31,7 +31,7 @@ export function InvoicesPage(){
  const [error,setError]=useState('');
  const [errorCode,setErrorCode]=useState('');
  const [preview,setPreview]=useState(null);
- const {data,isLoading,refetch}=useGetInvoicesQuery();
+ const {data,isLoading}=useGetInvoicesQuery();
  const [getPreview,previewState]=useLazyGetInvoicePreviewQuery();
  const [createInvoice,createState]=useCreateInvoiceMutation();
  const [sendInvoice,sendState]=useSendInvoiceMutation();
@@ -44,10 +44,10 @@ export function InvoicesPage(){
  function showError(err){setError(getApiErrorMessage(err));setErrorCode(getApiErrorDetail(err))}
  function changeMonth(value){setMonth(value);setPreview(null);clearError()}
  async function review(){clearError();if(!month){setError(c.invalidMonth);return}try{const result=await getPreview(month,false).unwrap();setPreview(result.preview||null)}catch(err){showError(err)}}
- async function create(){clearError();try{await createInvoice({month}).unwrap();setPreview(null);await refetch()}catch(err){showError(err)}}
- async function send(id){if(!window.confirm(c.sendConfirm))return;clearError();try{await sendInvoice(id).unwrap();await refetch()}catch(err){showError(err)}}
- async function remove(id){if(!window.confirm(c.deleteConfirm))return;clearError();try{await deleteInvoice(id).unwrap();await refetch()}catch(err){showError(err)}}
- async function cancel(id){if(!window.confirm(c.cancelConfirm))return;clearError();try{await cancelInvoice(id).unwrap();await refetch()}catch(err){showError(err)}}
+ async function create(){clearError();try{await createInvoice({month}).unwrap();setPreview(null)}catch(err){showError(err)}}
+ async function send(id){if(!window.confirm(c.sendConfirm))return;clearError();try{await sendInvoice(id).unwrap()}catch(err){showError(err)}}
+ async function remove(id){if(!window.confirm(c.deleteConfirm))return;clearError();try{await deleteInvoice(id).unwrap()}catch(err){showError(err)}}
+ async function cancel(id){if(!window.confirm(c.cancelConfirm))return;clearError();try{await cancelInvoice(id).unwrap()}catch(err){showError(err)}}
 
  return <section className="invoicePage pageStack">
   <header className="invoiceHeader appTop"><div className="appTitleBlock"><p className="sectionEyebrow">{c.eyebrow}</p><h1>{c.title}</h1><p>{c.subtitle}</p></div></header>

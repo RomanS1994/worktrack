@@ -55,7 +55,7 @@ export function InvoiceDocumentPage({managerMode=false}){
  useEffect(()=>{
   if(!managerMode||!invoice||invoice.status!=='SENT'||viewedRef.current===invoice.id)return;
   viewedRef.current=invoice.id;
-  markViewed(invoice.id).unwrap().then(()=>Promise.all([activeQuery.refetch(),historyQuery.refetch()])).catch(()=>{viewedRef.current=''});
+  markViewed(invoice.id).unwrap().catch(()=>{viewedRef.current=''});
  },[invoice,managerMode,markViewed,activeQuery,historyQuery]);
 
  useEffect(()=>{
@@ -69,7 +69,7 @@ export function InvoiceDocumentPage({managerMode=false}){
  async function loadPdf(){return getInvoicePdf({invoiceId:invoice.id,managerMode}).unwrap()}
  async function downloadPdf(){if(!invoice||pdfAction)return;setActionError('');setPdfAction('download');try{const blob=await loadPdf();downloadInvoicePdf(blob,invoice)}catch(error){setActionError(getApiErrorMessage(error)||c.pdfError)}finally{setPdfAction('')}}
  async function sharePdf(){if(!invoice||pdfAction)return;setActionError('');setPdfAction('share');try{const blob=await loadPdf();await shareInvoicePdf(blob,invoice)}catch(error){if(error?.name!=='AbortError')setActionError(getApiErrorMessage(error)||c.pdfError)}finally{setPdfAction('')}}
- async function send(){if(!invoice?.id||managerMode||invoice.status!=='DRAFT'||!window.confirm(c.sendConfirm))return;setActionError('');try{await sendInvoice(invoice.id).unwrap();await Promise.all([activeQuery.refetch(),historyQuery.refetch()])}catch(error){setActionError(getApiErrorMessage(error))}}
+ async function send(){if(!invoice?.id||managerMode||invoice.status!=='DRAFT'||!window.confirm(c.sendConfirm))return;setActionError('');try{await sendInvoice(invoice.id).unwrap()}catch(error){setActionError(getApiErrorMessage(error))}}
 
  if(activeQuery.isLoading)return <section className="invoiceDocState screenCard">{c.loading}</section>;
  if(activeQuery.error)return <section className="invoiceDocState screenCard statusNote is-error">{getApiErrorMessage(activeQuery.error)}</section>;
