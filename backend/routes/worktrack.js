@@ -30,29 +30,12 @@ async function enrichWorkEntries(client, payload, { hourlyRateCzk = '0.00', rule
     };
   }
 
-  const details = await client.workEntry.findMany({
-    where: { id: { in: entries.map(entry => entry.id) } },
-    select: {
-      id: true,
-      startTime: true,
-      endTime: true,
-      note: true,
-      grossHours: true,
-      breakMinutes: true,
-      hourlyRateCzk: true,
-    },
-  });
-  const byId = new Map(details.map(item => [item.id, item]));
-  const enrichedEntries = entries.map(entry => {
-    const detail = byId.get(entry.id);
-    return {
-      ...entry,
-      ...(detail || {}),
-      grossHours: detail?.grossHours == null ? entry.hours : String(detail.grossHours),
-      breakMinutes: Number(detail?.breakMinutes || 0),
-      hourlyRateCzk: detail?.hourlyRateCzk == null ? null : String(detail.hourlyRateCzk),
-    };
-  });
+  const enrichedEntries = entries.map(entry => ({
+    ...entry,
+    grossHours: entry.grossHours == null ? entry.hours : String(entry.grossHours),
+    breakMinutes: Number(entry.breakMinutes || 0),
+    hourlyRateCzk: entry.hourlyRateCzk == null ? null : String(entry.hourlyRateCzk),
+  }));
 
   return {
     ...payload,
