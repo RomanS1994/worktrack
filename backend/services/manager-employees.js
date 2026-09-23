@@ -10,6 +10,17 @@ const EMPLOYEE_USER_SELECT = {
   phone: true,
   deletedAt: true,
 };
+const EMPLOYEE_WEEK_ENTRY_SELECT = {
+  id: true,
+  employeeMembershipId: true,
+  projectId: true,
+  workDate: true,
+  hours: true,
+  grossHours: true,
+  breakMinutes: true,
+  hourlyRateCzk: true,
+  status: true,
+};
 
 function employeeName(user) {
   const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim();
@@ -48,6 +59,7 @@ export async function getManagerEmployees(client, context, now = new Date()) {
           where: {
             workDate: { gte: range.weekStart, lt: range.nextWeekStart },
           },
+          select: EMPLOYEE_WEEK_ENTRY_SELECT,
           orderBy: { workDate: 'asc' },
         },
         weeklySubmissions: {

@@ -11,6 +11,29 @@ const PAYROLL_USER_SELECT = {
   name: true,
   deletedAt: true,
 };
+const PAYROLL_WORK_ENTRY_SELECT = {
+  id: true,
+  employeeMembershipId: true,
+  projectId: true,
+  workDate: true,
+  hours: true,
+  grossHours: true,
+  breakMinutes: true,
+  hourlyRateCzk: true,
+  customerRateCzk: true,
+  status: true,
+  createdAt: true,
+};
+const PAYROLL_MANAGER_ENTRY_SELECT = {
+  id: true,
+  employeeMembershipId: true,
+  projectId: true,
+  workDate: true,
+  hours: true,
+  hourlyRateCzk: true,
+  customerRateCzk: true,
+  createdAt: true,
+};
 
 function toDateKey(date) {
   return date.toISOString().slice(0, 10);
@@ -125,10 +148,12 @@ export async function getManagerPayroll(client, context, query = {}) {
         user: { select: PAYROLL_USER_SELECT },
         workEntries: {
           where: { workDate: { gte: period.start, lt: period.next }, status: { in: ['SUBMITTED', 'APPROVED'] } },
+          select: PAYROLL_WORK_ENTRY_SELECT,
           orderBy: { workDate: 'asc' },
         },
         employeeManagerTimesheetEntries: {
           where: { workDate: { gte: period.start, lt: period.next } },
+          select: PAYROLL_MANAGER_ENTRY_SELECT,
           orderBy: { workDate: 'asc' },
         },
       },

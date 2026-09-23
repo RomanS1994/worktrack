@@ -10,6 +10,23 @@ const DASHBOARD_USER_SELECT = {
   name: true,
   deletedAt: true,
 };
+const DASHBOARD_SUBMISSION_SELECT = {
+  status: true,
+  submittedAt: true,
+  reviewedAt: true,
+  rejectionReason: true,
+};
+const DASHBOARD_WORK_ENTRY_SELECT = {
+  id: true,
+  employeeMembershipId: true,
+  projectId: true,
+  workDate: true,
+  hours: true,
+  grossHours: true,
+  breakMinutes: true,
+  hourlyRateCzk: true,
+  status: true,
+};
 
 function employeeName(user) {
   const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim();
@@ -56,6 +73,7 @@ export async function getManagerDashboard(client, context, now = new Date()) {
         user: { select: DASHBOARD_USER_SELECT },
         weeklySubmissions: {
           where: { weekStart: range.weekStart },
+          select: DASHBOARD_SUBMISSION_SELECT,
           orderBy: { updatedAt: 'desc' },
           take: 1,
         },
@@ -95,6 +113,7 @@ export async function getManagerDashboard(client, context, now = new Date()) {
         workDate: { gte: monthStart, lt: monthEndExclusive },
         status: { in: ['DRAFT', 'SUBMITTED', 'APPROVED'] },
       },
+      select: DASHBOARD_WORK_ENTRY_SELECT,
       orderBy: { workDate: 'asc' },
     });
     ownSummary = calculateNetWorkSummary(ownEntries, membership.hourlyRateCzk ?? '0', payroll.workRules || {});
