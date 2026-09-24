@@ -1,5 +1,6 @@
 import { calculateNetWorkSummary } from './work-time-calculation.js';
 import { getWeekRange, serializeWeek } from './week-utils.js';
+import { avatarUrl } from './avatars.js';
 
 const EMPLOYEE_USER_SELECT = {
   id: true,
@@ -39,7 +40,7 @@ function serializeUser(user) {
     lastName: user?.lastName || '',
     name: user?.name || '',
     phone: user?.phone || '',
-    avatarDataUrl: typeof profile.avatarDataUrl === 'string' ? profile.avatarDataUrl : '',
+    avatarDataUrl: avatarUrl(user?.id, profile),
   };
 }
 

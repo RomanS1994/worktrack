@@ -1,3 +1,5 @@
+import { avatarUrl } from './avatars.js';
+
 const ALLOWED_REACTIONS = new Set([
   '👍', '👎', '❤️', '🔥', '👏', '😂', '🤣', '😊', '😍', '🥰',
   '😮', '🤯', '😢', '😭', '😡', '🤔', '🙄', '🙏', '💪', '👌',
@@ -26,6 +28,7 @@ export async function getChatReactions(client, context, messageIds = []) {
     SELECT r.message_id AS "messageId",
            r.membership_id AS "membershipId",
            r.emoji,
+           u.id AS "userId",
            u.name AS "name",
            u.email AS "email",
            u.profile ->> 'avatarDataUrl' AS "avatarDataUrl"
@@ -57,7 +60,7 @@ export async function getChatReactions(client, context, messageIds = []) {
       membershipId: row.membershipId,
       name,
       mine: isMine,
-      avatarDataUrl: row.avatarDataUrl || '',
+      avatarDataUrl: avatarUrl(row.userId, row.avatarDataUrl),
     });
   }
 

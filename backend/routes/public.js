@@ -1,5 +1,7 @@
 import { getDatabaseHealth } from '../db/store.js';
 import { sendJson } from '../lib/http.js';
+import { prisma } from '../db/prisma.js';
+import { sendUserAvatar } from '../services/avatars.js';
 import { nowIso } from '../validation/common.js';
 
 export function getDeploymentMetadata() {
@@ -12,6 +14,17 @@ export function getDeploymentMetadata() {
 }
 
 export async function handlePublicRoutes(request, response, { pathName }) {
+  const avatarMatch = pathName.match(/^\/api\/avatars\/([^/]+)\/([a-f0-9]{24})$/);
+  if (request.method === 'GET' && avatarMatch) {
+    await sendUserAvatar(
+      prisma,
+      response,
+      decodeURIComponent(avatarMatch[1]),
+      avatarMatch[2],
+    );
+    return true;
+  }
+
   if (request.method === 'GET' && pathName === '/api/health') {
     const health = await getDatabaseHealth();
 

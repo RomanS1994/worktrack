@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { getChatReactions } from './chat-reactions.js';
+import { avatarUrl } from './avatars.js';
 
 function getMembership(context) {
   const membership = context?.activeMembership;
@@ -23,7 +24,7 @@ function serializeRow(row) {
       membershipId: row.authorMembershipId,
       name: row.authorName || row.authorEmail || 'User',
       role: row.authorRole || '',
-      avatarDataUrl: row.authorAvatarDataUrl || '',
+      avatarDataUrl: avatarUrl(row.authorUserId, row.authorAvatarDataUrl),
     },
     replyTo: row.replyToMessageId ? {
       id: row.replyToMessageId,
@@ -47,6 +48,7 @@ const messageSelect = `
   m.deleted_at AS "deletedAt",
   m.reply_to_message_id AS "replyToMessageId",
   u.name AS "authorName",
+  u.id AS "authorUserId",
   u.email AS "authorEmail",
   u.profile ->> 'avatarDataUrl' AS "authorAvatarDataUrl",
   cm.role::text AS "authorRole",

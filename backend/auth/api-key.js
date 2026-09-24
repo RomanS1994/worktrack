@@ -5,7 +5,7 @@ export function requireApiKey(request, response) {
   const apiKey = getApiKey();
   const pathName = request.url?.split('?')[0];
 
-  if (pathName === '/api/health') return true;
+  if (pathName === '/api/health' || pathName?.startsWith('/api/avatars/')) return true;
 
   if (!apiKey) return true;
 

@@ -13,11 +13,7 @@ import {
 import { getChatReactions, toggleChatReaction } from '../services/chat-reactions.js';
 import { broadcastCompanyChat, getCompanyChatPresence, subscribeToCompanyChat } from '../services/chat-live.js';
 import { notifyCompanyAboutChatMessage } from '../services/chat-push.js';
-
-function avatarFromProfile(profile) {
-  if (!profile || typeof profile !== 'object' || Array.isArray(profile)) return '';
-  return typeof profile.avatarDataUrl === 'string' ? profile.avatarDataUrl : '';
-}
+import { avatarUrl } from '../services/avatars.js';
 
 export async function handleChatRoutes(request, response, { url, pathName }) {
   if (!pathName.startsWith('/api/chat')) return false;
@@ -64,7 +60,7 @@ export async function handleChatRoutes(request, response, { url, pathName }) {
         });
         return {
           ...result,
-          memberAvatarDataUrl: avatarFromProfile(user?.profile),
+          memberAvatarDataUrl: avatarUrl(context.user.id, user?.profile),
         };
       },
     });
