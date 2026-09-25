@@ -16,6 +16,7 @@
     "create:employee": "node backend/tools/create-employee.js",
     "import:timesheet": "node backend/tools/import-month-timesheet.js",
     "import:manager-timesheet": "node backend/tools/import-manager-timesheet.js",
+    "avatars:migrate": "npm --prefix backend run avatars:migrate",
     "prepare": "node tools/install-git-hooks.js",
     "postinstall": "node backend/tools/prisma-postinstall.js",
     "secrets:check": "node tools/check-secrets.js",
