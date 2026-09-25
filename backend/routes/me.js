@@ -4,6 +4,7 @@ import { buildSanitizedUser, createAuditLog } from '../db/prisma-helpers.js';
 import { prisma } from '../db/prisma.js';
 import { runStoreTransaction } from '../db/store.js';
 import { readJsonBody, sendJson } from '../lib/http.js';
+import { deleteUserAvatar, profileWithoutAvatarData, storeUserAvatar } from '../services/avatars.js';
 import { normalizePhoneNumber, normalizeText, nowIso } from '../validation/common.js';
 
 function normalizeProfile(value) {
@@ -99,6 +100,7 @@ async function handleUpdateMyProfile(request, response) {
     ...normalizeProfile(currentUser.profile),
     ...normalizeProfile(body.profile),
   };
+  const hasAvatarInput = Object.prototype.hasOwnProperty.call(normalizeProfile(body.profile), 'avatarDataUrl');
 
   const user = await runStoreTransaction({
     prisma: async tx => {
@@ -120,6 +122,16 @@ async function handleUpdateMyProfile(request, response) {
         }
       }
 
+      if (hasAvatarInput) {
+        const avatarValue = normalizeProfile(body.profile).avatarDataUrl || '';
+        if (avatarValue) {
+          await storeUserAvatar(tx, context.user.id, avatarValue);
+        } else {
+          await deleteUserAvatar(tx, context.user.id);
+        }
+      }
+
+      const cleanedProfile = profileWithoutAvatarData(nextProfile);
       const updatedUser = await tx.user.update({
         where: {
           id: context.user.id,
@@ -129,7 +141,7 @@ async function handleUpdateMyProfile(request, response) {
           firstName: requestedFirstName || nameParts.firstName,
           lastName: requestedLastName || nameParts.lastName,
           ...(hasPhoneInput ? { phone: nextPhone || null } : {}),
-          profile: nextProfile,
+          profile: cleanedProfile,
           updatedAt: new Date(nowIso()),
         },
       });

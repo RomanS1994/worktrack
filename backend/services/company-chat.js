@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { getChatReactions } from './chat-reactions.js';
-import { avatarUrl } from './avatars.js';
+import { avatarUrl, avatarUrlFromRecord } from './avatars.js';
 
 function getMembership(context) {
   const membership = context?.activeMembership;
@@ -24,7 +24,8 @@ function serializeRow(row) {
       membershipId: row.authorMembershipId,
       name: row.authorName || row.authorEmail || 'User',
       role: row.authorRole || '',
-      avatarDataUrl: avatarUrl(row.authorUserId, row.authorAvatarDataUrl),
+      avatarDataUrl: avatarUrlFromRecord(row.authorUserId, { hash: row.authorAvatarHash }) ||
+        avatarUrl(row.authorUserId, row.authorAvatarDataUrl),
     },
     replyTo: row.replyToMessageId ? {
       id: row.replyToMessageId,
@@ -51,6 +52,7 @@ const messageSelect = `
   u.id AS "authorUserId",
   u.email AS "authorEmail",
   u.profile ->> 'avatarDataUrl' AS "authorAvatarDataUrl",
+  ua.hash AS "authorAvatarHash",
   cm.role::text AS "authorRole",
   rm.body AS "replyBody",
   rm.deleted_at AS "replyDeletedAt",
@@ -62,6 +64,7 @@ const messageJoins = `
   FROM chat_messages m
   JOIN company_memberships cm ON cm.id = m.author_membership_id
   JOIN users u ON u.id = cm."userId"
+  LEFT JOIN user_avatars ua ON ua."userId" = u.id
   LEFT JOIN chat_messages rm ON rm.id = m.reply_to_message_id
   LEFT JOIN company_memberships rcm ON rcm.id = rm.author_membership_id
   LEFT JOIN users ru ON ru.id = rcm."userId"

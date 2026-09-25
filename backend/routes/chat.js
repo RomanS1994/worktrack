@@ -13,7 +13,7 @@ import {
 import { getChatReactions, toggleChatReaction } from '../services/chat-reactions.js';
 import { broadcastCompanyChat, getCompanyChatPresence, subscribeToCompanyChat } from '../services/chat-live.js';
 import { notifyCompanyAboutChatMessage } from '../services/chat-push.js';
-import { avatarUrl } from '../services/avatars.js';
+import { avatarUrl, avatarUrlFromRecord } from '../services/avatars.js';
 
 export async function handleChatRoutes(request, response, { url, pathName }) {
   if (!pathName.startsWith('/api/chat')) return false;
@@ -56,11 +56,12 @@ export async function handleChatRoutes(request, response, { url, pathName }) {
         const result = await toggleChatReaction(client, context, body);
         const user = await client.user.findUnique({
           where: { id: context.user.id },
-          select: { profile: true },
+          select: { profile: true, avatar: { select: { hash: true } } },
         });
         return {
           ...result,
-          memberAvatarDataUrl: avatarUrl(context.user.id, user?.profile),
+          memberAvatarDataUrl: avatarUrlFromRecord(context.user.id, user?.avatar) ||
+            avatarUrl(context.user.id, user?.profile),
         };
       },
     });

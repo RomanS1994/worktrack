@@ -1,6 +1,6 @@
 import { calculateNetWorkSummary } from './work-time-calculation.js';
 import { getWeekRange, serializeWeek } from './week-utils.js';
-import { avatarUrl } from './avatars.js';
+import { avatarUrl, avatarUrlFromRecord } from './avatars.js';
 
 const EMPLOYEE_USER_SELECT = {
   id: true,
@@ -10,6 +10,7 @@ const EMPLOYEE_USER_SELECT = {
   name: true,
   phone: true,
   profile: true,
+  avatar: { select: { hash: true } },
   deletedAt: true,
 };
 const EMPLOYEE_WEEK_ENTRY_SELECT = {
@@ -40,7 +41,7 @@ function serializeUser(user) {
     lastName: user?.lastName || '',
     name: user?.name || '',
     phone: user?.phone || '',
-    avatarDataUrl: avatarUrl(user?.id, profile),
+    avatarDataUrl: avatarUrlFromRecord(user?.id, user?.avatar) || avatarUrl(user?.id, profile),
   };
 }
 

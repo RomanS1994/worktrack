@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
+import { getUserAvatarUrl, profileWithoutAvatarData } from '../services/avatars.js';
 import { normalizeText, nowIso } from '../validation/common.js';
 
 function toIsoString(value) {
@@ -96,6 +97,11 @@ export async function buildSanitizedUser(client, user, options = {}) {
     null;
   const activeCompany = options.activeCompany || activeMembership?.company || null;
   const serializedActiveMembership = serializeMembership(activeMembership);
+  const cleanProfile = profileWithoutAvatarData(user.profile);
+  const avatarDataUrl = await getUserAvatarUrl(client, user.id, user.profile);
+  const profile = avatarDataUrl
+    ? { ...cleanProfile, avatarDataUrl }
+    : cleanProfile;
 
   return {
     id: user.id,
@@ -114,7 +120,7 @@ export async function buildSanitizedUser(client, user, options = {}) {
       (user.hourlyRateCzk == null ? '' : String(user.hourlyRateCzk)),
     managerId: user.managerId || '',
     mustChangePassword: Boolean(user.mustChangePassword),
-    profile: normalizeProfile(user.profile),
+    profile,
     deletedAt: toIsoString(user.deletedAt),
     createdAt: toIsoString(user.createdAt),
     updatedAt: toIsoString(user.updatedAt),

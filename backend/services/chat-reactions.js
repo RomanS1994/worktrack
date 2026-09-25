@@ -1,4 +1,4 @@
-import { avatarUrl } from './avatars.js';
+import { avatarUrl, avatarUrlFromRecord } from './avatars.js';
 
 const ALLOWED_REACTIONS = new Set([
   '👍', '👎', '❤️', '🔥', '👏', '😂', '🤣', '😊', '😍', '🥰',
@@ -31,11 +31,13 @@ export async function getChatReactions(client, context, messageIds = []) {
            u.id AS "userId",
            u.name AS "name",
            u.email AS "email",
-           u.profile ->> 'avatarDataUrl' AS "avatarDataUrl"
+           u.profile ->> 'avatarDataUrl' AS "avatarDataUrl",
+           ua.hash AS "avatarHash"
       FROM chat_message_reactions r
       JOIN chat_messages m ON m.id = r.message_id
       JOIN company_memberships cm ON cm.id = r.membership_id
       JOIN users u ON u.id = cm."userId"
+      LEFT JOIN user_avatars ua ON ua."userId" = u.id
      WHERE r.message_id = ANY(${ids}::text[])
        AND m.company_id = ${membership.companyId}
        AND m.deleted_at IS NULL
@@ -60,7 +62,8 @@ export async function getChatReactions(client, context, messageIds = []) {
       membershipId: row.membershipId,
       name,
       mine: isMine,
-      avatarDataUrl: avatarUrl(row.userId, row.avatarDataUrl),
+      avatarDataUrl: avatarUrlFromRecord(row.userId, { hash: row.avatarHash }) ||
+        avatarUrl(row.userId, row.avatarDataUrl),
     });
   }
 
