@@ -5,24 +5,31 @@ import { AppProviders as SharedAppProviders } from '@shared/app/providers/AppPro
 import { router } from '../../router.jsx';
 import { store } from '../../store.js';
 
-const LIVE_SYNC_INTERVAL_MS = 10000;
-const LIVE_SYNC_TAGS = [
+const BACKGROUND_SYNC_INTERVAL_MS = 60000;
+const BACKGROUND_SYNC_TAGS = [
   { type: 'Notifications', id: 'LIST' },
+];
+const RESUME_SYNC_TAGS = [
+  ...BACKGROUND_SYNC_TAGS,
   { type: 'WorkEntries', id: 'WEEK' },
 ];
 
-function refreshLiveData() {
-  store.dispatch(baseApi.util.invalidateTags(LIVE_SYNC_TAGS));
+function refreshTags(tags) {
+  store.dispatch(baseApi.util.invalidateTags(tags));
 }
 
 export function AppProviders() {
   useEffect(() => {
     function refreshWhenVisible() {
-      if (document.visibilityState === 'visible') refreshLiveData();
+      if (document.visibilityState === 'visible') refreshTags(RESUME_SYNC_TAGS);
     }
 
-    refreshLiveData();
-    const intervalId = window.setInterval(refreshWhenVisible, LIVE_SYNC_INTERVAL_MS);
+    function refreshBackgroundWhenVisible() {
+      if (document.visibilityState === 'visible') refreshTags(BACKGROUND_SYNC_TAGS);
+    }
+
+    refreshTags(RESUME_SYNC_TAGS);
+    const intervalId = window.setInterval(refreshBackgroundWhenVisible, BACKGROUND_SYNC_INTERVAL_MS);
     window.addEventListener('focus', refreshWhenVisible);
     document.addEventListener('visibilitychange', refreshWhenVisible);
 
