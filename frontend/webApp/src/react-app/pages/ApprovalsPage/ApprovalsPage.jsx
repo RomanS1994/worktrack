@@ -394,7 +394,6 @@ export function ApprovalsPage() {
       await updateManagerEntry(payload).unwrap();
       setEditorDraft(null);
       setActionMessage(copy.saved);
-      await detailQuery.refetch();
     } catch (mutationError) {
       setActionError(getApiErrorMessage(mutationError));
     }
@@ -409,7 +408,6 @@ export function ApprovalsPage() {
       const result = await deleteManagerEntry(entryId).unwrap();
       setActionMessage(copy.deleted);
       if (result?.submissionDeleted && detail?.id) hideReviewedSubmission(detail.id);
-      else await detailQuery.refetch();
     } catch (mutationError) {
       setActionError(getApiErrorMessage(mutationError));
     }
