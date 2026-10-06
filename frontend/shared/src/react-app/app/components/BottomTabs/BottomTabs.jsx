@@ -7,7 +7,7 @@ import { useCabinetMode } from '../../../features/auth/cabinetMode.js';
 import './BottomTabs.css';
 
 const COPY={
- uk:{home:'Головна',time:'Години',payroll:'Фінанси',profile:'Профіль',team:'Команда',approvals:'Погодження',more:'Налаштування'},
+ uk:{home:'Головна',time:'Години',payroll:'Фінанси',profile:'Профіль',team:'Команда',approvals:'Погодження',more:'Ще'},
  cs:{home:'Domů',time:'Hodiny',payroll:'Finance',profile:'Profil',team:'Tým',approvals:'Schválení',more:'Nastavení'},
  en:{home:'Home',time:'Hours',payroll:'Finances',profile:'Profile',team:'Team',approvals:'Approvals',more:'Settings'}
 };
