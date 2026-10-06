@@ -37,7 +37,7 @@ const COPY = {
   },
 };
 
-const PIPESTOCK_PHOTO = 'https://pipestock.netlify.app/onboarding/copper-detail.webp';
+const PIPESTOCK_PHOTO = 'https://pipestock.netlify.app/onboarding/copper-installation-v2.webp';
 
 function PipeIcon() {
   return <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10 45V34c0-13 10-23 23-23h8"/><path d="M10 34h12c0-6 5-11 11-11h8"/><rect x="6" y="43" width="22" height="10" rx="2"/><rect x="40" y="6" width="10" height="23" rx="2"/></svg>;
