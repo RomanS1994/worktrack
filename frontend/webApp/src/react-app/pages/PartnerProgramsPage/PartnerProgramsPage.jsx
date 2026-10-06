@@ -40,13 +40,46 @@ const COPY = {
 const PIPESTOCK_PHOTO = 'https://pipestock.netlify.app/onboarding/copper-installation-v2.webp';
 
 function PipeIcon() {
-  return <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10 45V34c0-13 10-23 23-23h8"/><path d="M10 34h12c0-6 5-11 11-11h8"/><rect x="6" y="43" width="22" height="10" rx="2"/><rect x="40" y="6" width="10" height="23" rx="2"/></svg>;
+  return (
+    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M18 12v16c0 10 8 18 18 18h16" />
+      <path d="M12 12h12M12 20h12M44 40v12M52 40v12" />
+      <path d="M18 28c0 10 8 18 18 18" opacity=".7" />
+    </svg>
+  );
 }
 
 function FeatureIcon({ type }) {
-  if (type === 'box') return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden="true"><path d="m12 2 9 5-9 5-9-5 9-5ZM3 7v10l9 5 9-5V7M12 12v10"/></svg>;
-  if (type === 'order') return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 2h9l4 4v16H6zM15 2v5h4M9 12h7M9 16h7"/></svg>;
-  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" aria-hidden="true"><path d="M5 20v-7M12 20V8M19 20V3"/></svg>;
+  if (type === 'box') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z" />
+        <path d="M4 7.5V16l8 5 8-5V7.5M12 12v9" />
+      </svg>
+    );
+  }
+  if (type === 'order') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect x="5" y="4" width="14" height="17" rx="2" />
+        <path d="M9 4.5V3h6v1.5M9 9h6M9 13h6M9 17h4" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 19V9M12 19V5M19 19v-7" />
+      <path d="M3 21h18" />
+    </svg>
+  );
+}
+
+function ArrowRightIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 12h14M14 7l5 5-5 5" />
+    </svg>
+  );
 }
 
 export function PartnerProgramsPage() {
@@ -95,7 +128,7 @@ export function PartnerProgramsPage() {
 
       <Link className="partnerProgramsOpen" to="/pipestock?from=worktrack" reloadDocument>
         {c.open}
-        <span aria-hidden="true">→</span>
+        <span className="partnerProgramsOpenIcon"><ArrowRightIcon /></span>
       </Link>
     </section>
   </section>;
