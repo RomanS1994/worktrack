@@ -31,8 +31,11 @@
 .partnerProgramsFeatures>div:first-child{padding-left:0}
 .partnerProgramsFeatures>div:last-child{padding-right:0}
 .partnerProgramsFeatures>div+div{border-left:1px solid #d9e8f9}
-.partnerProgramsFeatureIcon{display:grid;flex:none;place-items:center;width:27px;height:27px;border:1px solid rgba(22,118,210,.10);border-radius:9px;background:#edf6ff;color:var(--pipe-blue)}
-.partnerProgramsFeatureIcon svg{width:16px;height:16px}
+.partnerProgramsFeatureIcon{display:grid;flex:none;place-items:center;width:32px;height:32px;border:1px solid transparent;border-radius:10px}
+.partnerProgramsFeatures>div:nth-child(1) .partnerProgramsFeatureIcon{background:#e8f3ff;border-color:#d6e9ff;color:#1676d2}
+.partnerProgramsFeatures>div:nth-child(2) .partnerProgramsFeatureIcon{background:#eaf8ee;border-color:#d7f0df;color:#16a34a}
+.partnerProgramsFeatures>div:nth-child(3) .partnerProgramsFeatureIcon{background:#fff5df;border-color:#fdebc2;color:#f59e0b}
+.partnerProgramsFeatureIcon svg{width:18px;height:18px}
 
 .partnerProgramsOpen{display:flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 14px;border-radius:13px;background:linear-gradient(110deg,#2289e5,#116cc8);color:#fff;font-size:13.5px;font-weight:800;text-decoration:none;box-shadow:0 7px 16px rgba(22,118,210,.16);transition:filter .15s ease}
 .partnerProgramsOpen:hover{filter:brightness(1.06)}
@@ -52,8 +55,8 @@
   .partnerProgramsIntro h3{font-size:20px}
   .partnerProgramsIntro p{font-size:11px;line-height:1.3}
   .partnerProgramsFeatures>div{gap:3px;padding:0 3px;font-size:9px}
-  .partnerProgramsFeatureIcon{width:25px;height:25px}
-  .partnerProgramsFeatureIcon svg{width:15px;height:15px}
+  .partnerProgramsFeatureIcon{width:30px;height:30px}
+  .partnerProgramsFeatureIcon svg{width:17px;height:17px}
   .partnerProgramsOpen{min-height:40px}
 }
 
@@ -63,5 +66,5 @@
   .partnerProgramsIntro{width:66%}
   .partnerProgramsIntro h3{font-size:18px}
   .partnerProgramsFeatures>div{padding:0 2px;font-size:8.5px}
-  .partnerProgramsFeatureIcon{width:24px;height:24px}
+  .partnerProgramsFeatureIcon{width:28px;height:28px}
 }
