@@ -43,6 +43,7 @@
   .bottomTab-icon,.bottomTab-primary .bottomTab-icon { width:23px; height:23px; margin:0; }
   .bottomTab-icon svg,.bottomTab-primary .bottomTab-icon svg { width:22px; height:22px; }
   .bottomTab-label,.bottomTab-primary .bottomTab-label { font-size:11.5px; }
+  .bottomTab:last-child .bottomTab-label { font-size:10px; letter-spacing:-.035em; }
 }
 
 @media (max-width:360px) {
