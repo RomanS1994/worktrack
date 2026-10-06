@@ -41,10 +41,9 @@ const PIPESTOCK_PHOTO = 'https://pipestock.netlify.app/onboarding/copper-install
 
 function PipeIcon() {
   return (
-    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M18 12v16c0 10 8 18 18 18h16" />
-      <path d="M12 12h12M12 20h12M44 40v12M52 40v12" />
-      <path d="M18 28c0 10 8 18 18 18" opacity=".7" />
+    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M18 13v17c0 10 8 18 18 18h15" strokeWidth="7" />
+      <path d="M10 13h16M51 40v16" strokeWidth="5" />
     </svg>
   );
 }
