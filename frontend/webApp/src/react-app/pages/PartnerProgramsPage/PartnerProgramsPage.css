@@ -1,9 +1,9 @@
-.partnerProgramsPage{gap:10px;padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
+.partnerProgramsPage{gap:17px;padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
 .partnerProgramsHeader{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:8px;padding:0 58px 0 2px!important;border:0!important;background:transparent!important;box-shadow:none!important}
 .partnerProgramsHeader .appBackButton{width:34px;min-height:40px;padding:0;justify-content:center}
 .partnerProgramsHeader .appBackButton-label{display:none}
 .partnerProgramsHeader .appBackButton-icon{width:26px;height:26px}
-.partnerProgramsHeader h1{margin:0;max-width:none;white-space:nowrap;font-size:clamp(18px,4.8vw,21px);font-weight:600;line-height:1.08;letter-spacing:-.02em}
+.partnerProgramsHeader h1{margin:0;max-width:none;white-space:nowrap;font-size:clamp(16px,4.3vw,19px);font-weight:600;line-height:1.1;letter-spacing:-.015em}
 .partnerProgramsHeader p{margin:4px 0 0;color:var(--muted);font-size:12px;font-weight:400;line-height:1.3}
 
 .partnerProgramsHero{--pipe-blue:#1676d2;--pipe-ink:#142b49;display:grid;gap:8px;overflow:hidden;padding:0 12px 11px;border:1px solid #cfe4fc;border-radius:20px;background:linear-gradient(145deg,#f3f9ff,#fff 70%);box-shadow:0 9px 20px rgba(30,111,196,.07)}
@@ -44,7 +44,7 @@
 .partnerProgramsOpenIcon svg{width:22px;height:22px}
 
 @media(max-width:520px){
-  .partnerProgramsPage{gap:9px}
+  .partnerProgramsPage{gap:16px}
   .partnerProgramsHero{padding:0 11px 10px;gap:7px;border-radius:19px}
   .partnerProgramsVisual{min-height:150px;padding:11px 0 7px}
   .partnerProgramsVisual:before{inset:0 -12px}
@@ -62,7 +62,7 @@
 
 @media(max-width:350px){
   .partnerProgramsHeader{padding-right:50px!important}
-  .partnerProgramsHeader h1{font-size:18px}
+  .partnerProgramsHeader h1{font-size:16px}
   .partnerProgramsIdentity{gap:7px}
   .partnerProgramsIntro{width:66%}
   .partnerProgramsIntro h3{font-size:18px}
