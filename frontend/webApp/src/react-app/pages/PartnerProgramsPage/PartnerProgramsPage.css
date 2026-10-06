@@ -3,7 +3,7 @@
 .partnerProgramsHeader .appBackButton{width:34px;min-height:40px;padding:0;justify-content:center}
 .partnerProgramsHeader .appBackButton-label{display:none}
 .partnerProgramsHeader .appBackButton-icon{width:26px;height:26px}
-.partnerProgramsHeader h1{margin:0;max-width:250px;white-space:normal;font-size:clamp(21px,5.6vw,25px);font-weight:650;line-height:1.02;letter-spacing:-.025em;text-wrap:balance}
+.partnerProgramsHeader h1{margin:0;max-width:none;white-space:nowrap;font-size:clamp(18px,4.8vw,21px);font-weight:600;line-height:1.08;letter-spacing:-.02em}
 .partnerProgramsHeader p{margin:4px 0 0;color:var(--muted);font-size:12px;font-weight:400;line-height:1.3}
 
 .partnerProgramsHero{--pipe-blue:#1676d2;--pipe-ink:#142b49;display:grid;gap:8px;overflow:hidden;padding:0 12px 11px;border:1px solid #cfe4fc;border-radius:20px;background:linear-gradient(145deg,#f3f9ff,#fff 70%);box-shadow:0 9px 20px rgba(30,111,196,.07)}
@@ -62,7 +62,7 @@
 
 @media(max-width:350px){
   .partnerProgramsHeader{padding-right:50px!important}
-  .partnerProgramsHeader h1{font-size:21px}
+  .partnerProgramsHeader h1{font-size:18px}
   .partnerProgramsIdentity{gap:7px}
   .partnerProgramsIntro{width:66%}
   .partnerProgramsIntro h3{font-size:18px}
