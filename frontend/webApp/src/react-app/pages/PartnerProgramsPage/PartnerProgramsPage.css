@@ -31,13 +31,14 @@
 .partnerProgramsFeatures>div:first-child{padding-left:0}
 .partnerProgramsFeatures>div:last-child{padding-right:0}
 .partnerProgramsFeatures>div+div{border-left:1px solid #d9e8f9}
-.partnerProgramsFeatureIcon{display:grid;flex:none;place-items:center;width:27px;height:27px;border-radius:9px;background:#e5f2ff;color:var(--pipe-blue)}
+.partnerProgramsFeatureIcon{display:grid;flex:none;place-items:center;width:27px;height:27px;border:1px solid rgba(22,118,210,.10);border-radius:9px;background:#edf6ff;color:var(--pipe-blue)}
 .partnerProgramsFeatureIcon svg{width:16px;height:16px}
 
 .partnerProgramsOpen{display:flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 14px;border-radius:13px;background:linear-gradient(110deg,#2289e5,#116cc8);color:#fff;font-size:13.5px;font-weight:800;text-decoration:none;box-shadow:0 7px 16px rgba(22,118,210,.16);transition:filter .15s ease}
 .partnerProgramsOpen:hover{filter:brightness(1.06)}
 .partnerProgramsOpen:focus-visible{outline:3px solid #7dbdff;outline-offset:3px}
-.partnerProgramsOpen span{margin-left:auto;font-size:20px;font-weight:500}
+.partnerProgramsOpenIcon{display:grid;place-items:center;margin-left:auto;width:22px;height:22px}
+.partnerProgramsOpenIcon svg{width:22px;height:22px}
 
 @media(max-width:520px){
   .partnerProgramsPage{gap:9px}
