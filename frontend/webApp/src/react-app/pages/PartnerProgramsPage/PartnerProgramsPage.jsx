@@ -5,9 +5,36 @@ import { useI18n } from '@shared/app/i18n/useI18n.js';
 import './PartnerProgramsPage.css';
 
 const COPY = {
-  uk: { title: 'Партнерські програми', copy: 'Корисні інструменти для вашої роботи', materials: 'Матеріали', partner: 'Партнер', heading: 'Облік сантехнічних матеріалів', pipeCopy: 'Ведіть облік труб, фітингів і залишків, створюйте замовлення та контролюйте матеріали на об’єктах.', features: ['Матеріали та залишки', 'Замовлення на об’єкти', 'Звіти та історія'], open: 'Відкрити PipeStock', hint: 'Відкривається всередині WorkTrack', photoAlt: 'Мідні труби та сантехнічні фітинги' },
-  cs: { title: 'Partnerské programy', copy: 'Užitečné nástroje pro vaši práci', materials: 'Materiál', partner: 'Partner', heading: 'Evidence instalatérského materiálu', pipeCopy: 'Evidujte trubky, tvarovky a zásoby, vytvářejte objednávky a sledujte materiál na stavbách.', features: ['Materiál a zásoby', 'Objednávky na stavby', 'Přehledy a historie'], open: 'Otevřít PipeStock', hint: 'Otevře se uvnitř WorkTrack', photoAlt: 'Měděné trubky a instalatérské tvarovky' },
-  en: { title: 'Partner programs', copy: 'Useful tools for your work', materials: 'Materials', partner: 'Partner', heading: 'Plumbing materials tracking', pipeCopy: 'Track pipes, fittings and stock, create orders and manage materials across job sites.', features: ['Materials and stock', 'Job-site orders', 'Reports and history'], open: 'Open PipeStock', hint: 'Opens inside WorkTrack', photoAlt: 'Copper pipes and plumbing fittings' },
+  uk: {
+    title: 'Партнерські програми',
+    copy: 'Корисні інструменти для вашої роботи',
+    partner: 'Партнер',
+    heading: 'Облік матеріалів',
+    pipeCopy: 'Матеріали, замовлення та історія робіт — прямо на об’єкті.',
+    features: ['Матеріали', 'Замовлення', 'Історія'],
+    open: 'Відкрити PipeStock',
+    photoAlt: 'Мідні труби та сантехнічні фітинги',
+  },
+  cs: {
+    title: 'Partnerské programy',
+    copy: 'Užitečné nástroje pro vaši práci',
+    partner: 'Partner',
+    heading: 'Evidence materiálu',
+    pipeCopy: 'Materiál, objednávky a historie práce — přímo na stavbě.',
+    features: ['Materiál', 'Objednávky', 'Historie'],
+    open: 'Otevřít PipeStock',
+    photoAlt: 'Měděné trubky a instalatérské tvarovky',
+  },
+  en: {
+    title: 'Partner programs',
+    copy: 'Useful tools for your work',
+    partner: 'Partner',
+    heading: 'Materials tracking',
+    pipeCopy: 'Materials, orders and work history — right on the job site.',
+    features: ['Materials', 'Orders', 'History'],
+    open: 'Open PipeStock',
+    photoAlt: 'Copper pipes and plumbing fittings',
+  },
 };
 
 const PIPESTOCK_PHOTO = 'https://pipestock.netlify.app/onboarding/copper-detail.webp';
@@ -25,20 +52,51 @@ function FeatureIcon({ type }) {
 export function PartnerProgramsPage() {
   const { language } = useI18n();
   const c = COPY[language] || COPY.uk;
+
   return <section className="partnerProgramsPage pageStack">
-    <header className="partnerProgramsHeader appTop"><BackButton to="/dashboard"/><div className="appTitleBlock"><h1>{c.title}</h1><p>{c.copy}</p></div></header>
+    <header className="partnerProgramsHeader appTop">
+      <BackButton to="/dashboard"/>
+      <div className="appTitleBlock">
+        <h1>{c.title}</h1>
+        <p>{c.copy}</p>
+      </div>
+    </header>
+
     <section className="partnerProgramsHero screenCard" aria-labelledby="pipestock-title">
       <div className="partnerProgramsVisual">
-        <div className="partnerProgramsPhoto"><img src={PIPESTOCK_PHOTO} alt={c.photoAlt} loading="lazy" decoding="async" /></div>
+        <div className="partnerProgramsPhoto">
+          <img src={PIPESTOCK_PHOTO} alt={c.photoAlt} loading="lazy" decoding="async" />
+        </div>
+
         <div className="partnerProgramsIdentity">
           <span className="partnerProgramsHeroIcon"><PipeIcon /></span>
-          <div className="partnerProgramsName"><h2 id="pipestock-title">Pipe<span>Stock</span></h2><small className="partnerProgramsBadge">{c.partner}</small></div>
+          <div className="partnerProgramsName">
+            <h2 id="pipestock-title">Pipe<span>Stock</span></h2>
+            <small className="partnerProgramsBadge">{c.partner}</small>
+          </div>
         </div>
-        <div className="partnerProgramsIntro"><span className="partnerProgramsEyebrow">{c.materials}</span><h3>{c.heading}</h3><p>{c.pipeCopy}</p></div>
+
+        <div className="partnerProgramsIntro">
+          <h3>{c.heading}</h3>
+          <p>{c.pipeCopy}</p>
+        </div>
       </div>
-      <div className="partnerProgramsFeatures">{c.features.map((feature, index) => <div key={feature}><span className="partnerProgramsFeatureIcon"><FeatureIcon type={['box', 'order', 'report'][index]} /></span><span>{feature}</span></div>)}</div>
-      <Link className="partnerProgramsOpen" to="/pipestock?from=worktrack" reloadDocument>{c.open}<span aria-hidden="true">→</span></Link>
-      <p className="partnerProgramsHint"><span aria-hidden="true">↗</span> {c.hint}</p>
+
+      <div className="partnerProgramsFeatures">
+        {c.features.map((feature, index) => (
+          <div key={feature}>
+            <span className="partnerProgramsFeatureIcon">
+              <FeatureIcon type={['box', 'order', 'report'][index]} />
+            </span>
+            <span>{feature}</span>
+          </div>
+        ))}
+      </div>
+
+      <Link className="partnerProgramsOpen" to="/pipestock?from=worktrack" reloadDocument>
+        {c.open}
+        <span aria-hidden="true">→</span>
+      </Link>
     </section>
   </section>;
 }
