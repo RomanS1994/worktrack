@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
-import { getLocalDateKey } from '../../app/formatters.js';
+import { getLocalDateKey, monthKeyFromAnchor } from '../../app/formatters.js';
 import { useCreateManagerAdvanceMutation, useGetManagerAdvancesQuery } from '../../features/worktrack/worktrackApi.js';
 import './ManagerAdvanceCreatePage.css';
 
@@ -16,7 +16,7 @@ function PersonIcon(){return <svg viewBox="0 0 24 24" aria-hidden="true"><circle
 function CalendarIcon(){return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4.5 9h15M6 5h12a2 2 0 0 1 2 2v12H4V7a2 2 0 0 1 2-2Z"/></svg>}
 export function ManagerAdvanceCreatePage(){
  const navigate=useNavigate(); const {language}=useI18n(); const copy=COPY[language]||COPY.uk;
- const month=getLocalDateKey().slice(0,7); const query=useGetManagerAdvancesQuery({month}); const employees=query.data?.employees||[];
+ const month=monthKeyFromAnchor(); const query=useGetManagerAdvancesQuery({month}); const employees=query.data?.employees||[];
  const [employeeMembershipId,setEmployeeMembershipId]=useState(''); const [amountCzk,setAmountCzk]=useState(''); const [paidAt,setPaidAt]=useState(getLocalDateKey()); const [note,setNote]=useState('');
  const [createAdvance,state]=useCreateManagerAdvanceMutation();
  const amount=Number(String(amountCzk).replace(',','.')); const canSubmit=employeeMembershipId&&amount>0&&paidAt&&!state.isLoading;

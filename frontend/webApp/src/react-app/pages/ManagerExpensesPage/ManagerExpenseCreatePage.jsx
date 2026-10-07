@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
 import { getLocalDateKey } from '../../app/formatters.js';
+import { prepareExpenseReceipt } from '../../features/worktrack/expenseReceipt.js';
 import { useCreateManagerExpenseMutation, useGetManagerEmployeesQuery } from '../../features/worktrack/worktrackApi.js';
 import './ManagerExpenseCreatePage.css';
 
@@ -12,30 +13,6 @@ const COPY={
  en:{title:'New expense',subtitle:'Add a company expense',employee:'Employee',chooseEmployee:'Choose employee',category:'Category',amount:'Amount',date:'Date',note:'Note',optional:'optional',save:'Save expense',saving:'Saving…',notePlaceholder:'For example: materials purchase',receipt:'Receipt / bill',receiptHint:'Take a photo or choose one from your library',addReceipt:'Add photo',replaceReceipt:'Replace photo',removeReceipt:'Remove',preparingReceipt:'Preparing photo…',receiptInvalid:'Choose a JPG, PNG or WebP image.',receiptTooLarge:'The image is too large. Try another image or take the receipt photo again.'}
 };
 const CATS={MATERIALS:{uk:'Матеріали',cs:'Materiál',en:'Materials'},TRANSPORT:{uk:'Транспорт',cs:'Doprava',en:'Transport'},FUEL:{uk:'Паливо',cs:'Palivo',en:'Fuel'},TOOLS:{uk:'Інструменти',cs:'Nářadí',en:'Tools'},OFFICE:{uk:'Офіс',cs:'Kancelář',en:'Office'},OTHER:{uk:'Інше',cs:'Ostatní',en:'Other'}};
-const MAX_RECEIPT_BYTES=2.5*1024*1024;
-const VALID_RECEIPT_TYPES=new Set(['image/jpeg','image/png','image/webp']);
-
-function readAsDataUrl(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(reader.error||new Error('File read failed'));reader.readAsDataURL(blob)})}
-function loadImage(file){return new Promise((resolve,reject)=>{const url=URL.createObjectURL(file);const image=new Image();image.onload=()=>{URL.revokeObjectURL(url);resolve(image)};image.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Image load failed'))};image.src=url})}
-function canvasBlob(canvas,quality){return new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality))}
-
-async function prepareReceipt(file){
- if(!file||!VALID_RECEIPT_TYPES.has(file.type))throw new Error('invalid');
- if(file.size>20*1024*1024)throw new Error('large');
- const image=await loadImage(file);
- const maxSide=1600;
- const scale=Math.min(1,maxSide/Math.max(image.naturalWidth||image.width,image.naturalHeight||image.height));
- const width=Math.max(1,Math.round((image.naturalWidth||image.width)*scale));
- const height=Math.max(1,Math.round((image.naturalHeight||image.height)*scale));
- const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
- const context=canvas.getContext('2d');if(!context)throw new Error('invalid');
- context.fillStyle='#fff';context.fillRect(0,0,width,height);context.drawImage(image,0,0,width,height);
- let blob=null;
- for(const quality of [0.82,0.68,0.54]){blob=await canvasBlob(canvas,quality);if(blob&&blob.size<=MAX_RECEIPT_BYTES)break}
- if(!blob||blob.size>MAX_RECEIPT_BYTES)throw new Error('large');
- const baseName=String(file.name||'receipt').replace(/\.[^.]+$/,'').slice(0,90)||'receipt';
- return {dataUrl:await readAsDataUrl(blob),fileName:`${baseName}.jpg`};
-}
 
 export function ManagerExpenseCreatePage(){
  const navigate=useNavigate();
@@ -57,7 +34,7 @@ export function ManagerExpenseCreatePage(){
  async function chooseReceipt(e){
   const file=e.target.files?.[0];e.target.value='';if(!file)return;
   setReceiptError('');setReceiptPreparing(true);
-  try{setReceipt(await prepareReceipt(file))}catch(error){setReceipt(null);setReceiptError(error?.message==='large'?c.receiptTooLarge:c.receiptInvalid)}finally{setReceiptPreparing(false)}
+  try{setReceipt(await prepareExpenseReceipt(file))}catch(error){setReceipt(null);setReceiptError(error?.message==='large'?c.receiptTooLarge:c.receiptInvalid)}finally{setReceiptPreparing(false)}
  }
  async function submit(e){
   e.preventDefault();
