@@ -1,3 +1,5 @@
+import { getLocalDateKey } from '../../app/formatters.js';
+
 export const PROBLEM_STATUSES = new Set(['MISMATCH', 'MISSING_MANAGER', 'MISSING_EMPLOYEE']);
 
 export function getEmployeeName(submission, fallback) {
@@ -7,13 +9,6 @@ export function getEmployeeName(submission, fallback) {
 
 function parseDate(value) {
   return value ? new Date(`${value}T00:00:00.000Z`) : null;
-}
-
-function getLocalDateKey(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
 }
 
 export function isWeekStillOpen(submission) {
