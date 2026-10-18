@@ -258,7 +258,7 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
     sendJson(response, 200, payload); return true;
   }
 
-  const restoreEmployeeMatch = pathName.match(/^\\/api\\/manager\\/employees\\/([^/]+)\\/restore$/);
+  const restoreEmployeeMatch = pathName.match(new RegExp('^/api/manager/employees/([^/]+)/restore$'));
   if (request.method === 'POST' && restoreEmployeeMatch) {
     const context = await requireManager(request, response); if (!context) return true;
     const employee = await runStoreTransaction({ prisma: async client => {
