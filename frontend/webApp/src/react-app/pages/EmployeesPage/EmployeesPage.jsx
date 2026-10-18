@@ -8,6 +8,8 @@ import {
   useCreateManagerEmployeeMutation,
   useDeleteManagerEmployeeMutation,
   useGetManagerEmployeesQuery,
+  useGetDeletedManagerEmployeesQuery,
+  useRestoreManagerEmployeeMutation,
   useResetManagerEmployeePasswordMutation,
   useUpdateManagerEmployeeMutation,
 } from '../../features/worktrack/worktrackApi.js';
@@ -33,6 +35,17 @@ export function EmployeesPage() {
   const { language, t } = useI18n();
   const ac = ACCESS_COPY[language] || ACCESS_COPY.uk;
   const { data, error, isLoading } = useGetManagerEmployeesQuery();
+  const [showArchived, setShowArchived] = useState(false);
+  const { data: archivedData, isFetching: archivedLoading, error: archivedError } = useGetDeletedManagerEmployeesQuery(undefined, { skip: !showArchived });
+  const [restoreManagerEmployee, restoreState] = useRestoreManagerEmployeeMutation();
+  const archivedEmployees = archivedData?.employees || [];
+  async function restoreArchivedEmployee(employeeId) {
+    clearMessages();
+    try {
+      await restoreManagerEmployee(employeeId).unwrap();
+      setActionSuccess(language === 'cs' ? 'Pracovník obnoven. Historie hodin a plateb zůstala zachována.' : language === 'en' ? 'Employee restored with their existing hours and payment history.' : 'Працівника відновлено зі старою історією годин і виплат.');
+    } catch (error) { setActionError(getApiErrorMessage(error)); }
+  }
   const [createManagerEmployee, createState] = useCreateManagerEmployeeMutation();
   const [updateManagerEmployee, updateState] = useUpdateManagerEmployeeMutation();
   const [deleteManagerEmployee, deleteState] = useDeleteManagerEmployeeMutation();
@@ -176,6 +189,24 @@ export function EmployeesPage() {
         </button>
       })}</div>:null}
     </section>
+
+    <section className="employeesPanel">
+      <div className="employeesPanelHeader">
+        <div><h2>{language === 'cs' ? 'Archivovaní pracovníci' : language === 'en' ? 'Archived employees' : 'Видалені працівники'}</h2></div>
+        <button type="button" onClick={() => setShowArchived(value => !value)}>{showArchived ? (language === 'cs' ? 'Skrýt' : language === 'en' ? 'Hide' : 'Сховати') : (language === 'cs' ? 'Zobrazit' : language === 'en' ? 'Show' : 'Показати')}</button>
+      </div>
+      {showArchived ? <div className="employeesList">
+        {archivedLoading ? <RequestLoadingState label={t('employees.loading')}/> : null}
+        {archivedError ? <p className="statusNote is-error">{getApiErrorMessage(archivedError)}</p> : null}
+        {!archivedLoading && !archivedEmployees.length ? <p className="employeesModalCopy">{language === 'cs' ? 'Žádní archivovaní pracovníci.' : language === 'en' ? 'No archived employees.' : 'Немає видалених працівників.'}</p> : null}
+        {archivedEmployees.map(employee => <div className="employeeCard" key={employee.id}>
+          <span className="employeeCard-content"><strong className="employeeCard-name">{employee.name}</strong>
+          <span className="employeeCard-email">{new Date(employee.deletedAt).toLocaleDateString(language === 'cs' ? 'cs-CZ' : language === 'en' ? 'en-GB' : 'uk-UA')} · {employee.workEntryCount + employee.managerEntryCount} {language === 'cs' ? 'záznamů hodin' : language === 'en' ? 'hour records' : 'записів годин'}</span></span>
+          <button type="button" className="employeesPrimaryButton" disabled={restoreState.isLoading} onClick={() => restoreArchivedEmployee(employee.id)}>{language === 'cs' ? 'Obnovit' : language === 'en' ? 'Restore' : 'Відновити'}</button>
+        </div>)}
+      </div> : null}
+    </section>
+    {actionError && !modal ? <p className="statusNote is-error">{actionError}</p> : null}
 
     {modal?<div className="employeesModalBackdrop" onMouseDown={e=>{if(e.target===e.currentTarget)closeModal()}}><section className={`employeesModal${modal==='manage'?' is-drawer':''}`} role="dialog" aria-modal="true"><header><div><span>{t('employees.team')}</span><h2>{modalTitle}</h2></div><button type="button" aria-label={t('employees.close')} onClick={closeModal}>×</button></header>
       {modal==='add'?<form className="employeesModalBody" onSubmit={submitEmployee}><p className="employeesModalCopy">{t('employees.addCopy')}</p><div className="employeesFormGrid"><label className="employeesField"><span>{t('employees.firstName')}</span><input type="text" value={form.firstName} onChange={e=>updateForm('firstName',e.target.value)} required/></label><label className="employeesField"><span>{t('employees.lastName')}</span><input type="text" value={form.lastName} onChange={e=>updateForm('lastName',e.target.value)} required/></label></div><label className="employeesField"><span>{t('employees.email')}</span><input type="email" value={form.email} onChange={e=>updateForm('email',e.target.value)} required/></label><label className="employeesField"><span>{t('employees.temporaryPassword')}</span><input type="password" minLength={8} value={form.temporaryPassword} onChange={e=>updateForm('temporaryPassword',e.target.value)} required/></label><div className="employeesFormGrid"><label className="employeesField"><span>{t('employees.hourlyRate')}</span><small>{t('employees.hourlyRateHint')}</small><input inputMode="decimal" type="number" min="0" step="0.01" value={form.hourlyRateCzk} onChange={e=>updateForm('hourlyRateCzk',e.target.value)} required/></label><label className="employeesField"><span>{t('employees.customerRate')}</span><small>{t('employees.customerRateHint')}</small><input inputMode="decimal" type="number" min="0" step="0.01" value={form.customerRateCzk} onChange={e=>updateForm('customerRateCzk',e.target.value)}/></label></div>{actionError?<p className="statusNote is-error">{actionError}</p>:null}<button className="employeesPrimaryButton" disabled={isMutating}>{t('employees.addEmployee')}</button></form>:null}
