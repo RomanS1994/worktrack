@@ -233,6 +233,55 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
     sendJson(response, 200, payload); return true;
   }
 
+  if (request.method === 'GET' && pathName === '/api/manager/employees/deleted') {
+    const context = await requireManager(request, response); if (!context) return true;
+    const payload = await runStoreRead({ prisma: async client => {
+      const rows = await client.companyMembership.findMany({
+        where: { companyId: context.activeMembership.companyId, role: 'EMPLOYEE', deletedAt: { not: null } },
+        select: {
+          id: true, deletedAt: true, hourlyRateCzk: true, customerRateCzk: true,
+          user: { select: { firstName: true, lastName: true, name: true } },
+          _count: { select: { workEntries: true, employeeManagerTimesheetEntries: true, employeeSalaryAdvances: true } },
+        },
+        orderBy: { deletedAt: 'desc' },
+      });
+      return { employees: rows.map(row => ({
+        id: row.id, deletedAt: row.deletedAt,
+        name: [row.user?.firstName, row.user?.lastName].filter(Boolean).join(' ') || row.user?.name || 'Employee',
+        hourlyRateCzk: String(row.hourlyRateCzk ?? '0'),
+        customerRateCzk: String(row.customerRateCzk ?? row.hourlyRateCzk ?? '0'),
+        workEntryCount: row._count.workEntries,
+        managerEntryCount: row._count.employeeManagerTimesheetEntries,
+        advanceCount: row._count.employeeSalaryAdvances,
+      })) };
+    } });
+    sendJson(response, 200, payload); return true;
+  }
+
+  const restoreEmployeeMatch = pathName.match(/^\\/api\\/manager\\/employees\\/([^/]+)\\/restore$/);
+  if (request.method === 'POST' && restoreEmployeeMatch) {
+    const context = await requireManager(request, response); if (!context) return true;
+    const employee = await runStoreTransaction({ prisma: async client => {
+      const membership = await client.companyMembership.findFirst({
+        where: { id: restoreEmployeeMatch[1], companyId: context.activeMembership.companyId, role: 'EMPLOYEE', deletedAt: { not: null } },
+        select: { id: true, userId: true, deletedAt: true },
+      });
+      if (!membership) throw new Error('Archived employee not found');
+      const restored = await client.companyMembership.update({
+        where: { id: membership.id },
+        data: { deletedAt: null, status: 'ACTIVE' },
+      });
+      await createAuditLog(client, {
+        action: 'employee.restored', actorUserId: context.activeMembership.userId,
+        targetUserId: membership.userId, entityType: 'company_membership', entityId: membership.id,
+        before: { deletedAt: membership.deletedAt, status: 'INACTIVE' },
+        after: { deletedAt: null, status: 'ACTIVE' },
+      });
+      return { id: restored.id, restored: true };
+    } });
+    sendJson(response, 200, { employee }); return true;
+  }
+
   if (request.method === 'POST' && pathName === '/api/manager/employees') {
     const context = await requireManager(request, response); if (!context) return true;
     const body = await readJsonBody(request);
