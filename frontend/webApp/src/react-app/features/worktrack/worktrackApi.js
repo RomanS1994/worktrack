@@ -36,7 +36,9 @@ export const worktrackApi = baseApi.injectEndpoints({
     deleteWorkEntry: builder.mutation({ query:entryId=>({url:`/work-entries/${entryId}`,method:'DELETE'}), invalidatesTags:(_r,_e,entryId)=>withWorkEntry(entryId) }),
     submitWeek: builder.mutation({ query:payload=>({url:'/weekly-submissions',method:'POST',body:payload}), invalidatesTags:[...INVOICE_AFFECTING_TAGS,{type:'WeeklySubmissions',id:'LIST'},{type:'Notifications',id:'LIST'}] }),
     getManagerEmployees: builder.query({ query:()=>'/manager/employees', providesTags:result=>[{type:'Employees',id:'LIST'},...(Array.isArray(result?.employees)?result.employees:[]).map(employee=>({type:'Employees',id:employee.id}))] }),
-    createManagerEmployee: builder.mutation({ query:body=>({url:'/manager/employees',method:'POST',body}), invalidatesTags:[{type:'Employees',id:'LIST'},...WORK_TOTAL_TAGS] }),
+    getDeletedManagerEmployees: builder.query({ query:()=>'/manager/employees/deleted', providesTags:[{type:'Employees',id:'DELETED'}] }),
+    restoreManagerEmployee: builder.mutation({ query:employeeId=>({url:`/manager/employees/${employeeId}/restore`,method:'POST'}), invalidatesTags:[{type:'Employees',id:'LIST'},{type:'Employees',id:'DELETED'},...WORK_TOTAL_TAGS] }),
+    createManagerEmployee: builder.mutation({ query:body=>({url:'/manager/employees',method:'POST',body}), invalidatesTags:[{type:'Employees',id:'LIST'},{type:'Employees',id:'DELETED'},...WORK_TOTAL_TAGS] }),
     updateManagerEmployee: builder.mutation({ query:({employeeId,...body})=>({url:`/manager/employees/${employeeId}`,method:'PATCH',body}), invalidatesTags:(_r,_e,{employeeId})=>[{type:'Employees',id:'LIST'},{type:'Employees',id:employeeId},{type:'Me',id:'CURRENT'},...WORK_TOTAL_TAGS,'InvoicePreview'] }),
     deleteManagerEmployee: builder.mutation({ query:employeeId=>({url:`/manager/employees/${employeeId}`,method:'DELETE'}), invalidatesTags:(_r,_e,employeeId)=>[{type:'Employees',id:'LIST'},{type:'Employees',id:employeeId},{type:'Me',id:'CURRENT'},{type:'WeeklySubmissions',id:'LIST'},...WORK_TOTAL_TAGS,'InvoicePreview'] }),
     resetManagerEmployeePassword: builder.mutation({ query:({employeeId,temporaryPassword})=>({url:`/manager/employees/${employeeId}/reset-password`,method:'POST',body:{temporaryPassword}}) }),
@@ -56,6 +58,6 @@ export const {
   useGetProjectsQuery,useGetDefaultProjectQuery,useUpdateDefaultProjectMutation,useCreateProjectMutation,useUpdateProjectMutation,useDeactivateProjectMutation,useDeleteProjectMutation,useGetCompanySettingsQuery,useUpdateCompanySettingsMutation,
   useGetWorkRulesQuery,useUpdateWorkRulesMutation,
   useGetMonthEntriesQuery,useGetWeekEntriesQuery,useCreateWorkEntryMutation,useUpdateWorkEntryMutation,useDeleteWorkEntryMutation,useSubmitWeekMutation,
-  useGetManagerEmployeesQuery,useCreateManagerEmployeeMutation,useUpdateManagerEmployeeMutation,useDeleteManagerEmployeeMutation,useResetManagerEmployeePasswordMutation,
+  useGetManagerEmployeesQuery,useGetDeletedManagerEmployeesQuery,useRestoreManagerEmployeeMutation,useCreateManagerEmployeeMutation,useUpdateManagerEmployeeMutation,useDeleteManagerEmployeeMutation,useResetManagerEmployeePasswordMutation,
   useGetManagerSubmissionsQuery,useGetManagerSubmissionQuery,useUpdateManagerWorkEntryMutation,useDeleteManagerWorkEntryMutation,useClearManagerSubmissionMutation,useApproveSubmissionMutation,useRejectSubmissionMutation,useReopenSubmissionMutation,
 } = worktrackApi;
