@@ -198,7 +198,7 @@ export function EmployeesPage() {
       {showArchived ? <div className="employeesList">
         {archivedLoading ? <RequestLoadingState label={t('employees.loading')}/> : null}
         {archivedError ? <p className="statusNote is-error">{getApiErrorMessage(archivedError)}</p> : null}
-        {!archivedLoading && !archivedEmployees.length ? <p className="employeesModalCopy">{language === 'cs' ? 'Žádní archivovaní pracovníci.' : language === 'en' ? 'No archived employees.' : 'Немає видалених працівників.'}</p> : null}
+        {!archivedLoading && !archivedError && !archivedEmployees.length ? <p className="employeesModalCopy">{language === 'cs' ? 'Žádní archivovaní pracovníci.' : language === 'en' ? 'No archived employees.' : 'Немає видалених працівників.'}</p> : null}
         {archivedEmployees.map(employee => <div className="employeeCard" key={employee.id}>
           <span className="employeeCard-content"><strong className="employeeCard-name">{employee.name}</strong>
           <span className="employeeCard-email">{new Date(employee.deletedAt).toLocaleDateString(language === 'cs' ? 'cs-CZ' : language === 'en' ? 'en-GB' : 'uk-UA')} · {employee.workEntryCount + employee.managerEntryCount} {language === 'cs' ? 'záznamů hodin' : language === 'en' ? 'hour records' : 'записів годин'}</span></span>
