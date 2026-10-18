@@ -141,7 +141,8 @@ export async function getManagerPayroll(client, context, query = {}) {
     client.companyMembership.findMany({
       where: {
         companyId: managerMembership.companyId,
-        deletedAt: null,
+        // Keep archived memberships in historical payroll: their hours and margins
+        // must remain part of the company's financial reports.
         user: { is: { deletedAt: null } },
       },
       include: {
