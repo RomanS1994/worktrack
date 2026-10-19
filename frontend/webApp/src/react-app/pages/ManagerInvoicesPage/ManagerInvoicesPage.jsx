@@ -5,6 +5,7 @@ import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { RequestLoadingState } from '@shared/app/components/RequestLoader/RequestLoader.jsx';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
 import { selectUser } from '@shared/features/auth/authSlice.js';
+import { getLocalDateKey } from '../../app/formatters.js';
 import { useGetManagerInvoicesQuery, useMarkInvoicePaidMutation } from '../../features/worktrack/billingApi.js';
 import './ManagerInvoicesPage.css';
 
@@ -15,7 +16,6 @@ const COPY={
 };
 function statusLabel(c,status){if(status==='PAID')return c.paidStatus;return c[String(status||'').toLowerCase()]||status}
 function money(value){return `${Number(value||0).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2})} CZK`}
-function localDateValue(date=new Date()){const y=date.getFullYear();const m=String(date.getMonth()+1).padStart(2,'0');const d=String(date.getDate()).padStart(2,'0');return `${y}-${m}-${d}`}
 function paidDateValue(value){return value?String(value).slice(0,10):''}
 
 export function ManagerInvoicesPage(){
@@ -24,7 +24,7 @@ export function ManagerInvoicesPage(){
  const {language}=useI18n();
  const c=COPY[language]||COPY.uk;
  const ownMembershipId=user?.activeMembership?.id||'';
- const today=localDateValue();
+ const today=getLocalDateKey();
  const [actionError,setActionError]=useState('');
  const [filter,setFilter]=useState('OPEN');
  const [payTarget,setPayTarget]=useState(null);
