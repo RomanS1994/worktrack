@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { getChatReactions } from './chat-reactions.js';
 import { avatarUrl, avatarUrlFromRecord } from './avatars.js';
+import { enqueueChatNotification } from './chat-notification-outbox.js';
 
 function getMembership(context) {
   const membership = context?.activeMembership;
@@ -11,13 +12,19 @@ function getMembership(context) {
 }
 
 function serializeRow(row) {
+  const deleted = Boolean(row.deletedAt);
   return {
     id: row.id,
     companyId: row.companyId,
     authorMembershipId: row.authorMembershipId,
     clientMessageId: row.clientMessageId || '',
-    body: row.body,
+    // Retry acknowledgements may resolve a tombstone. Preserve its stable ids
+    // so clients can clear their outbox without exposing/resurrecting its text.
+    body: deleted ? '' : row.body,
     createdAt: new Date(row.createdAt).toISOString(),
+    // PostgreSQL timestamps retain microseconds that JavaScript Dates truncate.
+    // Keep the precise, fixed-width UTC key for deterministic mobile ordering.
+    orderKey: row.orderKey || new Date(row.createdAt).toISOString().replace(/\.(\d{3})Z$/, (_, fraction) => `.${fraction}000Z`),
     editedAt: row.editedAt ? new Date(row.editedAt).toISOString() : '',
     deletedAt: row.deletedAt ? new Date(row.deletedAt).toISOString() : '',
     author: {
@@ -27,7 +34,7 @@ function serializeRow(row) {
       avatarDataUrl: avatarUrlFromRecord(row.authorUserId, { hash: row.authorAvatarHash }) ||
         avatarUrl(row.authorUserId, row.authorAvatarDataUrl),
     },
-    replyTo: row.replyToMessageId ? {
+    replyTo: !deleted && row.replyToMessageId ? {
       id: row.replyToMessageId,
       body: row.replyDeletedAt ? '' : (row.replyBody || ''),
       deleted: Boolean(row.replyDeletedAt),
@@ -45,6 +52,7 @@ const messageSelect = `
   m.client_message_id AS "clientMessageId",
   m.body,
   m.created_at AS "createdAt",
+  to_char(m.created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS "orderKey",
   m.edited_at AS "editedAt",
   m.deleted_at AS "deletedAt",
   m.reply_to_message_id AS "replyToMessageId",
@@ -93,14 +101,77 @@ async function attachReactions(client, context, rows) {
   }));
 }
 
-export async function listChatMessages(client, context, { before = '', beforeId = '', limit = 50 } = {}) {
+export async function listChatMessages(client, context, {
+  before = '', beforeId = '', afterId = '', messageIds = null, limit = 50,
+} = {}) {
   const membership = getMembership(context);
-  const safeLimit = Math.max(1, Math.min(100, Number(limit) || 50));
-  const safeBeforeId = String(beforeId || '').trim().slice(0, 120);
+  const selectors = [Boolean(before), Boolean(beforeId), Boolean(afterId), messageIds !== null];
+  if (selectors.filter(Boolean).length > 1) throw new Error('Conflicting chat cursors');
+  const safeLimit = Math.max(1, Math.min(100, Math.floor(Number(limit) || 50)));
+  const safeBeforeId = String(beforeId || '').trim();
+  if (beforeId && (!safeBeforeId || safeBeforeId.length > 120)) throw new Error('Invalid chat cursor');
+  const safeAfterId = String(afterId || '').trim();
+  if (afterId && (!safeAfterId || safeAfterId.length > 120)) throw new Error('Invalid chat cursor');
   const beforeDate = before ? new Date(before) : null;
   if (before && Number.isNaN(beforeDate.getTime())) throw new Error('Invalid chat cursor');
 
   let rows;
+  if (messageIds !== null) {
+    const source = Array.isArray(messageIds) ? messageIds : String(messageIds).split(',');
+    if (!source.length || source.length > 100) throw new Error('Invalid chat message ids');
+    const ids = source.map(id => String(id || '').trim());
+    if (ids.some(id => !id || id.length > 120)) throw new Error('Invalid chat message ids');
+    const requestedIds = [...new Set(ids)];
+    rows = await client.$queryRawUnsafe(
+      `SELECT ${messageSelect}
+         ${messageJoins}
+        WHERE m.company_id = $1
+          AND m.deleted_at IS NULL
+          AND m.id = ANY($2::text[])
+        ORDER BY m.created_at ASC, m.id ASC`,
+      membership.companyId,
+      requestedIds,
+    );
+    return {
+      messages: await attachReactions(client, context, rows),
+      requestedIds,
+      hasMore: false,
+    };
+  }
+  if (safeAfterId) {
+    // A soft-deleted anchor still defines a valid history position. Never accept
+    // a cursor from a different company or silently fall back to the latest page.
+    // Read its timestamp only inside SQL: a JS Date loses PostgreSQL microseconds.
+    const cursors = await client.$queryRawUnsafe(
+      'SELECT id FROM chat_messages WHERE company_id = $1 AND id = $2 LIMIT 1',
+      membership.companyId,
+      safeAfterId,
+    );
+    if (!cursors[0]) throw new Error('Chat cursor not found');
+    rows = await client.$queryRawUnsafe(
+      `SELECT ${messageSelect}
+         ${messageJoins}
+        WHERE m.company_id = $1
+          AND m.deleted_at IS NULL
+          AND (m.created_at, m.id) > (
+            SELECT cursor.created_at, cursor.id
+              FROM chat_messages cursor
+             WHERE cursor.company_id = $1
+               AND cursor.id = $2
+             LIMIT 1
+          )
+        ORDER BY m.created_at ASC, m.id ASC
+        LIMIT $3`,
+      membership.companyId,
+      safeAfterId,
+      safeLimit + 1,
+    );
+    return {
+      messages: await attachReactions(client, context, rows.slice(0, safeLimit)),
+      afterId: safeAfterId,
+      hasMore: rows.length > safeLimit,
+    };
+  }
   if (safeBeforeId) {
     rows = await client.$queryRawUnsafe(
       `SELECT ${messageSelect}
@@ -294,6 +365,22 @@ export async function createChatMessage(client, context, body = {}) {
   const requestedReplyId = String(body.replyToMessageId || '').trim().slice(0, 120) || null;
   let replyToMessageId = null;
 
+  // Resolve a retry before validating its former reply target: that target may
+    // have been deleted after the original request was already committed.
+  if (clientMessageId) {
+    const existing = await client.$queryRaw`
+      SELECT id FROM chat_messages
+       WHERE company_id = ${membership.companyId}
+         AND author_membership_id = ${membership.id}
+         AND client_message_id = ${clientMessageId}
+       LIMIT 1
+    `;
+    if (existing[0]?.id) {
+      const row = await findMessage(client, membership.companyId, existing[0].id);
+      return { message: serializeRow(row), duplicate: true };
+    }
+  }
+
   if (requestedReplyId) {
     const replyRows = await client.$queryRaw`
       SELECT id
@@ -307,26 +394,32 @@ export async function createChatMessage(client, context, body = {}) {
     replyToMessageId = replyRows[0].id;
   }
 
-  if (clientMessageId) {
+  const id = randomUUID();
+  const inserted = await client.$queryRaw`
+    INSERT INTO chat_messages (id, company_id, author_membership_id, client_message_id, body, reply_to_message_id)
+    VALUES (${id}, ${membership.companyId}, ${membership.id}, ${clientMessageId}, ${messageBody}, ${replyToMessageId})
+    ON CONFLICT (author_membership_id, client_message_id) WHERE client_message_id IS NOT NULL
+    DO NOTHING
+    RETURNING id
+  `;
+  if (!inserted[0]?.id) {
     const existing = await client.$queryRaw`
       SELECT id FROM chat_messages
-       WHERE author_membership_id = ${membership.id}
+       WHERE company_id = ${membership.companyId}
+         AND author_membership_id = ${membership.id}
          AND client_message_id = ${clientMessageId}
        LIMIT 1
     `;
-    if (existing[0]?.id) {
-      const row = await findMessage(client, membership.companyId, existing[0].id);
-      return { message: serializeRow(row), duplicate: true };
-    }
+    const row = existing[0]?.id && await findMessage(client, membership.companyId, existing[0].id);
+    if (!row) throw new Error('Chat message not found');
+    return { message: serializeRow(row), duplicate: true };
   }
-
-  const id = randomUUID();
-  await client.$executeRaw`
-    INSERT INTO chat_messages (id, company_id, author_membership_id, client_message_id, body, reply_to_message_id)
-    VALUES (${id}, ${membership.companyId}, ${membership.id}, ${clientMessageId}, ${messageBody}, ${replyToMessageId})
-  `;
   const row = await findMessage(client, membership.companyId, id);
-  return { message: serializeRow(row), duplicate: false };
+  const message = serializeRow(row);
+  // Message and notification job commit together; routes no longer fire and
+  // forget delivery after sending their HTTP acknowledgement.
+  await enqueueChatNotification(client, context, message);
+  return { message, duplicate: false };
 }
 
 export async function markChatRead(client, context, body = {}) {
