@@ -61,6 +61,21 @@ const STATUS_BY_MESSAGE = new Map([
   ['Employee is not assigned to a manager', 409],
   ['No work entries to submit', 400],
   ['Notification not found', 404],
+  ['Invalid or expired access token', 401],
+  ['Invalid chat cursor', 400],
+  ['Conflicting chat cursors', 400],
+  ['Invalid chat message ids', 400],
+  ['Chat cursor not found', 404],
+  ['Chat message not found', 404],
+  ['Reply message not found', 404],
+  ['Chat message is required', 400],
+  ['Message is required', 400],
+  ['Message is too long', 400],
+  ['Unsupported chat reaction', 400],
+  ['Cannot delete this message', 403],
+  ['Invalid read timestamp', 400],
+  ['Too many chat connections', 429],
+  ['Chat rate limit exceeded', 429],
   ['Invalid payroll anchor date', 400],
   ['Invalid payroll period', 400],
   ['Rejection reason is required', 400],
@@ -87,6 +102,9 @@ export function resolveErrorStatus(error) {
 export function sendHttpError(response, error) {
   const message = error instanceof Error ? error.message : 'Unexpected server error';
   const status = resolveErrorStatus(error);
+
+  if (message === 'Chat rate limit exceeded') response.setHeader('Retry-After', '1');
+  if (message === 'Too many chat connections') response.setHeader('Retry-After', '5');
 
   if (status === 500) {
     console.error('Backend error:', error);
