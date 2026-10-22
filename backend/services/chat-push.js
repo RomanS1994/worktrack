@@ -32,6 +32,7 @@ export async function notifyCompanyAboutChatMessage(client, context, message, { 
         ...(durable ? {
           deduplicationKey: JSON.stringify(['chat.message', message.id, recipient.id]),
           retryPush: true,
+          nativeMessageId: message.id,
         } : {}),
       })
     ));

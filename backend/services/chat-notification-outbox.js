@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { notifyCompanyAboutChatMessage } from './chat-push.js';
+import { processNativePushDeliveries } from './native-push.js';
 
 export const CHAT_NOTIFICATION_MAX_ATTEMPTS = 8;
 const LEASE_MS = 120_000;
@@ -103,6 +104,7 @@ async function settleJob(client, job, leaseToken, error, now) {
 export function createChatNotificationWorker({
   client,
   deliver = notifyCompanyAboutChatMessage,
+  processNative = processNativePushDeliveries,
   now = Date.now,
   schedule = setInterval,
   cancel = clearInterval,
@@ -110,7 +112,7 @@ export function createChatNotificationWorker({
   onError = () => console.warn('Chat notification worker will retry after a processing failure'),
   pollMs = 2_000,
 } = {}) {
-  let timer = null, running = null, stopped = false, lastCleanup = 0;
+  let timer = null, running = null, nativeRunning = null, stopped = false, lastCleanup = 0;
   async function drain() {
     for (let processed = 0; processed < 10 && !stopped; processed++) {
       const leaseToken = makeLeaseToken();
@@ -151,19 +153,29 @@ export function createChatNotificationWorker({
     running = drain().catch(onError).finally(() => { running = null; });
     return running;
   }
+  function tickNative() {
+    if (stopped) return Promise.resolve();
+    if (nativeRunning) return nativeRunning;
+    // Native transport must never block creation of in-app notifications.
+    nativeRunning = Promise.resolve().then(() => processNative(client)).catch(onError)
+      .finally(() => { nativeRunning = null; });
+    return nativeRunning;
+  }
   return {
     tick,
+    tickNative,
     start() {
       if (timer || stopped) return;
-      timer = schedule(() => { void tick(); }, pollMs);
+      timer = schedule(() => { void tick(); void tickNative(); }, pollMs);
       timer?.unref?.();
       void tick();
+      void tickNative();
     },
     async stop() {
       stopped = true;
       if (timer) cancel(timer);
       timer = null;
-      await running;
+      await Promise.all([running, nativeRunning]);
     },
   };
 }

@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 
 import { getVapidPublicKey, sendWebPush } from './web-push.js';
+import { queueNativeChatPush } from './native-push.js';
 
 const PUSH_LANGUAGES = new Set(['uk', 'cs', 'en']);
 const REVIEW_REJECTED_FALLBACK = 'Your manager rejected this week. Open it to make corrections.';
@@ -260,6 +261,8 @@ export async function createNotification(client, payload) {
   const notification = deduplicationKey
     ? await client.notification.upsert({ where: { id: data.id }, create: data, update: {} })
     : await client.notification.create({ data });
+
+  if (payload.nativeMessageId) await queueNativeChatPush(client, notification, payload.nativeMessageId);
 
   // External push delivery is at-least-once. Stable IDs allow receivers to deduplicate.
   await deliverPush(client, notification, Boolean(payload.retryPush));

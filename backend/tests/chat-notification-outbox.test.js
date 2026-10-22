@@ -115,6 +115,7 @@ test('partial fan-out retries reuse notification IDs and preserve already-read r
   const records = new Map();
   let failRecipient = true, capturedWhere;
   const client = {
+    $executeRaw: async () => 1,
     companyMembership: {
       findMany: async ({ where }) => { capturedWhere = where; return [{ id: 'a' }, { id: 'b' }]; },
       findFirst: async () => ({ id: 'active-recipient' }),
