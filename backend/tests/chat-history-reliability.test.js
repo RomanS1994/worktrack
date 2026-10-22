@@ -18,14 +18,15 @@ test('afterId replays more than 50 missed messages in deterministic ascending pa
     async $queryRawUnsafe(sql, company, ...values) {
       assert.equal(company, 'company');
       seenQueries.push(sql);
-      if (sql.startsWith('SELECT id, created_at')) {
+      if (sql.startsWith('SELECT id FROM chat_messages')) {
         assert.doesNotMatch(sql, /deleted_at/); // even a soft-deleted cursor resolves
         return rows.filter(item => item.id === values[0]);
       }
-      assert.match(sql, /\(m\.created_at, m\.id\) > \(\$2, \$3\)/);
+      assert.match(sql, /\(m\.created_at, m\.id\) > \(\s*SELECT cursor\.created_at, cursor\.id/);
+      assert.match(sql, /cursor\.company_id = \$1\s+AND cursor\.id = \$2/);
       assert.match(sql, /ORDER BY m\.created_at ASC, m\.id ASC/);
       assert.match(sql, /m\.deleted_at IS NULL/);
-      const [, afterId, limit] = values;
+      const [afterId, limit] = values;
       return rows.filter(item => item.id > afterId).slice(0, limit);
     },
   };
@@ -75,6 +76,28 @@ test('requestedIds snapshots echo exact requested set and exclude soft deleted/f
   assert.deepEqual(result.requestedIds, ['live', 'deleted', 'foreign']);
   assert.deepEqual(result.messages.map(item => item.id), ['live']);
   assert.equal(result.hasMore, false);
+});
+
+test('message serialization preserves PostgreSQL microseconds in the ordering key', async () => {
+  const keys = ['2026-10-22T08:00:00.000001Z', '2026-10-22T08:00:00.000002Z'];
+  const client = {
+    $queryRaw: async () => [],
+    $queryRawUnsafe: async (sql, ...values) => {
+      if (sql.startsWith('SELECT id FROM chat_messages')) return [{ id: 'anchor' }];
+      // No timestamp ever crosses the JS boundary as a pagination parameter.
+      assert.deepEqual(values, ['company', 'anchor', 51]);
+      assert.match(sql, /SELECT cursor\.created_at, cursor\.id/);
+      assert.match(sql, /to_char\(m\.created_at AT TIME ZONE 'UTC'/);
+      return [
+        { ...row('z'), orderKey: keys[0] },
+        { ...row('a'), orderKey: keys[1] },
+      ];
+    },
+  };
+  const result = await listChatMessages(client, context, { afterId: 'anchor' });
+  assert.deepEqual(result.messages.map(item => item.createdAt), Array(2).fill('2026-10-22T08:00:00.000Z'));
+  assert.deepEqual(result.messages.map(item => item.orderKey), keys);
+  assert.deepEqual(result.messages.map(item => item.id), ['z', 'a']);
 });
 
 test('selector combinations, oversized snapshots and malformed cursors fail before querying', async () => {
@@ -171,6 +194,7 @@ test('retry of a deleted message returns a redacted tombstone acknowledgement wi
     },
     $queryRawUnsafe: async () => [{
       ...row('deleted'), body: 'Removed private text', clientMessageId: 'stable',
+      orderKey: '2026-10-22T08:00:00.000123Z',
       deletedAt, replyToMessageId: 'target', replyBody: 'Removed reply text',
     }],
     $executeRaw: async () => { throw new Error('must not enqueue a duplicate'); },
@@ -182,6 +206,7 @@ test('retry of a deleted message returns a redacted tombstone acknowledgement wi
   assert.equal(result.message.id, 'deleted');
   assert.equal(result.message.clientMessageId, 'stable');
   assert.equal(result.message.deletedAt, deletedAt.toISOString());
+  assert.equal(result.message.orderKey, '2026-10-22T08:00:00.000123Z');
   assert.equal(result.message.body, '');
   assert.equal(result.message.replyTo, null);
 });

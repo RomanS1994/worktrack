@@ -22,6 +22,9 @@ function serializeRow(row) {
     // so clients can clear their outbox without exposing/resurrecting its text.
     body: deleted ? '' : row.body,
     createdAt: new Date(row.createdAt).toISOString(),
+    // PostgreSQL timestamps retain microseconds that JavaScript Dates truncate.
+    // Keep the precise, fixed-width UTC key for deterministic mobile ordering.
+    orderKey: row.orderKey || new Date(row.createdAt).toISOString().replace(/\.(\d{3})Z$/, (_, fraction) => `.${fraction}000Z`),
     editedAt: row.editedAt ? new Date(row.editedAt).toISOString() : '',
     deletedAt: row.deletedAt ? new Date(row.deletedAt).toISOString() : '',
     author: {
@@ -49,6 +52,7 @@ const messageSelect = `
   m.client_message_id AS "clientMessageId",
   m.body,
   m.created_at AS "createdAt",
+  to_char(m.created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS "orderKey",
   m.edited_at AS "editedAt",
   m.deleted_at AS "deletedAt",
   m.reply_to_message_id AS "replyToMessageId",
@@ -137,8 +141,9 @@ export async function listChatMessages(client, context, {
   if (safeAfterId) {
     // A soft-deleted anchor still defines a valid history position. Never accept
     // a cursor from a different company or silently fall back to the latest page.
+    // Read its timestamp only inside SQL: a JS Date loses PostgreSQL microseconds.
     const cursors = await client.$queryRawUnsafe(
-      'SELECT id, created_at AS "createdAt" FROM chat_messages WHERE company_id = $1 AND id = $2 LIMIT 1',
+      'SELECT id FROM chat_messages WHERE company_id = $1 AND id = $2 LIMIT 1',
       membership.companyId,
       safeAfterId,
     );
@@ -148,11 +153,16 @@ export async function listChatMessages(client, context, {
          ${messageJoins}
         WHERE m.company_id = $1
           AND m.deleted_at IS NULL
-          AND (m.created_at, m.id) > ($2, $3)
+          AND (m.created_at, m.id) > (
+            SELECT cursor.created_at, cursor.id
+              FROM chat_messages cursor
+             WHERE cursor.company_id = $1
+               AND cursor.id = $2
+             LIMIT 1
+          )
         ORDER BY m.created_at ASC, m.id ASC
-        LIMIT $4`,
+        LIMIT $3`,
       membership.companyId,
-      cursors[0].createdAt,
       safeAfterId,
       safeLimit + 1,
     );
@@ -356,7 +366,7 @@ export async function createChatMessage(client, context, body = {}) {
   let replyToMessageId = null;
 
   // Resolve a retry before validating its former reply target: that target may
-  // have been deleted after the original request was already committed.
+    // have been deleted after the original request was already committed.
   if (clientMessageId) {
     const existing = await client.$queryRaw`
       SELECT id FROM chat_messages
