@@ -12,21 +12,41 @@ import {
 } from '../services/company-chat.js';
 import { getChatReactions, toggleChatReaction } from '../services/chat-reactions.js';
 import { broadcastCompanyChat, getCompanyChatPresence, subscribeToCompanyChat } from '../services/chat-live.js';
-import { notifyCompanyAboutChatMessage } from '../services/chat-push.js';
 import { avatarUrl, avatarUrlFromRecord } from '../services/avatars.js';
+import { hasChatStreamAccess } from '../services/chat-access.js';
+import { consumeChatMutation } from '../services/chat-limits.js';
 
 export async function handleChatRoutes(request, response, { url, pathName }) {
   if (!pathName.startsWith('/api/chat')) return false;
 
   const context = await getAuthContext(request, response);
   if (!context) return true;
+  const membership = context.activeMembership;
+  if (!membership?.id || !membership.companyId || membership.status !== 'ACTIVE')
+    throw new Error('Company access is required');
 
   if (request.method === 'GET' && pathName === '/api/chat/stream') {
+    const identity = {
+      sessionId: context.session.id,
+      userId: context.user.id,
+      membershipId: membership.id,
+      companyId: membership.companyId,
+      expiresAt: context.tokenClaims.expiresAt,
+    };
     subscribeToCompanyChat(
       request,
       response,
       context.activeMembership.companyId,
       context.activeMembership.id,
+      {
+        expiresAt: new Date(Math.min(
+          new Date(context.tokenClaims.expiresAt).getTime(),
+          new Date(context.session.expiresAt).getTime(),
+        )).toISOString(),
+        authorize: () => runStoreRead({
+          prisma: client => hasChatStreamAccess(client, identity),
+        }),
+      },
     );
     return true;
   }
@@ -50,6 +70,7 @@ export async function handleChatRoutes(request, response, { url, pathName }) {
   }
 
   if (request.method === 'POST' && pathName === '/api/chat/reactions') {
+    consumeChatMutation(membership.companyId, membership.id, 'reaction');
     const body = await readJsonBody(request);
     const payload = await runStoreTransaction({
       prisma: async client => {
@@ -83,6 +104,7 @@ export async function handleChatRoutes(request, response, { url, pathName }) {
   }
 
   if (request.method === 'POST' && pathName === '/api/chat/typing') {
+    consumeChatMutation(membership.companyId, membership.id, 'typing');
     const body = await readJsonBody(request);
     broadcastCompanyChat(context.activeMembership.companyId, 'typing', {
       membershipId: context.activeMembership.id,
@@ -105,6 +127,8 @@ export async function handleChatRoutes(request, response, { url, pathName }) {
       prisma: client => listChatMessages(client, context, {
         before: url.searchParams.get('before') || '',
         beforeId: url.searchParams.get('beforeId') || '',
+        afterId: url.searchParams.get('afterId') || '',
+        messageIds: url.searchParams.get('messageIds'),
         limit: url.searchParams.get('limit') || 50,
       }),
     });
@@ -124,18 +148,13 @@ export async function handleChatRoutes(request, response, { url, pathName }) {
   }
 
   if (request.method === 'POST' && pathName === '/api/chat/messages') {
+    consumeChatMutation(membership.companyId, membership.id, 'message');
     const body = await readJsonBody(request);
     const payload = await runStoreTransaction({
       prisma: client => createChatMessage(client, context, body),
     });
-    broadcastCompanyChat(context.activeMembership.companyId, 'message', payload.message);
-    if (!payload.duplicate) {
-      void runStoreRead({
-        prisma: client => notifyCompanyAboutChatMessage(client, context, payload.message),
-      }).catch(error => {
-        console.warn('Chat notification delivery failed:', error instanceof Error ? error.message : String(error));
-      });
-    }
+    if (!payload.duplicate)
+      broadcastCompanyChat(context.activeMembership.companyId, 'message', payload.message);
     sendJson(response, payload.duplicate ? 200 : 201, payload);
     return true;
   }
