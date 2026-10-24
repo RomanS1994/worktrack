@@ -10,7 +10,8 @@
   .sectionTabs{margin-inline:-2px;gap:3px;overflow:hidden}
   .sectionTabs-item{min-width:0;padding-inline:6px;font-size:11px;overflow:hidden;text-overflow:ellipsis}
   .sectionTabs-time,.sectionTabs-employeeFinance,.sectionTabs-managerFinance{width:calc(100% - 92px);max-width:calc(100% - 92px);margin-left:0;margin-right:auto}
-  .sectionTabs-time,.sectionTabs-employeeFinance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .sectionTabs-time{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .sectionTabs-employeeFinance{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
   .sectionTabs-time .sectionTabs-item,.sectionTabs-employeeFinance .sectionTabs-item{width:100%;min-width:0;min-height:var(--control-height-compact);padding:5px 3px;font-size:11px;white-space:nowrap}
   .sectionTabs-managerFinance{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:2px;gap:2px}
   .sectionTabs-managerFinance .sectionTabs-item{width:100%;min-width:0;min-height:var(--control-height-compact);padding:5px 2px;font-size:11px;white-space:nowrap}

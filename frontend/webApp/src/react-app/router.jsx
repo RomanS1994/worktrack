@@ -11,6 +11,7 @@ import { CalendarPage } from './pages/CalendarPage/CalendarPage.jsx';
 import { ChatPage } from './pages/ChatPage/ChatPage.jsx';
 import { CompanySettingsPage } from './pages/CompanySettingsPage/CompanySettingsPage.jsx';
 import { DashboardPage } from './pages/DashboardPage/DashboardPage.jsx';
+import { EmployeeAdvancesPage } from './pages/EmployeeAdvancesPage/EmployeeAdvancesPage.jsx';
 import { EmployeesPage } from './pages/EmployeesPage/EmployeesPage.jsx';
 import { FastHoursPage } from './pages/FastHoursPage/FastHoursPage.jsx';
 import { HomePage } from './pages/HomePage/HomePage.jsx';
@@ -59,6 +60,7 @@ export const router = createBrowserRouter([
         children: [
           { path: 'payroll-report', element: <PayrollReportPage /> },
           { path: 'finance', element: <Navigate to="/payroll-report" replace /> },
+          { path: 'advances', element: <ProtectedRoute requireEmployee><EmployeeAdvancesPage /></ProtectedRoute> },
           { path: 'invoices', element: <ProtectedRoute requireEmployee><InvoicesPage /></ProtectedRoute> },
           { path: 'tax-information', element: <ProtectedRoute requireEmployee><TaxInformationPage /></ProtectedRoute> },
           { path: 'manager/advances', element: <ProtectedRoute requireManager><ManagerAdvancesPage /></ProtectedRoute> },

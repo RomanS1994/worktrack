@@ -28,6 +28,7 @@ const CONFIG={
  ],
  employeeFinance:c=>[
   {to:'/payroll-report',label:c.overview,end:true},
+  {to:'/advances',label:c.advances},
   {to:'/invoices',label:c.invoices},
   {to:'/tax-information',label:c.details},
  ],
