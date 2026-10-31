@@ -47,3 +47,14 @@
  .managerPayrollMobile .managerPayrollMobile-employeesToggleCount,.managerPayrollMobile .managerPayrollMobile-employeesToggleLabel{font-size:11px}
  .managerPayrollMobile .managerPayrollMobile-employeesToggleChevron{width:24px;height:24px;padding:5px}
 }
+
+@media(max-width:760px){
+ .managerPayrollMobile .managerPayrollMobile-employee{border-color:#e8ece9;border-radius:14px;box-shadow:none}
+ .managerPayrollMobile .managerPayrollMobile-employee.is-selected{background:#fafffb;border-color:#dce9e0;box-shadow:none;overflow:hidden}
+ .managerPayrollMobile .managerPayrollMobile-employee.is-selected::before{content:'';position:absolute;left:0;top:13px;bottom:13px;width:3px;border-radius:3px;background:#1b9650}
+ .managerPayrollMobile .managerPayrollMobile-rowMoney>.is-net{border-left:1px solid #e9eeeb;padding-left:12px}
+ .managerPayrollMobile .managerPayrollMobile-employeesToggle{border:0;background:transparent;box-shadow:none;padding:0;min-width:34px}
+ .managerPayrollMobile .managerPayrollMobile-employeesToggleLabel{display:none}
+ .managerPayrollMobile .managerPayrollMobile-zeroToggle{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;padding:10px 12px;border:0;border-radius:12px;background:#eef2ef;box-shadow:none;color:#687386;font-size:12px;font-weight:600;text-align:left}
+ .managerPayrollMobile .managerPayrollMobile-zeroToggle span{font-size:18px}
+}
