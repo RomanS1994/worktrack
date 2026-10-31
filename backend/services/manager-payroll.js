@@ -191,6 +191,8 @@ export async function getManagerPayroll(client, context, query = {}) {
   };
 
   let approvedHours = 0;
+  let managerHours = 0;
+  let totalNetPay = 0;
   let pendingHours = 0;
   let confirmedSalary = 0;
   let predictedSalary = 0;
@@ -205,21 +207,33 @@ export async function getManagerPayroll(client, context, query = {}) {
 
   const employees = memberships.map(membership => {
     const payrollEntries = managerPayrollEntries(membership.employeeManagerTimesheetEntries || [], membership);
-    const entries = payrollEntries.length ? payrollEntries : (membership.workEntries || []);
+    const entries = membership.workEntries || [];
     const payRate = membership.hourlyRateCzk ?? '0';
     // An unset customer rate means the employee's pay rate, never an invented margin.
     const customerRate = membership.customerRateCzk ?? payRate;
     const baseSummary = calculateNetWorkSummary(entries, payRate, rules);
     const rates = rateMeta(entries, payRate, rules);
-    const customerRates = customerRateMeta(entries, payRate, customerRate, rules);
-    const labor = calculateLaborMargin(entries, payRate, customerRate, rules);
+    const customerRates = customerRateMeta(payrollEntries, payRate, customerRate, rules);
+    const customerLabor = calculateLaborMargin(payrollEntries, payRate, customerRate, rules);
+    const margin = toHundredths(customerLabor.revenueCzk) - toHundredths(baseSummary.confirmedSalaryCzk);
+    const labor = {
+      revenueCzk: customerLabor.revenueCzk,
+      confirmedRevenueCzk: customerLabor.revenueCzk,
+      predictedRevenueCzk: '0.00',
+      marginCzk: formatHundredths(margin),
+      confirmedMarginCzk: formatHundredths(margin),
+      predictedMarginCzk: '0.00',
+    };
     const employeeAdvances = advanceByEmployee.get(membership.id) || 0;
     const employeeConfirmed = toHundredths(baseSummary.confirmedSalaryCzk);
     const employeePredicted = toHundredths(baseSummary.predictedSalaryCzk);
-    const employeeAccrued = employeeConfirmed + employeePredicted;
+    const employeeAccrued = employeeConfirmed;
     const employeeNetPay = Math.max(employeeAccrued - employeeAdvances, 0);
+    const managerSummary = calculateNetWorkSummary(payrollEntries, payRate, rules);
+    managerHours += toHundredths(managerSummary.totalHours);
+    totalNetPay += employeeNetPay;
 
-    if (toHundredths(baseSummary.totalHours) > 0) employeesWithHours += 1;
+    if (toHundredths(baseSummary.totalHours) > 0 || toHundredths(managerSummary.totalHours) > 0) employeesWithHours += 1;
     approvedHours += toHundredths(baseSummary.approvedHours);
     pendingHours += toHundredths(baseSummary.pendingHours);
     confirmedSalary += employeeConfirmed;
@@ -248,6 +262,8 @@ export async function getManagerPayroll(client, context, query = {}) {
       mixedCustomerRates: customerRates.mixedRates,
       summary: {
         ...baseSummary,
+        managerHours: managerSummary.totalHours,
+        marginIsPreliminary: toHundredths(baseSummary.pendingHours) > 0,
         revenueCzk: labor.revenueCzk,
         laborMarginCzk: labor.marginCzk,
         confirmedRevenueCzk: labor.confirmedRevenueCzk,
@@ -261,7 +277,7 @@ export async function getManagerPayroll(client, context, query = {}) {
     };
   });
 
-  const accruedSalary = confirmedSalary + predictedSalary;
+  const accruedSalary = confirmedSalary;
 
   return {
     role: 'MANAGER',
@@ -271,6 +287,8 @@ export async function getManagerPayroll(client, context, query = {}) {
     employees,
     summary: {
       employeeCount: employees.length,
+      managerHours: formatHundredths(managerHours),
+      marginIsPreliminary: pendingHours > 0,
       employeesWithHours,
       approvedHours: formatHundredths(approvedHours),
       pendingHours: formatHundredths(pendingHours),
@@ -278,7 +296,7 @@ export async function getManagerPayroll(client, context, query = {}) {
       predictedSalaryCzk: formatHundredths(predictedSalary),
       accruedSalaryCzk: formatHundredths(accruedSalary),
       advancesCzk: formatHundredths(advances),
-      netPayCzk: formatHundredths(Math.max(accruedSalary - advances, 0)),
+      netPayCzk: formatHundredths(totalNetPay),
       revenueCzk: formatHundredths(totalRevenue),
       laborMarginCzk: formatHundredths(totalMargin),
       confirmedRevenueCzk: formatHundredths(confirmedRevenue),
