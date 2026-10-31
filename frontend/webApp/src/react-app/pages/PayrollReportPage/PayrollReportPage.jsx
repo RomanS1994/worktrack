@@ -68,8 +68,8 @@ export function PayrollReportPage() {
   const visibleAdvances = periodAdvances(employeeAdvances, employeePeriod, employeePeriod==='month'?data:null, week);
   const advanceTotal = visibleAdvances.reduce((sum,item)=>sum+Number(item.amountCzk||0),0);
   const employeeEarned = employeePeriod==='month'
-    ? Number(summary.approvedAmountCzk||0)+Number(summary.pendingAmountCzk||0)
-    : Number(summary.confirmedSalaryCzk||0)+Number(summary.predictedSalaryCzk||0);
+    ? Number(summary.approvedAmountCzk||0)
+    : Number(summary.confirmedSalaryCzk||0);
   const employeeNet = employeeEarned-advanceTotal;
   const managerPeriodLabel = useMemo(()=>data?.period?.start&&data?.period?.end?formatPeriod(data.period.start,data.period.end,locale):'-',[data?.period?.start,data?.period?.end,locale]);
   const localizedStatus = status => t(`common.${STATUS_KEYS[String(status||'DRAFT').toUpperCase()]||'draft'}`);

@@ -105,10 +105,10 @@ test('manager payroll calculates a selected week and employee breakdown', async 
   assert.equal(payload.employees[0].summary.pendingHours, '4.00');
   assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '1600.00');
   assert.equal(payload.employees[0].summary.predictedSalaryCzk, '800.00');
-  assert.equal(payload.employees[0].summary.accruedSalaryCzk, '2400.00');
+  assert.equal(payload.employees[0].summary.accruedSalaryCzk, '1600.00');
   assert.equal(payload.employees[0].summary.advancesCzk, '0.00');
-  assert.equal(payload.employees[0].summary.netPayCzk, '2400.00');
-  assert.equal(payload.employees[0].summary.laborMarginCzk, '0.00');
+  assert.equal(payload.employees[0].summary.netPayCzk, '1600.00');
+  assert.equal(payload.employees[0].summary.laborMarginCzk, '-1600.00');
   assert.equal(payload.employees[1].name, 'Boris Worker');
   assert.equal(payload.summary.employeeCount, 2);
   assert.equal(payload.summary.employeesWithHours, 2);
@@ -200,8 +200,8 @@ test('manager payroll calculates labor margin from manager timesheet hours inste
     }],
   });
   const payload = await getManagerPayroll(client, createManagerContext(), { period: 'month', anchor: '2026-09-17' });
-  assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '2500.00');
-  assert.equal(payload.employees[0].summary.laborMarginCzk, '500.00');
+  assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '25000.00');
+  assert.equal(payload.employees[0].summary.laborMarginCzk, '-22000.00');
 });
 
 test('manager payroll does not deduct lunch again from manager timesheet labor margin', async () => {
@@ -215,10 +215,10 @@ test('manager payroll does not deduct lunch again from manager timesheet labor m
     }],
   });
   const payload = await getManagerPayroll(client, createManagerContext(), { period: 'month', anchor: '2026-09-17' });
-  assert.equal(payload.employees[0].summary.laborMarginCzk, '500.00');
+  assert.equal(payload.employees[0].summary.laborMarginCzk, '3000.00');
 });
 
-test('manager payroll uses the same net manager timesheet hours for salary and labor margin', async () => {
+test('manager payroll separates employee approved net hours from manager net hours', async () => {
   const client = createClient({
     breakMinutes: 60,
     memberships: [{
@@ -233,10 +233,10 @@ test('manager payroll uses the same net manager timesheet hours for salary and l
     }],
   });
   const payload = await getManagerPayroll(client, createManagerContext(), { period: 'week', anchor: '2026-09-14' });
-  assert.equal(payload.employees[0].summary.approvedHours, '54.00');
-  assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '13500.00');
-  assert.equal(payload.employees[0].summary.laborMarginCzk, '2700.00');
-  assert.equal(payload.employees[0].summary.netPayCzk, '13500.00');
+  assert.equal(payload.employees[0].summary.approvedHours, '56.00');
+  assert.equal(payload.employees[0].summary.confirmedSalaryCzk, '14000.00');
+  assert.equal(payload.employees[0].summary.laborMarginCzk, '2200.00');
+  assert.equal(payload.employees[0].summary.netPayCzk, '14000.00');
 });
 
 test('manager payroll keeps historical customer rate snapshots after membership rate changes', async () => {
@@ -304,9 +304,9 @@ test('manager payroll separates approved and submitted labor margin', async () =
     }],
   });
   const payload = await getManagerPayroll(client, createManagerContext(), { period: 'week', anchor: '2026-08-17' });
-  assert.equal(payload.employees[0].summary.confirmedLaborMarginCzk, '500.00');
+  assert.equal(payload.employees[0].summary.confirmedLaborMarginCzk, '1700.00');
   assert.equal(payload.employees[0].summary.predictedLaborMarginCzk, '0.00');
-  assert.equal(payload.employees[0].summary.laborMarginCzk, '500.00');
+  assert.equal(payload.employees[0].summary.laborMarginCzk, '1700.00');
 });
 
 test('manager payroll keeps approved-only earnings payable', async () => {
@@ -357,4 +357,28 @@ test('manager payroll resolves a complete calendar month', async () => {
 test('manager payroll rejects an unsupported period', async () => {
   const client = createClient();
   await assert.rejects(() => getManagerPayroll(client, createManagerContext(), { period: 'quarter' }), /Invalid payroll period/);
+});
+
+
+test('payroll calculates Dima salary from approved hours and revenue only from manager table', async () => {
+  const employee = {
+    id: 'membership-1', status: 'ACTIVE', hourlyRateCzk: '250', customerRateCzk: '300', user: { name: 'Dima' },
+    workEntries: [
+      { id: 'approved', workDate: new Date('2026-10-01'), hours: '260', status: 'APPROVED' },
+      { id: 'pending', workDate: new Date('2026-10-02'), hours: '12.5', status: 'SUBMITTED' },
+    ],
+    employeeManagerTimesheetEntries: [{ id: 'manager', workDate: new Date('2026-10-01'), hours: '272.5' }],
+  };
+  const payload = await getManagerPayroll(createClient({ memberships: [employee], advances: [{ employeeMembershipId: 'membership-1', amountCzk: '5000' }] }), createManagerContext(), { period: 'month', anchor: '2026-10-01' });
+  assert.equal(payload.summary.revenueCzk, '81750.00');
+  assert.equal(payload.summary.accruedSalaryCzk, '65000.00');
+  assert.equal(payload.summary.netPayCzk, '60000.00');
+  assert.equal(payload.summary.laborMarginCzk, '16750.00');
+  assert.equal(payload.summary.managerHours, '272.50');
+  assert.equal(payload.summary.approvedHours, '260.00');
+  assert.equal(payload.summary.marginIsPreliminary, true);
+  employee.employeeManagerTimesheetEntries = [];
+  const noTable = await getManagerPayroll(createClient({ memberships: [employee] }), createManagerContext(), { period: 'month', anchor: '2026-10-01' });
+  assert.equal(noTable.summary.revenueCzk, '0.00');
+  assert.equal(noTable.summary.laborMarginCzk, '-65000.00');
 });
