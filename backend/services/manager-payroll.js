@@ -1,3 +1,4 @@
+import { avatarUrl, avatarUrlFromRecord } from './avatars.js';
 import { calculateNetWorkEntries, calculateNetWorkSummary } from './work-time-calculation.js';
 import { calculateLaborMargin, resolveLaborCustomerRateCzk } from './labor-margin.js';
 
@@ -9,6 +10,8 @@ const PAYROLL_USER_SELECT = {
   firstName: true,
   lastName: true,
   name: true,
+  profile: true,
+  avatar: { select: { hash: true } },
   deletedAt: true,
 };
 const PAYROLL_WORK_ENTRY_SELECT = {
@@ -250,6 +253,7 @@ export async function getManagerPayroll(client, context, query = {}) {
       id: membership.id,
       userId: membership.userId,
       name: getEmployeeName(membership.user),
+      avatarDataUrl: avatarUrlFromRecord(membership.user?.id, membership.user?.avatar) || avatarUrl(membership.user?.id, membership.user?.profile),
       email: membership.user?.email || '',
       status: membership.status,
       canAccessEmployeeCabinet: membership.canAccessEmployeeCabinet !== false,

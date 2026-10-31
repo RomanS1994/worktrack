@@ -19,6 +19,12 @@ function initials(name = '') {
   return String(name).trim().split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]?.toUpperCase() || '').join('') || '—';
 }
 
+function EmployeeAvatar({ employee }) {
+  const [failedSource, setFailedSource] = useState(null);
+  const source = employee.avatarDataUrl;
+  return <div className="managerPayrollMobile-avatar" aria-hidden="true">{source && failedSource !== source ? <img src={source} alt="" loading="lazy" onError={() => setFailedSource(source)} /> : initials(employee.name)}</div>;
+}
+
 function WalletIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -138,7 +144,7 @@ export function ManagerPayrollDashboard({
             const employeeNetPay = Number(employee.summary?.netPayCzk ?? Math.max(employeeAccrued - Number(employee.summary?.advancesCzk || 0), 0));
             return (
               <button type="button" className={`managerPayrollMobile-employee${isSelected ? ' is-selected' : ''}`} key={employee.id} onClick={() => toggleEmployee(employee.id)} aria-expanded={isSelected}>
-                <div className="managerPayrollMobile-avatar" aria-hidden="true">{initials(employee.name)}</div>
+                <EmployeeAvatar employee={employee} />
                 <div className="managerPayrollMobile-person"><strong>{employee.name}</strong></div>
                 <div className="managerPayrollMobile-rowMoney"><div><span>{copy.customer}</span><strong>{formatCzk(employeeRevenue, locale)}</strong></div><div className="is-net"><span>{copy.employeePay}</span><strong>{formatCzk(employeeNetPay, locale)}</strong></div></div>
                 <span className="managerPayrollMobile-chevron" aria-hidden="true">{isSelected ? '⌃' : '›'}</span>

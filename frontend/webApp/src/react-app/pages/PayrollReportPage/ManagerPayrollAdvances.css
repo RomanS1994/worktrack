@@ -58,3 +58,15 @@
  .managerPayrollMobile .managerPayrollMobile-zeroToggle{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;padding:10px 12px;border:0;border-radius:12px;background:#eef2ef;box-shadow:none;color:#687386;font-size:12px;font-weight:600;text-align:left}
  .managerPayrollMobile .managerPayrollMobile-zeroToggle span{font-size:18px}
 }
+
+@media(max-width:760px){
+ .managerPayrollMobile .managerPayrollMobile-employee,.managerPayrollMobile .managerPayrollMobile-employee.is-selected{grid-template-columns:34px minmax(0,1fr) 14px;gap:9px}
+ .managerPayrollMobile .managerPayrollMobile-avatar{width:34px;height:34px;overflow:hidden;font-size:11px}
+ .managerPayrollMobile .managerPayrollMobile-avatar img{display:block;width:100%;height:100%;object-fit:cover}
+ .managerPayrollMobile .managerPayrollMobile-person strong{font-size:17px;font-weight:750;line-height:1.3}
+ .managerPayrollMobile .managerPayrollMobile-rowMoney{gap:8px;padding-top:0}
+ .managerPayrollMobile .managerPayrollMobile-rowMoney>div{padding:9px 10px;border-radius:10px;background:#f4f6f7;gap:4px}
+ .managerPayrollMobile .managerPayrollMobile-rowMoney>.is-net{border:0;padding:9px 10px;background:#f0f8f2}
+ .managerPayrollMobile .managerPayrollMobile-rowMoney strong{font-size:13px;font-weight:650}
+ .managerPayrollMobile .managerPayrollMobile-rowMoney span{font-size:9px}
+}
