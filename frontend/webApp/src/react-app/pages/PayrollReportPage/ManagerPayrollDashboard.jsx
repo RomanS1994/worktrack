@@ -5,9 +5,9 @@ import './ManagerPayrollAdvances.css';
 import './ManagerPayrollEmployeesToggle.css';
 
 const COPY = {
-  uk: { managerHours: 'Години з таблиці', preliminary: 'Попередній дохід', revenue: 'Повна сума за працівника', totalRevenue: 'Повна сума за роботи для клієнтів', accrued: 'Нараховано працівнику', advances: 'Залоги', netPay: 'До виплати', laborMargin: 'Дохід компанії', netPayShort: 'до виплати', multipleRates: 'Кілька ставок', rateUnit: 'Kč/год', showEmployees: 'Показати працівників', hideEmployees: 'Згорнути працівників' },
-  cs: { managerHours: 'Hodiny z tabulky', preliminary: 'Předběžný výnos', revenue: 'Celková částka za zaměstnance', totalRevenue: 'Celková částka za všechny zaměstnance', accrued: 'Nárok zaměstnance', advances: 'Zálohy', netPay: 'K výplatě', laborMargin: 'Výnos společnosti', netPayShort: 'k výplatě', multipleRates: 'Více sazeb', rateUnit: 'Kč/h', showEmployees: 'Zobrazit zaměstnance', hideEmployees: 'Sbalit zaměstnance' },
-  en: { managerHours: 'Timesheet hours', preliminary: 'Provisional margin', revenue: 'Total amount for employee', totalRevenue: 'Total amount for all employees', accrued: 'Employee earnings', advances: 'Advances', netPay: 'Net pay', laborMargin: 'Company margin', netPayShort: 'net pay', multipleRates: 'Multiple rates', rateUnit: 'CZK/h', showEmployees: 'Show employees', hideEmployees: 'Collapse employees' },
+  uk: { customer: 'Від замовника', employeePay: 'Працівнику до виплати', table: 'У таблиці', approved: 'Погоджено', waiting: 'Очікує', managerHours: 'Години з таблиці', preliminary: 'Попередній дохід', revenue: 'Повна сума за працівника', totalRevenue: 'Повна сума за роботи для клієнтів', accrued: 'Нараховано працівнику', advances: 'Залоги', netPay: 'До виплати', laborMargin: 'Дохід компанії', netPayShort: 'до виплати', multipleRates: 'Кілька ставок', rateUnit: 'Kč/год', showEmployees: 'Показати працівників', hideEmployees: 'Згорнути працівників' },
+  cs: { customer: 'Od zákazníka', employeePay: 'Zaměstnanci k výplatě', table: 'V tabulce', approved: 'Schváleno', waiting: 'Čeká', managerHours: 'Hodiny z tabulky', preliminary: 'Předběžný výnos', revenue: 'Celková částka za zaměstnance', totalRevenue: 'Celková částka za všechny zaměstnance', accrued: 'Nárok zaměstnance', advances: 'Zálohy', netPay: 'K výplatě', laborMargin: 'Výnos společnosti', netPayShort: 'k výplatě', multipleRates: 'Více sazeb', rateUnit: 'Kč/h', showEmployees: 'Zobrazit zaměstnance', hideEmployees: 'Sbalit zaměstnance' },
+  en: { customer: 'From customer', employeePay: 'Employee net pay', table: 'Timesheet', approved: 'Approved', waiting: 'Pending', managerHours: 'Timesheet hours', preliminary: 'Provisional margin', revenue: 'Total amount for employee', totalRevenue: 'Total amount for all employees', accrued: 'Employee earnings', advances: 'Advances', netPay: 'Net pay', laborMargin: 'Company margin', netPayShort: 'net pay', multipleRates: 'Multiple rates', rateUnit: 'CZK/h', showEmployees: 'Show employees', hideEmployees: 'Collapse employees' },
 };
 
 function copyForLocale(locale = '') {
@@ -64,6 +64,7 @@ export function ManagerPayrollDashboard({
   }), [employees, locale]);
   const visibleSummary = summary;
   const copy = copyForLocale(locale);
+  const hours = value => String(locale).startsWith('uk') ? formatHours(value, locale).replace(/h$/, 'год') : formatHours(value, locale);
   const accrued = accruedAmount(visibleSummary);
   const revenue = Number(visibleSummary?.revenueCzk ?? (accrued + Number(visibleSummary?.laborMarginCzk || 0)));
   const advances = Number(visibleSummary?.advancesCzk || 0);
@@ -108,9 +109,9 @@ export function ManagerPayrollDashboard({
           <div className="is-margin"><span>{visibleSummary.marginIsPreliminary ? copy.preliminary : copy.laborMargin}</span><strong>{formatCzk(laborMargin, locale)}</strong></div>
         </div>
         <div className="managerPayrollMobile-hours">
-          <span>{copy.managerHours}: <b>{formatHours(visibleSummary.managerHours, locale)}</b></span>
-          <span><i className="is-confirmed" /> <b>{formatHours(approvedHours, locale)}</b> {t('payroll.confirmed').toLowerCase()}</span>
-          <span><i className="is-pending" /> <b>{formatHours(pendingHours, locale)}</b> {t('payroll.pending').toLowerCase()} · {formatCzk(pending, locale)}</span>
+          <span>{copy.managerHours}: <b>{hours(visibleSummary.managerHours)}</b></span>
+          <span><i className="is-confirmed" /> <b>{hours(approvedHours)}</b> {t('payroll.confirmed').toLowerCase()}</span>
+          <span><i className="is-pending" /> <b>{hours(pendingHours)}</b> {t('payroll.pending').toLowerCase()} · {formatCzk(pending, locale)}</span>
         </div>
       </section>
 
@@ -133,14 +134,15 @@ export function ManagerPayrollDashboard({
             return (
               <button type="button" className={`managerPayrollMobile-employee${isSelected ? ' is-selected' : ''}`} key={employee.id} onClick={() => toggleEmployee(employee.id)} aria-expanded={isSelected}>
                 <div className="managerPayrollMobile-avatar" aria-hidden="true">{initials(employee.name)}</div>
-                <div className="managerPayrollMobile-person"><strong>{employee.name}</strong><span>{ratePair(employee, locale, copy)}</span></div>
-                <div className="managerPayrollMobile-rowMoney"><strong>{formatCzk(employeeRevenue, locale)}</strong><span>{copy.netPayShort}: {formatCzk(employeeNetPay, locale)}</span></div>
+                <div className="managerPayrollMobile-person"><strong>{employee.name}</strong></div>
+                <div className="managerPayrollMobile-rowMoney"><div><span>{copy.customer}</span><strong>{formatCzk(employeeRevenue, locale)}</strong></div><div className="is-net"><span>{copy.employeePay}</span><strong>{formatCzk(employeeNetPay, locale)}</strong></div></div>
                 <span className="managerPayrollMobile-chevron" aria-hidden="true">{isSelected ? '⌃' : '›'}</span>
                 {isSelected ? <div className="managerPayrollMobile-employeeAmounts is-net-pay">
+                  <div className="managerPayrollMobile-rateDetail"><span>{t('payroll.rate')}</span><strong>{ratePair(employee, locale, copy)}</strong></div>
                   <div><span>{copy.accrued}</span><strong>{formatCzk(employeeAccrued, locale)}</strong></div>
                   <div className="is-advance"><span>{copy.advances}</span><strong>− {formatCzk(employee.summary?.advancesCzk, locale)}</strong></div>
                   <div className="is-margin"><span>{employee.summary?.marginIsPreliminary ? copy.preliminary : copy.laborMargin}</span><strong>{formatCzk(employee.summary?.laborMarginCzk, locale)}</strong></div>
-                  <div className="managerPayrollMobile-detailHours"><span>{copy.managerHours}: {formatHours(employee.summary?.managerHours, locale)} · {t('payroll.approvedHours')}: {formatHours(employee.summary?.approvedHours, locale)} · {t('payroll.pendingHours')}: {formatHours(employee.summary?.pendingHours, locale)}</span></div>
+                  <div className="managerPayrollMobile-detailHours">{[[copy.table, employee.summary?.managerHours], [copy.approved, employee.summary?.approvedHours], [copy.waiting, employee.summary?.pendingHours]].map(([label, value], index) => <div key={label} className={`hourStat hourStat-${index}`}><span>{label}</span><strong>{hours(value)}</strong></div>)}</div>
                 </div> : null}
               </button>
             );

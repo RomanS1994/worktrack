@@ -78,3 +78,32 @@
   .managerPayrollMobile-rowMoney span{font-size:9px}
   .managerPayrollMobile-moneyGrid.is-net-pay strong{font-size:12px}
 }
+
+@media(max-width:760px){
+ .managerPayrollMobile-list{gap:10px}
+ .managerPayrollMobile-employee,.managerPayrollMobile-employee.is-selected{grid-template-columns:32px minmax(0,1fr) 16px;gap:10px;padding:15px;border-radius:20px}
+ .managerPayrollMobile-avatar{width:32px;height:32px;font-size:11px}
+ .managerPayrollMobile-person{grid-column:2;grid-row:1}
+ .managerPayrollMobile-person strong{font-size:15px;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.35}
+ .managerPayrollMobile-chevron{grid-column:3;grid-row:1;align-self:center;font-size:20px}
+ .managerPayrollMobile-rowMoney{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left;padding-top:4px}
+ .managerPayrollMobile-rowMoney>div{display:grid;gap:5px;min-width:0}
+ .managerPayrollMobile-rowMoney span{font-size:10px;line-height:1.4;color:#687386;font-weight:500;white-space:normal}
+ .managerPayrollMobile-rowMoney strong{font-size:18px;line-height:1.2}
+ .managerPayrollMobile-rowMoney .is-net strong{color:#15803d}
+ .managerPayrollMobile-employeeAmounts.is-net-pay{grid-template-columns:1fr;gap:12px;padding-top:14px;margin-top:4px}
+ .managerPayrollMobile-employeeAmounts.is-net-pay>div,.managerPayrollMobile-employeeAmounts.is-net-pay>div+div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0;border:0;text-align:left}
+ .managerPayrollMobile-employeeAmounts.is-net-pay span{font-size:11px;font-weight:500}
+ .managerPayrollMobile-employeeAmounts.is-net-pay strong{font-size:13px}
+ .managerPayrollMobile-employeeAmounts.is-net-pay .is-margin{padding:12px;background:#eaf8ee;border-radius:12px;color:#15803d}
+ .managerPayrollMobile-employeeAmounts.is-net-pay .is-margin span{color:inherit;font-weight:700}
+ .managerPayrollMobile-employeeAmounts.is-net-pay .is-margin strong{font-size:17px}
+ .managerPayrollMobile-employeeAmounts.is-net-pay .managerPayrollMobile-detailHours{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:0;background:none}
+ .hourStat{display:grid;gap:6px;padding:10px 8px;border-radius:11px;background:#edf2f6;min-width:0}
+ .managerPayrollMobile-detailHours .hourStat span{font-size:10px}
+ .managerPayrollMobile-detailHours .hourStat strong{font-size:16px}
+ .hourStat-1{background:#eaf8ee;color:#15803d}.hourStat-2{background:#fff5e5}
+ .managerPayrollMobile-hours{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ .managerPayrollMobile-hours span,.managerPayrollMobile-hours span:last-child{display:flex;flex-wrap:wrap;justify-content:flex-start;text-align:left;align-content:start}
+}
+@media(max-width:390px){.managerPayrollMobile-rowMoney strong{font-size:16px}.managerPayrollMobile-detailHours .hourStat strong{font-size:14px}}
