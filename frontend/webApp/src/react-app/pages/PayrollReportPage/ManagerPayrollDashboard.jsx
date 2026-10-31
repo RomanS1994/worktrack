@@ -5,9 +5,9 @@ import './ManagerPayrollAdvances.css';
 import './ManagerPayrollEmployeesToggle.css';
 
 const COPY = {
-  uk: { customer: 'Від замовника', employeePay: 'Працівнику до виплати', table: 'У таблиці', approved: 'Погоджено', waiting: 'Очікує', managerHours: 'Години з таблиці', preliminary: 'Попередній дохід', revenue: 'Повна сума за працівника', totalRevenue: 'Повна сума за роботи для клієнтів', accrued: 'Нараховано працівнику', advances: 'Залоги', netPay: 'До виплати', laborMargin: 'Дохід компанії', netPayShort: 'до виплати', multipleRates: 'Кілька ставок', rateUnit: 'Kč/год', showEmployees: 'Показати працівників', hideEmployees: 'Згорнути працівників' },
-  cs: { customer: 'Od zákazníka', employeePay: 'Zaměstnanci k výplatě', table: 'V tabulce', approved: 'Schváleno', waiting: 'Čeká', managerHours: 'Hodiny z tabulky', preliminary: 'Předběžný výnos', revenue: 'Celková částka za zaměstnance', totalRevenue: 'Celková částka za všechny zaměstnance', accrued: 'Nárok zaměstnance', advances: 'Zálohy', netPay: 'K výplatě', laborMargin: 'Výnos společnosti', netPayShort: 'k výplatě', multipleRates: 'Více sazeb', rateUnit: 'Kč/h', showEmployees: 'Zobrazit zaměstnance', hideEmployees: 'Sbalit zaměstnance' },
-  en: { customer: 'From customer', employeePay: 'Employee net pay', table: 'Timesheet', approved: 'Approved', waiting: 'Pending', managerHours: 'Timesheet hours', preliminary: 'Provisional margin', revenue: 'Total amount for employee', totalRevenue: 'Total amount for all employees', accrued: 'Employee earnings', advances: 'Advances', netPay: 'Net pay', laborMargin: 'Company margin', netPayShort: 'net pay', multipleRates: 'Multiple rates', rateUnit: 'CZK/h', showEmployees: 'Show employees', hideEmployees: 'Collapse employees' },
+  uk: { noEarnings: 'Без нарахувань', customer: 'Від замовника', employeePay: 'До виплати', table: 'У таблиці', approved: 'Погоджено', waiting: 'Очікує', managerHours: 'Години з таблиці', preliminary: 'Попередній дохід', revenue: 'Повна сума за працівника', totalRevenue: 'Повна сума за роботи для клієнтів', accrued: 'Нараховано працівнику', advances: 'Залоги', netPay: 'До виплати', laborMargin: 'Дохід компанії', netPayShort: 'до виплати', multipleRates: 'Кілька ставок', rateUnit: 'Kč/год', showEmployees: 'Показати працівників', hideEmployees: 'Згорнути працівників' },
+  cs: { noEarnings: 'Bez částek', customer: 'Od zákazníka', employeePay: 'Zaměstnanci k výplatě', table: 'V tabulce', approved: 'Schváleno', waiting: 'Čeká', managerHours: 'Hodiny z tabulky', preliminary: 'Předběžný výnos', revenue: 'Celková částka za zaměstnance', totalRevenue: 'Celková částka za všechny zaměstnance', accrued: 'Nárok zaměstnance', advances: 'Zálohy', netPay: 'K výplatě', laborMargin: 'Výnos společnosti', netPayShort: 'k výplatě', multipleRates: 'Více sazeb', rateUnit: 'Kč/h', showEmployees: 'Zobrazit zaměstnance', hideEmployees: 'Sbalit zaměstnance' },
+  en: { noEarnings: 'No earnings', customer: 'From customer', employeePay: 'Employee net pay', table: 'Timesheet', approved: 'Approved', waiting: 'Pending', managerHours: 'Timesheet hours', preliminary: 'Provisional margin', revenue: 'Total amount for employee', totalRevenue: 'Total amount for all employees', accrued: 'Employee earnings', advances: 'Advances', netPay: 'Net pay', laborMargin: 'Company margin', netPayShort: 'net pay', multipleRates: 'Multiple rates', rateUnit: 'CZK/h', showEmployees: 'Show employees', hideEmployees: 'Collapse employees' },
 };
 
 function copyForLocale(locale = '') {
@@ -58,6 +58,7 @@ export function ManagerPayrollDashboard({
 }) {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
   const [employeesOpen, setEmployeesOpen] = useState(true);
+  const [showZeroEmployees, setShowZeroEmployees] = useState(false);
   const sortedEmployees = useMemo(() => [...employees].sort((a, b) => {
     const revenue = employee => Number(employee.summary?.revenueCzk ?? (accruedAmount(employee.summary) + Number(employee.summary?.laborMarginCzk || 0)));
     return revenue(b) - revenue(a) || a.name.localeCompare(b.name, locale);
@@ -73,6 +74,10 @@ export function ManagerPayrollDashboard({
   const pending = Number(visibleSummary?.predictedSalaryCzk || 0);
   const approvedHours = visibleSummary?.approvedHours || 0;
   const pendingHours = visibleSummary?.pendingHours || 0;
+
+  const hasAmounts = employee => ['revenueCzk', 'accruedSalaryCzk', 'netPayCzk', 'advancesCzk', 'predictedSalaryCzk'].some(key => Number(employee.summary?.[key] || 0) !== 0) || Number(employee.summary?.managerHours || 0) !== 0 || Number(employee.summary?.totalHours || 0) !== 0;
+  const zeroEmployees = sortedEmployees.filter(employee => !hasAmounts(employee));
+  const visibleEmployees = sortedEmployees.filter(employee => showZeroEmployees || hasAmounts(employee));
 
   const toggleEmployee = employeeId => {
     setSelectedEmployeeId(current => current === employeeId ? null : employeeId);
@@ -117,16 +122,16 @@ export function ManagerPayrollDashboard({
 
       <section className="managerPayrollMobile-employees">
         <header>
-          <h2>{t('payroll.breakdown')}</h2>
+          <h2>{t('payroll.employees')} · {employees.length}</h2>
           <button type="button" className="managerPayrollMobile-employeesToggle" aria-expanded={employeesOpen} aria-controls="manager-payroll-employee-list" aria-label={employeesOpen ? copy.hideEmployees : copy.showEmployees} onClick={() => setEmployeesOpen(open => !open)}>
             <svg className="managerPayrollMobile-employeesToggleIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 20v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-            <span className="managerPayrollMobile-employeesToggleCount">{employees.length}</span>
-            <span className="managerPayrollMobile-employeesToggleLabel">{t('payroll.employees').toLowerCase()}</span>
+            
+            <span className="managerPayrollMobile-employeesToggleLabel">{employeesOpen ? copy.hideEmployees : copy.showEmployees}</span>
             <svg className="managerPayrollMobile-employeesToggleChevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
           </button>
         </header>
         {employeesOpen ? <div className="managerPayrollMobile-list" id="manager-payroll-employee-list">
-          {sortedEmployees.map(employee => {
+          {visibleEmployees.map(employee => {
             const isSelected = employee.id === selectedEmployeeId;
             const employeeAccrued = accruedAmount(employee.summary);
             const employeeRevenue = Number(employee.summary?.revenueCzk ?? (employeeAccrued + Number(employee.summary?.laborMarginCzk || 0)));
@@ -147,6 +152,7 @@ export function ManagerPayrollDashboard({
               </button>
             );
           })}
+          {zeroEmployees.length > 0 ? <button type="button" className="managerPayrollMobile-zeroToggle" aria-expanded={showZeroEmployees} onClick={() => setShowZeroEmployees(value => !value)}>{copy.noEarnings} · {zeroEmployees.length}<span aria-hidden="true">{showZeroEmployees ? '⌃' : '⌄'}</span></button> : null}
         </div> : null}
       </section>
     </div>
