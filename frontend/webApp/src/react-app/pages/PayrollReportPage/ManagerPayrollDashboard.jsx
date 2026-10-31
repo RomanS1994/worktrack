@@ -5,9 +5,9 @@ import './ManagerPayrollAdvances.css';
 import './ManagerPayrollEmployeesToggle.css';
 
 const COPY = {
-  uk: { revenue: 'Повна сума за працівника', totalRevenue: 'Повна сума за роботи для клієнтів', accrued: 'Нараховано працівнику', advances: 'Залоги', netPay: 'До виплати', laborMargin: 'Дохід компанії', netPayShort: 'до виплати', multipleRates: 'Кілька ставок', rateUnit: 'Kč/год', showEmployees: 'Показати працівників', hideEmployees: 'Згорнути працівників' },
-  cs: { revenue: 'Celková částka za zaměstnance', totalRevenue: 'Celková částka za všechny zaměstnance', accrued: 'Nárok zaměstnance', advances: 'Zálohy', netPay: 'K výplatě', laborMargin: 'Výnos společnosti', netPayShort: 'k výplatě', multipleRates: 'Více sazeb', rateUnit: 'Kč/h', showEmployees: 'Zobrazit zaměstnance', hideEmployees: 'Sbalit zaměstnance' },
-  en: { revenue: 'Total amount for employee', totalRevenue: 'Total amount for all employees', accrued: 'Employee earnings', advances: 'Advances', netPay: 'Net pay', laborMargin: 'Company margin', netPayShort: 'net pay', multipleRates: 'Multiple rates', rateUnit: 'CZK/h', showEmployees: 'Show employees', hideEmployees: 'Collapse employees' },
+  uk: { managerHours: 'Години з таблиці', preliminary: 'Попередній дохід', revenue: 'Повна сума за працівника', totalRevenue: 'Повна сума за роботи для клієнтів', accrued: 'Нараховано працівнику', advances: 'Залоги', netPay: 'До виплати', laborMargin: 'Дохід компанії', netPayShort: 'до виплати', multipleRates: 'Кілька ставок', rateUnit: 'Kč/год', showEmployees: 'Показати працівників', hideEmployees: 'Згорнути працівників' },
+  cs: { managerHours: 'Hodiny z tabulky', preliminary: 'Předběžný výnos', revenue: 'Celková částka za zaměstnance', totalRevenue: 'Celková částka za všechny zaměstnance', accrued: 'Nárok zaměstnance', advances: 'Zálohy', netPay: 'K výplatě', laborMargin: 'Výnos společnosti', netPayShort: 'k výplatě', multipleRates: 'Více sazeb', rateUnit: 'Kč/h', showEmployees: 'Zobrazit zaměstnance', hideEmployees: 'Sbalit zaměstnance' },
+  en: { managerHours: 'Timesheet hours', preliminary: 'Provisional margin', revenue: 'Total amount for employee', totalRevenue: 'Total amount for all employees', accrued: 'Employee earnings', advances: 'Advances', netPay: 'Net pay', laborMargin: 'Company margin', netPayShort: 'net pay', multipleRates: 'Multiple rates', rateUnit: 'CZK/h', showEmployees: 'Show employees', hideEmployees: 'Collapse employees' },
 };
 
 function copyForLocale(locale = '') {
@@ -105,9 +105,10 @@ export function ManagerPayrollDashboard({
         <div className="managerPayrollMobile-moneyGrid is-net-pay">
           <div className="is-net"><span>{copy.netPay}</span><strong>{formatCzk(netPay, locale)}</strong></div>
           <div className="is-advance"><span>{copy.advances}</span><strong>− {formatCzk(advances, locale)}</strong></div>
-          <div className="is-margin"><span>{copy.laborMargin}</span><strong>{formatCzk(laborMargin, locale)}</strong></div>
+          <div className="is-margin"><span>{visibleSummary.marginIsPreliminary ? copy.preliminary : copy.laborMargin}</span><strong>{formatCzk(laborMargin, locale)}</strong></div>
         </div>
         <div className="managerPayrollMobile-hours">
+          <span>{copy.managerHours}: <b>{formatHours(visibleSummary.managerHours, locale)}</b></span>
           <span><i className="is-confirmed" /> <b>{formatHours(approvedHours, locale)}</b> {t('payroll.confirmed').toLowerCase()}</span>
           <span><i className="is-pending" /> <b>{formatHours(pendingHours, locale)}</b> {t('payroll.pending').toLowerCase()} · {formatCzk(pending, locale)}</span>
         </div>
@@ -138,8 +139,8 @@ export function ManagerPayrollDashboard({
                 {isSelected ? <div className="managerPayrollMobile-employeeAmounts is-net-pay">
                   <div><span>{copy.accrued}</span><strong>{formatCzk(employeeAccrued, locale)}</strong></div>
                   <div className="is-advance"><span>{copy.advances}</span><strong>− {formatCzk(employee.summary?.advancesCzk, locale)}</strong></div>
-                  <div className="is-margin"><span>{copy.laborMargin}</span><strong>{formatCzk(employee.summary?.laborMarginCzk, locale)}</strong></div>
-                  <div className="managerPayrollMobile-detailHours"><span>{t('payroll.approvedHours')}: {formatHours(employee.summary?.approvedHours, locale)} · {t('payroll.pendingHours')}: {formatHours(employee.summary?.pendingHours, locale)}</span></div>
+                  <div className="is-margin"><span>{employee.summary?.marginIsPreliminary ? copy.preliminary : copy.laborMargin}</span><strong>{formatCzk(employee.summary?.laborMarginCzk, locale)}</strong></div>
+                  <div className="managerPayrollMobile-detailHours"><span>{copy.managerHours}: {formatHours(employee.summary?.managerHours, locale)} · {t('payroll.approvedHours')}: {formatHours(employee.summary?.approvedHours, locale)} · {t('payroll.pendingHours')}: {formatHours(employee.summary?.pendingHours, locale)}</span></div>
                 </div> : null}
               </button>
             );
