@@ -1,6 +1,7 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import { getVapidPublicKey, sendWebPush } from './web-push.js';
+import { queueNativeChatPush } from './native-push.js';
 
 const PUSH_LANGUAGES = new Set(['uk', 'cs', 'en']);
 const REVIEW_REJECTED_FALLBACK = 'Your manager rejected this week. Open it to make corrections.';
@@ -195,7 +196,7 @@ async function pruneExpiredPushSubscriptions(client, membership, expiredEndpoint
   });
 }
 
-async function deliverPush(client, notification) {
+async function deliverPush(client, notification, retryFailures = false) {
   try {
     const membership = await client.companyMembership.findUnique({
       where: { id: notification.recipientMembershipId },
@@ -203,10 +204,13 @@ async function deliverPush(client, notification) {
         id: true,
         companyId: true,
         userId: true,
-        user: { select: { profile: true } },
+        status: true,
+        deletedAt: true,
+        user: { select: { profile: true, deletedAt: true } },
       },
     });
-    if (!membership) return;
+    if (!membership || membership.deletedAt || membership.user?.deletedAt ||
+      (membership.status && membership.status !== 'ACTIVE')) return;
 
     const subscriptions = readPushSubscriptions(membership.user?.profile)
       .filter(item => item.membershipId === membership.id && item.companyId === membership.companyId);
@@ -227,7 +231,12 @@ async function deliverPush(client, notification) {
     if (expiredEndpoints.size) {
       await pruneExpiredPushSubscriptions(client, membership, expiredEndpoints);
     }
+    if (retryFailures && results.some(result => result.status === 'rejected' ||
+      (!result.value?.ok && !result.value?.expired))) {
+      throw new Error('Web Push delivery requires retry');
+    }
   } catch (error) {
+    if (retryFailures) throw error;
     console.warn('Web Push delivery failed:', error instanceof Error ? error.message : String(error));
   }
 }
@@ -236,9 +245,11 @@ export async function createNotification(client, payload) {
   const recipient = await activeNotificationRecipient(client, payload);
   if (!recipient) return null;
 
-  const notification = await client.notification.create({
-    data: {
-      id: randomUUID(),
+  const deduplicationKey = payload.deduplicationKey
+    ? createHash('sha256').update('worktrack:notification:v1:').update(String(payload.deduplicationKey)).digest('hex')
+    : null;
+  const data = {
+      id: deduplicationKey ? `chat-${deduplicationKey}` : randomUUID(),
       companyId: payload.companyId,
       recipientMembershipId: payload.recipientMembershipId,
       type: String(payload.type || 'system').slice(0, 80),
@@ -246,10 +257,15 @@ export async function createNotification(client, payload) {
       message: String(payload.message || '').slice(0, 500),
       href: payload.href ? String(payload.href).slice(0, 300) : null,
       readAt: null,
-    },
-  });
+    };
+  const notification = deduplicationKey
+    ? await client.notification.upsert({ where: { id: data.id }, create: data, update: {} })
+    : await client.notification.create({ data });
 
-  await deliverPush(client, notification);
+  if (payload.nativeMessageId) await queueNativeChatPush(client, notification, payload.nativeMessageId);
+
+  // External push delivery is at-least-once. Stable IDs allow receivers to deduplicate.
+  await deliverPush(client, notification, Boolean(payload.retryPush));
   return notification;
 }
 
