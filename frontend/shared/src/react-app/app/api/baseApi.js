@@ -66,6 +66,7 @@ function isCompanyAccessError(error) {
       'COMPANY_ACCESS_REQUIRED',
       'MANAGER_ACCESS_REQUIRED',
       'EMPLOYEE_ACCESS_REQUIRED',
+      'EMPLOYEE_CABINET_ACCESS_DISABLED',
     ]).has(errorCode)
   ) {
     return true;
@@ -75,6 +76,7 @@ function isCompanyAccessError(error) {
     'Company access is required',
     'Manager access is required',
     'Employee access is required',
+    'Employee cabinet access is disabled',
   ]).has(getBackendErrorMessage(error));
 }
 

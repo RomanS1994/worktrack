@@ -1,6 +1,6 @@
-import { getAuthContext } from '../auth/context.js';
+import { getAuthContext, hasEmployeeCabinetAccess } from '../auth/context.js';
 import { runStoreRead } from '../db/store.js';
-import { sendJson } from '../lib/http.js';
+import { sendError, sendJson } from '../lib/http.js';
 import { getEmployeeWeek } from '../services/employee-work.js';
 import { getManagerDashboard } from '../services/manager-dashboard.js';
 import {
@@ -80,6 +80,10 @@ export async function handleWorkTrackRoutes(request, response, { pathName, url }
 
   const requestedCabinet = String(url.searchParams.get('cabinet') || '').trim().toLowerCase();
   const managerCabinet = context.activeMembership?.role === 'MANAGER' && requestedCabinet !== 'employee';
+  if (!managerCabinet && !hasEmployeeCabinetAccess(context)) {
+    sendError(response, 403, 'Employee cabinet access is disabled');
+    return true;
+  }
   const payload = await runStoreRead({
     prisma: client => managerCabinet
       ? getManagerDashboard(client, context)

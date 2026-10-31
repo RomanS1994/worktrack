@@ -1,6 +1,6 @@
-import { getAuthContext } from '../auth/context.js';
+import { getAuthContext, hasEmployeeAccess } from '../auth/context.js';
 import { runStoreRead, runStoreTransaction } from '../db/store.js';
-import { readJsonBody, sendJson } from '../lib/http.js';
+import { readJsonBody, sendError, sendJson } from '../lib/http.js';
 import { deleteProject } from '../services/deletion.js';
 import {
   createProject,
@@ -10,7 +10,12 @@ import {
 } from '../services/projects.js';
 
 async function auth(request, response) {
-  return (await getAuthContext(request, response)) || null;
+  const context = (await getAuthContext(request, response)) || null;
+  if (context?.activeMembership?.role === 'EMPLOYEE' && !hasEmployeeAccess(context)) {
+    sendError(response, 403, 'Employee cabinet access is disabled');
+    return null;
+  }
+  return context;
 }
 
 export async function handleProjectRoutes(request, response, { pathName }) {

@@ -97,7 +97,7 @@ export async function getManagerEmployees(client, context, now = new Date()) {
       userId: employee.userId,
       companyId: employee.companyId,
       role: employee.role,
-      canAccessEmployeeCabinet: true,
+      canAccessEmployeeCabinet: employee.canAccessEmployeeCabinet !== false,
       canAccessManagerCabinet: employee.role === 'MANAGER',
       status: employee.status,
       hourlyRateCzk: employee.hourlyRateCzk == null ? '0.00' : String(employee.hourlyRateCzk),

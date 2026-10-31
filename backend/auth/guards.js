@@ -33,15 +33,23 @@ export function hasManagerAccess(value) {
   return role === 'MANAGER';
 }
 
-export function hasEmployeeAccess(value) {
-  const role =
-    typeof value === 'string'
-      ? value
-      : value?.activeMembership?.role || value?.role || value?.membership?.role || '';
+export function hasEmployeeCabinetAccess(value) {
+  const membership =
+    typeof value === 'object' && value !== null
+      ? value.activeMembership || value.membership || value
+      : null;
+  return membership?.canAccessEmployeeCabinet !== false;
+}
 
-  // Keep this predicate compatible with existing role consumers. Dual access is
-  // granted by requireEmployee below without changing the persisted role.
-  return role === 'EMPLOYEE';
+export function hasEmployeeAccess(value) {
+  const membership =
+    typeof value === 'object' && value !== null
+      ? value.activeMembership || value.membership || value
+      : null;
+  const role = typeof value === 'string' ? value : membership?.role || value?.role || '';
+
+  // Managers receive employee compatibility access separately in requireEmployee.
+  return role === 'EMPLOYEE' && hasEmployeeCabinetAccess(value);
 }
 
 export function getAccessTokenClaims(request) {
@@ -185,6 +193,11 @@ export async function requireManager(request, response) {
 export async function requireEmployee(request, response) {
   const context = await getAuthContext(request, response);
   if (!context) return null;
+
+  if (!hasEmployeeCabinetAccess(context)) {
+    sendError(response, 403, 'Employee cabinet access is disabled');
+    return null;
+  }
 
   if (!hasEmployeeAccess(context) && !hasManagerAccess(context)) {
     sendError(response, 403, 'Employee access is required');

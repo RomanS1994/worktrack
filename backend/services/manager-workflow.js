@@ -132,7 +132,7 @@ function serializeEmployeeMembership(membership) {
     userId: membership.userId,
     companyId: membership.companyId,
     role: membership.role,
-    canAccessEmployeeCabinet: true,
+    canAccessEmployeeCabinet: membership.canAccessEmployeeCabinet !== false,
     canAccessManagerCabinet: membership.role === 'MANAGER',
     status: membership.status,
     hourlyRateCzk: membership.hourlyRateCzk == null ? '0.00' : String(membership.hourlyRateCzk),
@@ -322,6 +322,9 @@ export async function updateEmployeeMembership(client, context, employeeMembersh
       await ensureManagerWillRemain(client, managerMembership.companyId, existing.id);
     }
     data.role = managerAccess ? 'MANAGER' : 'EMPLOYEE';
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, 'canAccessEmployeeCabinet')) {
+    data.canAccessEmployeeCabinet = payload.canAccessEmployeeCabinet === true;
   }
   if (Object.prototype.hasOwnProperty.call(payload, 'status')) {
     const status = normalizeText(payload.status).toUpperCase();

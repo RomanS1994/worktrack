@@ -123,16 +123,17 @@ model Company {
 }
 
 model CompanyMembership {
-  id                 String           @id
-  companyId          String
-  userId             String
-  role               MembershipRole
-  hourlyRateCzk      Decimal?         @db.Decimal(10, 2)
-  customerRateCzk    Decimal?         @db.Decimal(10, 2)
-  status             MembershipStatus @default(ACTIVE)
-  deletedAt          DateTime?
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
+  id                       String           @id
+  companyId                String
+  userId                   String
+  role                     MembershipRole
+  canAccessEmployeeCabinet Boolean          @default(true)
+  hourlyRateCzk            Decimal?         @db.Decimal(10, 2)
+  customerRateCzk          Decimal?         @db.Decimal(10, 2)
+  status                   MembershipStatus @default(ACTIVE)
+  deletedAt                DateTime?
+  createdAt                DateTime         @default(now())
+  updatedAt                DateTime         @updatedAt
 
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)

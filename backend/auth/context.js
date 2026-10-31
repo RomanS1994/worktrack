@@ -2,6 +2,7 @@ export { requireApiKey } from './api-key.js';
 export {
   getAccessTokenClaims,
   getAuthContext,
+  hasEmployeeCabinetAccess,
   hasEmployeeAccess,
   hasManagerAccess,
   requireEmployee,

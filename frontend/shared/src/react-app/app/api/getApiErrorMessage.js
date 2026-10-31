@@ -12,6 +12,7 @@ const ERROR_COPY = {
     'Invalid phone number': 'Некоректний номер телефону.', 'Phone number is already used': 'Цей номер телефону вже використовується.',
     'Driver phone is required': 'Вкажіть номер телефону.', 'Team limit exceeded': 'Досягнуто ліміту учасників команди.', 'Team driver limit exceeded': 'Досягнуто ліміту працівників.',
     'Company access is required': 'Доступ до компанії неактивний або відсутній.', 'Manager access is required': 'Для цієї дії потрібен доступ менеджера.', 'Employee access is required': 'Для цієї дії потрібен доступ працівника.',
+    'Employee cabinet access is disabled': 'Доступ до кабінету працівника вимкнено. Зверніться до менеджера компанії.',
     'Notification not found': 'Сповіщення не знайдено.',
     'Project has work history and cannot be deleted. Deactivate it instead.': 'Цей об’єкт уже має історію робочих годин, тому його не можна видалити. Деактивуйте його — історія залишиться збереженою.',
     'Invalid invoice month': 'Виберіть коректний місяць для фактури.',
@@ -39,6 +40,7 @@ const ERROR_COPY = {
     'Invalid phone number': 'Neplatné telefonní číslo.', 'Phone number is already used': 'Toto telefonní číslo se již používá.',
     'Driver phone is required': 'Zadejte telefonní číslo.', 'Team limit exceeded': 'Byl dosažen limit členů týmu.', 'Team driver limit exceeded': 'Byl dosažen limit zaměstnanců.',
     'Company access is required': 'Přístup k firmě není aktivní nebo není k dispozici.', 'Manager access is required': 'Pro tuto akci je vyžadován přístup manažera.', 'Employee access is required': 'Pro tuto akci je vyžadován přístup zaměstnance.',
+    'Employee cabinet access is disabled': 'Přístup do zaměstnaneckého kabinetu je vypnutý. Obraťte se na manažera společnosti.',
     'Notification not found': 'Oznámení nebylo nalezeno.',
     'Project has work history and cannot be deleted. Deactivate it instead.': 'Tento projekt již obsahuje historii odpracovaných hodin, proto jej nelze odstranit. Deaktivujte jej — historie zůstane zachována.',
     'Invalid invoice month': 'Vyberte platný měsíc faktury.',
@@ -58,6 +60,7 @@ const ERROR_COPY = {
   },
   en: {
     fallback: 'Request failed.', fetch: 'Could not connect to the server.', timeout: 'The server response timed out.', parsing: 'The server returned an invalid response.',
+    'Employee cabinet access is disabled': 'Employee cabinet access is disabled. Contact your company manager.',
     'Project has work history and cannot be deleted. Deactivate it instead.': 'This project already has work-hour history and cannot be deleted. Deactivate it instead so the history stays preserved.',
     'Invalid invoice month': 'Choose a valid invoice month.',
     'Complete tax information before creating an invoice': 'Complete your tax and billing details before creating an invoice.',

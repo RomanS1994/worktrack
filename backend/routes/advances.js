@@ -78,6 +78,7 @@ export async function handleAdvanceRoutes(request, response, { pathName, url }) 
         employees: employees.map(m => ({
           id: m.id,
           role: m.role,
+          canAccessEmployeeCabinet: m.canAccessEmployeeCabinet !== false,
           canAccessManagerCabinet: m.role === 'MANAGER',
           name: [m.user?.firstName, m.user?.lastName].filter(Boolean).join(' ').trim() || m.user?.name || m.user?.email || '',
           email: m.user?.email || '',

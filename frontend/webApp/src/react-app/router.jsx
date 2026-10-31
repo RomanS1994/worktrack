@@ -43,7 +43,7 @@ export const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: 'sign-in', element: <GuestStage defaultMode="login" /> },
       { path: 'register', element: <GuestStage defaultMode="register" /> },
-      { path: 'dashboard', element: <ProtectedRoute><DashboardPage /></ProtectedRoute> },
+      { path: 'dashboard', element: <ProtectedRoute requireEmployeeCabinet><DashboardPage /></ProtectedRoute> },
       { path: 'partners', element: <ProtectedRoute><PartnerProgramsPage /></ProtectedRoute> },
       { path: 'chat', element: <ProtectedRoute><ChatPage /></ProtectedRoute> },
       {
@@ -56,7 +56,7 @@ export const router = createBrowserRouter([
       },
       { path: 'hours-advanced', element: <ProtectedRoute requireEmployee><Navigate to="/hours" replace /></ProtectedRoute> },
       {
-        element: <ProtectedRoute><SectionShell section="finance" /></ProtectedRoute>,
+        element: <ProtectedRoute requireEmployeeCabinet><SectionShell section="finance" /></ProtectedRoute>,
         children: [
           { path: 'payroll-report', element: <PayrollReportPage /> },
           { path: 'finance', element: <Navigate to="/payroll-report" replace /> },

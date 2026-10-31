@@ -1,6 +1,6 @@
-import { getAuthContext } from '../auth/context.js';
+import { getAuthContext, hasEmployeeCabinetAccess } from '../auth/context.js';
 import { runStoreRead, runStoreTransaction } from '../db/store.js';
-import { readJsonBody, sendJson } from '../lib/http.js';
+import { readJsonBody, sendError, sendJson } from '../lib/http.js';
 
 function normalizeProfile(value) {
   return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -35,6 +35,10 @@ export async function handleDefaultProjectRoutes(request, response, { pathName }
 
   const context = await getAuthContext(request, response);
   if (!context) return true;
+  if (!hasEmployeeCabinetAccess(context)) {
+    sendError(response, 403, 'Employee cabinet access is disabled');
+    return true;
+  }
 
   if (request.method === 'GET') {
     const payload = await runStoreRead({ prisma: client => loadDefaultProject(client, context) });

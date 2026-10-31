@@ -1,6 +1,6 @@
-import { getAuthContext, requireManager } from '../auth/context.js';
+import { getAuthContext, hasEmployeeAccess, requireManager } from '../auth/context.js';
 import { runStoreRead, runStoreTransaction } from '../db/store.js';
-import { readJsonBody, sendJson } from '../lib/http.js';
+import { readJsonBody, sendError, sendJson } from '../lib/http.js';
 
 const BREAK_OPTIONS = new Set([0, 30, 60]);
 
@@ -35,6 +35,10 @@ export async function handleWorkRulesRoutes(request, response, { pathName }) {
   if (request.method === 'GET') {
     const context = await getAuthContext(request, response);
     if (!context) return true;
+    if (context.activeMembership?.role === 'EMPLOYEE' && !hasEmployeeAccess(context)) {
+      sendError(response, 403, 'Employee cabinet access is disabled');
+      return true;
+    }
     const company = await runStoreRead({
       prisma: client => client.company.findUnique({
         where: { id: context.activeMembership.companyId },

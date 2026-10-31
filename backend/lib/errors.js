@@ -28,6 +28,7 @@ const STATUS_BY_MESSAGE = new Map([
   ['Invalid phone number', 400],
   ['Phone number is already used', 409],
   ['Employee access is required', 403],
+  ['Employee cabinet access is disabled', 403],
   ['Manager access is required', 403],
   ['Project is required', 400],
   ['Project name is required', 400],

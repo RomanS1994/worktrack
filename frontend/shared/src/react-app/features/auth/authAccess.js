@@ -19,6 +19,8 @@ export function hasManagerAccess(user) {
 }
 
 export function hasEmployeeAccess(user) {
-  const role = typeof user === 'string' ? user : getActiveMembership(user)?.role;
-  return role === 'EMPLOYEE' || role === 'MANAGER';
+  const membership = getActiveMembership(user);
+  const role = typeof user === 'string' ? user : membership?.role;
+  if (role !== 'EMPLOYEE' && role !== 'MANAGER') return false;
+  return membership?.canAccessEmployeeCabinet !== false;
 }

@@ -38,6 +38,7 @@ function serializeMembership(membership) {
     companyId: membership.companyId,
     userId: membership.userId,
     role: membership.role,
+    canAccessEmployeeCabinet: membership.canAccessEmployeeCabinet !== false,
     hourlyRateCzk: membership.hourlyRateCzk == null ? '' : String(membership.hourlyRateCzk),
     status: membership.status,
     company: serializeCompany(membership.company),

@@ -238,6 +238,7 @@ export async function getManagerPayroll(client, context, query = {}) {
       name: getEmployeeName(membership.user),
       email: membership.user?.email || '',
       status: membership.status,
+      canAccessEmployeeCabinet: membership.canAccessEmployeeCabinet !== false,
       canAccessManagerCabinet: membership.role === 'MANAGER',
       hourlyRateCzk: membership.hourlyRateCzk == null ? '0.00' : String(membership.hourlyRateCzk),
       customerRateCzk: String(customerRate),
