@@ -1,3 +1,4 @@
+import { loadRatesForDate, ratesForDate } from './membership-rates.js';
 import { randomUUID } from 'node:crypto';
 
 import { createAuditLog } from '../db/prisma-helpers.js';
@@ -146,7 +147,7 @@ function ensureEmployeeContext(context) {
   const membership = context?.activeMembership || context?.membership || context || null;
   if (!membership?.companyId || membership.status === 'INACTIVE') throw new Error('Company access is required');
   if (!['EMPLOYEE', 'MANAGER'].includes(membership.role)) throw new Error('Employee access is required');
-  return membership;
+  return membership.rateHistory?.length ? { ...membership, ...ratesForDate(membership, new Date()) } : membership;
 }
 
 function serializeProject(project) {
@@ -375,6 +376,7 @@ export async function createEmployeeWorkEntry(client, context, payload = {}) {
   });
   if (existing) throw new Error('Work entry already exists');
 
+  const rates = await loadRatesForDate(client, membership, workDate);
   const timestamp = new Date(nowIso());
   const entry = await client.workEntry.create({
     data: {
@@ -385,10 +387,7 @@ export async function createEmployeeWorkEntry(client, context, payload = {}) {
       weeklySubmissionId: null,
       workDate,
       hours: normalizeHoursString(payload.hours),
-      hourlyRateCzk: membership.hourlyRateCzk == null ? null : String(membership.hourlyRateCzk),
-      customerRateCzk: membership.customerRateCzk == null
-        ? (membership.hourlyRateCzk == null ? null : String(membership.hourlyRateCzk))
-        : String(membership.customerRateCzk),
+      ...rates,
       status: 'DRAFT',
       createdAt: timestamp,
       updatedAt: timestamp,

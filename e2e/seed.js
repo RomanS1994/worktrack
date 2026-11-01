@@ -9,10 +9,8 @@ if (!password) throw new Error('E2E_USER_PASSWORD is required');
 const romanEmail = `roman-e2e-${runId}@example.test`;
 const mishaEmail = `misha-e2e-${runId}@example.test`;
 const now = new Date();
-const utcDay = now.getUTCDay();
-const mondayOffset = utcDay === 0 ? -6 : 1 - utcDay;
-const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + mondayOffset));
-const workDate = new Date(monday.getTime() + 24 * 60 * 60 * 1000);
+// Keep the seeded entry inside both the visible month and current week.
+const workDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
 const companyId = randomUUID();
 const romanUserId = randomUUID();
