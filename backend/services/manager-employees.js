@@ -1,3 +1,4 @@
+import { ratesForDate } from './membership-rates.js';
 import { calculateNetWorkSummary } from './work-time-calculation.js';
 import { getWeekRange, serializeWeek } from './week-utils.js';
 import { avatarUrl, avatarUrlFromRecord } from './avatars.js';
@@ -100,10 +101,12 @@ export async function getManagerEmployees(client, context, now = new Date()) {
       canAccessEmployeeCabinet: employee.canAccessEmployeeCabinet !== false,
       canAccessManagerCabinet: employee.role === 'MANAGER',
       status: employee.status,
+      rateHistory: Array.isArray(employee.rateHistory) ? employee.rateHistory.filter(item => !item.baseline) : [],
       hourlyRateCzk: employee.hourlyRateCzk == null ? '0.00' : String(employee.hourlyRateCzk),
       customerRateCzk: employee.customerRateCzk == null
         ? (employee.hourlyRateCzk == null ? '0.00' : String(employee.hourlyRateCzk))
         : String(employee.customerRateCzk),
+      ...ratesForDate(employee, now),
       pendingSubmissions: Array.isArray(employee.weeklySubmissions) ? employee.weeklySubmissions.length : 0,
       user: serializeUser(employee.user),
       email: employee.user?.email || '',
