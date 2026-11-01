@@ -1,3 +1,4 @@
+import { ratesForDate } from './membership-rates.js';
 import { randomUUID } from 'node:crypto';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -355,7 +356,7 @@ export async function upsertManagerTimesheetCell(client, context, employeeMember
 
   const employee = await client.companyMembership.findFirst({
     where: { id: employeeMembershipId, companyId, status: 'ACTIVE', deletedAt: null },
-    select: { id: true, hourlyRateCzk: true, customerRateCzk: true },
+    select: { id: true, hourlyRateCzk: true, customerRateCzk: true, rateHistory:true },
   });
   if (!employee) throw new Error('Employee not found');
 
@@ -392,7 +393,7 @@ export async function upsertManagerTimesheetCell(client, context, employeeMember
     select: { id: true, companyId: true, hourlyRateCzk: true, customerRateCzk: true },
   });
   if (existing && existing.companyId !== companyId) throw new Error('Timesheet entry belongs to another company');
-  const rates = rateSnapshot(employee);
+  const rates = ratesForDate(employee, workDate);
   const snapshotData = existing
     ? {
         hourlyRateCzk: existing.hourlyRateCzk == null ? rates.hourlyRateCzk : String(existing.hourlyRateCzk),
