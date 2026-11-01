@@ -64,6 +64,7 @@ const STATUS_BY_MESSAGE = new Map([
   ['Notification not found', 404],
   ['Invalid payroll anchor date', 400],
   ['Invalid payroll period', 400],
+  ['Invalid rate effective date', 400],
   ['Rejection reason is required', 400],
   ['Rejection reason must be 500 characters or fewer', 400],
   ['Invalid invoice month', 400],
