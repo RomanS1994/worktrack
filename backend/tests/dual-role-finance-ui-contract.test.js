@@ -48,5 +48,7 @@ test('cabinet-sensitive UI uses reactive cabinet mode', async () => {
   assert.match(notifications, /setCabinetMode\(['"]employee['"],\s*user\)/);
   assert.match(protectedRoute, /useCabinetMode\(user\)/);
   assert.match(protectedRoute, /requireManager\s*&&\s*\(!hasManagerAccess\(user\)\s*\|\|\s*cabinetMode\s*!==\s*['"]manager['"]\)/);
-  assert.match(protectedRoute, /requireEmployee\s*&&\s*\(!hasEmployeeAccess\(user\)\s*\|\|\s*cabinetMode\s*!==\s*['"]employee['"]\)/);
+  assert.match(protectedRoute, /requireEmployee\s*&&\s*!hasEmployeeAccess\(user\)/);
+  assert.match(protectedRoute, /return <EmployeeCabinetAccessBlocked/);
+  assert.match(protectedRoute, /requireEmployee\s*&&\s*cabinetMode\s*!==\s*['"]employee['"]/);
 });
