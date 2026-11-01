@@ -1,0 +1,44 @@
+.employeesModal.is-drawer{display:flex;flex-direction:column;overflow:hidden}
+.employeesModal.is-drawer>header{flex-shrink:0}
+.employeesModal.is-drawer .employeeSettingsBody{overflow-y:auto;min-height:0;gap:22px;padding:20px;overscroll-behavior:contain}
+.employeesModal.is-drawer .employeeDetailHero{grid-template-columns:48px minmax(0,1fr);gap:5px 12px}
+.employeesModal.is-drawer .employeeDetailAvatar{grid-row:1/3;width:48px;height:48px;border-radius:50%}
+.employeesModal.is-drawer .employeeDetailHero strong{white-space:normal;overflow-wrap:anywhere;font-size:19px;line-height:1.3}
+.employeesModal.is-drawer .employeeDetailHero p{font-size:12px;white-space:normal;overflow-wrap:anywhere}
+.employeesModal.is-drawer .employeeDetailHero em{grid-column:2;justify-self:start;font-size:10px;padding:3px 8px}
+.employeesModal.is-drawer .employeeDetailSection{gap:10px}
+.employeesModal.is-drawer .employeeDetailSection h3{font-size:15px;text-transform:none;letter-spacing:0;color:var(--text)}
+.employeeSettingsRates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.employeeSettingsRates .employeesField{min-width:0}
+.employeeSettingsRates .employeesField>span{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500}
+.employeeSettingsHelp{position:relative;color:var(--muted)}
+.employeeSettingsHelp summary{cursor:pointer;list-style:none}
+.employeeSettingsHelp summary::-webkit-details-marker{display:none}
+.employeeSettingsHelp[open] small{position:absolute;z-index:3;top:22px;left:-55px;width:180px;padding:10px;border:1px solid var(--line);border-radius:9px;background:#fff;box-shadow:0 5px 16px #17203316}
+.employeeSettingsInput{display:flex;align-items:center;min-width:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.employeeSettingsInput:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.employeesModal.is-drawer .employeeSettingsInput input{width:100%;min-width:0;border:0;outline:none;box-shadow:none;padding:10px;min-height:44px;font-size:16px;background:transparent}
+.employeeSettingsInput>span{flex-shrink:0;padding-right:9px;color:var(--muted);font-size:10px}
+.employeeSettingsGroup{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.employeeSettingsAccess,.employeeSettingsAction{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:12px;border:0;border-radius:0;background:#fff;box-shadow:none;text-align:left;color:var(--text);font:inherit}
+.employeeSettingsGroup>*+*{border-top:1px solid var(--line)}
+.employeeSettingsAccess>svg,.employeeSettingsAction>svg{flex-shrink:0;width:20px;height:20px;color:#657487}
+.employeeSettingsAccess>span,.employeeSettingsAction>span{flex:1;min-width:0;font-size:13px;font-weight:500;line-height:1.4}
+.employeeSettingsAccess small,.employeeSettingsAction small{display:block;margin-top:3px;font-size:11px;color:var(--muted);font-weight:400}
+.employeeSettingsAccess>i{flex-shrink:0;width:38px;height:24px;border-radius:20px;background:#a9b2bb;position:relative;transition:background .15s}
+.employeeSettingsAccess>i::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .15s}
+.employeeSettingsAccess>i.is-on{background:#159447}.employeeSettingsAccess>i.is-on::after{transform:translateX(14px)}
+.employeeSettingsAction>b{font-size:20px;color:var(--muted)}
+.employeeSettingsAction.is-danger{color:#b91c1c}.employeeSettingsAction.is-success{color:#15803d}
+.employeeSettingsArchive{font-size:12px;color:var(--muted)}
+.employeeSettingsArchive summary{padding:8px 0;cursor:pointer}
+.employeeSettingsArchive p{font-size:11px;line-height:1.5}
+.employeeSettingsFooter{flex-shrink:0;padding:12px 20px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:#fff}
+.employeeSettingsFooter button{width:100%;min-height:44px;border-radius:11px;font-size:14px}
+.employeeSettingsAccess:disabled,.employeeSettingsAction:disabled{opacity:.5}
+@media(max-width:600px){.employeesModal.is-drawer .employeeSettingsBody{padding:16px;gap:20px}.employeeSettingsFooter{padding-left:16px;padding-right:16px}.employeeSettingsRates{gap:9px}}
+.employeeSettingsDateNote{margin:0;font-size:11px;line-height:1.5;color:var(--muted)}
+.employeeSettingsRateNotice{margin:0;padding:10px;border-radius:10px;background:#fff7e6;color:#80551b;font-size:12px;line-height:1.5}
+.employeeSettingsRateHistory{font-size:12px;color:var(--muted)}
+.employeeSettingsRateHistory summary{padding:9px 0;cursor:pointer}
+.employeeSettingsRateHistory button{display:flex;justify-content:space-between;gap:8px;width:100%;padding:11px 0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none;color:var(--text);font-size:11px;text-align:left}
