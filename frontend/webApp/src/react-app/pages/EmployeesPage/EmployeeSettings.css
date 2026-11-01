@@ -42,3 +42,43 @@
 .employeeSettingsRateHistory{font-size:12px;color:var(--muted)}
 .employeeSettingsRateHistory summary{padding:9px 0;cursor:pointer}
 .employeeSettingsRateHistory button{display:flex;justify-content:space-between;gap:8px;width:100%;padding:11px 0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none;color:var(--text);font-size:11px;text-align:left}
+
+/* Let grid and flex children shrink within the drawer instead of sizing it by content. */
+.employeesModal.is-drawer .employeeSettingsBody{width:100%;max-width:100%;min-width:0;grid-template-columns:minmax(0,1fr);overflow-x:hidden;align-content:start}
+.employeesModal.is-drawer .employeeSettingsBody>*,
+.employeesModal.is-drawer .employeeSettingsBody .employeeDetailSection,
+.employeesModal.is-drawer .employeeSettingsRates,
+.employeesModal.is-drawer .employeeSettingsGroup,
+.employeesModal.is-drawer .employeesField{min-width:0;max-width:100%;width:100%}
+.employeesModal.is-drawer .employeeDetailSection{grid-template-columns:minmax(0,1fr)}
+.employeesModal.is-drawer .employeeSettingsRates{grid-template-columns:repeat(2,minmax(0,1fr))}
+.employeesModal.is-drawer .employeeSettingsRates .employeesField{grid-template-columns:minmax(0,1fr);align-content:start}
+.employeesModal.is-drawer .employeeSettingsInput{width:100%;min-width:0}
+.employeesModal.is-drawer .employeeSettingsInput input{flex:1 1 0;width:0;min-width:0;max-width:100%}
+.employeesModal.is-drawer .employeesField>input[type=date]{display:block;width:100%;min-width:0;max-width:100%;min-height:44px;appearance:none;-webkit-appearance:none;text-align:left}
+.employeesModal.is-drawer input[type=date]::-webkit-date-and-time-value{text-align:left}
+.employeesModal.is-drawer .employeeSettingsDateNote,
+.employeesModal.is-drawer .employeeSettingsRateNotice,
+.employeesModal.is-drawer .employeeSettingsAccess>span,
+.employeesModal.is-drawer .employeeSettingsAction>span,
+.employeesModal.is-drawer .employeeSettingsRateHistory button{white-space:normal;overflow-wrap:anywhere;min-width:0}
+.employeesModal.is-drawer .employeeSettingsAccess,
+.employeesModal.is-drawer .employeeSettingsAction{min-width:0;max-width:100%;white-space:normal}
+.employeesModal.is-drawer>header>div{min-width:0}
+.employeesModal.is-drawer>header h2{font-size:18px;line-height:1.3;overflow-wrap:anywhere}
+.employeesModal.is-drawer>header>button{flex-shrink:0}
+.employeesModal.is-drawer .employeeSettingsFooter{width:100%;min-width:0}
+@media(max-width:600px){
+ .employeesModal.is-drawer{height:88dvh;max-height:88dvh;max-width:100vw}
+ .employeesModal.is-drawer .employeeSettingsBody{padding:16px;gap:18px}
+ .employeesModal.is-drawer .employeeDetailHero strong{font-size:17px}
+ .employeesModal.is-drawer .employeeSettingsRates .employeesField>span{font-size:11px;gap:4px;white-space:normal}
+ .employeesModal.is-drawer .employeeSettingsInput>span{font-size:10px;padding-right:7px}
+ .employeesModal.is-drawer .employeeSettingsHelp[open] small{left:auto;right:-10px;width:min(170px,65vw)}
+}
+.employeesModal.is-drawer .employeeSettingsDateControl{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;min-width:0;min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
+.employeeSettingsDateValue{font-size:16px;color:var(--text);font-weight:400;font-variant-numeric:tabular-nums}
+.employeeSettingsDateControl>svg{width:19px;height:19px;flex-shrink:0;color:var(--muted);pointer-events:none}
+.employeesModal.is-drawer .employeeSettingsDateControl>input[type=date]{position:absolute;inset:0;width:100%;height:100%;min-width:0;margin:0;padding:0;border:0;opacity:.01;cursor:pointer}
+.employeeSettingsDateControl:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.employeeSettingsDateControl:has(input:disabled){opacity:.55}
