@@ -1,3 +1,4 @@
+import { changedRateHistory, ratesForDate, rateDate } from './membership-rates.js';
 import { randomUUID } from 'node:crypto';
 
 import { hashPassword } from '../auth/tokens.js';
@@ -305,7 +306,12 @@ export async function createManagerEmployee(client, context, payload = {}) {
   return serializeEmployeeMembership(membership);
 }
 
-export async function updateEmployeeMembership(client, context, employeeMembershipId, payload = {}) {
+export async function updateEmployeeMembership(client, context, employeeMembershipId, payload = {}, inTransaction = false) {
+  const editingRates = Object.prototype.hasOwnProperty.call(payload, 'hourlyRateCzk') || Object.prototype.hasOwnProperty.call(payload, 'customerRateCzk');
+  if (editingRates && !inTransaction && client.$transaction) return client.$transaction(async tx => {
+    await tx.$queryRaw`SELECT id FROM company_memberships WHERE id = ${employeeMembershipId} FOR UPDATE`;
+    return updateEmployeeMembership(tx, context, employeeMembershipId, payload, true);
+  });
   const managerMembership = ensureManagerContext(context);
   const existing = await client.companyMembership.findFirst({
     where: { id: employeeMembershipId, companyId: managerMembership.companyId, deletedAt: null },
@@ -314,8 +320,19 @@ export async function updateEmployeeMembership(client, context, employeeMembersh
   if (!existing) throw new Error('Employee not found');
 
   const data = { updatedAt: new Date(nowIso()) };
-  if (Object.prototype.hasOwnProperty.call(payload, 'hourlyRateCzk')) data.hourlyRateCzk = normalizeMoneyString(payload.hourlyRateCzk);
-  if (Object.prototype.hasOwnProperty.call(payload, 'customerRateCzk')) data.customerRateCzk = normalizeMoneyString(payload.customerRateCzk);
+  let rateChange = null;
+  if (editingRates) {
+    const effectiveFrom = rateDate(payload.effectiveFrom || new Date());
+    const previous = ratesForDate(existing, effectiveFrom);
+    const rates = {
+      hourlyRateCzk: Object.prototype.hasOwnProperty.call(payload, 'hourlyRateCzk') ? normalizeMoneyString(payload.hourlyRateCzk) : previous.hourlyRateCzk,
+      customerRateCzk: Object.prototype.hasOwnProperty.call(payload, 'customerRateCzk') ? normalizeMoneyString(payload.customerRateCzk) : previous.customerRateCzk,
+    };
+    data.rateHistory = changedRateHistory(existing, effectiveFrom, rates);
+    Object.assign(data, ratesForDate({ ...existing, rateHistory:data.rateHistory }, new Date()));
+    const next = data.rateHistory.find(item => item.effectiveFrom > effectiveFrom);
+    rateChange = { rates, workDate: { gte:new Date(`${effectiveFrom}T00:00:00Z`), ...(next ? { lt:new Date(`${next.effectiveFrom}T00:00:00Z`) } : {}) } };
+  }
   if (Object.prototype.hasOwnProperty.call(payload, 'canAccessManagerCabinet')) {
     const managerAccess = payload.canAccessManagerCabinet === true;
     if (existing.role === 'MANAGER' && !managerAccess) {
@@ -335,6 +352,11 @@ export async function updateEmployeeMembership(client, context, employeeMembersh
     data.status = status;
   }
 
+  if (rateChange) {
+    const where = { employeeMembershipId:existing.id, companyId:managerMembership.companyId, workDate:rateChange.workDate };
+    await client.workEntry.updateMany({ where, data:rateChange.rates });
+    await client.managerTimesheetEntry.updateMany({ where, data:rateChange.rates });
+  }
   const membership = await client.companyMembership.update({
     where: { id: existing.id },
     data,
