@@ -1,3 +1,4 @@
+import { ratesForDate } from '../services/membership-rates.js';
 import { randomUUID } from 'node:crypto';
 
 import { getUserAvatarUrl, profileWithoutAvatarData } from '../services/avatars.js';
@@ -39,7 +40,7 @@ function serializeMembership(membership) {
     userId: membership.userId,
     role: membership.role,
     canAccessEmployeeCabinet: membership.canAccessEmployeeCabinet !== false,
-    hourlyRateCzk: membership.hourlyRateCzk == null ? '' : String(membership.hourlyRateCzk),
+    hourlyRateCzk: membership.rateHistory?.length ? ratesForDate(membership, new Date()).hourlyRateCzk : (membership.hourlyRateCzk == null ? '' : String(membership.hourlyRateCzk)),
     status: membership.status,
     company: serializeCompany(membership.company),
     createdAt: toIsoString(membership.createdAt),
