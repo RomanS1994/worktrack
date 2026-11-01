@@ -68,6 +68,7 @@ export const router = createBrowserRouter([
           { path: 'manager/invoices', element: <ProtectedRoute requireManager><ManagerInvoicesPage /></ProtectedRoute> },
         ],
       },
+      { path: 'employees/:employeeId', element: <ProtectedRoute requireManager><EmployeesPage /></ProtectedRoute> },
       { path: 'manager/advances/new', element: <ProtectedRoute requireManager><ManagerAdvanceCreatePage /></ProtectedRoute> },
       { path: 'manager/expenses/new', element: <ProtectedRoute requireManager><ManagerExpenseCreatePage /></ProtectedRoute> },
       { path: 'invoices/:invoiceId', element: <ProtectedRoute requireEmployee><InvoiceDocumentPage /></ProtectedRoute> },
