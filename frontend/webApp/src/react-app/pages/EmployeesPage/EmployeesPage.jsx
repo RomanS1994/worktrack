@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { RequestLoadingState } from '@shared/app/components/RequestLoader/RequestLoader.jsx';
@@ -41,6 +42,8 @@ function formatHours(value) {
 
 export function EmployeesPage() {
   const { language, t } = useI18n();
+  const { employeeId } = useParams();
+  const navigate = useNavigate();
   const ac = ACCESS_COPY[language] || ACCESS_COPY.uk;
   const settings = SETTINGS_COPY[language] || SETTINGS_COPY.uk;
   const { data, error, isLoading } = useGetManagerEmployeesQuery();
@@ -85,9 +88,15 @@ export function EmployeesPage() {
 
   function clearMessages(){setActionError('');setActionSuccess('')}
   function updateForm(field,value){setForm(current=>({...current,[field]:value}))}
-  function openManage(employee){clearMessages();setEffectiveFrom(getLocalDateKey());setRateDateChanged(false);setRateSaved(false);setRateBase({pay:Number(employee.hourlyRateCzk||0),customer:Number(employee.customerRateCzk??employee.hourlyRateCzk??0)});setSelectedEmployeeId(employee.id);setRateDraft(employee.hourlyRateCzk || '0.00');setCustomerRateDraft(employee.customerRateCzk || employee.hourlyRateCzk || '0.00');setEmployeeAccessDraft(employee.canAccessEmployeeCabinet !== false);setManagerAccessDraft(Boolean(employee.canAccessManagerCabinet ?? employee.role === 'MANAGER'));setResetPassword('');setModal('manage')}
+  function initializeSettings(employee){clearMessages();setEffectiveFrom(getLocalDateKey());setRateDateChanged(false);setRateSaved(false);setRateBase({pay:Number(employee.hourlyRateCzk||0),customer:Number(employee.customerRateCzk??employee.hourlyRateCzk??0)});setSelectedEmployeeId(employee.id);setRateDraft(employee.hourlyRateCzk || '0.00');setCustomerRateDraft(employee.customerRateCzk || employee.hourlyRateCzk || '0.00');setEmployeeAccessDraft(employee.canAccessEmployeeCabinet !== false);setManagerAccessDraft(Boolean(employee.canAccessManagerCabinet ?? employee.role === 'MANAGER'));setResetPassword('');setModal('manage')}
+  function openManage(employee){navigate(`/employees/${encodeURIComponent(employee.id)}`)}
+  useEffect(() => {
+    if (!employeeId) { setModal('');setSelectedEmployeeId('');return; }
+    const employee = employees.find(item => item.id === employeeId);
+    if (employee && selectedEmployeeId !== employeeId) initializeSettings(employee);
+  }, [employeeId, employees, selectedEmployeeId]);
   function openAddEmployee(){setForm(EMPTY_EMPLOYEE_FORM);clearMessages();setModal('add')}
-  function closeModal(){if(deleteState.isLoading)return;setModal('');setResetPassword('');setActionError('')}
+  function closeModal(){if(isMutating)return;if(employeeId){navigate('/employees');return;}setModal('');setResetPassword('');setActionError('')}
 
   async function submitEmployee(event){
     event.preventDefault();
@@ -129,6 +138,7 @@ export function EmployeesPage() {
     setActionError('');
     try{
       await deleteManagerEmployee(selectedEmployee.id).unwrap();
+      if(employeeId) navigate('/employees');
       setSelectedEmployeeId('');
       setModal('');
       setActionSuccess(t('employees.deleted',{name:employeeName}));
@@ -155,6 +165,48 @@ export function EmployeesPage() {
       :modal==='delete'
         ?t('employees.deleteEmployee')
         :settings.title;
+
+  const settingsContent = (modal?<div className={employeeId ? "employeeSettingsPage" : "employeesModalBackdrop"} onMouseDown={e=>{if(!employeeId&&e.target===e.currentTarget)closeModal()}}><section className={`employeesModal${employeeId||modal==='manage'?' is-drawer':''}`} role={employeeId ? "region" : "dialog"} aria-modal={employeeId ? undefined : true} aria-label={modalTitle}><header><div>{modal!=='manage'?<span>{t('employees.team')}</span>:null}<h2>{modalTitle}</h2></div><button type="button" aria-label={employeeId ? (language==='cs'?'Zpět k týmu':language==='en'?'Back to team':'Назад до команди') : t('employees.close')} disabled={isMutating} onClick={closeModal}>{employeeId ? '‹' : '×'}</button></header>
+      {modal==='add'?<form className="employeesModalBody" onSubmit={submitEmployee}><p className="employeesModalCopy">{t('employees.addCopy')}</p><div className="employeesFormGrid"><label className="employeesField"><span>{t('employees.firstName')}</span><input type="text" value={form.firstName} onChange={e=>updateForm('firstName',e.target.value)} required/></label><label className="employeesField"><span>{t('employees.lastName')}</span><input type="text" value={form.lastName} onChange={e=>updateForm('lastName',e.target.value)} required/></label></div><label className="employeesField"><span>{t('employees.email')}</span><input type="email" value={form.email} onChange={e=>updateForm('email',e.target.value)} required/></label><label className="employeesField"><span>{t('employees.temporaryPassword')}</span><input type="password" minLength={8} value={form.temporaryPassword} onChange={e=>updateForm('temporaryPassword',e.target.value)} required/></label><div className="employeesFormGrid"><label className="employeesField"><span>{t('employees.hourlyRate')}</span><small>{t('employees.hourlyRateHint')}</small><input inputMode="decimal" type="number" min="0" step="0.01" value={form.hourlyRateCzk} onChange={e=>updateForm('hourlyRateCzk',e.target.value)} required/></label><label className="employeesField"><span>{t('employees.customerRate')}</span><small>{t('employees.customerRateHint')}</small><input inputMode="decimal" type="number" min="0" step="0.01" value={form.customerRateCzk} onChange={e=>updateForm('customerRateCzk',e.target.value)}/></label></div>{actionError?<p className="statusNote is-error">{actionError}</p>:null}<button className="employeesPrimaryButton" disabled={isMutating}>{t('employees.addEmployee')}</button></form>:null}
+      {modal==='manage'&&selectedEmployee?<>
+        <div className="employeesModalBody employeeSettingsBody">
+          <section className="employeeDetailHero">
+            <span className={`employeeDetailAvatar${getEmployeeAvatar(selectedEmployee)?' has-photo':''}`}>{getEmployeeAvatar(selectedEmployee)?<img src={getEmployeeAvatar(selectedEmployee)} alt=""/>:getEmployeeName(selectedEmployee,t('employees.employee')).slice(0,1).toUpperCase()}</span>
+            <div><strong>{getEmployeeName(selectedEmployee,t('employees.employee'))}</strong><p>{selectedEmployee.email}</p></div>
+            <em className={selectedEmployee.status==='ACTIVE'?'is-active':''}>{selectedEmployee.status==='ACTIVE'?t('employees.activeStatus'):t('employees.inactiveStatus')}</em>
+          </section>
+          <section className="employeeDetailSection">
+            <h3>{settings.rates}</h3>
+            <div className="employeeSettingsRates">
+              <label className="employeesField"><span>{settings.worker}<details className="employeeSettingsHelp"><summary aria-label={t('employees.hourlyRateHint')}>ⓘ</summary><small>{t('employees.hourlyRateHint')}</small></details></span><div className="employeeSettingsInput"><input aria-label={settings.worker} inputMode="decimal" type="number" min="0" step="0.01" value={rateDraft} onChange={e=>{setRateDraft(e.target.value);setRateSaved(false)}}/><span>{settings.unit}</span></div></label>
+              <label className="employeesField"><span>{settings.customer}<details className="employeeSettingsHelp"><summary aria-label={t('employees.customerRateHint')}>ⓘ</summary><small>{t('employees.customerRateHint')}</small></details></span><div className="employeeSettingsInput"><input aria-label={settings.customer} inputMode="decimal" type="number" min="0" step="0.01" value={customerRateDraft} onChange={e=>{setCustomerRateDraft(e.target.value);setRateSaved(false)}}/><span>{settings.unit}</span></div></label>
+            </div>
+            <label className="employeesField"><span>{settings.effective}</span><span className="employeeSettingsDateControl"><span className="employeeSettingsDateValue" aria-hidden="true">{effectiveFrom ? effectiveFrom.split('-').reverse().join('.') : '—'}</span><SvgIcon name="calendar"/><input type="date" aria-label={settings.effective} required disabled={isMutating} value={effectiveFrom} onChange={event=>{setEffectiveFrom(event.target.value);setRateDateChanged(true);setRateSaved(false)}}/></span></label>
+            <p className="employeeSettingsDateNote">{settings.dateHint}</p>
+            {ratesChanged && effectiveFrom ? <p className="employeeSettingsRateNotice" role="status">{effectiveFrom <= getLocalDateKey() ? settings.retro : settings.scheduled}</p> : null}
+            {selectedEmployee.rateHistory?.length ? <details className="employeeSettingsRateHistory"><summary>{settings.historyTitle}</summary>{[...selectedEmployee.rateHistory].sort((a,b)=>b.effectiveFrom.localeCompare(a.effectiveFrom)).map(item=><button type="button" key={item.effectiveFrom} onClick={()=>{setEffectiveFrom(item.effectiveFrom);setRateDraft(item.hourlyRateCzk);setCustomerRateDraft(item.customerRateCzk);setRateDateChanged(true);setRateSaved(false)}}><span>{item.effectiveFrom.split('-').reverse().join('.')}</span><strong>{item.hourlyRateCzk} → {item.customerRateCzk} {settings.unit}</strong></button>)}</details> : null}
+          </section>
+          <section className="employeeDetailSection"><h3>{settings.access}</h3><div className="employeeSettingsGroup">
+            {[[ac.employeeCabinet,employeeAccessDraft,setEmployeeAccessDraft,'user'],[ac.managerCabinet,managerAccessDraft,setManagerAccessDraft,'users']].map(([label,enabled,setEnabled,icon])=><button key={label} type="button" className="employeeSettingsAccess" role="switch" aria-checked={enabled} aria-label={label} disabled={isMutating} onClick={()=>setEnabled(value=>!value)}><SvgIcon name={icon}/><span>{label}<small>{enabled?settings.on:settings.off}</small></span><i className={enabled?'is-on':''} aria-hidden="true"/></button>)}
+          </div></section>
+          {actionError?<p className="statusNote is-error" role="alert">{actionError}</p>:null}
+          {actionSuccess?<p className="statusNote is-success" role="status">{actionSuccess}</p>:null}
+          <section className="employeeDetailSection"><h3>{settings.management}</h3><div className="employeeSettingsGroup">
+            <button className="employeeSettingsAction" type="button" disabled={isMutating} onClick={()=>{setResetPassword('');setModal('password')}}><SvgIcon name="lock"/><span>{t('employees.resetPassword')}</span><b aria-hidden="true">›</b></button>
+            <button className={`employeeSettingsAction ${selectedEmployee.status==='ACTIVE'?'is-danger':'is-success'}`} type="button" disabled={isMutating} onClick={toggleEmployeeStatus}><SvgIcon name="user"/><span>{selectedEmployee.status==='ACTIVE'?t('employees.deactivate'):t('employees.reactivate')}<small>{settings.history}</small></span><b aria-hidden="true">›</b></button>
+          </div></section>
+          <details className="employeeSettingsArchive"><summary>{settings.archive}</summary><p>{settings.archiveHint}</p><button className="employeeSettingsAction is-danger" type="button" disabled={isMutating||Boolean(selectedEmployee.canAccessManagerCabinet ?? selectedEmployee.role==='MANAGER')} onClick={()=>{setActionError('');setModal('delete')}}><SvgIcon name="trash"/><span>{t('employees.deleteEmployee')}</span><b aria-hidden="true">›</b></button></details>
+        </div>
+        <footer className="employeeSettingsFooter"><button className="employeesPrimaryButton" type="button" disabled={isMutating||!hasValidRateDraft||!hasValidCustomerRateDraft||!effectiveFrom||!settingsChanged} onClick={saveRate}>{settings.save}</button></footer>
+      </>:null}
+      {modal==='password'&&selectedEmployee?<form className="employeesModalBody" onSubmit={submitPasswordReset}><p className="employeesModalCopy">{t('employees.resetCopy')}</p><label className="employeesField"><span>{t('employees.newTemporaryPassword')}</span><input type="password" minLength={8} value={resetPassword} placeholder={t('employees.minPlaceholder')} onChange={e=>setResetPassword(e.target.value)} required/></label>{actionError?<p className="statusNote is-error">{actionError}</p>:null}<button className="employeesPrimaryButton" disabled={isMutating||resetPassword.length<8}>{t('employees.setTemporaryPassword')}</button><button className="employeesCancelButton" type="button" onClick={()=>setModal('manage')}>{t('employees.cancel')}</button></form>:null}
+      {modal==='delete'&&selectedEmployee?<div className="employeesModalBody"><p className="employeesModalCopy">{t('employees.deleteCopy',{name:getEmployeeName(selectedEmployee,t('employees.employee'))})}</p><p className="employeesDeleteWarning">{t('employees.deleteWarning')}</p>{actionError?<p className="statusNote is-error">{actionError}</p>:null}<button className="employeesDangerButton" type="button" disabled={deleteState.isLoading} onClick={confirmDeleteEmployee}>{deleteState.isLoading?t('employees.deleting'):t('employees.confirmDelete')}</button><button className="employeesCancelButton" type="button" disabled={deleteState.isLoading} onClick={()=>{setActionError('');setModal('manage')}}>{t('employees.cancel')}</button></div>:null}
+    </section></div>:null);
+  if (employeeId) {
+    if (isLoading || (!selectedEmployee && !error && employees.some(item=>item.id===employeeId))) return <RequestLoadingState label={t('employees.loading')}/>;
+    if (!selectedEmployee) return <section className="employeeSettingsMissing"><button type="button" onClick={()=>navigate('/employees')}>‹ {t('employees.team')}</button><p role="alert">{error ? getApiErrorMessage(error) : (language==='cs'?'Pracovník nenalezen':language==='en'?'Employee not found':'Працівника не знайдено')}</p></section>;
+    return settingsContent;
+  }
 
   return <section className="employeesPage pageStack">
     <header className="employeesHeader appTop">
@@ -217,41 +269,6 @@ export function EmployeesPage() {
     </section>
     {actionError && !modal ? <p className="statusNote is-error">{actionError}</p> : null}
 
-    {modal?<div className="employeesModalBackdrop" onMouseDown={e=>{if(e.target===e.currentTarget)closeModal()}}><section className={`employeesModal${modal==='manage'?' is-drawer':''}`} role="dialog" aria-modal="true"><header><div>{modal!=='manage'?<span>{t('employees.team')}</span>:null}<h2>{modalTitle}</h2></div><button type="button" aria-label={t('employees.close')} onClick={closeModal}>×</button></header>
-      {modal==='add'?<form className="employeesModalBody" onSubmit={submitEmployee}><p className="employeesModalCopy">{t('employees.addCopy')}</p><div className="employeesFormGrid"><label className="employeesField"><span>{t('employees.firstName')}</span><input type="text" value={form.firstName} onChange={e=>updateForm('firstName',e.target.value)} required/></label><label className="employeesField"><span>{t('employees.lastName')}</span><input type="text" value={form.lastName} onChange={e=>updateForm('lastName',e.target.value)} required/></label></div><label className="employeesField"><span>{t('employees.email')}</span><input type="email" value={form.email} onChange={e=>updateForm('email',e.target.value)} required/></label><label className="employeesField"><span>{t('employees.temporaryPassword')}</span><input type="password" minLength={8} value={form.temporaryPassword} onChange={e=>updateForm('temporaryPassword',e.target.value)} required/></label><div className="employeesFormGrid"><label className="employeesField"><span>{t('employees.hourlyRate')}</span><small>{t('employees.hourlyRateHint')}</small><input inputMode="decimal" type="number" min="0" step="0.01" value={form.hourlyRateCzk} onChange={e=>updateForm('hourlyRateCzk',e.target.value)} required/></label><label className="employeesField"><span>{t('employees.customerRate')}</span><small>{t('employees.customerRateHint')}</small><input inputMode="decimal" type="number" min="0" step="0.01" value={form.customerRateCzk} onChange={e=>updateForm('customerRateCzk',e.target.value)}/></label></div>{actionError?<p className="statusNote is-error">{actionError}</p>:null}<button className="employeesPrimaryButton" disabled={isMutating}>{t('employees.addEmployee')}</button></form>:null}
-      {modal==='manage'&&selectedEmployee?<>
-        <div className="employeesModalBody employeeSettingsBody">
-          <section className="employeeDetailHero">
-            <span className={`employeeDetailAvatar${getEmployeeAvatar(selectedEmployee)?' has-photo':''}`}>{getEmployeeAvatar(selectedEmployee)?<img src={getEmployeeAvatar(selectedEmployee)} alt=""/>:getEmployeeName(selectedEmployee,t('employees.employee')).slice(0,1).toUpperCase()}</span>
-            <div><strong>{getEmployeeName(selectedEmployee,t('employees.employee'))}</strong><p>{selectedEmployee.email}</p></div>
-            <em className={selectedEmployee.status==='ACTIVE'?'is-active':''}>{selectedEmployee.status==='ACTIVE'?t('employees.activeStatus'):t('employees.inactiveStatus')}</em>
-          </section>
-          <section className="employeeDetailSection">
-            <h3>{settings.rates}</h3>
-            <div className="employeeSettingsRates">
-              <label className="employeesField"><span>{settings.worker}<details className="employeeSettingsHelp"><summary aria-label={t('employees.hourlyRateHint')}>ⓘ</summary><small>{t('employees.hourlyRateHint')}</small></details></span><div className="employeeSettingsInput"><input aria-label={settings.worker} inputMode="decimal" type="number" min="0" step="0.01" value={rateDraft} onChange={e=>{setRateDraft(e.target.value);setRateSaved(false)}}/><span>{settings.unit}</span></div></label>
-              <label className="employeesField"><span>{settings.customer}<details className="employeeSettingsHelp"><summary aria-label={t('employees.customerRateHint')}>ⓘ</summary><small>{t('employees.customerRateHint')}</small></details></span><div className="employeeSettingsInput"><input aria-label={settings.customer} inputMode="decimal" type="number" min="0" step="0.01" value={customerRateDraft} onChange={e=>{setCustomerRateDraft(e.target.value);setRateSaved(false)}}/><span>{settings.unit}</span></div></label>
-            </div>
-            <label className="employeesField"><span>{settings.effective}</span><span className="employeeSettingsDateControl"><span className="employeeSettingsDateValue" aria-hidden="true">{effectiveFrom ? effectiveFrom.split('-').reverse().join('.') : '—'}</span><SvgIcon name="calendar"/><input type="date" aria-label={settings.effective} required disabled={isMutating} value={effectiveFrom} onChange={event=>{setEffectiveFrom(event.target.value);setRateDateChanged(true);setRateSaved(false)}}/></span></label>
-            <p className="employeeSettingsDateNote">{settings.dateHint}</p>
-            {ratesChanged && effectiveFrom ? <p className="employeeSettingsRateNotice" role="status">{effectiveFrom <= getLocalDateKey() ? settings.retro : settings.scheduled}</p> : null}
-            {selectedEmployee.rateHistory?.length ? <details className="employeeSettingsRateHistory"><summary>{settings.historyTitle}</summary>{[...selectedEmployee.rateHistory].sort((a,b)=>b.effectiveFrom.localeCompare(a.effectiveFrom)).map(item=><button type="button" key={item.effectiveFrom} onClick={()=>{setEffectiveFrom(item.effectiveFrom);setRateDraft(item.hourlyRateCzk);setCustomerRateDraft(item.customerRateCzk);setRateDateChanged(true);setRateSaved(false)}}><span>{item.effectiveFrom.split('-').reverse().join('.')}</span><strong>{item.hourlyRateCzk} → {item.customerRateCzk} {settings.unit}</strong></button>)}</details> : null}
-          </section>
-          <section className="employeeDetailSection"><h3>{settings.access}</h3><div className="employeeSettingsGroup">
-            {[[ac.employeeCabinet,employeeAccessDraft,setEmployeeAccessDraft,'user'],[ac.managerCabinet,managerAccessDraft,setManagerAccessDraft,'users']].map(([label,enabled,setEnabled,icon])=><button key={label} type="button" className="employeeSettingsAccess" role="switch" aria-checked={enabled} aria-label={label} disabled={isMutating} onClick={()=>setEnabled(value=>!value)}><SvgIcon name={icon}/><span>{label}<small>{enabled?settings.on:settings.off}</small></span><i className={enabled?'is-on':''} aria-hidden="true"/></button>)}
-          </div></section>
-          {actionError?<p className="statusNote is-error" role="alert">{actionError}</p>:null}
-          {actionSuccess?<p className="statusNote is-success" role="status">{actionSuccess}</p>:null}
-          <section className="employeeDetailSection"><h3>{settings.management}</h3><div className="employeeSettingsGroup">
-            <button className="employeeSettingsAction" type="button" disabled={isMutating} onClick={()=>{setResetPassword('');setModal('password')}}><SvgIcon name="lock"/><span>{t('employees.resetPassword')}</span><b aria-hidden="true">›</b></button>
-            <button className={`employeeSettingsAction ${selectedEmployee.status==='ACTIVE'?'is-danger':'is-success'}`} type="button" disabled={isMutating} onClick={toggleEmployeeStatus}><SvgIcon name="user"/><span>{selectedEmployee.status==='ACTIVE'?t('employees.deactivate'):t('employees.reactivate')}<small>{settings.history}</small></span><b aria-hidden="true">›</b></button>
-          </div></section>
-          <details className="employeeSettingsArchive"><summary>{settings.archive}</summary><p>{settings.archiveHint}</p><button className="employeeSettingsAction is-danger" type="button" disabled={isMutating||Boolean(selectedEmployee.canAccessManagerCabinet ?? selectedEmployee.role==='MANAGER')} onClick={()=>{setActionError('');setModal('delete')}}><SvgIcon name="trash"/><span>{t('employees.deleteEmployee')}</span><b aria-hidden="true">›</b></button></details>
-        </div>
-        <footer className="employeeSettingsFooter"><button className="employeesPrimaryButton" type="button" disabled={isMutating||!hasValidRateDraft||!hasValidCustomerRateDraft||!effectiveFrom||!settingsChanged} onClick={saveRate}>{settings.save}</button></footer>
-      </>:null}
-      {modal==='password'&&selectedEmployee?<form className="employeesModalBody" onSubmit={submitPasswordReset}><p className="employeesModalCopy">{t('employees.resetCopy')}</p><label className="employeesField"><span>{t('employees.newTemporaryPassword')}</span><input type="password" minLength={8} value={resetPassword} placeholder={t('employees.minPlaceholder')} onChange={e=>setResetPassword(e.target.value)} required/></label>{actionError?<p className="statusNote is-error">{actionError}</p>:null}<button className="employeesPrimaryButton" disabled={isMutating||resetPassword.length<8}>{t('employees.setTemporaryPassword')}</button><button className="employeesCancelButton" type="button" onClick={()=>setModal('manage')}>{t('employees.cancel')}</button></form>:null}
-      {modal==='delete'&&selectedEmployee?<div className="employeesModalBody"><p className="employeesModalCopy">{t('employees.deleteCopy',{name:getEmployeeName(selectedEmployee,t('employees.employee'))})}</p><p className="employeesDeleteWarning">{t('employees.deleteWarning')}</p>{actionError?<p className="statusNote is-error">{actionError}</p>:null}<button className="employeesDangerButton" type="button" disabled={deleteState.isLoading} onClick={confirmDeleteEmployee}>{deleteState.isLoading?t('employees.deleting'):t('employees.confirmDelete')}</button><button className="employeesCancelButton" type="button" disabled={deleteState.isLoading} onClick={()=>{setActionError('');setModal('manage')}}>{t('employees.cancel')}</button></div>:null}
-    </section></div>:null}
+    {settingsContent}
   </section>;
 }
