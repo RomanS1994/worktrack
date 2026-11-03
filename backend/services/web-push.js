@@ -138,6 +138,7 @@ export async function sendWebPush(subscription, payload) {
       TTL: '86400',
     },
     body,
+    signal: AbortSignal.timeout(15_000),
   });
 
   return {
