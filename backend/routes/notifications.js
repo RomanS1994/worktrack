@@ -1,6 +1,7 @@
 import { getAuthContext } from '../auth/context.js';
 import { runStoreRead, runStoreTransaction } from '../db/store.js';
 import { readJsonBody, sendJson } from '../lib/http.js';
+import { deleteNativePushRegistration, getNativePushSettings, saveNativePushRegistration } from '../services/native-push.js';
 import {
   deletePushSubscription,
   getPushSettings,
@@ -31,6 +32,25 @@ function withoutChatNotifications(payload) {
 }
 
 export async function handleNotificationRoutes(request, response, { pathName }) {
+  if (pathName === '/api/notifications/native-push' && ['GET', 'POST', 'DELETE'].includes(request.method)) {
+    const context = await getAuthContext(request, response);
+    if (!context) return true;
+    const body = request.method === 'GET' ? null : await readJsonBody(request);
+    let payload;
+    try {
+      payload = request.method === 'GET'
+        ? await runStoreRead({ prisma: client => getNativePushSettings(client, context) })
+        : await runStoreTransaction({ prisma: client => request.method === 'POST'
+          ? saveNativePushRegistration(client, context, body)
+          : deleteNativePushRegistration(client, context, body) });
+    } catch (cause) {
+      if (['Native push access is required', 'Invalid native push registration'].includes(cause?.message)) throw cause;
+      // Raw driver errors can contain bound token values: never forward or log them.
+      throw new Error('Native push operation unavailable');
+    }
+    sendJson(response, 200, payload);
+    return true;
+  }
   if (request.method === 'GET' && pathName === '/api/notifications') {
     const context = await getAuthContext(request, response);
     if (!context) return true;
