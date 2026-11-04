@@ -14,6 +14,7 @@ import { getChatReactions, toggleChatReaction } from '../services/chat-reactions
 import { broadcastCompanyChat, getCompanyChatPresence, subscribeToCompanyChat } from '../services/chat-live.js';
 import { notifyCompanyAboutChatMessage } from '../services/chat-push.js';
 import { avatarUrl, avatarUrlFromRecord } from '../services/avatars.js';
+import { createChatAttachment, deleteChatAttachment, getChatAttachment } from '../services/chat-attachments.js';
 
 export async function handleChatRoutes(request, response, { url, pathName }) {
   if (!pathName.startsWith('/api/chat')) return false;
@@ -33,6 +34,41 @@ export async function handleChatRoutes(request, response, { url, pathName }) {
 
   if (request.method === 'GET' && pathName === '/api/chat/presence') {
     sendJson(response, 200, getCompanyChatPresence(context.activeMembership.companyId));
+    return true;
+  }
+
+  const attachmentMatch = pathName.match(/^\/api\/chat\/attachments\/([^/]+)$/);
+  if (request.method === 'DELETE' && attachmentMatch) {
+    const payload = await runStoreTransaction({
+      prisma: client => deleteChatAttachment(client, context, decodeURIComponent(attachmentMatch[1])),
+    });
+    sendJson(response, 200, payload);
+    return true;
+  }
+
+  if (request.method === 'GET' && attachmentMatch) {
+    const attachment = await runStoreRead({
+      prisma: client => getChatAttachment(client, context, decodeURIComponent(attachmentMatch[1])),
+    });
+    const extension = attachment.mimeType === 'image/png' ? 'png' : attachment.mimeType === 'image/webp' ? 'webp' : 'jpg';
+    const safeName = String(attachment.fileName || `image.${extension}`).replace(/[\r\n"]/g, '_').slice(0, 100);
+    response.writeHead(200, {
+      'Content-Type': attachment.mimeType,
+      'Content-Length': attachment.data.length,
+      'Content-Disposition': `inline; filename="${safeName}"`,
+      'X-Content-Type-Options': 'nosniff',
+      'Cache-Control': 'private, no-store',
+    });
+    response.end(attachment.data);
+    return true;
+  }
+
+  if (request.method === 'POST' && pathName === '/api/chat/attachments') {
+    const body = await readJsonBody(request);
+    const attachment = await runStoreTransaction({
+      prisma: client => createChatAttachment(client, context, body),
+    });
+    sendJson(response, 201, { attachment });
     return true;
   }
 

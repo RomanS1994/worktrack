@@ -117,6 +117,7 @@ model Company {
   managerTimesheetEntries ManagerTimesheetEntry[]
   salaryAdvances          SalaryAdvance[]
   expenses                CompanyExpense[]
+  chatAttachments         ChatAttachment[]
 
   @@index([slug])
   @@map("companies")
@@ -150,6 +151,7 @@ model CompanyMembership {
   managerSalaryAdvances             SalaryAdvance[]         @relation("ManagerSalaryAdvances")
   employeeCompanyExpenses           CompanyExpense[]        @relation("EmployeeCompanyExpenses")
   managerCompanyExpenses            CompanyExpense[]        @relation("ManagerCompanyExpenses")
+  chatAttachments                   ChatAttachment[]        @relation("ChatAttachmentUploader")
 
   @@unique([companyId, userId])
   @@index([userId])
@@ -157,6 +159,24 @@ model CompanyMembership {
   @@index([companyId, status])
   @@index([companyId, deletedAt])
   @@map("company_memberships")
+}
+
+model ChatAttachment {
+  id                   String   @id
+  companyId            String   @map("company_id")
+  uploaderMembershipId String   @map("uploader_membership_id")
+  messageId            String?  @map("message_id")
+  fileName             String   @map("file_name")
+  mimeType             String   @map("mime_type")
+  fileData             Bytes    @map("file_data")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  company  Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  uploader CompanyMembership @relation("ChatAttachmentUploader", fields: [uploaderMembershipId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@index([companyId, uploaderMembershipId, createdAt])
+  @@map("chat_attachments")
 }
 
 model Project {
