@@ -68,7 +68,7 @@ function AuthenticatedChatAttachment({attachment,label,retryLabel}){
       .catch(()=>{if(active)setFailed(true)});
     return()=>{active=false;if(nextUrl)URL.revokeObjectURL(nextUrl)};
   },[attachment.url,attempt]);
-  if(failed)return <button type="button" className="companyChatAttachmentError" onClick={()=>setAttempt(value=>value+1)}>{label} · {retryLabel}</button>;
+  if(failed)return <button type="button" className="companyChatAttachmentRetry" onClick={()=>setAttempt(value=>value+1)}>{label} · {retryLabel}</button>;
   return <a href={objectUrl||undefined} target="_blank" rel="noreferrer" className="companyChatAttachment" aria-label={attachment.fileName||label} onClick={event=>{if(!objectUrl)event.preventDefault()}}><img src={objectUrl||undefined} alt={attachment.fileName||label} loading="lazy"/><span>{attachment.fileName||label}</span></a>;
 }
 
