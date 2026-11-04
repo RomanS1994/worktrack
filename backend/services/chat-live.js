@@ -66,7 +66,6 @@ export function subscribeToCompanyChat(request, response, companyId, membershipI
     else broadcastPresence(companyId);
   }
 
-  request.on('close', cleanup);
   response.on('close', cleanup);
 }
 
