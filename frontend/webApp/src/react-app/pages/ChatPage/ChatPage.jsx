@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { selectUser } from '@shared/features/auth/authSlice.js';
 import { getChatConnectionState } from '@shared/features/chat/chatConnectionState.js';
 import {
@@ -27,10 +27,11 @@ const RETAINED_OLDER_MESSAGES=200;
 const READ_VISIBILITY_RATIO=.6;
 const READ_SETTLE_MS=180;
 const LONG_PRESS_MOVE_TOLERANCE=10;
+const CHAT_CONTEXT_REQUEST_TIMEOUT_MS=10000;
 const COPY={
-  uk:{back:'Назад',title:'Чат компанії',subtitle:'Спільний чат для всієї команди',online:'онлайн',placeholder:'Написати повідомлення…',send:'Надіслати',older:'Завантажити старіші',empty:'Поки що повідомлень немає.',today:'Сьогодні',yesterday:'Вчора',newMessages:'Нові повідомлення',scrollNew:'Нові повідомлення',delete:'Видалити',deleteConfirm:'Видалити повідомлення?',deleteConfirmCopy:'Цю дію неможливо скасувати.',cancel:'Скасувати',typing:'друкує…',delivered:'Доставлено',read:'Прочитано',reply:'Відповісти',replyingTo:'Відповідь',cancelReply:'Скасувати відповідь',deletedMessage:'Повідомлення видалено',reaction:'Поставити реакцію',reactions:'Реакції',reactedBy:'Поставили реакцію',close:'Закрити',actions:'Дії з повідомленням',copy:'Копіювати',sendFailed:'Не вдалося надіслати',retry:'Повторити',connecting:'Підключення…',reconnecting:'Перепідключення…',offline:'Немає мережі',you:'Ви',tapToRemove:'Торкніться, щоб вилучити'},
-  cs:{back:'Zpět',title:'Firemní chat',subtitle:'Společný chat pro celý tým',online:'online',placeholder:'Napsat zprávu…',send:'Odeslat',older:'Načíst starší',empty:'Zatím zde nejsou žádné zprávy.',today:'Dnes',yesterday:'Včera',newMessages:'Nové zprávy',scrollNew:'Nové zprávy',delete:'Smazat',deleteConfirm:'Smazat zprávu?',deleteConfirmCopy:'Tuto akci nelze vrátit zpět.',cancel:'Zrušit',typing:'píše…',delivered:'Doručeno',read:'Přečteno',reply:'Odpovědět',replyingTo:'Odpověď',cancelReply:'Zrušit odpověď',deletedMessage:'Zpráva byla smazána',reaction:'Přidat reakci',reactions:'Reakce',reactedBy:'Reagovali',close:'Zavřít',actions:'Akce zprávy',copy:'Kopírovat',sendFailed:'Zprávu se nepodařilo odeslat',retry:'Zkusit znovu',connecting:'Připojování…',reconnecting:'Obnovování spojení…',offline:'Bez připojení',you:'Vy',tapToRemove:'Klepnutím odeberete'},
-  en:{back:'Back',title:'Company chat',subtitle:'Shared chat for the whole team',online:'online',placeholder:'Write a message…',send:'Send',older:'Load older',empty:'No messages yet.',today:'Today',yesterday:'Yesterday',newMessages:'New messages',scrollNew:'New messages',delete:'Delete',deleteConfirm:'Delete message?',deleteConfirmCopy:'This action cannot be undone.',cancel:'Cancel',typing:'is typing…',delivered:'Delivered',read:'Read',reply:'Reply',replyingTo:'Replying to',cancelReply:'Cancel reply',deletedMessage:'Message deleted',reaction:'Add reaction',reactions:'Reactions',reactedBy:'Reacted by',close:'Close',actions:'Message actions',copy:'Copy',sendFailed:'Failed to send',retry:'Retry',connecting:'Connecting…',reconnecting:'Reconnecting…',offline:'Offline',you:'You',tapToRemove:'Tap to remove'},
+  uk:{back:'Назад',title:'Чат компанії',subtitle:'Спільний чат для всієї команди',online:'онлайн',placeholder:'Написати повідомлення…',send:'Надіслати',older:'Завантажити старіші',empty:'Поки що повідомлень немає.',linkUnavailable:'Не вдалося відкрити це повідомлення. Можливо, його видалили.',today:'Сьогодні',yesterday:'Вчора',newMessages:'Нові повідомлення',scrollNew:'Нові повідомлення',delete:'Видалити',deleteConfirm:'Видалити повідомлення?',deleteConfirmCopy:'Цю дію неможливо скасувати.',cancel:'Скасувати',typing:'друкує…',delivered:'Доставлено',read:'Прочитано',reply:'Відповісти',replyingTo:'Відповідь',cancelReply:'Скасувати відповідь',deletedMessage:'Повідомлення видалено',reaction:'Поставити реакцію',reactions:'Реакції',reactedBy:'Поставили реакцію',close:'Закрити',actions:'Дії з повідомленням',copy:'Копіювати',sendFailed:'Не вдалося надіслати',retry:'Повторити',connecting:'Підключення…',reconnecting:'Перепідключення…',offline:'Немає мережі',you:'Ви',tapToRemove:'Торкніться, щоб вилучити'},
+  cs:{back:'Zpět',title:'Firemní chat',subtitle:'Společný chat pro celý tým',online:'online',placeholder:'Napsat zprávu…',send:'Odeslat',older:'Načíst starší',empty:'Zatím zde nejsou žádné zprávy.',linkUnavailable:'Tuto zprávu se nepodařilo otevřít. Možná byla smazána.',today:'Dnes',yesterday:'Včera',newMessages:'Nové zprávy',scrollNew:'Nové zprávy',delete:'Smazat',deleteConfirm:'Smazat zprávu?',deleteConfirmCopy:'Tuto akci nelze vrátit zpět.',cancel:'Zrušit',typing:'píše…',delivered:'Doručeno',read:'Přečteno',reply:'Odpovědět',replyingTo:'Odpověď',cancelReply:'Zrušit odpověď',deletedMessage:'Zpráva byla smazána',reaction:'Přidat reakci',reactions:'Reakce',reactedBy:'Reagovali',close:'Zavřít',actions:'Akce zprávy',copy:'Kopírovat',sendFailed:'Zprávu se nepodařilo odeslat',retry:'Zkusit znovu',connecting:'Připojování…',reconnecting:'Obnovování spojení…',offline:'Bez připojení',you:'Vy',tapToRemove:'Klepnutím odeberete'},
+  en:{back:'Back',title:'Company chat',subtitle:'Shared chat for the whole team',online:'online',placeholder:'Write a message…',send:'Send',older:'Load older',empty:'No messages yet.',linkUnavailable:'Could not open this message. It may have been deleted.',today:'Today',yesterday:'Yesterday',newMessages:'New messages',scrollNew:'New messages',delete:'Delete',deleteConfirm:'Delete message?',deleteConfirmCopy:'This action cannot be undone.',cancel:'Cancel',typing:'is typing…',delivered:'Delivered',read:'Read',reply:'Reply',replyingTo:'Replying to',cancelReply:'Cancel reply',deletedMessage:'Message deleted',reaction:'Add reaction',reactions:'Reactions',reactedBy:'Reacted by',close:'Close',actions:'Message actions',copy:'Copy',sendFailed:'Failed to send',retry:'Retry',connecting:'Connecting…',reconnecting:'Reconnecting…',offline:'Offline',you:'You',tapToRemove:'Tap to remove'},
 };
 
 function localeFor(language){return language==='cs'?'cs-CZ':language==='en'?'en-GB':'uk-UA'}
@@ -43,6 +44,8 @@ function fallbackCopy(value){const textarea=document.createElement('textarea');t
 
 export function ChatPage(){
   const navigate=useNavigate();
+  const [searchParams,setSearchParams]=useSearchParams();
+  const linkedMessageId=searchParams.get('messageId')||'';
   const user=useSelector(selectUser);
   const membershipId=user?.activeMembership?.id||'';
   const role=user?.activeMembership?.role||'';
@@ -73,6 +76,7 @@ export function ChatPage(){
   const [pendingMessages,setPendingMessages]=useState([]);
   const [hasMoreOlder,setHasMoreOlder]=useState(null);
   const [showNewMessages,setShowNewMessages]=useState(false);
+  const [linkUnavailable,setLinkUnavailable]=useState(false);
   const [typingUsers,setTypingUsers]=useState({});
   const [liveReadStates,setLiveReadStates]=useState({});
   const listRef=useRef(null);
@@ -89,6 +93,9 @@ export function ChatPage(){
   const lastTypingSentRef=useRef(0);
   const typingExpiryTimersRef=useRef(new Map());
   const highlightTimerRef=useRef(null);
+  const deepLinkAttemptRef=useRef('');
+  const deepLinkRequestRef=useRef(0);
+  const contextRequestRef=useRef(null);
   const longPressTimerRef=useRef(null);
   const longPressStartRef=useRef(null);
   const viewportRafRef=useRef(null);
@@ -130,7 +137,41 @@ export function ChatPage(){
   function handleTextChange(event){const value=event.target.value;setText(value);if(typingStopTimerRef.current)window.clearTimeout(typingStopTimerRef.current);if(!value.trim()){void sendTyping({typing:false});lastTypingSentRef.current=0;return}const now=Date.now();if(now-lastTypingSentRef.current>1500){lastTypingSentRef.current=now;void sendTyping({typing:true})}typingStopTimerRef.current=window.setTimeout(()=>{void sendTyping({typing:false});lastTypingSentRef.current=0},2500)}
   function beginReply(item){if(item.pending)return;setActionTarget(null);setReactionTarget(null);setReplyTo(item);requestAnimationFrame(()=>composerRef.current?.focus())}
   function focusMessage(messageId){const target=document.getElementById(`chat-message-${messageId}`);if(!target)return false;target.scrollIntoView({behavior:'smooth',block:'center'});target.classList.add('isHighlighted');if(highlightTimerRef.current)window.clearTimeout(highlightTimerRef.current);highlightTimerRef.current=window.setTimeout(()=>target.classList.remove('isHighlighted'),1300);return true}
-  async function scrollToMessage(messageId){if(focusMessage(messageId)||loadingContext)return;try{const result=await loadContext({messageId,radius:20}).unwrap();const contextMessages=result?.messages||[];if(!contextMessages.length)return;setOlder(current=>{const map=new Map();[...current,...contextMessages].forEach(item=>map.set(item.id,item));return [...map.values()]});if(result?.hasOlder)setHasMoreOlder(true);requestAnimationFrame(()=>requestAnimationFrame(()=>focusMessage(messageId)))}catch{}}
+  async function scrollToMessage(messageId,isCurrent=()=>true){
+    if(focusMessage(messageId))return true
+    if(contextRequestRef.current?.abort)contextRequestRef.current.abort()
+    const contextRequest=loadContext({messageId,radius:20})
+    contextRequestRef.current=contextRequest
+    let requestTimeoutId=0
+    let result
+    try{result=await Promise.race([contextRequest.unwrap(),new Promise((_,reject)=>{requestTimeoutId=window.setTimeout(()=>reject(new Error('Chat context request timed out')),CHAT_CONTEXT_REQUEST_TIMEOUT_MS)})])}
+    catch{contextRequest.abort?.();return false}
+    finally{if(requestTimeoutId)window.clearTimeout(requestTimeoutId);if(contextRequestRef.current===contextRequest)contextRequestRef.current=null}
+    if(!isCurrent())return false
+    const contextMessages=result?.messages||[]
+    if(!contextMessages.length)return false
+    setOlder(current=>{const map=new Map();[...current,...contextMessages].forEach(item=>map.set(item.id,item));return [...map.values()]})
+    if(result?.hasOlder)setHasMoreOlder(true)
+    return new Promise(resolve=>{let frameId=0;let timeoutId=0;let settled=false;const finish=focused=>{if(settled)return;settled=true;if(frameId)window.cancelAnimationFrame(frameId);if(timeoutId)window.clearTimeout(timeoutId);resolve(focused)};const tryFocus=()=>{if(!isCurrent()){finish(false);return}if(focusMessage(messageId)){finish(true);return}frameId=window.requestAnimationFrame(tryFocus)};timeoutId=window.setTimeout(()=>finish(false),2500);tryFocus()})
+  }
+  useEffect(()=>()=>{deepLinkRequestRef.current+=1;deepLinkAttemptRef.current='';contextRequestRef.current?.abort?.()},[])
+  useEffect(()=>{
+    if(!linkedMessageId){deepLinkRequestRef.current+=1;deepLinkAttemptRef.current='';contextRequestRef.current?.abort?.();return}
+    if(isLoading||!data||deepLinkAttemptRef.current===linkedMessageId)return
+    deepLinkAttemptRef.current=linkedMessageId
+    setLinkUnavailable(false)
+    const requestId=++deepLinkRequestRef.current
+    const isCurrent=()=>requestId===deepLinkRequestRef.current
+    void new Promise(resolve=>requestAnimationFrame(resolve)).then(async()=>{
+      if(!isCurrent())return
+      const focused=await scrollToMessage(linkedMessageId,isCurrent)
+      if(!isCurrent())return
+      setLinkUnavailable(!focused)
+      const nextParams=new URLSearchParams(searchParams)
+      nextParams.delete('messageId')
+      setSearchParams(nextParams,{replace:true})
+    })
+  },[linkedMessageId,isLoading,data,searchParams,setSearchParams])
   function openMessageActions(item,trigger=document.activeElement){actionRestoreFocusRef.current=trigger instanceof HTMLElement&&trigger!==document.body?trigger:null;setActionTarget({...item,actionReactionsExpanded:false})}
   function openReactionPicker(item){setReactionTarget(current=>current?.id===item.id?null:{...item,expanded:false})}
   function startLongPress(item,event){if(item.pending||event.target.closest('button'))return;cancelLongPress();longPressStartRef.current={pointerId:event.pointerId,x:event.clientX,y:event.clientY};longPressTimerRef.current=window.setTimeout(()=>{setReactionTarget(null);openMessageActions(item);longPressTimerRef.current=null;longPressStartRef.current=null},480)}
@@ -160,7 +201,7 @@ export function ChatPage(){
   const reactionMembers=reactionDetails?.members?.length?reactionDetails.members:(reactionDetails?.names||[]).map((name,index)=>({membershipId:`fallback-${index}`,name,mine:reactionDetails.mine&&index===0,avatarDataUrl:''}));
 
   return <section className="companyChat">
-    <header className="companyChatHeader"><button type="button" onClick={()=>navigate('/dashboard')} aria-label={c.back}>‹</button><div><h1>{c.title}</h1><p className={typingLabel?'isTyping':connectionLabel?'isConnectionIssue':''}>{subtitle}</p></div></header>
+    <header className="companyChatHeader"><button type="button" onClick={()=>navigate('/dashboard')} aria-label={c.back}>‹</button><div><h1>{c.title}</h1><p className={typingLabel?'isTyping':connectionLabel?'isConnectionIssue':''}>{subtitle}</p></div>{linkUnavailable?<p className="companyChatLinkNotice" role="status">{c.linkUnavailable}</p>:null}</header>
     <div className="companyChatMessages" ref={listRef} onScroll={handleScroll}>
       {hasMoreOlder!==false&&(data?.hasMore||hasMoreOlder)?<button className="companyChatOlder" type="button" onClick={loadMore} disabled={loadingOlder}>{loadingOlder?'…':c.older}</button>:null}
       {isLoading?<p className="companyChatEmpty">…</p>:null}

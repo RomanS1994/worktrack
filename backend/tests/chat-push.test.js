@@ -62,14 +62,14 @@ test('chat message creates a notification for every active recipient', async () 
         type: 'chat.message',
         title: 'Roman Stryzhka',
         message: 'Hello team',
-        href: '/chat',
+        href: '/chat?messageId=message-1',
       },
       {
         recipientMembershipId: 'member-c',
         type: 'chat.message',
         title: 'Roman Stryzhka',
         message: 'Hello team',
-        href: '/chat',
+        href: '/chat?messageId=message-1',
       },
     ],
   );
