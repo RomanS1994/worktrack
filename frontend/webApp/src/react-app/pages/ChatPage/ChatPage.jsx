@@ -2,6 +2,7 @@ import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 
 import { useSelector } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { selectUser } from '@shared/features/auth/authSlice.js';
+import { getToken } from '@shared/features/auth/authStorage.js';
 import { getChatConnectionState } from '@shared/features/chat/chatConnectionState.js';
 import { prepareExpenseReceipt } from '../../features/worktrack/expenseReceipt.js';
 import {
@@ -46,6 +47,30 @@ function formatDay(value,language,c){const date=new Date(value);const today=new 
 function initials(name){return String(name||'?').split(/\s+/).filter(Boolean).slice(0,2).map(v=>v[0]).join('').toUpperCase()}
 function isGroupedWith(previous,item){if(!previous||!item)return false;if(previous.authorMembershipId!==item.authorMembershipId)return false;if(dayKey(previous.createdAt)!==dayKey(item.createdAt))return false;return new Date(item.createdAt).getTime()-new Date(previous.createdAt).getTime()<=GROUP_WINDOW_MS}
 function fallbackCopy(value){const textarea=document.createElement('textarea');textarea.value=value;textarea.setAttribute('readonly','');textarea.style.position='fixed';textarea.style.opacity='0';document.body.appendChild(textarea);textarea.select();document.execCommand('copy');textarea.remove()}
+
+function AuthenticatedChatAttachment({attachment,label,retryLabel}){
+  const [objectUrl,setObjectUrl]=useState('');
+  const [failed,setFailed]=useState(false);
+  const [attempt,setAttempt]=useState(0);
+  useEffect(()=>{
+    let active=true;
+    let nextUrl='';
+    setObjectUrl('');
+    setFailed(false);
+    const headers=new Headers();
+    const token=getToken();
+    const apiKey=import.meta.env.VITE_API_KEY;
+    if(token)headers.set('Authorization',`Bearer ${token}`);
+    if(apiKey)headers.set('X-API-KEY',apiKey);
+    fetch(attachment.url,{credentials:'include',headers})
+      .then(response=>{if(!response.ok)throw new Error('Attachment request failed');return response.blob()})
+      .then(blob=>{if(!active)return;nextUrl=URL.createObjectURL(blob);setObjectUrl(nextUrl)})
+      .catch(()=>{if(active)setFailed(true)});
+    return()=>{active=false;if(nextUrl)URL.revokeObjectURL(nextUrl)};
+  },[attachment.url,attempt]);
+  if(failed)return <button type="button" className="companyChatAttachmentError" onClick={()=>setAttempt(value=>value+1)}>{label} · {retryLabel}</button>;
+  return <a href={objectUrl||undefined} target="_blank" rel="noreferrer" className="companyChatAttachment" aria-label={attachment.fileName||label} onClick={event=>{if(!objectUrl)event.preventDefault()}}><img src={objectUrl||undefined} alt={attachment.fileName||label} loading="lazy"/><span>{attachment.fileName||label}</span></a>;
+}
 
 export function ChatPage(){
   const navigate=useNavigate();
@@ -226,7 +251,7 @@ export function ChatPage(){
           <div className="companyChatBubble" onPointerDown={event=>startLongPress(item,event)} onPointerUp={cancelLongPress} onPointerCancel={cancelLongPress} onPointerMove={handleLongPressMove} onDoubleClick={event=>{if(item.pending||event.target.closest('button'))return;openReactionPicker(item)}}>
             {!mine&&!groupedPrev?<strong>{item.author?.name||'-'}</strong>:null}
             {item.replyTo?<button className="companyChatReplyQuote" type="button" disabled={loadingContext} onClick={()=>scrollToMessage(item.replyTo.id)}><strong>{item.replyTo.author?.name||c.replyingTo}</strong><span>{item.replyTo.deleted?c.deletedMessage:item.replyTo.body}</span></button>:null}
-            {item.attachments?.length?<div className="companyChatAttachments">{item.attachments.map(attachment=><a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer" className="companyChatAttachment"><img src={attachment.url} alt={attachment.fileName||c.attachmentOnly} loading="lazy"/><span>{attachment.fileName||c.attachmentOnly}</span></a>)}</div>:null}
+            {item.attachments?.length?<div className="companyChatAttachments">{item.attachments.map(attachment=><AuthenticatedChatAttachment key={attachment.id} attachment={attachment} label={c.attachmentFailed} retryLabel={c.retry}/>)}</div>:null}
             {item.body?<p>{item.body}</p>:null}
             {item.pending&&item.failed?<button className="companyChatRetry" type="button" onClick={()=>retryPending(item)}>{c.sendFailed} · {c.retry}</button>:null}
             {reactions.length?<div className="companyChatReactions">{reactions.map(reaction=><button key={reaction.emoji} type="button" className={reaction.mine?'isMine':''} title={reaction.names?.join(', ')||''} onClick={()=>reaction.mine?showReactionDetails(reaction):reactToMessage(item.id,reaction.emoji)}><span>{reaction.emoji}</span><small>{reaction.count}</small></button>)}</div>:null}
