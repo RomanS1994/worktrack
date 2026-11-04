@@ -122,14 +122,50 @@ self.addEventListener('push', event => {
 
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  const target = new URL(event.notification.data?.href || '/', self.location.origin).href;
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(openClients => {
-      for (const client of openClients) {
-        if ('navigate' in client) client.navigate(target);
-        if ('focus' in client) return client.focus();
+  let target;
+  try {
+    const requestedTarget = new URL(event.notification.data?.href || '/', self.location.origin);
+    target = requestedTarget.origin === self.location.origin
+      ? requestedTarget.href
+      : new URL('/', self.location.origin).href;
+  } catch {
+    target = new URL('/', self.location.origin).href;
+  }
+
+  event.waitUntil((async () => {
+    const openClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const worktrackClients = openClients.filter(client => {
+      try {
+        return new URL(client.url).origin === self.location.origin;
+      } catch {
+        return false;
       }
-      return clients.openWindow ? clients.openWindow(target) : undefined;
-    })
-  );
+    });
+    const worktrackClient = worktrackClients.find(client => client.focused) || worktrackClients[0];
+
+    if (worktrackClient && 'navigate' in worktrackClient) {
+      let navigatedClient;
+      try {
+        navigatedClient = await worktrackClient.navigate(target);
+      } catch {
+        // Open a fresh window below if the existing client cannot navigate.
+      }
+      if (navigatedClient) {
+        try {
+          await navigatedClient.focus();
+        } catch {
+          // Navigation succeeded; avoid opening a duplicate window on focus failure.
+        }
+        return;
+      }
+    }
+
+    if (clients.openWindow) {
+      try {
+        await clients.openWindow(target);
+      } catch {
+        // The browser may refuse to open a window from the notification event.
+      }
+    }
+  })());
 });
