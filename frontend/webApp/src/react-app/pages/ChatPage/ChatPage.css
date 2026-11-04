@@ -54,3 +54,16 @@
  .companyChatSendIcon{display:block}
  .companyChatAttachments{max-width:min(76vw,320px)}
 }
+
+/* Keep the action hit target usable without drawing a large button around it. */
+.companyChatBubble footer button.companyChatMessageActionsTrigger{flex-basis:40px;width:40px;height:40px;min-width:40px;min-height:40px;margin-left:0;border:0;border-radius:10px;background:transparent;color:#78847d}
+.companyChatBubble footer button.companyChatMessageActionsTrigger svg{width:15px;height:15px}
+.companyChatBubble footer button.companyChatMessageActionsTrigger:hover,.companyChatBubble footer button.companyChatMessageActionsTrigger:active{background:rgba(80,105,88,.08);color:#46584d}
+.companyChatBubble{display:flex;flex-direction:column}
+.companyChatReactions{position:static;order:1;align-self:stretch;justify-content:flex-end;gap:5px;margin:7px 0 2px}
+.companyChatBubble footer{position:static;order:2;margin-top:4px}
+@media(max-width:760px){
+ .companyChatBubble footer button.companyChatMessageActionsTrigger{flex-basis:40px;width:40px;height:40px;min-width:40px;min-height:40px;border:0;border-radius:10px;background:transparent}
+ .companyChatBubble footer button.companyChatMessageActionsTrigger svg{width:15px;height:15px}
+ .companyChatReactions{margin-top:7px;margin-bottom:2px}
+}
