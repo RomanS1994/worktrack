@@ -202,6 +202,12 @@ export const chatApi = baseApi.injectEndpoints({
         }
       },
     }),
+    uploadChatAttachment: builder.mutation({
+      query: body => ({ url: '/chat/attachments', method: 'POST', body }),
+    }),
+    deleteChatAttachment: builder.mutation({
+      query: attachmentId => ({ url: `/chat/attachments/${attachmentId}`, method: 'DELETE' }),
+    }),
     toggleChatReaction: builder.mutation({
       query: body => ({ url: '/chat/reactions', method: 'POST', body }),
       async onQueryStarted(body, { dispatch, queryFulfilled }) {
@@ -252,6 +258,8 @@ export const {
   useLazyGetChatMessagesQuery,
   useLazyGetChatMessageContextQuery,
   useSendChatMessageMutation,
+  useUploadChatAttachmentMutation,
+  useDeleteChatAttachmentMutation,
   useToggleChatReactionMutation,
   useSendChatTypingMutation,
   useMarkChatReadMutation,

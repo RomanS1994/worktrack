@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { getChatReactions } from './chat-reactions.js';
 import { avatarUrl, avatarUrlFromRecord } from './avatars.js';
+import { attachChatFilesToMessage, listChatAttachments } from './chat-attachments.js';
 
 function getMembership(context) {
   const membership = context?.activeMembership;
@@ -87,9 +88,11 @@ async function attachReactions(client, context, rows) {
   const ordered = rows.map(serializeRow);
   if (!ordered.length) return [];
   const reactionPayload = await getChatReactions(client, context, ordered.map(item => item.id));
+  const attachmentsByMessage = await listChatAttachments(client, context.activeMembership.companyId, ordered.map(item => item.id));
   return ordered.map(item => ({
     ...item,
     reactions: reactionPayload.byMessage[item.id] || [],
+    attachments: attachmentsByMessage[item.id] || [],
   }));
 }
 
@@ -288,7 +291,10 @@ export async function getChatReadStates(client, context) {
 export async function createChatMessage(client, context, body = {}) {
   const membership = getMembership(context);
   const messageBody = String(body.body || '').trim();
-  if (!messageBody) throw new Error('Message is required');
+  const attachmentIds = [...new Set((Array.isArray(body.attachmentIds) ? body.attachmentIds : [])
+    .map(id => String(id || '').trim()).filter(Boolean))];
+  if (attachmentIds.length > 5) throw new Error('Too many chat attachments');
+  if (!messageBody && !attachmentIds.length) throw new Error('Message is required');
   if (messageBody.length > 4000) throw new Error('Message is too long');
   const clientMessageId = String(body.clientMessageId || '').trim().slice(0, 120) || null;
   const requestedReplyId = String(body.replyToMessageId || '').trim().slice(0, 120) || null;
@@ -325,8 +331,10 @@ export async function createChatMessage(client, context, body = {}) {
     INSERT INTO chat_messages (id, company_id, author_membership_id, client_message_id, body, reply_to_message_id)
     VALUES (${id}, ${membership.companyId}, ${membership.id}, ${clientMessageId}, ${messageBody}, ${replyToMessageId})
   `;
+  await attachChatFilesToMessage(client, context, id, attachmentIds);
   const row = await findMessage(client, membership.companyId, id);
-  return { message: serializeRow(row), duplicate: false };
+  const [message] = await attachReactions(client, context, [row]);
+  return { message, duplicate: false };
 }
 
 export async function markChatRead(client, context, body = {}) {
