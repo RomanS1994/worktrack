@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { selectUser } from '@shared/features/auth/authSlice.js';
 import { getChatConnectionState } from '@shared/features/chat/chatConnectionState.js';
 import {
@@ -27,10 +27,11 @@ const RETAINED_OLDER_MESSAGES=200;
 const READ_VISIBILITY_RATIO=.6;
 const READ_SETTLE_MS=180;
 const LONG_PRESS_MOVE_TOLERANCE=10;
+const CHAT_CONTEXT_REQUEST_TIMEOUT_MS=10000;
 const COPY={
-  uk:{title:'Чат компанії',subtitle:'Спільний чат для всієї команди',online:'онлайн',placeholder:'Написати повідомлення…',send:'Надіслати',older:'Завантажити старіші',empty:'Поки що повідомлень немає.',today:'Сьогодні',yesterday:'Вчора',newMessages:'Нові повідомлення',scrollNew:'Нові повідомлення',delete:'Видалити',deleteConfirm:'Видалити повідомлення?',deleteConfirmCopy:'Цю дію неможливо скасувати.',cancel:'Скасувати',typing:'друкує…',delivered:'Доставлено',read:'Прочитано',reply:'Відповісти',replyingTo:'Відповідь',cancelReply:'Скасувати відповідь',deletedMessage:'Повідомлення видалено',reaction:'Поставити реакцію',reactions:'Реакції',reactedBy:'Поставили реакцію',close:'Закрити',actions:'Дії з повідомленням',copy:'Копіювати',sendFailed:'Не вдалося надіслати',retry:'Повторити',connecting:'Підключення…',reconnecting:'Перепідключення…',offline:'Немає мережі',you:'Ви',tapToRemove:'Торкніться, щоб вилучити'},
-  cs:{title:'Firemní chat',subtitle:'Společný chat pro celý tým',online:'online',placeholder:'Napsat zprávu…',send:'Odeslat',older:'Načíst starší',empty:'Zatím zde nejsou žádné zprávy.',today:'Dnes',yesterday:'Včera',newMessages:'Nové zprávy',scrollNew:'Nové zprávy',delete:'Smazat',deleteConfirm:'Smazat zprávu?',deleteConfirmCopy:'Tuto akci nelze vrátit zpět.',cancel:'Zrušit',typing:'píše…',delivered:'Doručeno',read:'Přečteno',reply:'Odpovědět',replyingTo:'Odpověď',cancelReply:'Zrušit odpověď',deletedMessage:'Zpráva byla smazána',reaction:'Přidat reakci',reactions:'Reakce',reactedBy:'Reagovali',close:'Zavřít',actions:'Akce zprávy',copy:'Kopírovat',sendFailed:'Zprávu se nepodařilo odeslat',retry:'Zkusit znovu',connecting:'Připojování…',reconnecting:'Obnovování spojení…',offline:'Bez připojení',you:'Vy',tapToRemove:'Klepnutím odeberete'},
-  en:{title:'Company chat',subtitle:'Shared chat for the whole team',online:'online',placeholder:'Write a message…',send:'Send',older:'Load older',empty:'No messages yet.',today:'Today',yesterday:'Yesterday',newMessages:'New messages',scrollNew:'New messages',delete:'Delete',deleteConfirm:'Delete message?',deleteConfirmCopy:'This action cannot be undone.',cancel:'Cancel',typing:'is typing…',delivered:'Delivered',read:'Read',reply:'Reply',replyingTo:'Replying to',cancelReply:'Cancel reply',deletedMessage:'Message deleted',reaction:'Add reaction',reactions:'Reactions',reactedBy:'Reacted by',close:'Close',actions:'Message actions',copy:'Copy',sendFailed:'Failed to send',retry:'Retry',connecting:'Connecting…',reconnecting:'Reconnecting…',offline:'Offline',you:'You',tapToRemove:'Tap to remove'},
+  uk:{back:'Назад',title:'Чат компанії',subtitle:'Спільний чат для всієї команди',online:'онлайн',placeholder:'Написати повідомлення…',send:'Надіслати',older:'Завантажити старіші',empty:'Поки що повідомлень немає.',linkUnavailable:'Не вдалося відкрити це повідомлення. Можливо, його видалили.',today:'Сьогодні',yesterday:'Вчора',newMessages:'Нові повідомлення',scrollNew:'Нові повідомлення',delete:'Видалити',deleteConfirm:'Видалити повідомлення?',deleteConfirmCopy:'Цю дію неможливо скасувати.',cancel:'Скасувати',typing:'друкує…',delivered:'Доставлено',read:'Прочитано',reply:'Відповісти',replyingTo:'Відповідь',cancelReply:'Скасувати відповідь',deletedMessage:'Повідомлення видалено',reaction:'Поставити реакцію',reactions:'Реакції',reactedBy:'Поставили реакцію',close:'Закрити',actions:'Дії з повідомленням',copy:'Копіювати',sendFailed:'Не вдалося надіслати',retry:'Повторити',connecting:'Підключення…',reconnecting:'Перепідключення…',offline:'Немає мережі',you:'Ви',tapToRemove:'Торкніться, щоб вилучити'},
+  cs:{back:'Zpět',title:'Firemní chat',subtitle:'Společný chat pro celý tým',online:'online',placeholder:'Napsat zprávu…',send:'Odeslat',older:'Načíst starší',empty:'Zatím zde nejsou žádné zprávy.',linkUnavailable:'Tuto zprávu se nepodařilo otevřít. Možná byla smazána.',today:'Dnes',yesterday:'Včera',newMessages:'Nové zprávy',scrollNew:'Nové zprávy',delete:'Smazat',deleteConfirm:'Smazat zprávu?',deleteConfirmCopy:'Tuto akci nelze vrátit zpět.',cancel:'Zrušit',typing:'píše…',delivered:'Doručeno',read:'Přečteno',reply:'Odpovědět',replyingTo:'Odpověď',cancelReply:'Zrušit odpověď',deletedMessage:'Zpráva byla smazána',reaction:'Přidat reakci',reactions:'Reakce',reactedBy:'Reagovali',close:'Zavřít',actions:'Akce zprávy',copy:'Kopírovat',sendFailed:'Zprávu se nepodařilo odeslat',retry:'Zkusit znovu',connecting:'Připojování…',reconnecting:'Obnovování spojení…',offline:'Bez připojení',you:'Vy',tapToRemove:'Klepnutím odeberete'},
+  en:{back:'Back',title:'Company chat',subtitle:'Shared chat for the whole team',online:'online',placeholder:'Write a message…',send:'Send',older:'Load older',empty:'No messages yet.',linkUnavailable:'Could not open this message. It may have been deleted.',today:'Today',yesterday:'Yesterday',newMessages:'New messages',scrollNew:'New messages',delete:'Delete',deleteConfirm:'Delete message?',deleteConfirmCopy:'This action cannot be undone.',cancel:'Cancel',typing:'is typing…',delivered:'Delivered',read:'Read',reply:'Reply',replyingTo:'Replying to',cancelReply:'Cancel reply',deletedMessage:'Message deleted',reaction:'Add reaction',reactions:'Reactions',reactedBy:'Reacted by',close:'Close',actions:'Message actions',copy:'Copy',sendFailed:'Failed to send',retry:'Retry',connecting:'Connecting…',reconnecting:'Reconnecting…',offline:'Offline',you:'You',tapToRemove:'Tap to remove'},
 };
 
 function localeFor(language){return language==='cs'?'cs-CZ':language==='en'?'en-GB':'uk-UA'}
@@ -43,16 +44,20 @@ function fallbackCopy(value){const textarea=document.createElement('textarea');t
 
 export function ChatPage(){
   const navigate=useNavigate();
+  const [searchParams,setSearchParams]=useSearchParams();
+  const linkedMessageId=searchParams.get('messageId')||'';
   const user=useSelector(selectUser);
   const membershipId=user?.activeMembership?.id||'';
   const role=user?.activeMembership?.role||'';
   const {language}=useI18n();
   const c=COPY[language]||COPY.uk;
-  const fallbackPolling=120000;
-  const {data,isLoading}=useGetChatMessagesQuery({limit:50},{pollingInterval:fallbackPolling});
-  const {data:summary}=useGetChatSummaryQuery(undefined,{pollingInterval:fallbackPolling});
-  const {data:presence}=useGetChatPresenceQuery(undefined,{pollingInterval:fallbackPolling});
-  const {data:readStateData}=useGetChatReadStatesQuery(undefined,{pollingInterval:fallbackPolling});
+  const [connectionState,setConnectionState]=useState(()=>getChatConnectionState());
+  const fallbackPolling=30000;
+  const pollingInterval=connectionState==='connected'?300000:connectionState==='offline'?0:fallbackPolling;
+  const {data,isLoading}=useGetChatMessagesQuery({limit:50},{pollingInterval});
+  const {data:summary}=useGetChatSummaryQuery(undefined,{pollingInterval});
+  const {data:presence}=useGetChatPresenceQuery(undefined,{pollingInterval});
+  const {data:readStateData}=useGetChatReadStatesQuery(undefined,{pollingInterval});
   const [loadOlder,{isFetching:loadingOlder}]=useLazyGetChatMessagesQuery();
   const [loadContext,{isFetching:loadingContext}]=useLazyGetChatMessageContextQuery();
   const [sendMessage]=useSendChatMessageMutation();
@@ -71,10 +76,9 @@ export function ChatPage(){
   const [pendingMessages,setPendingMessages]=useState([]);
   const [hasMoreOlder,setHasMoreOlder]=useState(null);
   const [showNewMessages,setShowNewMessages]=useState(false);
+  const [linkUnavailable,setLinkUnavailable]=useState(false);
   const [typingUsers,setTypingUsers]=useState({});
   const [liveReadStates,setLiveReadStates]=useState({});
-  const [connectionState,setConnectionState]=useState(()=>getChatConnectionState());
-
   const listRef=useRef(null);
   const composerRef=useRef(null);
   const initialReadAtRef=useRef(null);
@@ -89,10 +93,15 @@ export function ChatPage(){
   const lastTypingSentRef=useRef(0);
   const typingExpiryTimersRef=useRef(new Map());
   const highlightTimerRef=useRef(null);
+  const deepLinkAttemptRef=useRef('');
+  const deepLinkRequestRef=useRef(0);
+  const contextRequestRef=useRef(null);
   const longPressTimerRef=useRef(null);
   const longPressStartRef=useRef(null);
   const viewportRafRef=useRef(null);
   const pendingReactionIdsRef=useRef(new Set());
+  const actionDialogRef=useRef(null);
+  const actionRestoreFocusRef=useRef(null);
 
   const latest=data?.messages||[];
   const newestMessageId=latest[latest.length-1]?.id||'';
@@ -116,6 +125,7 @@ export function ChatPage(){
   useEffect(()=>{const timers=typingExpiryTimersRef.current;function handleLive(event){const detail=event.detail||{};const payload=detail.payload||{};if(detail.event==='typing'&&payload.membershipId&&payload.membershipId!==membershipId){const id=payload.membershipId;const previous=timers.get(id);if(previous)window.clearTimeout(previous);if(payload.typing){setTypingUsers(current=>({...current,[id]:{name:payload.name||'User'}}));timers.set(id,window.setTimeout(()=>{setTypingUsers(current=>{const next={...current};delete next[id];return next});timers.delete(id)},4000))}else{setTypingUsers(current=>{const next={...current};delete next[id];return next});timers.delete(id)}}if(detail.event==='read'&&payload.membershipId&&payload.membershipId!==membershipId&&payload.lastReadAt)setLiveReadStates(current=>({...current,[payload.membershipId]:payload.lastReadAt}))}window.addEventListener('worktrack:chat-live',handleLive);return()=>{window.removeEventListener('worktrack:chat-live',handleLive);for(const timer of timers.values())window.clearTimeout(timer);timers.clear()}},[membershipId]);
   useEffect(()=>()=>{if(typingStopTimerRef.current)window.clearTimeout(typingStopTimerRef.current);if(highlightTimerRef.current)window.clearTimeout(highlightTimerRef.current);cancelLongPress();void sendTyping({typing:false})},[sendTyping]);
   useEffect(()=>{if(!deleteTarget&&!reactionDetails&&!actionTarget)return undefined;function handleKey(event){if(event.key!=='Escape')return;if(deleteTarget&&!deleteState.isLoading)setDeleteTarget(null);if(reactionDetails)setReactionDetails(null);if(actionTarget)setActionTarget(null)}window.addEventListener('keydown',handleKey);return()=>window.removeEventListener('keydown',handleKey)},[deleteTarget,deleteState.isLoading,reactionDetails,actionTarget]);
+  useEffect(()=>{if(!actionTarget)return undefined;const panel=actionDialogRef.current;if(!panel)return undefined;const focusable=()=>[...panel.querySelectorAll('button:not(:disabled),[href],input:not(:disabled),textarea:not(:disabled),[tabindex]:not([tabindex="-1"])')].filter(element=>element instanceof HTMLElement&&element.getClientRects().length>0);focusable()[0]?.focus();function handleActionKeys(event){if(event.key==='Escape'){event.preventDefault();setActionTarget(null);return}if(event.key!=='Tab')return;const items=focusable();if(!items.length){event.preventDefault();panel.focus();return}const first=items[0];const last=items[items.length-1];if(event.shiftKey&&(document.activeElement===first||!panel.contains(document.activeElement))){event.preventDefault();last.focus()}else if(!event.shiftKey&&(document.activeElement===last||!panel.contains(document.activeElement))){event.preventDefault();first.focus()}}document.addEventListener('keydown',handleActionKeys);return()=>{document.removeEventListener('keydown',handleActionKeys);const trigger=actionRestoreFocusRef.current;actionRestoreFocusRef.current=null;if(trigger?.isConnected)trigger.focus()}},[Boolean(actionTarget)]);
   useEffect(()=>{if(!reactionTarget)return undefined;function handleOutsidePointer(event){const target=event.target;if(target instanceof Element&&target.closest('.companyChatReactionPicker'))return;setReactionTarget(null)}document.addEventListener('pointerdown',handleOutsidePointer,true);return()=>document.removeEventListener('pointerdown',handleOutsidePointer,true)},[reactionTarget]);
   useEffect(()=>{const root=listRef.current;if(!root||Number(summary?.unreadCount||0)<=0)return undefined;const realMessages=messages.filter(item=>!item.pending);if(!realMessages.length)return undefined;const byId=new Map(realMessages.map(item=>[item.id,item]));if(typeof IntersectionObserver==='undefined'){if(!nearBottomRef.current||!newestMessageId||newestMessageId===lastMarkedReadIdRef.current)return undefined;lastMarkedReadIdRef.current=newestMessageId;void markRead({messageId:newestMessageId}).unwrap().catch(()=>{if(lastMarkedReadIdRef.current===newestMessageId)lastMarkedReadIdRef.current=''});return undefined}const visible=new Set();let settleTimer=null;const flush=()=>{settleTimer=null;const candidate=[...visible].map(id=>byId.get(id)).filter(item=>item&&item.authorMembershipId!==membershipId).sort((a,b)=>{const timeDiff=new Date(a.createdAt)-new Date(b.createdAt);return timeDiff||String(a.id).localeCompare(String(b.id))}).at(-1);if(!candidate||candidate.id===lastMarkedReadIdRef.current)return;lastMarkedReadIdRef.current=candidate.id;void markRead({messageId:candidate.id}).unwrap().catch(()=>{if(lastMarkedReadIdRef.current===candidate.id)lastMarkedReadIdRef.current=''})};const schedule=()=>{if(settleTimer)window.clearTimeout(settleTimer);settleTimer=window.setTimeout(flush,READ_SETTLE_MS)};const observer=new IntersectionObserver(entries=>{for(const entry of entries){const id=entry.target.dataset.chatMessageId||'';if(!id)continue;if(entry.isIntersecting&&entry.intersectionRatio>=READ_VISIBILITY_RATIO)visible.add(id);else visible.delete(id)}schedule()},{root,threshold:[READ_VISIBILITY_RATIO]});root.querySelectorAll('[data-chat-message-id]').forEach(node=>observer.observe(node));return()=>{observer.disconnect();if(settleTimer)window.clearTimeout(settleTimer)}},[messages,membershipId,newestMessageId,summary?.unreadCount,markRead]);
 
@@ -127,9 +137,44 @@ export function ChatPage(){
   function handleTextChange(event){const value=event.target.value;setText(value);if(typingStopTimerRef.current)window.clearTimeout(typingStopTimerRef.current);if(!value.trim()){void sendTyping({typing:false});lastTypingSentRef.current=0;return}const now=Date.now();if(now-lastTypingSentRef.current>1500){lastTypingSentRef.current=now;void sendTyping({typing:true})}typingStopTimerRef.current=window.setTimeout(()=>{void sendTyping({typing:false});lastTypingSentRef.current=0},2500)}
   function beginReply(item){if(item.pending)return;setActionTarget(null);setReactionTarget(null);setReplyTo(item);requestAnimationFrame(()=>composerRef.current?.focus())}
   function focusMessage(messageId){const target=document.getElementById(`chat-message-${messageId}`);if(!target)return false;target.scrollIntoView({behavior:'smooth',block:'center'});target.classList.add('isHighlighted');if(highlightTimerRef.current)window.clearTimeout(highlightTimerRef.current);highlightTimerRef.current=window.setTimeout(()=>target.classList.remove('isHighlighted'),1300);return true}
-  async function scrollToMessage(messageId){if(focusMessage(messageId)||loadingContext)return;try{const result=await loadContext({messageId,radius:20}).unwrap();const contextMessages=result?.messages||[];if(!contextMessages.length)return;setOlder(current=>{const map=new Map();[...current,...contextMessages].forEach(item=>map.set(item.id,item));return [...map.values()]});if(result?.hasOlder)setHasMoreOlder(true);requestAnimationFrame(()=>requestAnimationFrame(()=>focusMessage(messageId)))}catch{}}
+  async function scrollToMessage(messageId,isCurrent=()=>true){
+    if(focusMessage(messageId))return true
+    if(contextRequestRef.current?.abort)contextRequestRef.current.abort()
+    const contextRequest=loadContext({messageId,radius:20})
+    contextRequestRef.current=contextRequest
+    let requestTimeoutId=0
+    let result
+    try{result=await Promise.race([contextRequest.unwrap(),new Promise((_,reject)=>{requestTimeoutId=window.setTimeout(()=>reject(new Error('Chat context request timed out')),CHAT_CONTEXT_REQUEST_TIMEOUT_MS)})])}
+    catch{contextRequest.abort?.();return false}
+    finally{if(requestTimeoutId)window.clearTimeout(requestTimeoutId);if(contextRequestRef.current===contextRequest)contextRequestRef.current=null}
+    if(!isCurrent())return false
+    const contextMessages=result?.messages||[]
+    if(!contextMessages.length)return false
+    setOlder(current=>{const map=new Map();[...current,...contextMessages].forEach(item=>map.set(item.id,item));return [...map.values()]})
+    if(result?.hasOlder)setHasMoreOlder(true)
+    return new Promise(resolve=>{let frameId=0;let timeoutId=0;let settled=false;const finish=focused=>{if(settled)return;settled=true;if(frameId)window.cancelAnimationFrame(frameId);if(timeoutId)window.clearTimeout(timeoutId);resolve(focused)};const tryFocus=()=>{if(!isCurrent()){finish(false);return}if(focusMessage(messageId)){finish(true);return}frameId=window.requestAnimationFrame(tryFocus)};timeoutId=window.setTimeout(()=>finish(false),2500);tryFocus()})
+  }
+  useEffect(()=>()=>{deepLinkRequestRef.current+=1;deepLinkAttemptRef.current='';contextRequestRef.current?.abort?.()},[])
+  useEffect(()=>{
+    if(!linkedMessageId){deepLinkRequestRef.current+=1;deepLinkAttemptRef.current='';contextRequestRef.current?.abort?.();return}
+    if(isLoading||!data||deepLinkAttemptRef.current===linkedMessageId)return
+    deepLinkAttemptRef.current=linkedMessageId
+    setLinkUnavailable(false)
+    const requestId=++deepLinkRequestRef.current
+    const isCurrent=()=>requestId===deepLinkRequestRef.current
+    void new Promise(resolve=>requestAnimationFrame(resolve)).then(async()=>{
+      if(!isCurrent())return
+      const focused=await scrollToMessage(linkedMessageId,isCurrent)
+      if(!isCurrent())return
+      setLinkUnavailable(!focused)
+      const nextParams=new URLSearchParams(searchParams)
+      nextParams.delete('messageId')
+      setSearchParams(nextParams,{replace:true})
+    })
+  },[linkedMessageId,isLoading,data,searchParams,setSearchParams])
+  function openMessageActions(item,trigger=document.activeElement){actionRestoreFocusRef.current=trigger instanceof HTMLElement&&trigger!==document.body?trigger:null;setActionTarget({...item,actionReactionsExpanded:false})}
   function openReactionPicker(item){setReactionTarget(current=>current?.id===item.id?null:{...item,expanded:false})}
-  function startLongPress(item,event){if(item.pending||event.target.closest('button'))return;cancelLongPress();longPressStartRef.current={pointerId:event.pointerId,x:event.clientX,y:event.clientY};longPressTimerRef.current=window.setTimeout(()=>{setReactionTarget(null);setActionTarget({...item,actionReactionsExpanded:false});longPressTimerRef.current=null;longPressStartRef.current=null},480)}
+  function startLongPress(item,event){if(item.pending||event.target.closest('button'))return;cancelLongPress();longPressStartRef.current={pointerId:event.pointerId,x:event.clientX,y:event.clientY};longPressTimerRef.current=window.setTimeout(()=>{setReactionTarget(null);openMessageActions(item);longPressTimerRef.current=null;longPressStartRef.current=null},480)}
   function handleLongPressMove(event){const start=longPressStartRef.current;if(!start||start.pointerId!==event.pointerId)return;const distance=Math.hypot(event.clientX-start.x,event.clientY-start.y);if(distance>LONG_PRESS_MOVE_TOLERANCE)cancelLongPress()}
   function cancelLongPress(){if(longPressTimerRef.current){window.clearTimeout(longPressTimerRef.current);longPressTimerRef.current=null}longPressStartRef.current=null}
   async function copyMessage(item){const value=String(item?.body||'');if(!value)return;try{if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(value);else fallbackCopy(value)}catch{try{fallbackCopy(value)}catch{}}finally{setActionTarget(null)}}
@@ -156,7 +201,7 @@ export function ChatPage(){
   const reactionMembers=reactionDetails?.members?.length?reactionDetails.members:(reactionDetails?.names||[]).map((name,index)=>({membershipId:`fallback-${index}`,name,mine:reactionDetails.mine&&index===0,avatarDataUrl:''}));
 
   return <section className="companyChat">
-    <header className="companyChatHeader"><button type="button" onClick={()=>navigate(-1)} aria-label="Back">‹</button><div><h1>{c.title}</h1><p className={typingLabel?'isTyping':connectionLabel?'isConnectionIssue':''}>{subtitle}</p></div></header>
+    <header className="companyChatHeader"><button type="button" onClick={()=>navigate('/dashboard')} aria-label={c.back}>‹</button><div><h1>{c.title}</h1><p className={typingLabel?'isTyping':connectionLabel?'isConnectionIssue':''}>{subtitle}</p></div>{linkUnavailable?<p className="companyChatLinkNotice" role="status">{c.linkUnavailable}</p>:null}</header>
     <div className="companyChatMessages" ref={listRef} onScroll={handleScroll}>
       {hasMoreOlder!==false&&(data?.hasMore||hasMoreOlder)?<button className="companyChatOlder" type="button" onClick={loadMore} disabled={loadingOlder}>{loadingOlder?'…':c.older}</button>:null}
       {isLoading?<p className="companyChatEmpty">…</p>:null}
@@ -172,7 +217,7 @@ export function ChatPage(){
             <p>{item.body}</p>
             {item.pending&&item.failed?<button className="companyChatRetry" type="button" onClick={()=>retryPending(item)}>{c.sendFailed} · {c.retry}</button>:null}
             {reactions.length?<div className="companyChatReactions">{reactions.map(reaction=><button key={reaction.emoji} type="button" className={reaction.mine?'isMine':''} title={reaction.names?.join(', ')||''} onClick={()=>reaction.mine?showReactionDetails(reaction):reactToMessage(item.id,reaction.emoji)}><span>{reaction.emoji}</span><small>{reaction.count}</small></button>)}</div>:null}
-            <footer><time>{formatTime(item.createdAt,language)}</time>{mine?<span className={`companyChatReceipt${read?' isRead':''}${item.failed?' isFailed':''}`} title={item.pending?(item.failed?c.sendFailed:''):read?c.read:c.delivered} aria-label={item.pending?(item.failed?c.sendFailed:''):read?c.read:c.delivered}>{item.pending?(item.failed?'!':'…'):read?'✓✓':'✓'}</span>:null}{!item.pending?<button type="button" className="companyChatReplyAction" onClick={()=>beginReply(item)}>{c.reply}</button>:null}{!item.pending&&(mine||role==='MANAGER')?<button type="button" onClick={()=>remove(item)}>{c.delete}</button>:null}</footer>
+            <footer><time>{formatTime(item.createdAt,language)}</time>{!item.pending?<button type="button" className="companyChatMessageActionsTrigger" aria-label={`${c.actions}: ${item.author?.name||c.you}`} onClick={event=>openMessageActions(item,event.currentTarget)}>⋯</button>:null}{mine?<span className={`companyChatReceipt${read?' isRead':''}${item.failed?' isFailed':''}`} title={item.pending?(item.failed?c.sendFailed:''):read?c.read:c.delivered} aria-label={item.pending?(item.failed?c.sendFailed:''):read?c.read:c.delivered}>{item.pending?(item.failed?'!':'…'):read?'✓✓':'✓'}</span>:null}{!item.pending?<button type="button" className="companyChatReplyAction" onClick={()=>beginReply(item)}>{c.reply}</button>:null}{!item.pending&&(mine||role==='MANAGER')?<button type="button" onClick={()=>remove(item)}>{c.delete}</button>:null}</footer>
           </div>
           {reactionTarget?.id===item.id?<div className={`companyChatReactionPicker${mine?' isMine':''}${reactionTarget.expanded?' isExpanded':''}`} role="menu" aria-label={c.reaction}>{(reactionTarget.expanded?REACTION_EMOJIS:QUICK_REACTIONS).map(emoji=><button key={emoji} type="button" onClick={()=>reactToMessage(item.id,emoji)}>{emoji}</button>)}{!reactionTarget.expanded?<button type="button" className="companyChatReactionMore" aria-label={c.reactions} onClick={()=>setReactionTarget(current=>current?{...current,expanded:true}:current)}>+</button>:null}</div>:null}
         </article>
@@ -180,9 +225,9 @@ export function ChatPage(){
     </div>
 
     {showNewMessages?<button className="companyChatNewButton" type="button" onClick={()=>scrollToBottom('smooth')}>↓ {c.scrollNew}</button>:null}
-    <form className="companyChatComposer" onSubmit={submit}>{replyTo?<div className="companyChatComposerReply"><span><strong>{c.replyingTo}: {replyTo.author?.name||'-'}</strong><small>{replyTo.body}</small></span><button type="button" onClick={()=>setReplyTo(null)} aria-label={c.cancelReply}>×</button></div>:null}<textarea ref={composerRef} rows="1" maxLength="4000" value={text} onChange={handleTextChange} placeholder={c.placeholder}/><button type="submit" disabled={!text.trim()}>{c.send}</button></form>
+    <form className="companyChatComposer" onSubmit={submit}>{replyTo?<div className="companyChatComposerReply"><span><strong>{c.replyingTo}: {replyTo.author?.name||'-'}</strong><small>{replyTo.body}</small></span><button type="button" onClick={()=>setReplyTo(null)} aria-label={c.cancelReply}>×</button></div>:null}<textarea ref={composerRef} aria-label={c.placeholder} rows="1" maxLength="4000" value={text} onChange={handleTextChange} placeholder={c.placeholder}/><button type="submit" disabled={!text.trim()}>{c.send}</button></form>
 
-    {actionTarget?<div className="companyChatActionBackdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)setActionTarget(null)}}><div className="companyChatActionPanel"><div className={`companyChatActionReactions${actionTarget.actionReactionsExpanded?' isExpanded':''}`} role="menu" aria-label={c.reactions}>{(actionTarget.actionReactionsExpanded?REACTION_EMOJIS:ACTION_QUICK_REACTIONS).map(emoji=><button key={emoji} type="button" aria-label={`${c.reaction} ${emoji}`} onClick={()=>reactToMessage(actionTarget.id,emoji)}>{emoji}</button>)}{!actionTarget.actionReactionsExpanded?<button type="button" className="companyChatActionReactionMore" aria-label={c.reactions} onClick={()=>setActionTarget(current=>current?{...current,actionReactionsExpanded:true}:current)}>+</button>:null}</div><div className="companyChatActionSheet" role="dialog" aria-modal="true" aria-label={c.actions}><button type="button" onClick={()=>beginReply(actionTarget)}>{c.reply}</button><button type="button" onClick={()=>copyMessage(actionTarget)}>{c.copy}</button>{actionTarget.authorMembershipId===membershipId||role==='MANAGER'?<button type="button" className="isDelete" onClick={()=>remove(actionTarget)}>{c.delete}</button>:null}<button type="button" className="isCancel" onClick={()=>setActionTarget(null)}>{c.cancel}</button></div></div></div>:null}
+    {actionTarget?<div className="companyChatActionBackdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)setActionTarget(null)}}><div className="companyChatActionPanel" ref={actionDialogRef} role="dialog" aria-modal="true" aria-label={c.actions} tabIndex="-1"><div className={`companyChatActionReactions${actionTarget.actionReactionsExpanded?' isExpanded':''}`} role="menu" aria-label={c.reactions}>{(actionTarget.actionReactionsExpanded?REACTION_EMOJIS:ACTION_QUICK_REACTIONS).map(emoji=><button key={emoji} type="button" aria-label={`${c.reaction} ${emoji}`} onClick={()=>reactToMessage(actionTarget.id,emoji)}>{emoji}</button>)}{!actionTarget.actionReactionsExpanded?<button type="button" className="companyChatActionReactionMore" aria-label={c.reactions} onClick={()=>setActionTarget(current=>current?{...current,actionReactionsExpanded:true}:current)}>+</button>:null}</div><div className="companyChatActionSheet"><button type="button" onClick={()=>beginReply(actionTarget)}>{c.reply}</button><button type="button" onClick={()=>copyMessage(actionTarget)}>{c.copy}</button>{actionTarget.authorMembershipId===membershipId||role==='MANAGER'?<button type="button" className="isDelete" onClick={()=>remove(actionTarget)}>{c.delete}</button>:null}<button type="button" className="isCancel" onClick={()=>setActionTarget(null)}>{c.cancel}</button></div></div></div>:null}
 
     {deleteTarget?<div className="companyChatDeleteBackdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget&&!deleteState.isLoading)setDeleteTarget(null)}}><div className="companyChatDeleteDialog" role="alertdialog" aria-modal="true" aria-labelledby="chat-delete-title" aria-describedby="chat-delete-copy"><div className="companyChatDeleteIcon" aria-hidden="true">×</div><h2 id="chat-delete-title">{c.deleteConfirm}</h2><p id="chat-delete-copy">{c.deleteConfirmCopy}</p><div className="companyChatDeleteActions"><button type="button" className="isCancel" disabled={deleteState.isLoading} onClick={()=>setDeleteTarget(null)}>{c.cancel}</button><button type="button" className="isDelete" disabled={deleteState.isLoading} onClick={confirmDelete}>{deleteState.isLoading?'…':c.delete}</button></div></div></div>:null}
     {reactionDetails?<div className="companyChatReactionDetailsBackdrop" role="presentation" onPointerDown={event=>{if(event.target===event.currentTarget)setReactionDetails(null)}}><div className="companyChatReactionDetailsSheet" role="dialog" aria-modal="true" aria-label={`${c.reactions}: ${reactionDetails.count||0}`}><div className="companyChatReactionDetailsHandle" aria-hidden="true"/><h2>{c.reactions}: {reactionDetails.count||0}</h2><div className="companyChatReactionDetailsTabs"><span>{reactionDetails.emoji} <strong>{reactionDetails.count||0}</strong></span></div><div className="companyChatReactionPeople">{reactionMembers.map(member=>member.mine?<button key={member.membershipId} type="button" className="isMine" onClick={removeOwnReaction}><span className="companyChatReactionPersonAvatar">{member.avatarDataUrl?<img src={member.avatarDataUrl} alt=""/>:initials(user?.name||user?.email||c.you)}</span><span className="companyChatReactionPersonCopy"><strong>{c.you}</strong><small>{c.tapToRemove}</small></span><span className="companyChatReactionPersonEmoji">{reactionDetails.emoji}</span></button>:<div key={member.membershipId} className="companyChatReactionPerson"><span className="companyChatReactionPersonAvatar">{member.avatarDataUrl?<img src={member.avatarDataUrl} alt=""/>:initials(member.name)}</span><span className="companyChatReactionPersonCopy"><strong>{member.name}</strong></span><span className="companyChatReactionPersonEmoji">{reactionDetails.emoji}</span></div>)}</div></div></div>:null}

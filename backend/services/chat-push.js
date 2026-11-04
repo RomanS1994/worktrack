@@ -26,7 +26,7 @@ export async function notifyCompanyAboutChatMessage(client, context, message) {
         type: 'chat.message',
         title,
         message: body,
-        href: '/chat',
+        href: `/chat?messageId=${encodeURIComponent(message.id)}`,
       })
     )
   );
