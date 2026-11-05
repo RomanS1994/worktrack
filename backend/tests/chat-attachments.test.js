@@ -22,7 +22,7 @@ test('chat image parser rejects unsupported and oversized payloads', () => {
 test('attachment download is scoped to active company', async () => {
   const client = { $queryRaw: async (...args) => {
     const values = args.slice(1);
-    assert.deepEqual(values, ['file-1', 'company-1', 'member-1']);
+    assert.deepEqual(values, ['file-1', 'company-1', 'member-1', 'member-1']);
     assert.match(args[0].join(''), /message_id IS NULL AND a\.uploader_membership_id/);
     assert.match(args[0].join(''), /m\.deleted_at IS NULL/);
     return [];
