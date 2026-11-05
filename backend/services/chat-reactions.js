@@ -35,11 +35,14 @@ export async function getChatReactions(client, context, messageIds = []) {
            ua.hash AS "avatarHash"
       FROM chat_message_reactions r
       JOIN chat_messages m ON m.id = r.message_id
+      JOIN chat_rooms room ON room.id = m.room_id
+      LEFT JOIN chat_room_members self ON self.room_id = m.room_id AND self.membership_id = ${membership.id}
       JOIN company_memberships cm ON cm.id = r.membership_id
       JOIN users u ON u.id = cm."userId"
       LEFT JOIN user_avatars ua ON ua."userId" = u.id
      WHERE r.message_id = ANY(${ids}::text[])
        AND m.company_id = ${membership.companyId}
+       AND (room.type = 'COMPANY' OR (self.room_id IS NOT NULL AND self.left_at IS NULL))
        AND m.deleted_at IS NULL
      ORDER BY r.created_at ASC
   `;
@@ -79,11 +82,17 @@ export async function toggleChatReaction(client, context, body = {}) {
 
   const rows = await client.$queryRaw`
     WITH target AS (
-      SELECT id
+      SELECT id, room_id AS "roomId"
         FROM chat_messages
        WHERE id = ${messageId}
          AND company_id = ${membership.companyId}
          AND deleted_at IS NULL
+         AND EXISTS (
+           SELECT 1 FROM chat_rooms room
+           LEFT JOIN chat_room_members self ON self.room_id = room.id AND self.membership_id = ${membership.id}
+           WHERE room.id = chat_messages.room_id
+             AND (room.type = 'COMPANY' OR (self.room_id IS NOT NULL AND self.left_at IS NULL))
+         )
        LIMIT 1
     ),
     existing AS (
@@ -113,6 +122,7 @@ export async function toggleChatReaction(client, context, body = {}) {
     )
     SELECT
       EXISTS(SELECT 1 FROM target) AS "messageExists",
+      (SELECT "roomId" FROM target LIMIT 1) AS "roomId",
       COALESCE((SELECT emoji FROM existing LIMIT 1), '') AS "currentEmoji",
       EXISTS(SELECT 1 FROM upserted) AS "active"
   `;
@@ -125,6 +135,7 @@ export async function toggleChatReaction(client, context, body = {}) {
   return {
     ok: true,
     messageId,
+    roomId: result.roomId || '',
     emoji,
     active,
     replacedEmoji: active ? currentEmoji : '',

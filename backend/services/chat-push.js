@@ -4,12 +4,21 @@ export async function notifyCompanyAboutChatMessage(client, context, message) {
   const membership = context?.activeMembership;
   if (!membership?.companyId || !membership?.id || !message?.id) return;
 
+  const roomMembers = await client.$queryRaw`
+    SELECT rm.membership_id AS id
+      FROM chat_room_members rm
+      JOIN company_memberships cm ON cm.id = rm.membership_id
+     WHERE rm.room_id = ${message.roomId}
+       AND rm.left_at IS NULL AND cm.status = 'ACTIVE' AND cm."deletedAt" IS NULL
+       AND cm.id <> ${membership.id}`;
+  const recipientIds = roomMembers.map(row => row.id);
+  if (!recipientIds.length) return;
   const recipients = await client.companyMembership.findMany({
     where: {
       companyId: membership.companyId,
       status: 'ACTIVE',
       deletedAt: null,
-      id: { not: membership.id },
+      id: { in: recipientIds },
       user: { is: { deletedAt: null } },
     },
     select: { id: true },
@@ -26,7 +35,7 @@ export async function notifyCompanyAboutChatMessage(client, context, message) {
         type: 'chat.message',
         title,
         message: body,
-        href: `/chat?messageId=${encodeURIComponent(message.id)}`,
+        href: `/chat?roomId=${encodeURIComponent(message.roomId)}&messageId=${encodeURIComponent(message.id)}`,
       })
     )
   );

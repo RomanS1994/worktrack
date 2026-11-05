@@ -8,10 +8,9 @@ function getCompanyMap(companyId) {
 function broadcastPresence(companyId) {
   const streams = companyStreams.get(companyId);
   if (!streams?.size) return;
-  const payload = {
-    membershipIds: [...streams.entries()].filter(([, responses]) => responses.size > 0).map(([membershipId]) => membershipId),
-  };
-  const data = `event: presence\ndata: ${JSON.stringify(payload)}\n\n`;
+  // Presence is fetched through the room-scoped API. Do not expose the whole
+  // company's membership list over this shared transport.
+  const data = 'event: presence\ndata: {}\n\n';
   for (const responses of streams.values()) {
     for (const response of [...responses]) {
       if (response.writableEnded || response.destroyed) {
@@ -48,7 +47,7 @@ export function subscribeToCompanyChat(request, response, companyId, membershipI
   const memberStreams = streams.get(membershipId);
   memberStreams.add(response);
 
-  response.write(`event: ready\ndata: ${JSON.stringify({ ok: true, presence: getCompanyChatPresence(companyId) })}\n\n`);
+  response.write(`event: ready\ndata: ${JSON.stringify({ ok: true })}\n\n`);
   broadcastPresence(companyId);
 
   const heartbeat = setInterval(() => {
@@ -69,11 +68,13 @@ export function subscribeToCompanyChat(request, response, companyId, membershipI
   response.on('close', cleanup);
 }
 
-export function broadcastCompanyChat(companyId, event, payload) {
+export function broadcastCompanyChat(companyId, event, payload, recipientMembershipIds = null) {
   const streams = companyStreams.get(companyId);
   if (!streams?.size) return;
+  const recipients = recipientMembershipIds == null ? null : new Set(recipientMembershipIds.map(String));
   const data = `event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`;
   for (const [membershipId, responses] of [...streams.entries()]) {
+    if (recipients && !recipients.has(String(membershipId))) continue;
     for (const response of [...responses]) {
       if (response.writableEnded || response.destroyed) {
         responses.delete(response);

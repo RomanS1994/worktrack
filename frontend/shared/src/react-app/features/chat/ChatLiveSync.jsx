@@ -9,6 +9,7 @@ import { connectChatStream } from './chatLive.js';
 
 const CHAT_SYNC_TAGS = [
   { type: 'Notifications', id: 'CHAT_MESSAGES' },
+  { type: 'Notifications', id: 'CHAT_ROOMS' },
   { type: 'Notifications', id: 'CHAT_SUMMARY' },
   { type: 'Notifications', id: 'CHAT_PRESENCE' },
   { type: 'Notifications', id: 'CHAT_READ_STATES' },
@@ -57,15 +58,14 @@ export function ChatLiveSync() {
 
       if (event === 'reaction' && !ownReaction) {
         dispatch(
-          chatApi.util.updateQueryData('getChatMessages', { limit: 50 }, draft => {
+          chatApi.util.updateQueryData('getChatMessages', { roomId: payload?.roomId || '', limit: 50 }, draft => {
             applyReactionEvent(draft, payload, membershipId);
           }),
         );
       }
 
-      if ((event === 'message' && !ownMessage) || event === 'delete') {
-        tags.push({ type: 'Notifications', id: 'CHAT_SUMMARY' });
-      }
+      if ((event === 'message' && !ownMessage) || event === 'delete') tags.push({ type: 'Notifications', id: 'CHAT_SUMMARY' });
+      if (event === 'message' || event === 'delete' || event === 'read') tags.push({ type: 'Notifications', id: 'CHAT_ROOMS' });
 
       if (event === 'read') {
         tags.push({ type: 'Notifications', id: 'CHAT_READ_STATES' });

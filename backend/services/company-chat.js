@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { getChatReactions } from './chat-reactions.js';
 import { avatarUrl, avatarUrlFromRecord } from './avatars.js';
 import { attachChatFilesToMessage, listChatAttachments } from './chat-attachments.js';
+import { requireChatRoom } from './chat-rooms.js';
 
 function getMembership(context) {
   const membership = context?.activeMembership;
@@ -15,6 +16,7 @@ function serializeRow(row) {
   return {
     id: row.id,
     companyId: row.companyId,
+    roomId: row.roomId || '',
     authorMembershipId: row.authorMembershipId,
     clientMessageId: row.clientMessageId || '',
     body: row.body,
@@ -42,6 +44,7 @@ function serializeRow(row) {
 const messageSelect = `
   m.id,
   m.company_id AS "companyId",
+  m.room_id AS "roomId",
   m.author_membership_id AS "authorMembershipId",
   m.client_message_id AS "clientMessageId",
   m.body,
@@ -71,15 +74,17 @@ const messageJoins = `
   LEFT JOIN users ru ON ru.id = rcm."userId"
 `;
 
-async function findMessage(client, companyId, id) {
+async function findMessage(client, companyId, id, roomId = '') {
   const rows = await client.$queryRawUnsafe(
     `SELECT ${messageSelect}
        ${messageJoins}
       WHERE m.company_id = $1
         AND m.id = $2
+        AND ($3 = '' OR m.room_id = $3)
       LIMIT 1`,
     companyId,
     id,
+    roomId,
   );
   return rows[0] || null;
 }
@@ -96,8 +101,9 @@ async function attachReactions(client, context, rows) {
   }));
 }
 
-export async function listChatMessages(client, context, { before = '', beforeId = '', limit = 50 } = {}) {
+export async function listChatMessages(client, context, { before = '', beforeId = '', limit = 50, roomId = '' } = {}) {
   const membership = getMembership(context);
+  const room = await requireChatRoom(client, context, roomId);
   const safeLimit = Math.max(1, Math.min(100, Number(limit) || 50));
   const safeBeforeId = String(beforeId || '').trim().slice(0, 120);
   const beforeDate = before ? new Date(before) : null;
@@ -108,13 +114,13 @@ export async function listChatMessages(client, context, { before = '', beforeId 
     rows = await client.$queryRawUnsafe(
       `SELECT ${messageSelect}
          ${messageJoins}
-        WHERE m.company_id = $1
+        WHERE m.company_id = $1 AND m.room_id = $4
           AND m.deleted_at IS NULL
           AND (m.created_at, m.id) < (
             SELECT cursor.created_at, cursor.id
               FROM chat_messages cursor
              WHERE cursor.id = $2
-               AND cursor.company_id = $1
+               AND cursor.company_id = $1 AND cursor.room_id = $4
              LIMIT 1
           )
         ORDER BY m.created_at DESC, m.id DESC
@@ -122,12 +128,13 @@ export async function listChatMessages(client, context, { before = '', beforeId 
       membership.companyId,
       safeBeforeId,
       safeLimit,
+      room.id,
     );
   } else if (beforeDate) {
     rows = await client.$queryRawUnsafe(
       `SELECT ${messageSelect}
          ${messageJoins}
-        WHERE m.company_id = $1
+        WHERE m.company_id = $1 AND m.room_id = $4
           AND m.deleted_at IS NULL
           AND m.created_at < $2
         ORDER BY m.created_at DESC, m.id DESC
@@ -135,17 +142,19 @@ export async function listChatMessages(client, context, { before = '', beforeId 
       membership.companyId,
       beforeDate,
       safeLimit,
+      room.id,
     );
   } else {
     rows = await client.$queryRawUnsafe(
       `SELECT ${messageSelect}
          ${messageJoins}
-        WHERE m.company_id = $1
+        WHERE m.company_id = $1 AND m.room_id = $3
           AND m.deleted_at IS NULL
         ORDER BY m.created_at DESC, m.id DESC
         LIMIT $2`,
       membership.companyId,
       safeLimit,
+      room.id,
     );
   }
 
@@ -153,8 +162,9 @@ export async function listChatMessages(client, context, { before = '', beforeId 
   return { messages, hasMore: rows.length === safeLimit };
 }
 
-export async function getChatMessageContext(client, context, messageId, { radius = 20 } = {}) {
+export async function getChatMessageContext(client, context, messageId, { radius = 20, roomId = '' } = {}) {
   const membership = getMembership(context);
+  const room = await requireChatRoom(client, context, roomId);
   const safeMessageId = String(messageId || '').trim().slice(0, 120);
   const safeRadius = Math.max(5, Math.min(40, Number(radius) || 20));
   if (!safeMessageId) throw new Error('Chat message is required');
@@ -162,25 +172,26 @@ export async function getChatMessageContext(client, context, messageId, { radius
   const targetRows = await client.$queryRawUnsafe(
     `SELECT ${messageSelect}
        ${messageJoins}
-      WHERE m.company_id = $1
+      WHERE m.company_id = $1 AND m.room_id = $3
         AND m.id = $2
         AND m.deleted_at IS NULL
       LIMIT 1`,
     membership.companyId,
     safeMessageId,
+    room.id,
   );
   if (!targetRows[0]) throw new Error('Chat message not found');
 
   const olderRows = await client.$queryRawUnsafe(
     `SELECT ${messageSelect}
        ${messageJoins}
-      WHERE m.company_id = $1
+      WHERE m.company_id = $1 AND m.room_id = $4
         AND m.deleted_at IS NULL
         AND (m.created_at, m.id) < (
           SELECT cursor.created_at, cursor.id
             FROM chat_messages cursor
-           WHERE cursor.id = $2
-             AND cursor.company_id = $1
+             WHERE cursor.id = $2
+               AND cursor.company_id = $1 AND cursor.room_id = $4
            LIMIT 1
         )
       ORDER BY m.created_at DESC, m.id DESC
@@ -188,18 +199,19 @@ export async function getChatMessageContext(client, context, messageId, { radius
     membership.companyId,
     safeMessageId,
     safeRadius,
+    room.id,
   );
 
   const newerRows = await client.$queryRawUnsafe(
     `SELECT ${messageSelect}
        ${messageJoins}
-      WHERE m.company_id = $1
+      WHERE m.company_id = $1 AND m.room_id = $4
         AND m.deleted_at IS NULL
         AND (m.created_at, m.id) > (
           SELECT cursor.created_at, cursor.id
             FROM chat_messages cursor
-           WHERE cursor.id = $2
-             AND cursor.company_id = $1
+             WHERE cursor.id = $2
+               AND cursor.company_id = $1 AND cursor.room_id = $4
            LIMIT 1
         )
       ORDER BY m.created_at ASC, m.id ASC
@@ -207,6 +219,7 @@ export async function getChatMessageContext(client, context, messageId, { radius
     membership.companyId,
     safeMessageId,
     safeRadius,
+    room.id,
   );
 
   const combined = [
@@ -223,19 +236,20 @@ export async function getChatMessageContext(client, context, messageId, { radius
   };
 }
 
-export async function getChatSummary(client, context) {
+export async function getChatSummary(client, context, { roomId = '' } = {}) {
   const membership = getMembership(context);
+  const room = await requireChatRoom(client, context, roomId);
   const rows = await client.$queryRaw`
     WITH read_state AS (
       SELECT last_read_at
         FROM chat_read_states
-       WHERE membership_id = ${membership.id}
+       WHERE membership_id = ${membership.id} AND room_id = ${room.id}
        LIMIT 1
     ),
     latest_message AS (
       SELECT created_at
         FROM chat_messages
-       WHERE company_id = ${membership.companyId}
+       WHERE company_id = ${membership.companyId} AND room_id = ${room.id}
          AND deleted_at IS NULL
        ORDER BY created_at DESC, id DESC
        LIMIT 1
@@ -244,7 +258,7 @@ export async function getChatSummary(client, context) {
       (
         SELECT COUNT(*)::int
           FROM chat_messages m
-         WHERE m.company_id = ${membership.companyId}
+         WHERE m.company_id = ${membership.companyId} AND m.room_id = ${room.id}
            AND m.author_membership_id <> ${membership.id}
            AND m.deleted_at IS NULL
            AND m.created_at > COALESCE(
@@ -263,8 +277,9 @@ export async function getChatSummary(client, context) {
   };
 }
 
-export async function getChatReadStates(client, context) {
+export async function getChatReadStates(client, context, { roomId = '' } = {}) {
   const membership = getMembership(context);
+  const room = await requireChatRoom(client, context, roomId);
   const rows = await client.$queryRaw`
     SELECT s.membership_id AS "membershipId",
            s.last_read_at AS "lastReadAt",
@@ -273,7 +288,7 @@ export async function getChatReadStates(client, context) {
       FROM chat_read_states s
       JOIN company_memberships cm ON cm.id = s.membership_id
       JOIN users u ON u.id = cm."userId"
-     WHERE s.company_id = ${membership.companyId}
+     WHERE s.company_id = ${membership.companyId} AND s.room_id = ${room.id}
        AND s.membership_id <> ${membership.id}
        AND cm.status = 'ACTIVE'
        AND cm."deletedAt" IS NULL
@@ -290,6 +305,7 @@ export async function getChatReadStates(client, context) {
 
 export async function createChatMessage(client, context, body = {}) {
   const membership = getMembership(context);
+  const room = await requireChatRoom(client, context, body.roomId || '');
   const messageBody = String(body.body || '').trim();
   const attachmentIds = [...new Set((Array.isArray(body.attachmentIds) ? body.attachmentIds : [])
     .map(id => String(id || '').trim()).filter(Boolean))];
@@ -305,7 +321,7 @@ export async function createChatMessage(client, context, body = {}) {
       SELECT id
         FROM chat_messages
        WHERE id = ${requestedReplyId}
-         AND company_id = ${membership.companyId}
+         AND company_id = ${membership.companyId} AND room_id = ${room.id}
          AND deleted_at IS NULL
        LIMIT 1
     `;
@@ -317,39 +333,43 @@ export async function createChatMessage(client, context, body = {}) {
     const existing = await client.$queryRaw`
       SELECT id FROM chat_messages
        WHERE author_membership_id = ${membership.id}
+         AND room_id = ${room.id}
          AND client_message_id = ${clientMessageId}
        LIMIT 1
     `;
     if (existing[0]?.id) {
-      const row = await findMessage(client, membership.companyId, existing[0].id);
+      const row = await findMessage(client, membership.companyId, existing[0].id, room.id);
       return { message: serializeRow(row), duplicate: true };
     }
   }
 
   const id = randomUUID();
   await client.$executeRaw`
-    INSERT INTO chat_messages (id, company_id, author_membership_id, client_message_id, body, reply_to_message_id)
-    VALUES (${id}, ${membership.companyId}, ${membership.id}, ${clientMessageId}, ${messageBody}, ${replyToMessageId})
+    INSERT INTO chat_messages (id, company_id, room_id, author_membership_id, client_message_id, body, reply_to_message_id)
+    VALUES (${id}, ${membership.companyId}, ${room.id}, ${membership.id}, ${clientMessageId}, ${messageBody}, ${replyToMessageId})
   `;
+  await client.$executeRaw`UPDATE chat_rooms SET updated_at = CURRENT_TIMESTAMP WHERE id = ${room.id}`;
   await attachChatFilesToMessage(client, context, id, attachmentIds);
-  const row = await findMessage(client, membership.companyId, id);
+  const row = await findMessage(client, membership.companyId, id, room.id);
   const [message] = await attachReactions(client, context, [row]);
   return { message, duplicate: false };
 }
 
 export async function markChatRead(client, context, body = {}) {
   const membership = getMembership(context);
+  const room = await requireChatRoom(client, context, body.roomId || '');
   const messageId = String(body.messageId || '').trim().slice(0, 120);
 
   if (messageId) {
     const rows = await client.$queryRaw`
-      INSERT INTO chat_read_states (membership_id, company_id, last_read_at, updated_at)
-      SELECT ${membership.id}, ${membership.companyId}, m.created_at, CURRENT_TIMESTAMP
+    INSERT INTO chat_read_states (membership_id, company_id, room_id, last_read_at, updated_at)
+      SELECT ${membership.id}, ${membership.companyId}, ${room.id}, m.created_at, CURRENT_TIMESTAMP
         FROM chat_messages m
        WHERE m.id = ${messageId}
          AND m.company_id = ${membership.companyId}
+         AND m.room_id = ${room.id}
          AND m.deleted_at IS NULL
-      ON CONFLICT (membership_id)
+      ON CONFLICT (room_id, membership_id)
       DO UPDATE SET
         company_id = EXCLUDED.company_id,
         last_read_at = GREATEST(chat_read_states.last_read_at, EXCLUDED.last_read_at),
@@ -365,7 +385,7 @@ export async function markChatRead(client, context, body = {}) {
   const latestRows = await client.$queryRaw`
     SELECT created_at AS "createdAt"
       FROM chat_messages
-     WHERE company_id = ${membership.companyId}
+       WHERE company_id = ${membership.companyId} AND room_id = ${room.id}
        AND deleted_at IS NULL
      ORDER BY created_at DESC, id DESC
      LIMIT 1
@@ -375,9 +395,9 @@ export async function markChatRead(client, context, body = {}) {
   const readAt = requested.getTime() > latestAt.getTime() ? latestAt : requested;
 
   await client.$executeRaw`
-    INSERT INTO chat_read_states (membership_id, company_id, last_read_at, updated_at)
-    VALUES (${membership.id}, ${membership.companyId}, ${readAt}, CURRENT_TIMESTAMP)
-    ON CONFLICT (membership_id)
+    INSERT INTO chat_read_states (membership_id, company_id, room_id, last_read_at, updated_at)
+    VALUES (${membership.id}, ${membership.companyId}, ${room.id}, ${readAt}, CURRENT_TIMESTAMP)
+    ON CONFLICT (room_id, membership_id)
     DO UPDATE SET
       company_id = EXCLUDED.company_id,
       last_read_at = GREATEST(chat_read_states.last_read_at, EXCLUDED.last_read_at),
@@ -386,9 +406,10 @@ export async function markChatRead(client, context, body = {}) {
   return { ok: true, lastReadAt: readAt.toISOString() };
 }
 
-export async function deleteChatMessage(client, context, messageId) {
+export async function deleteChatMessage(client, context, messageId, requestedRoomId = '') {
   const membership = getMembership(context);
-  const row = await findMessage(client, membership.companyId, messageId);
+  const room = await requireChatRoom(client, context, requestedRoomId);
+  const row = await findMessage(client, membership.companyId, messageId, room.id);
   if (!row || row.deletedAt) throw new Error('Chat message not found');
   const canDelete = row.authorMembershipId === membership.id || membership.role === 'MANAGER';
   if (!canDelete) throw new Error('Cannot delete this message');
@@ -398,6 +419,7 @@ export async function deleteChatMessage(client, context, messageId) {
        SET deleted_at = ${deletedAt}
      WHERE id = ${row.id}
        AND company_id = ${membership.companyId}
+       AND room_id = ${room.id}
   `;
   return { ok: true, id: row.id, deletedAt: deletedAt.toISOString() };
 }
