@@ -130,7 +130,7 @@ export async function listChatMembers(client, context) {
     FROM company_memberships cm
     JOIN users u ON u.id = cm."userId"
     LEFT JOIN user_avatars ua ON ua."userId" = u.id
-    WHERE cm."companyId" = ${membership.companyId} AND cm.role = 'EMPLOYEE'
+    WHERE cm."companyId" = ${membership.companyId} AND cm.role IN ('EMPLOYEE', 'MANAGER')
       AND cm.status = 'ACTIVE' AND cm."deletedAt" IS NULL AND u."deletedAt" IS NULL
     ORDER BY lower(COALESCE(u.name, u.email)), cm.id`;
   return { members: rows.map(row => ({
@@ -152,7 +152,7 @@ export async function createChatRoom(client, context, { name = '', memberIds = [
     where: {
       id: { in: selectedIds },
       companyId: membership.companyId,
-      role: 'EMPLOYEE',
+      role: { in: ['EMPLOYEE', 'MANAGER'] },
       status: 'ACTIVE',
       deletedAt: null,
       user: { is: { deletedAt: null } },

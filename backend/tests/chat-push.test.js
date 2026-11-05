@@ -7,6 +7,11 @@ function createClient() {
   const created = [];
   return {
     created,
+    $queryRaw: async (...args) => {
+      assert.equal(args[1], 'room-1');
+      assert.equal(args[2], 'member-a');
+      return [{ id: 'member-b' }, { id: 'member-c' }];
+    },
     companyMembership: {
       async findMany() {
         return [{ id: 'member-b' }, { id: 'member-c' }];
@@ -43,6 +48,7 @@ test('chat message creates a notification for every active recipient', async () 
 
   await notifyCompanyAboutChatMessage(client, context, {
     id: 'message-1',
+    roomId: 'room-1',
     body: 'Hello team',
     author: { name: 'Roman Stryzhka' },
   });
@@ -62,14 +68,14 @@ test('chat message creates a notification for every active recipient', async () 
         type: 'chat.message',
         title: 'Roman Stryzhka',
         message: 'Hello team',
-        href: '/chat?messageId=message-1',
+        href: '/chat?roomId=room-1&messageId=message-1',
       },
       {
         recipientMembershipId: 'member-c',
         type: 'chat.message',
         title: 'Roman Stryzhka',
         message: 'Hello team',
-        href: '/chat?messageId=message-1',
+        href: '/chat?roomId=room-1&messageId=message-1',
       },
     ],
   );
@@ -78,8 +84,11 @@ test('chat message creates a notification for every active recipient', async () 
 test('chat message never notifies the sender membership', async () => {
   const client = createClient();
   let query;
-  client.companyMembership.findMany = async args => {
+  client.$queryRaw = async (...args) => {
     query = args;
+    return [];
+  };
+  client.companyMembership.findMany = async args => {
     return [];
   };
 
@@ -87,9 +96,10 @@ test('chat message never notifies the sender membership', async () => {
     activeMembership: { id: 'sender-1', companyId: 'company-1' },
   }, {
     id: 'message-2',
+    roomId: 'room-1',
     body: 'Test',
   });
 
-  assert.equal(query.where.id.not, 'sender-1');
+  assert.equal(query[2], 'sender-1');
   assert.equal(client.created.length, 0);
 });

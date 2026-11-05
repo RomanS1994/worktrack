@@ -21,11 +21,15 @@ test('mark chat read resolves read time from a message in the active company', a
   const messageAt = new Date('2026-09-06T08:15:00.000Z');
   const client = {
     $queryRaw: async (...args) => {
+      const sql = args[0].join('');
+      if (/SELECT r\.id, r\.type/.test(sql)) return [{ id: 'room-1', type: 'COMPANY' }];
       const values = taggedValues(args);
       assert.equal(values[0], 'member-1');
       assert.equal(values[1], 'company-1');
-      assert.equal(values[2], 'message-1');
-      assert.equal(values[3], 'company-1');
+      assert.equal(values[2], 'room-1');
+      assert.equal(values[3], 'message-1');
+      assert.equal(values[4], 'company-1');
+      assert.equal(values[5], 'room-1');
       return [{ lastReadAt: messageAt }];
     },
   };
@@ -37,7 +41,9 @@ test('mark chat read resolves read time from a message in the active company', a
 
 test('mark chat read rejects a message outside the active company', async () => {
   const client = {
-    $queryRaw: async () => [],
+    $queryRaw: async (...args) => /SELECT r\.id, r\.type/.test(args[0].join(''))
+      ? [{ id: 'room-1', type: 'COMPANY' }]
+      : [],
   };
 
   await assert.rejects(
@@ -50,9 +56,11 @@ test('legacy read timestamp is clamped to the latest real message', async () => 
   const latestAt = new Date('2026-09-06T09:00:00.000Z');
   let writtenAt = null;
   const client = {
-    $queryRaw: async () => [{ createdAt: latestAt }],
+    $queryRaw: async (...args) => /SELECT r\.id, r\.type/.test(args[0].join(''))
+      ? [{ id: 'room-1', type: 'COMPANY' }]
+      : [{ createdAt: latestAt }],
     $executeRaw: async (...args) => {
-      writtenAt = taggedValues(args)[2];
+      writtenAt = taggedValues(args)[3];
       return 1;
     },
   };
