@@ -75,7 +75,10 @@ export async function getChatAttachment(client, context, id) {
       LEFT JOIN chat_messages m ON m.id = a.message_id AND m.company_id = a.company_id
      WHERE a.id = ${String(id || '').slice(0, 120)} AND a.company_id = ${user.companyId}
        AND ((a.message_id IS NULL AND a.uploader_membership_id = ${user.id})
-         OR (a.message_id IS NOT NULL AND m.id IS NOT NULL AND m.deleted_at IS NULL))
+         OR (a.message_id IS NOT NULL AND m.id IS NOT NULL AND m.deleted_at IS NULL
+           AND EXISTS (SELECT 1 FROM chat_rooms r
+             LEFT JOIN chat_room_members rm ON rm.room_id = r.id AND rm.membership_id = ${user.id}
+             WHERE r.id = m.room_id AND (r.type = 'COMPANY' OR (rm.room_id IS NOT NULL AND rm.left_at IS NULL)))))
      LIMIT 1
   `;
   if (!rows[0]) throw new Error('Chat attachment not found');

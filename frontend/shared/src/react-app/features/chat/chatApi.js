@@ -152,15 +152,15 @@ function upsertServerMessage(draft, message) {
 export const chatApi = baseApi.injectEndpoints({
   endpoints: builder => ({
     getChatSummary: builder.query({
-      query: () => '/chat/summary',
+      query: ({ roomId = '' } = {}) => ({ url: '/chat/summary', params: { roomId } }),
       providesTags: [{ type: 'Notifications', id: 'CHAT_SUMMARY' }],
     }),
     getChatPresence: builder.query({
-      query: () => '/chat/presence',
+      query: ({ roomId = '' } = {}) => ({ url: '/chat/presence', params: { roomId } }),
       providesTags: [{ type: 'Notifications', id: 'CHAT_PRESENCE' }],
     }),
     getChatReadStates: builder.query({
-      query: () => '/chat/read-states',
+      query: ({ roomId = '' } = {}) => ({ url: '/chat/read-states', params: { roomId } }),
       providesTags: [{ type: 'Notifications', id: 'CHAT_READ_STATES' }],
     }),
     getChatReactions: builder.query({
@@ -171,29 +171,30 @@ export const chatApi = baseApi.injectEndpoints({
       providesTags: [{ type: 'Notifications', id: 'CHAT_REACTIONS' }],
     }),
     getChatMessages: builder.query({
-      query: ({ before = '', beforeId = '', limit = 50 } = {}) => ({
+      query: ({ before = '', beforeId = '', limit = 50, roomId = '' } = {}) => ({
         url: '/chat/messages',
         params: {
           ...(beforeId ? { beforeId } : before ? { before } : {}),
           limit,
+          roomId,
         },
       }),
       providesTags: [{ type: 'Notifications', id: 'CHAT_MESSAGES' }],
     }),
     getChatMessageContext: builder.query({
-      query: ({ messageId, radius = 20 }) => ({
+      query: ({ messageId, radius = 20, roomId = '' }) => ({
         url: `/chat/messages/${messageId}/context`,
-        params: { radius },
+        params: { radius, roomId },
       }),
     }),
     sendChatMessage: builder.mutation({
       query: body => ({ url: '/chat/messages', method: 'POST', body }),
-      async onQueryStarted(_body, { dispatch, queryFulfilled }) {
+      async onQueryStarted(body, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
           if (!data?.message) return;
           dispatch(
-            chatApi.util.updateQueryData('getChatMessages', { limit: 50 }, draft => {
+            chatApi.util.updateQueryData('getChatMessages', { roomId: body.roomId || '', limit: 50 }, draft => {
               upsertServerMessage(draft, data.message);
             }),
           );
@@ -212,7 +213,7 @@ export const chatApi = baseApi.injectEndpoints({
       query: body => ({ url: '/chat/reactions', method: 'POST', body }),
       async onQueryStarted(body, { dispatch, queryFulfilled }) {
         const patch = dispatch(
-          chatApi.util.updateQueryData('getChatMessages', { limit: 50 }, draft => {
+          chatApi.util.updateQueryData('getChatMessages', { roomId: body.roomId || '', limit: 50 }, draft => {
             applyOptimisticReaction(draft, body);
           }),
         );
@@ -231,10 +232,10 @@ export const chatApi = baseApi.injectEndpoints({
       invalidatesTags: [{ type: 'Notifications', id: 'CHAT_SUMMARY' }],
     }),
     deleteChatMessage: builder.mutation({
-      query: messageId => ({ url: `/chat/messages/${messageId}`, method: 'DELETE' }),
-      async onQueryStarted(messageId, { dispatch, queryFulfilled }) {
+      query: ({ messageId, roomId = '' }) => ({ url: `/chat/messages/${messageId}`, method: 'DELETE', params: { roomId } }),
+      async onQueryStarted({ messageId, roomId = '' }, { dispatch, queryFulfilled }) {
         const patch = dispatch(
-          chatApi.util.updateQueryData('getChatMessages', { limit: 50 }, draft => {
+          chatApi.util.updateQueryData('getChatMessages', { roomId, limit: 50 }, draft => {
             if (!Array.isArray(draft?.messages)) return;
             draft.messages = draft.messages.filter(item => item.id !== messageId);
           }),
