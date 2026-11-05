@@ -31,6 +31,7 @@
 .companyChatComposer .companyChatAttachButton{width:42px;height:42px;min-width:42px;min-height:42px;border-radius:50%;background:#f8fbf9}
 .companyChatComposer .companyChatSendButton{display:grid;place-items:center;min-width:42px;width:auto;height:42px;min-height:42px;padding:0 15px;border:0;border-radius:14px;background:#24894b;color:#fff;font-size:12px;font-weight:750;box-shadow:none}
 .companyChatSendIcon{display:none;width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.companyChatAttachIcon{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
 .companyChatSendLoading{font-size:20px;line-height:1}
 .companyChatComposer .companyChatSendButton:disabled{opacity:.45}
 @media(min-width:761px){.companyChatMessage:not(:hover):not(:focus-within) .companyChatMessageActionsTrigger{opacity:0;pointer-events:none}.companyChatMessage .companyChatMessageActionsTrigger{transition:opacity .14s ease,background .14s ease,color .14s ease}}
@@ -70,7 +71,7 @@
  .companyChatBubble footer button.companyChatMessageActionsTrigger svg{width:15px;height:15px}
  .companyChatComposer{grid-template-columns:40px minmax(0,1fr) 42px;gap:7px;padding:6px 9px}
  .companyChatComposer textarea{min-height:42px;padding:9px 10px;font-size:14px;line-height:1.3}
- .companyChatComposer .companyChatAttachButton{width:40px;height:42px;min-width:40px;min-height:42px;border-radius:13px}
+ .companyChatComposer .companyChatAttachButton{display:grid;place-items:center;visibility:visible;width:40px;height:42px;min-width:40px;min-height:42px;border-radius:13px;border:1px solid #dbe5de;background:#f8fbf9;color:#287b46;opacity:1}
  .companyChatComposer .companyChatSendButton{width:42px;min-width:42px;height:42px;min-height:42px;padding:0;border-radius:50%}
  .companyChatSendLabel{display:none}
  .companyChatSendIcon{display:block}
