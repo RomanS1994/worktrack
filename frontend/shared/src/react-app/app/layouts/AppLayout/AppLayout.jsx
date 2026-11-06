@@ -71,7 +71,7 @@ export function AppLayout({ children }) {
       <AuthSessionErrorModal />
       <SessionNotice />
       {showWorkspaceNav ? <ChatLiveSync /> : null}
-      {showWorkspaceNav ? <NotificationBell /> : null}
+      {showWorkspaceNav && !isChatPage ? <NotificationBell /> : null}
       <div className="appLayout-workspaceBody">
         <div className="pageContainer">
           <main className="appLayout-main">{children}</main>
