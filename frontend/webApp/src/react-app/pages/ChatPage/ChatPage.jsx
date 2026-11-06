@@ -262,7 +262,6 @@ export function ChatPage(){
 
   const reactionMembers=reactionDetails?.members?.length?reactionDetails.members:(reactionDetails?.names||[]).map((name,index)=>({membershipId:`fallback-${index}`,name,mine:reactionDetails.mine&&index===0,avatarDataUrl:''}));
 
-  useEffect(()=>{if(activeRoomId||!rooms.length||chatScreen==='create'||chatScreen==='rooms')return;const room=rooms.find(item=>item.type==='COMPANY')||rooms[0];if(room?.id){const next=new URLSearchParams(searchParams);next.set('roomId',room.id);next.delete('chatView');setSearchParams(next,{replace:true})}},[activeRoomId,rooms,chatScreen,searchParams,setSearchParams]);
   function showRooms(){const next=new URLSearchParams(searchParams);next.delete('roomId');next.delete('messageId');next.set('chatView','rooms');setSearchParams(next)}
   function showCreate(){const next=new URLSearchParams(searchParams);next.set('chatView','create');next.delete('roomId');setRoomError('');setSearchParams(next)}
   function openRoom(room){if(!room?.id)return;const next=new URLSearchParams(searchParams);next.set('roomId',room.id);next.delete('chatView');setSearchParams(next)}
