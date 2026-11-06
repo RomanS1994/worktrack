@@ -4,6 +4,7 @@ import { readJsonBody, sendJson } from '../lib/http.js';
 import {
   createChatMessage,
   deleteChatMessage,
+  editChatMessage,
   getChatMessageContext,
   getChatReadStates,
   getChatSummary,
@@ -223,6 +224,21 @@ export async function handleChatRoutes(request, response, { url, pathName }) {
   }
 
   const deleteMatch = pathName.match(/^\/api\/chat\/messages\/([^/]+)$/);
+  if (request.method === 'PATCH' && deleteMatch) {
+    const body = await readJsonBody(request);
+    const roomId = url.searchParams.get('roomId') || body.roomId || '';
+    const payload = await runStoreTransaction({
+      prisma: client => editChatMessage(client, context, decodeURIComponent(deleteMatch[1]), roomId, body.body),
+    });
+    const recipients = await runStoreRead({ prisma: client => getChatRoomRecipientIds(client, context, roomId) });
+    broadcastCompanyChat(context.activeMembership.companyId, 'edit', {
+      roomId,
+      message: payload.message,
+      membershipId: context.activeMembership.id,
+    }, recipients);
+    sendJson(response, 200, payload);
+    return true;
+  }
   if (request.method === 'DELETE' && deleteMatch) {
     const payload = await runStoreTransaction({
       prisma: client => deleteChatMessage(client, context, deleteMatch[1], url.searchParams.get('roomId') || ''),

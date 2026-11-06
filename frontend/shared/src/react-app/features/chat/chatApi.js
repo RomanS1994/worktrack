@@ -247,6 +247,19 @@ export const chatApi = baseApi.injectEndpoints({
         }
       },
     }),
+    editChatMessage: builder.mutation({
+      query: ({ messageId, roomId = '', body }) => ({ url: `/chat/messages/${messageId}`, method: 'PATCH', params: { roomId }, body: { body } }),
+      async onQueryStarted({ messageId, roomId = '' }, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if (!data?.message) return;
+          dispatch(chatApi.util.updateQueryData('getChatMessages', { roomId, limit: 50 }, draft => {
+            const index = draft?.messages?.findIndex(item => item.id === messageId) ?? -1;
+            if (index >= 0) draft.messages[index] = { ...draft.messages[index], ...data.message };
+          }));
+        } catch {}
+      },
+    }),
   }),
 });
 
@@ -265,4 +278,5 @@ export const {
   useSendChatTypingMutation,
   useMarkChatReadMutation,
   useDeleteChatMessageMutation,
+  useEditChatMessageMutation,
 } = chatApi;
