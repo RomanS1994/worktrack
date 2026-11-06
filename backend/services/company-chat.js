@@ -423,3 +423,20 @@ export async function deleteChatMessage(client, context, messageId, requestedRoo
   `;
   return { ok: true, id: row.id, deletedAt: deletedAt.toISOString() };
 }
+
+export async function editChatMessage(client, context, messageId, requestedRoomId = '', body = '') {
+  const membership = getMembership(context);
+  const room = await requireChatRoom(client, context, requestedRoomId);
+  const messageBody = String(body || '').trim();
+  if (!messageBody || messageBody.length > 4000) throw new Error('Message must contain 1 to 4000 characters');
+  const row = await findMessage(client, membership.companyId, messageId, room.id);
+  if (!row || row.deletedAt) throw new Error('Chat message not found');
+  if (row.authorMembershipId !== membership.id) throw new Error('Cannot edit this message');
+  await client.$executeRaw`
+    UPDATE chat_messages SET body = ${messageBody}, edited_at = CURRENT_TIMESTAMP
+     WHERE id = ${row.id} AND company_id = ${membership.companyId} AND room_id = ${room.id}
+  `;
+  const updated = await findMessage(client, membership.companyId, row.id, room.id);
+  const [message] = await attachReactions(client, context, [updated]);
+  return { ok: true, message };
+}
