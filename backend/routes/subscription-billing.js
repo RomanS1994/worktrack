@@ -4,14 +4,7 @@ import { prisma } from '../db/prisma.js';
 import { runStoreRead, runStoreTransaction } from '../db/store.js';
 import { readJsonBody, sendError, sendJson } from '../lib/http.js';
 
-const PLANS = {
-  TEAM_1_5: { name: 'Мала команда', min: 1, max: 5, price: 490 },
-  TEAM_6_10: { name: 'Команда', min: 6, max: 10, price: 790 },
-  TEAM_11_20: { name: 'Бригада', min: 11, max: 20, price: 1290 },
-  TEAM_21_40: { name: 'Компанія', min: 21, max: 40, price: 2190 },
-};
-const planList = Object.entries(PLANS).map(([code, plan]) => ({ code, name: plan.name,
-  employeeLimit: plan.max, minEmployees: plan.min, monthlyPriceCzk: plan.price }));
+import { SUBSCRIPTION_PLANS as PLANS, subscriptionPlanList as planList } from '../services/subscription-plans.js';
 const PAYMENT_SELECT = {
   id: true, companyId: true, invoiceNumber: true, planCode: true,
   employeeLimit: true, amountCzk: true, currency: true, variableSymbol: true,
@@ -98,6 +91,7 @@ function paymentResponse(payment) {
 
 function currentSubStatus(subscription, now = new Date()) {
   if (!subscription?.currentPeriodEnd) return 'INACTIVE';
+  if (subscription.trialEndsAt && subscription.trialEndsAt > now) return 'TRIAL';
   if (subscription.currentPeriodEnd > now) return 'ACTIVE';
   if (subscription.gracePeriodEnd > now) return 'GRACE_PERIOD';
   return 'EXPIRED';
@@ -124,7 +118,7 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
         client.subscriptionPayment.findMany({ where: { companyId }, orderBy: { createdAt: 'desc' }, take: 24, select: PAYMENT_SELECT }),
       ]);
       return { subscription: subscription ? { ...subscription, plan: PLANS[subscription.planCode]?.name || subscription.planCode,
-        status: currentSubStatus(subscription) } : null,
+        status: currentSubStatus(subscription), isTrial: Boolean(subscription.trialEndsAt && subscription.trialEndsAt > new Date()), trialEndsAt: subscription.trialEndsAt, daysRemaining: subscription.trialEndsAt && subscription.trialEndsAt > new Date() ? Math.ceil((subscription.trialEndsAt - new Date()) / 86400000) : 0 } : null,
         employeeCount: activeEmployeeCount, activeEmployeeCount, plans: planList,
         accountConfigured: accountDetails().accountConfigured, invoices: payments.map(serializeInvoice), payments: payments.map(serializeInvoice) };
     } });
@@ -136,10 +130,6 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
     if (!context) return true;
     if (!accountDetails().accountConfigured) {
       sendError(response, 503, 'Subscription bank account is not configured');
-      return true;
-    }
-    if (!accountDetails().accountConfigured) {
-      sendError(response, 503, 'Subscription bank account is not configured yet');
       return true;
     }
     const body = await readJsonBody(request);

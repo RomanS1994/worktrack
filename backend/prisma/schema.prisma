@@ -150,6 +150,8 @@ model CompanySubscription {
   currentPeriodStart DateTime?
   currentPeriodEnd   DateTime?
   gracePeriodEnd     DateTime?
+  trialStartedAt     DateTime?
+  trialEndsAt        DateTime?
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @updatedAt
 

@@ -255,7 +255,7 @@ export async function createManagerEmployee(client, context, payload = {}) {
     const subscription = await client.companySubscription.findUnique({ where: { companyId: managerMembership.companyId } });
     if (subscription) {
       const now = new Date();
-      const inPaidPeriod = subscription.status === 'ACTIVE' && subscription.currentPeriodEnd > now;
+      const inPaidPeriod = ['ACTIVE', 'TRIAL'].includes(subscription.status) && subscription.currentPeriodEnd > now;
       const inGracePeriod = subscription.gracePeriodEnd && subscription.gracePeriodEnd > now;
       if (!inPaidPeriod && !inGracePeriod) throw new Error('Subscription payment is required to add employees');
       const activeSeats = await client.companyMembership.count({ where: { companyId: managerMembership.companyId, role: 'EMPLOYEE', status: 'ACTIVE', deletedAt: null } });

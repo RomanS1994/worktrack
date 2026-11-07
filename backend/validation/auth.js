@@ -61,6 +61,7 @@ export function validateCompanyRegistrationInput(body = {}) {
     lastName,
     name,
     companyName,
+    planCode: String(body.planCode || 'TEAM_1_5').trim(),
   };
 }
 

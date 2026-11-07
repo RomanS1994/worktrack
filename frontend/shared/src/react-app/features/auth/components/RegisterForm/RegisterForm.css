@@ -56,6 +56,25 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
+.registerTrial { display: grid; gap: 12px; }
+.registerTrial-banner { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid #b8d5ff; border-radius: 18px; background: radial-gradient(circle at 0 0, #e8f2ff, #f8fbff 64%); color: #15355f; }
+.registerTrial-sparkle { display: grid; place-items: center; flex: 0 0 38px; height: 38px; border-radius: 13px; background: #fff; color: #1768d2; font-size: 21px; box-shadow: 0 4px 12px #1d69c21c; }
+.registerTrial-banner strong { font-size: 15px; letter-spacing: -.02em; }
+.registerTrial-banner p { margin: 3px 0 0; color: #516982; font-size: 12px; line-height: 1.4; }
+.registerTrial-badge { margin-left: auto; padding: 6px 9px; border-radius: 999px; background: #1768d2; color: #fff; font-size: 11px; font-weight: 800; white-space: nowrap; }
+.registerPlanFieldset { display: grid; gap: 7px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.registerPlanFieldset legend { padding: 0; font-size: 13px; font-weight: 800; }
+.registerPlanFieldset > p { margin: 0 0 3px; color: var(--muted); font-size: 12px; }
+.registerPlanGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.registerPlanOption { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 10px; border: 1px solid rgba(15,95,215,.14); border-radius: 14px; background: #fff; cursor: pointer; transition: border-color .16s ease, background .16s ease, box-shadow .16s ease; }
+.registerPlanOption.is-selected { border-color: #2675df; background: #f2f7ff; box-shadow: 0 0 0 2px #2675df18; }
+.registerPlanOption input { accent-color: #1768d2; }
+.registerPlanOptionMain { display: grid; gap: 3px; min-width: 0; font-size: 12px; }
+.registerPlanOptionMain small,.registerPlanOptionPrice small { color: var(--muted); font-size: 10px; font-weight: 500; }
+.registerPlanOptionPrice { margin-left: auto; text-align: right; font-size: 13px; font-weight: 800; white-space: nowrap; }
+.registerTrial-footnote { color: var(--muted); font-size: 11px; line-height: 1.45; }
+@media (max-width: 480px) { .registerPlanGrid { grid-template-columns: 1fr; } .registerTrial-banner { align-items: flex-start; flex-wrap: wrap; } .registerTrial-badge { margin-left: 50px; } }
+
 .registerForm-error {
   margin: 0;
   color: var(--danger);

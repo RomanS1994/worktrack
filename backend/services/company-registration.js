@@ -4,6 +4,7 @@ import { hashPassword } from '../auth/tokens.js';
 import { buildSanitizedUser, createAuditLog } from '../db/prisma-helpers.js';
 import { validateCompanyRegistrationInput } from '../validation/auth.js';
 import { normalizeText, nowIso } from '../validation/common.js';
+import { getSubscriptionPlan } from './subscription-plans.js';
 
 function slugifyCompanyName(value) {
   const slug = normalizeText(value)
@@ -52,6 +53,7 @@ export async function registerCompanyAccount(
   }
 
   const input = validateCompanyRegistrationInput(body);
+  const plan = getSubscriptionPlan(input.planCode);
   const existingUser = await client.user.findUnique({
     where: {
       email: input.email,
@@ -71,6 +73,11 @@ export async function registerCompanyAccount(
   const membershipId = randomUUID();
   const authSession = issueAuthSession(userId);
   const companySlug = await buildUniqueCompanySlug(client, input.companyName);
+  const trialEndsAt = new Date(timestamp);
+  const day = trialEndsAt.getDate();
+  trialEndsAt.setDate(1);
+  trialEndsAt.setMonth(trialEndsAt.getMonth() + 1);
+  trialEndsAt.setDate(Math.min(day, new Date(trialEndsAt.getFullYear(), trialEndsAt.getMonth() + 1, 0).getDate()));
 
   const user = await client.user.create({
     data: {
@@ -104,6 +111,13 @@ export async function registerCompanyAccount(
       updatedAt: timestamp,
     },
   });
+
+  await client.companySubscription.create({ data: {
+    id: randomUUID(), companyId, planCode: plan.code, employeeLimit: plan.max, monthlyPriceCzk: plan.price,
+    status: 'ACTIVE', currentPeriodStart: timestamp, currentPeriodEnd: trialEndsAt,
+    gracePeriodEnd: new Date(trialEndsAt.getTime() + 5 * 86400000), trialStartedAt: timestamp, trialEndsAt,
+    createdAt: timestamp, updatedAt: timestamp,
+  } });
 
   const membership = await client.companyMembership.create({
     data: {

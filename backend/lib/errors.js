@@ -13,6 +13,7 @@ const STATUS_BY_MESSAGE = new Map([
   ['First name is required', 400],
   ['Last name is required', 400],
   ['Company name is required', 400],
+  ['Unsupported subscription plan', 400],
   ['Company not found', 404],
   ['Company access is required', 403],
   ['Business identifiers are already used', 409],

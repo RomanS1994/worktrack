@@ -163,8 +163,13 @@ extended.
 
 The initial monthly plans are 490 CZK for 1–5 active employees, 790 CZK for
 6–10, 1,290 CZK for 11–20, and 2,190 CZK for 21–40. 41+ requires a custom
-arrangement. The first payment period lasts one month and unpaid invoices are
-due in 14 days. A five-day grace date is stored after confirmation.
+arrangement. New companies choose a plan at registration and receive one
+calendar month of full access starting at company creation. The selected price
+is shown before registration. No card or automatic charge is used. The
+subscription page shows the trial end date and the manual QR payment option.
+After the trial, companies have five grace days to complete a manual payment;
+after that, adding employees is paused while company data remains available.
+Paid invoices extend the selected plan for one month and are due in 14 days.
 
 Set these backend environment variables before issuing QR-enabled invoices:
 
