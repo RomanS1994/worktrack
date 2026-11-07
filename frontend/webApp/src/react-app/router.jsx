@@ -9,6 +9,7 @@ import { ApprovalHistoryPage } from './pages/ApprovalHistoryPage/ApprovalHistory
 import { ApprovalsPage } from './pages/ApprovalsPage/ApprovalsPage.jsx';
 import { CalendarPage } from './pages/CalendarPage/CalendarPage.jsx';
 import { ChatPage } from './pages/ChatPage/ChatPage.jsx';
+import { CompanySubscriptionPage } from './pages/CompanySubscriptionPage/CompanySubscriptionPage.jsx';
 import { CompanySettingsPage } from './pages/CompanySettingsPage/CompanySettingsPage.jsx';
 import { DashboardPage } from './pages/DashboardPage/DashboardPage.jsx';
 import { EmployeeAdvancesPage } from './pages/EmployeeAdvancesPage/EmployeeAdvancesPage.jsx';
@@ -30,6 +31,7 @@ import { NotificationSettingsPage } from './pages/NotificationSettingsPage/Notif
 import { NotificationsPage } from './pages/NotificationsPage/NotificationsPage.jsx';
 import { PartnerProgramsPage } from './pages/PartnerProgramsPage/PartnerProgramsPage.jsx';
 import { PayrollReportPage } from './pages/PayrollReportPage/PayrollReportPage.jsx';
+import { PlatformSubscriptionPaymentsPage } from './pages/PlatformSubscriptionPaymentsPage/PlatformSubscriptionPaymentsPage.jsx';
 import './pages/PayrollReportPage/ManagerPayrollMobile.css';
 import { ProfilePage } from './pages/ProfilePage/ProfilePage.jsx';
 import { ProjectsPage } from './pages/ProjectsPage/ProjectsPage.jsx';
@@ -89,8 +91,10 @@ export const router = createBrowserRouter([
         ],
       },
       { path: 'notifications', element: <ProtectedRoute><NotificationsPage /></ProtectedRoute> },
+      { path: 'platform/subscription-payments', element: <ProtectedRoute><PlatformSubscriptionPaymentsPage /></ProtectedRoute> },
       { path: 'notification-settings', element: <ProtectedRoute><NotificationSettingsPage /></ProtectedRoute> },
       { path: 'company-settings', element: <ProtectedRoute requireManager><CompanySettingsPage /></ProtectedRoute> },
+      { path: 'subscription', element: <ProtectedRoute requireManager><CompanySubscriptionPage /></ProtectedRoute> },
       { path: 'profile', element: <ProtectedRoute><ProfilePage /></ProtectedRoute> },
       { path: 'more', element: <ProtectedRoute><MoreHubPage /></ProtectedRoute> },
     ],

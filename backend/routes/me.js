@@ -7,6 +7,12 @@ import { readJsonBody, sendJson } from '../lib/http.js';
 import { deleteUserAvatar, profileWithoutAvatarData, storeUserAvatar } from '../services/avatars.js';
 import { normalizePhoneNumber, normalizeText, nowIso } from '../validation/common.js';
 
+function isPlatformSubscriptionAdmin(email) {
+  const allowed = String(process.env.SUBSCRIPTION_ADMIN_EMAILS || '')
+    .split(',').map(value => value.trim().toLowerCase()).filter(Boolean);
+  return allowed.includes(String(email || '').trim().toLowerCase());
+}
+
 function normalizeProfile(value) {
   return value && typeof value === 'object' ? value : {};
 }
@@ -265,6 +271,7 @@ export async function handleMeRoutes(request, response, { pathName }) {
       activeMembership: context.activeMembership,
       activeCompany: context.activeCompany,
     });
+    user.isPlatformSubscriptionAdmin = isPlatformSubscriptionAdmin(fullUser.email);
     sendJson(response, 200, { user });
     return true;
   }

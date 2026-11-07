@@ -1,0 +1,27 @@
+.platformPaymentsPage{max-width:1120px;margin:0 auto;padding-bottom:calc(96px + env(safe-area-inset-bottom,0px));}
+.platformPaymentsHeader{display:flex;align-items:flex-start;gap:14px;margin-bottom:8px;}
+.platformPaymentsSummary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.platformPaymentsSummaryCard{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border:1px solid #e3eaf3;border-radius:16px;background:#fff;box-shadow:0 5px 18px rgba(23,36,58,.04);}
+.platformPaymentsSummaryCard span{color:#64748b;font-size:14px;font-weight:650;}
+.platformPaymentsSummaryCard strong{color:#17243a;font-size:25px;line-height:1;}
+.platformPaymentsList{display:grid;gap:14px;}
+.platformPaymentCard{padding:20px 22px;}
+.platformPaymentHeading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:16px;border-bottom:1px solid #edf1f6;}
+.platformPaymentHeading small,.platformPaymentDetails small{display:block;color:#758196;font-size:12px;font-weight:600;}
+.platformPaymentHeading h2{margin:4px 0 0;color:#17243a;font-size:19px;line-height:1.25;}
+.platformPaymentStatus{flex:none;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:750;background:#fff3dc;color:#a76500;}
+.platformPaymentStatus.status-paid{background:#e7f7ed;color:#18804a;}
+.platformPaymentStatus.status-rejected,.platformPaymentStatus.status-overdue{background:#ffebeb;color:#c53f45;}
+.platformPaymentStatus.status-pending{background:#edf2f8;color:#58677e;}
+.platformPaymentDetails{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px 20px;padding:18px 0;}
+.platformPaymentDetails strong{display:block;margin-top:5px;color:#26364d;font-size:14px;overflow-wrap:anywhere;}
+.platformPaymentDetails strong small{margin-top:3px;font-size:12px;font-weight:500;}
+.platformPaymentVS{font-variant-numeric:tabular-nums;letter-spacing:.04em;}
+.platformPaymentActions{display:flex;justify-content:flex-end;gap:10px;padding-top:14px;border-top:1px solid #edf1f6;}
+.platformPaymentActions button{min-height:42px;padding:0 16px;border-radius:11px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+.platformPaymentConfirm{border:1px solid #3568f5;background:#3568f5;color:#fff;}
+.platformPaymentReject{border:1px solid #d9e1eb;background:#fff;color:#b34349;}
+.platformPaymentActions button:disabled{opacity:.55;cursor:wait;}
+.platformPaymentsNotice{padding:18px 20px;color:#526176;}
+.platformPaymentsNotice.is-error{border-color:#f2d0d2;color:#a33f45;background:#fff8f8;}
+@media(max-width:720px){.platformPaymentsPage{padding:0 14px calc(88px + env(safe-area-inset-bottom,0px));}.platformPaymentsHeader{gap:9px}.platformPaymentsSummary{gap:9px}.platformPaymentsSummaryCard{padding:14px 15px}.platformPaymentsSummaryCard span{font-size:12px}.platformPaymentsSummaryCard strong{font-size:22px}.platformPaymentCard{padding:16px}.platformPaymentHeading h2{font-size:16px}.platformPaymentStatus{padding:6px 8px;font-size:10px}.platformPaymentDetails{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px}.platformPaymentActions{display:grid;grid-template-columns:1fr 1fr}.platformPaymentActions button{padding:0 8px;font-size:12px}}

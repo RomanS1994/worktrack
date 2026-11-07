@@ -313,6 +313,7 @@ export const baseApi = createApi({
     'AuditLogs',
     'Invoices',
     'InvoicePreview',
+    'CompanySubscription',
   ],
   endpoints: () => ({}),
 });

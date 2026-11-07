@@ -44,6 +44,21 @@ enum InvoiceStatus {
   CANCELLED
 }
 
+enum CompanySubscriptionStatus {
+  INACTIVE
+  ACTIVE
+  GRACE_PERIOD
+  EXPIRED
+}
+
+enum SubscriptionPaymentStatus {
+  PENDING
+  REVIEW_REQUESTED
+  PAID
+  REJECTED
+  OVERDUE
+}
+
 model User {
   id                 String    @id
   email              String    @unique
@@ -114,6 +129,8 @@ model Company {
   weeklySubmissions       WeeklySubmission[]
   notifications           Notification[]
   invoices                Invoice[]
+  subscription            CompanySubscription?
+  subscriptionPayments    SubscriptionPayment[]
   managerTimesheetEntries ManagerTimesheetEntry[]
   salaryAdvances          SalaryAdvance[]
   expenses                CompanyExpense[]
@@ -121,6 +138,52 @@ model Company {
 
   @@index([slug])
   @@map("companies")
+}
+
+model CompanySubscription {
+  id                String                   @id
+  companyId         String                   @unique
+  planCode          String                   @default("TEAM_1_5")
+  employeeLimit    Int                      @default(5)
+  monthlyPriceCzk   Decimal                  @default(490) @db.Decimal(10, 2)
+  status            CompanySubscriptionStatus @default(INACTIVE)
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  gracePeriodEnd     DateTime?
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([status, currentPeriodEnd])
+  @@map("company_subscriptions")
+}
+
+model SubscriptionPayment {
+  id                String                   @id
+  companyId         String
+  invoiceNumber     String                   @unique
+  planCode          String
+  employeeLimit     Int
+  amountCzk         Decimal                  @db.Decimal(10, 2)
+  currency          String                   @default("CZK")
+  variableSymbol    String                   @unique
+  periodStart       DateTime
+  periodEnd         DateTime
+  dueDate           DateTime
+  status            SubscriptionPaymentStatus @default(PENDING)
+  reviewRequestedAt DateTime?
+  paidAt            DateTime?
+  rejectedAt        DateTime?
+  reviewedByEmail   String?
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, status, createdAt])
+  @@index([status, dueDate])
+  @@map("subscription_payments")
 }
 
 model CompanyMembership {

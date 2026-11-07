@@ -108,6 +108,9 @@ export async function buildSanitizedUser(client, user, options = {}) {
   return {
     id: user.id,
     email: user.email,
+    isPlatformSubscriptionAdmin: String(process.env.SUBSCRIPTION_ADMIN_EMAILS || '')
+      .split(',').map(value => value.trim().toLowerCase()).filter(Boolean)
+      .includes(String(user.email || '').trim().toLowerCase()),
     firstName: normalizeText(user.firstName),
     lastName: normalizeText(user.lastName),
     name: normalizeText(user.name),

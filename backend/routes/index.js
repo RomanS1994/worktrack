@@ -16,6 +16,7 @@ import { handleProjectRoutes } from './projects.js';
 import { handlePublicRoutes } from './public.js';
 import { handleWorkRulesRoutes } from './work-rules.js';
 import { handleWorkTrackRoutes } from './worktrack.js';
+import { handleSubscriptionBillingRoutes } from './subscription-billing.js';
 
 const routeHandlers = [
   handlePublicRoutes,
@@ -26,6 +27,7 @@ const routeHandlers = [
   handleInvoicePdfRoutes,
   handleEmployeeFinancePdfRoutes,
   handleBillingRoutes,
+  handleSubscriptionBillingRoutes,
   handleDefaultProjectRoutes,
   handleWorkRulesRoutes,
   handleMonthlyHoursRoutes,

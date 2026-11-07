@@ -144,6 +144,42 @@ npm run dev:client
 | `POST` | `/api/manager/submissions/:id/approve` | Approve submitted week |
 | `POST` | `/api/manager/submissions/:id/reject` | Reject submitted week |
 
+### Manual company subscriptions
+
+Company subscriptions are billed manually by bank transfer. The manager creates
+an invoice for the plan matching the number of active employee memberships,
+then submits it for review after sending the transfer. A platform subscription
+administrator confirms the received payment before the subscription period is
+extended.
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/company-subscription` | Subscription, active employee count, plans and payment history |
+| `POST` | `/api/company-subscription/invoices` | Create a plan invoice (`planCode`) and return QR Platba SPAYD data |
+| `POST` | `/api/company-subscription/invoices/:id/request-review` | Ask platform admin to verify bank transfer |
+| `GET` | `/api/platform/subscription-payments` | List payments for allowlisted platform admins; optional `?status=REVIEW_REQUESTED` |
+| `POST` | `/api/platform/subscription-payments/:id/confirm` | Confirm transfer and extend subscription once |
+| `POST` | `/api/platform/subscription-payments/:id/reject` | Reject a payment review request |
+
+The initial monthly plans are 490 CZK for 1–5 active employees, 790 CZK for
+6–10, 1,290 CZK for 11–20, and 2,190 CZK for 21–40. 41+ requires a custom
+arrangement. The first payment period lasts one month and unpaid invoices are
+due in 14 days. A five-day grace date is stored after confirmation.
+
+Set these backend environment variables before issuing QR-enabled invoices:
+
+```bash
+SUBSCRIPTION_ADMIN_EMAILS="owner@example.com"
+SUBSCRIPTION_ACCOUNT_NUMBER=""
+SUBSCRIPTION_BANK_CODE=""
+SUBSCRIPTION_ACCOUNT_PREFIX=""
+SUBSCRIPTION_ACCOUNT_HOLDER=""
+```
+
+The admin allowlist is separate from tenant manager permissions. Until account
+number and bank code are configured, invoice responses return
+`accountConfigured: false` and `spayd: null`; no bank details are fabricated.
+
 ## Salary
 
 Salary is calculated from work entries and `CompanyMembership.hourlyRateCzk`.
