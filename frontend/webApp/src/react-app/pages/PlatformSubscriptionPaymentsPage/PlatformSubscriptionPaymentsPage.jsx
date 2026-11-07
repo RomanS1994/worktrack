@@ -34,7 +34,7 @@ function statusLabel(status, copy) {
   return map[status] || status || copy.unknown;
 }
 
-export function PlatformSubscriptionPaymentsPage() {
+export function PlatformSubscriptionPaymentsPage({ embedded = false }) {
   const user = useSelector(selectUser);
   const { language } = useI18n();
   const copy = COPY[language] || COPY.uk;
@@ -58,7 +58,7 @@ export function PlatformSubscriptionPaymentsPage() {
   }
 
   return <section className="platformPaymentsPage pageStack">
-    <header className="platformPaymentsHeader appTop"><BackButton to="/more" /><div className="appTitleBlock"><p className="sectionEyebrow">WorkTrack</p><h1>{copy.title}</h1><p>{copy.intro}</p></div></header>
+    {!embedded ? <header className="platformPaymentsHeader appTop"><BackButton to="/platform/admin" /><div className="appTitleBlock"><p className="sectionEyebrow">WorkTrack</p><h1>{copy.title}</h1><p>{copy.intro}</p></div></header> : null}
     {!isAdmin ? <section className="platformPaymentsNotice screenCard" role="alert">{copy.access}</section> : null}
     {isAdmin && (isLoading || isFetching) ? <RequestLoadingState label={copy.pending} /> : null}
     {isAdmin && error ? <section className="platformPaymentsNotice is-error screenCard" role="alert">{getApiErrorMessage(error) || copy.error}</section> : null}

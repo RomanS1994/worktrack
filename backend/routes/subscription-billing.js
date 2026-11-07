@@ -3,6 +3,7 @@ import { getAuthContext, requireManager } from '../auth/context.js';
 import { prisma } from '../db/prisma.js';
 import { runStoreRead, runStoreTransaction } from '../db/store.js';
 import { readJsonBody, sendError, sendJson } from '../lib/http.js';
+import { createAuditLog } from '../db/prisma-helpers.js';
 
 import { SUBSCRIPTION_PLANS as PLANS, subscriptionPlanList as planList } from '../services/subscription-plans.js';
 const PAYMENT_SELECT = {
@@ -90,6 +91,7 @@ function paymentResponse(payment) {
 }
 
 function currentSubStatus(subscription, now = new Date()) {
+  if (subscription?.status === 'INACTIVE') return 'INACTIVE';
   if (!subscription?.currentPeriodEnd) return 'INACTIVE';
   if (subscription.trialEndsAt && subscription.trialEndsAt > now) return 'TRIAL';
   if (subscription.currentPeriodEnd > now) return 'ACTIVE';
@@ -107,6 +109,105 @@ function serializeInvoice(payment) {
 }
 
 export async function handleSubscriptionBillingRoutes(request, response, { pathName }) {
+  // Separate platform cabinet APIs. These expose only operational company data;
+  // employee rates, contact details, profiles and timesheets are deliberately omitted.
+  if (request.method === 'GET' && pathName === '/api/platform/admin/overview') {
+    const context = await requirePlatformAdmin(request, response);
+    if (!context) return true;
+    const overview = await runStoreRead({ prisma: async client => {
+      const [companies, pendingPaymentReviewsCount, overduePayments] = await Promise.all([client.company.findMany({
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, name: true, createdAt: true,
+          subscription: { select: { planCode: true, employeeLimit: true, status: true, currentPeriodEnd: true, trialEndsAt: true } },
+          memberships: { where: { status: 'ACTIVE', deletedAt: null }, select: { role: true } } },
+      }), client.subscriptionPayment.count({ where: { status: 'REVIEW_REQUESTED' } }),
+      client.subscriptionPayment.findMany({ where: { status: 'OVERDUE' }, select: { companyId: true } })]);
+      const items = companies.map(company => {
+        const employees = company.memberships.filter(m => m.role === 'EMPLOYEE').length;
+        const managers = company.memberships.filter(m => m.role === 'MANAGER').length;
+        return { id: company.id, name: company.name, createdAt: company.createdAt,
+          employeeCount: employees, managerCount: managers, subscription: company.subscription };
+      });
+      const now = new Date();
+      const overdueIds = new Set(overduePayments.map(row => row.companyId));
+      return { companiesCount: items.length,
+        activeSubscriptionsCount: items.filter(c => c.subscription && currentSubStatus(c.subscription, now) === 'ACTIVE').length,
+        trialCompaniesCount: items.filter(c => c.subscription && currentSubStatus(c.subscription, now) === 'TRIAL').length,
+        overdueCompaniesCount: items.filter(c => overdueIds.has(c.id) || (c.subscription && ['EXPIRED', 'GRACE_PERIOD'].includes(currentSubStatus(c.subscription, now)))).length,
+        activeEmployeesCount: items.reduce((n, c) => n + c.employeeCount, 0), pendingPaymentReviewsCount };
+    } });
+    sendJson(response, 200, overview); return true;
+  }
+
+  if (request.method === 'GET' && pathName === '/api/platform/admin/companies') {
+    const context = await requirePlatformAdmin(request, response);
+    if (!context) return true;
+    const url = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
+    const search = (url.searchParams.get('search') || '').trim().toLocaleLowerCase();
+    const companies = await runStoreRead({ prisma: async client => {
+      const rows = await client.company.findMany({ orderBy: { createdAt: 'desc' }, select: {
+        id: true, name: true, subscription: { select: { planCode: true, status: true, currentPeriodEnd: true, trialEndsAt: true } },
+        memberships: { where: { status: 'ACTIVE', deletedAt: null }, select: { role: true, user: { select: { name: true, email: true } } }, orderBy: { createdAt: 'asc' } },
+      } });
+      return rows.map(company => {
+        const manager = company.memberships.find(m => m.role === 'MANAGER')?.user;
+        return { id: company.id, name: company.name, managerName: manager?.name || '', managerEmail: manager?.email || '',
+          activeEmployees: company.memberships.filter(m => m.role === 'EMPLOYEE').length,
+          planCode: company.subscription?.planCode || '', subscriptionStatus: company.subscription ? currentSubStatus(company.subscription) : 'INACTIVE',
+          trialEndsAt: company.subscription?.trialEndsAt || null, currentPeriodEnd: company.subscription?.currentPeriodEnd || null,
+          _search: `${company.name} ${manager?.name || ''} ${manager?.email || ''}`.toLocaleLowerCase() };
+      }).filter(company => !search || company._search.includes(search)).map(({ _search, ...company }) => company);
+    } });
+    sendJson(response, 200, { companies }); return true;
+  }
+
+  const companyMatch = pathName.match(/^\/api\/platform\/admin\/companies\/([^/]+)$/);
+  if (request.method === 'GET' && companyMatch) {
+    const context = await requirePlatformAdmin(request, response);
+    if (!context) return true;
+    const company = await runStoreRead({ prisma: client => client.company.findUnique({
+      where: { id: decodeURIComponent(companyMatch[1]) },
+      select: { id: true, name: true, slug: true, createdAt: true,
+        subscription: true,
+        memberships: { where: { status: 'ACTIVE', deletedAt: null }, select: { id: true, role: true, status: true, createdAt: true, user: { select: { name: true } } }, orderBy: { createdAt: 'asc' } } },
+    }) });
+    if (!company) { sendError(response, 404, 'Company not found'); return true; }
+    sendJson(response, 200, { company: { ...company, memberships: company.memberships.map(({ user, ...membership }) => ({ ...membership, displayName: user.name })) } }); return true;
+  }
+
+  const subscriptionMatch = pathName.match(/^\/api\/platform\/admin\/companies\/([^/]+)\/subscription$/);
+  if (request.method === 'PATCH' && subscriptionMatch) {
+    const context = await requirePlatformAdmin(request, response);
+    if (!context) return true;
+    const companyId = decodeURIComponent(subscriptionMatch[1]);
+    const body = await readJsonBody(request);
+    const plan = body.planCode == null ? null : PLANS[String(body.planCode)];
+    if (body.planCode != null && !plan) { sendError(response, 400, 'Unsupported subscription plan'); return true; }
+    if (body.status != null && !['ACTIVE', 'INACTIVE'].includes(String(body.status))) { sendError(response, 400, 'Status must be ACTIVE or INACTIVE'); return true; }
+    const result = await runStoreTransaction({ prisma: async tx => {
+      const company = await tx.company.findUnique({ where: { id: companyId }, select: { id: true } });
+      if (!company) { const error = new Error('Company not found'); error.statusCode = 404; throw error; }
+      const before = await tx.companySubscription.findUnique({ where: { companyId } });
+      const now = new Date();
+      const activeStart = before?.currentPeriodEnd && before.currentPeriodEnd > now ? before.currentPeriodEnd : now;
+      const activeEnd = body.status === 'ACTIVE' ? addMonth(activeStart) : undefined;
+      const data = { ...(plan ? { planCode: body.planCode, employeeLimit: plan.max, monthlyPriceCzk: plan.price } : {}),
+        ...(body.status ? { status: body.status } : {}),
+        ...(body.status === 'ACTIVE' ? { currentPeriodStart: activeStart, currentPeriodEnd: activeEnd, gracePeriodEnd: new Date(activeEnd.getTime() + 5 * 86400000), trialEndsAt: null } : {}) };
+      const defaultPlan = PLANS.TEAM_1_5;
+      const after = await tx.companySubscription.upsert({ where: { companyId },
+        create: { id: randomUUID(), companyId, planCode: plan ? body.planCode : defaultPlan.code, employeeLimit: plan?.max || defaultPlan.max, monthlyPriceCzk: plan?.price || defaultPlan.price, status: body.status || 'INACTIVE', ...data },
+        update: data });
+      await createAuditLog(tx, { action: 'platform.subscription_updated', actorUserId: context.user.id,
+        entityType: 'company_subscription', entityId: companyId,
+        before: before ? { planCode: before.planCode, employeeLimit: before.employeeLimit, status: before.status } : null,
+        after: { planCode: after.planCode, employeeLimit: after.employeeLimit, status: after.status },
+        meta: { actorEmail: context.user.email, source: 'platform_admin_cabinet', at: now.toISOString() } });
+      return after;
+    } });
+    sendJson(response, 200, { subscription: result }); return true;
+  }
+
   if (request.method === 'GET' && pathName === '/api/company-subscription') {
     const context = await requireManager(request, response);
     if (!context) return true;

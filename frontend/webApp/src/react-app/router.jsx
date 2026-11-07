@@ -31,7 +31,7 @@ import { NotificationSettingsPage } from './pages/NotificationSettingsPage/Notif
 import { NotificationsPage } from './pages/NotificationsPage/NotificationsPage.jsx';
 import { PartnerProgramsPage } from './pages/PartnerProgramsPage/PartnerProgramsPage.jsx';
 import { PayrollReportPage } from './pages/PayrollReportPage/PayrollReportPage.jsx';
-import { PlatformSubscriptionPaymentsPage } from './pages/PlatformSubscriptionPaymentsPage/PlatformSubscriptionPaymentsPage.jsx';
+import { PlatformAdminPage } from './pages/PlatformAdminPage/PlatformAdminPage.jsx';
 import './pages/PayrollReportPage/ManagerPayrollMobile.css';
 import { ProfilePage } from './pages/ProfilePage/ProfilePage.jsx';
 import { ProjectsPage } from './pages/ProjectsPage/ProjectsPage.jsx';
@@ -91,7 +91,8 @@ export const router = createBrowserRouter([
         ],
       },
       { path: 'notifications', element: <ProtectedRoute><NotificationsPage /></ProtectedRoute> },
-      { path: 'platform/subscription-payments', element: <ProtectedRoute><PlatformSubscriptionPaymentsPage /></ProtectedRoute> },
+      { path: 'platform/admin', element: <ProtectedRoute><PlatformAdminPage /></ProtectedRoute> },
+      { path: 'platform/subscription-payments', element: <ProtectedRoute><Navigate to="/platform/admin?section=payments" replace /></ProtectedRoute> },
       { path: 'notification-settings', element: <ProtectedRoute><NotificationSettingsPage /></ProtectedRoute> },
       { path: 'company-settings', element: <ProtectedRoute requireManager><CompanySettingsPage /></ProtectedRoute> },
       { path: 'subscription', element: <ProtectedRoute requireManager><CompanySubscriptionPage /></ProtectedRoute> },

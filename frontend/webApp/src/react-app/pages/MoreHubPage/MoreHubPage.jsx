@@ -19,9 +19,9 @@ const COPY = {
 };
 
 const PLATFORM_ADMIN_COPY = {
- uk:{group:'WorkTrack',title:'Платежі підписок',copy:'Перевірка оплат компаній'},
- cs:{group:'WorkTrack',title:'Platby předplatného',copy:'Kontrola plateb společností'},
- en:{group:'WorkTrack',title:'Subscription payments',copy:'Review company payments'},
+ uk:{group:'Адміністрування WorkTrack',title:'Кабінет адміністратора',copy:'Компанії, працівники та платежі підписок'},
+ cs:{group:'Správa WorkTrack',title:'Administrátorský panel',copy:'Společnosti, zaměstnanci a platby předplatného'},
+ en:{group:'WorkTrack administration',title:'Platform admin',copy:'Companies, employees and subscription payments'},
 };
 
 function getName(user){return user?.name||[user?.firstName,user?.lastName].filter(Boolean).join(' ')||user?.email||'-'}
@@ -43,7 +43,7 @@ export function MoreHubPage(){
  return <section className="moreHub pageStack">
   <header className="moreHubHeader appTop"><div className="appTitleBlock"><h1>{c.title}</h1><p>{c.copy}</p></div></header>
   <Link className="moreHubProfile moreHubProfile--link" to="/profile?section=personal&from=settings" aria-label={c.personal}><span className={`moreHubAvatar${avatar?' has-photo':''}`}>{avatar?<img src={avatar} alt=""/>:<span>{initials(user)}</span>} </span><span className="moreHubProfileMain"><span className="moreHubProfileText"><strong>{getName(user)}</strong><small>{user?.email||''}</small><span className="moreHubProfileMeta">{companyName?<span>{companyName}</span>:null}<em>{roleLabel}</em></span></span><span className="moreHubProfileChevron" aria-hidden="true">›</span></span></Link>
-  {user?.isPlatformSubscriptionAdmin?<SettingsGroup title={PLATFORM_ADMIN_COPY[language]?.group||PLATFORM_ADMIN_COPY.uk.group}><SettingsRow to="/platform/subscription-payments" icon="receipt" tone="billing" title={PLATFORM_ADMIN_COPY[language]?.title||PLATFORM_ADMIN_COPY.en.title} copy={PLATFORM_ADMIN_COPY[language]?.copy||PLATFORM_ADMIN_COPY.en.copy}/></SettingsGroup>:null}
+  {user?.isPlatformSubscriptionAdmin?<SettingsGroup title={PLATFORM_ADMIN_COPY[language]?.group||PLATFORM_ADMIN_COPY.uk.group}><SettingsRow to="/platform/admin" icon="building" tone="billing" title={PLATFORM_ADMIN_COPY[language]?.title||PLATFORM_ADMIN_COPY.en.title} copy={PLATFORM_ADMIN_COPY[language]?.copy||PLATFORM_ADMIN_COPY.en.copy}/></SettingsGroup>:null}
   {managerCabinet?<><SettingsGroup title={c.companyGroup}><SettingsRow to="/company-settings?section=identity&from=settings" icon="building" tone="company" title={c.identity} copy={c.identityCopy}/><SettingsRow to="/company-settings?section=billing&from=settings" icon="receipt" tone="billing" title={c.billing} copy={c.billingCopy}/><SettingsRow to="/subscription" icon="wallet" tone="billing" title={c.subscription} copy={c.subscriptionCopy}/></SettingsGroup><SettingsGroup title={c.workGroup}><SettingsRow to="/company-settings?section=work&from=settings" icon="clock" tone="work" title={c.work} copy={c.workCopy}/>{cabinetSwitchRow}</SettingsGroup></>:<SettingsGroup title={c.workGroup}><SettingsRow to="/profile?section=work&from=settings" icon="clock" tone="work" title={c.myWork} copy={c.myWorkCopy}/>{cabinetSwitchRow}</SettingsGroup>}
   <SettingsGroup title={c.accountGroup}><SettingsRow to="/notification-settings" icon="bell" tone="notifications" title={c.notifications} copy={c.notificationsCopy}/><SettingsRow to="/profile?section=language&from=settings" icon="globe" tone="language" title={t('settings.languageCard.title')} copy={c.languageCopy}/><SettingsRow to="/profile?section=password&from=settings" icon="lock" tone="security" title={t('profile.changePassword')} copy={c.securityCopy}/>{!managerCabinet?<SettingsRow to="/tax-information" icon="receipt" tone="billing" title={c.tax} copy={c.taxCopy}/>:null}</SettingsGroup>
   <SettingsGroup title={c.securityGroup} tone="danger"><SettingsActionRow onClick={()=>openConfirm('logout')} icon="logout" tone="danger" title={c.logout} copy={c.logoutCopy}/><SettingsActionRow onClick={()=>openConfirm('delete')} icon="trash" tone="dangerStrong" title={c.deleteAccount} copy={c.deleteAccountCopy}/></SettingsGroup>
