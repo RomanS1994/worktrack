@@ -19,11 +19,13 @@ export function AppLayout({ children }) {
   const token = useSelector(selectToken);
   const user = useSelector(selectUser);
   const layoutRef = useRef(null);
-  const showWorkspaceNav = Boolean(token && user && hasActiveCompanyAccess(user));
+  const isPlatformAdminPage = location.pathname.startsWith('/platform/admin');
+  const showWorkspaceNav = !isPlatformAdminPage && Boolean(token && user && hasActiveCompanyAccess(user));
   const isChatPage = location.pathname === '/chat';
   const layoutClassName = [
     'appLayout',
     'appLayout--workspace',
+    isPlatformAdminPage ? 'appLayout--platformAdmin' : '',
     showWorkspaceNav ? 'appLayout--withNav' : '',
     isChatPage ? 'appLayout--chat' : '',
   ].filter(Boolean).join(' ');

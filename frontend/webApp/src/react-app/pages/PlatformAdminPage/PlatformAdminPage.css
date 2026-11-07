@@ -1,11 +1,124 @@
-.platformAdmin{--admin-ink:#172334;--admin-muted:#7b8795;--admin-border:#e7ebf0;--admin-blue:#4569e8;max-width:1240px;margin:0 auto;padding:22px 28px 54px;color:var(--admin-ink)}
-.platformAdminHeader{position:relative;overflow:hidden;display:grid;grid-template-columns:1fr auto;gap:28px;align-items:end;padding:28px 32px;border:1px solid #253752;border-radius:24px;background:radial-gradient(ellipse at 92% 0%,#34476a 0,transparent 44%),linear-gradient(120deg,#142237,#202f47);color:#fff;box-shadow:0 14px 36px #15253a1c}
-.platformAdminBrand{grid-column:1/-1;display:flex;align-items:center;gap:10px;color:#c7d1e1;font-size:11px;font-weight:800;letter-spacing:.14em}.platformAdminBrand b{margin-left:5px;color:#91a9ff}.platformAdminMark{display:grid;place-items:center;width:30px;height:30px;border:1px solid #7084a5;border-radius:10px;color:#fff;font-size:15px;letter-spacing:0}
-.platformAdminHeading .sectionEyebrow{margin:0 0 8px;color:#9fb2d1;font-size:10px;font-weight:750;letter-spacing:.14em;text-transform:uppercase}.platformAdminHeading h1{margin:0;font-size:clamp(23px,3.2vw,34px);letter-spacing:-.04em}.platformAdminHeading>p:last-child{max-width:600px;margin:9px 0 0;color:#bdc8d8;font-size:14px;line-height:1.5}.platformAdminExit{padding:10px 13px;border:1px solid #54647a;border-radius:12px;color:#e3e9f2;text-decoration:none;font-size:12px;font-weight:700;white-space:nowrap}.platformAdminExit:hover{background:#ffffff12}
-.platformAdminNav{display:flex;gap:7px;align-items:center;width:max-content;max-width:100%;margin:4px 0 0;padding:5px;border:1px solid var(--admin-border);border-radius:14px;background:#f7f9fb}.platformAdminNav button{border:0;border-radius:10px;padding:10px 16px;background:transparent;color:#687586;font:inherit;font-size:13px;font-weight:700;cursor:pointer}.platformAdminNav button.is-active{background:#fff;color:#23385c;box-shadow:0 2px 8px #15253a12}
-.platformAdminMetrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.platformAdminMetric{position:relative;display:grid;grid-template-columns:10px 1fr auto;align-items:center;gap:9px;min-height:84px;padding:17px 18px;border:1px solid var(--admin-border);border-radius:17px;background:#fff;box-shadow:0 3px 12px #17233405}.platformAdminMetricDot{width:9px;height:9px;border-radius:50%;background:#4569e8;box-shadow:0 0 0 4px #4569e817}.platformAdminMetricLabel{color:#748091;font-size:12px;font-weight:650}.platformAdminMetric strong{color:#1d2b3c;font-size:26px;letter-spacing:-.04em}.platformAdminMetric.accent-green .platformAdminMetricDot{background:#20a477;box-shadow:0 0 0 4px #20a47717}.platformAdminMetric.accent-violet .platformAdminMetricDot{background:#8a61d4;box-shadow:0 0 0 4px #8a61d417}.platformAdminMetric.accent-orange .platformAdminMetricDot{background:#e79a34;box-shadow:0 0 0 4px #e79a3418}.platformAdminMetric.accent-rose .platformAdminMetricDot{background:#dc627c;box-shadow:0 0 0 4px #dc627c18}
-.platformAdminSpotlight{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:20px 22px;border:1px solid #dae3ff;border-radius:18px;background:linear-gradient(105deg,#f1f4ff,#f8f9ff)}.platformAdminSpotlight>div{display:flex;align-items:center;gap:13px}.platformAdminSpotlightIcon{display:grid;place-items:center;width:39px;height:39px;border-radius:13px;background:#e1e8ff;color:#4265d4;font-size:20px;font-weight:800}.platformAdminSpotlight h2{margin:0;font-size:14px}.platformAdminSpotlight p{margin:4px 0 0;color:#748091;font-size:12px}.platformAdminSpotlight button,.platformAdminCompanies>header>button{border:0;background:transparent;color:#4665d0;font:inherit;font-size:12px;font-weight:750;cursor:pointer;white-space:nowrap}.platformAdminSpotlight button span,.platformAdminCompanies>header>button span{margin-left:6px;font-size:16px}
-.platformAdminCompanies{overflow:hidden;border:1px solid var(--admin-border);border-radius:19px;background:#fff;box-shadow:0 4px 14px #17233406}.platformAdminCompanies>header{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px 22px;border-bottom:1px solid var(--admin-border)}.platformAdminCompanies>header .sectionEyebrow{margin:0 0 5px;color:#98a2af;font-size:9px;font-weight:800;letter-spacing:.13em}.platformAdminCompanies>header h2{margin:0;font-size:16px;letter-spacing:-.02em}.platformAdminCompanies>header input{width:min(300px,45%);height:38px;padding:0 12px;border:1px solid #e4e8ee;border-radius:11px;background:#fbfcfd;color:var(--admin-ink);font:inherit;font-size:12px;outline:none}.platformAdminCompanies>header input:focus{border-color:#8da2ef;box-shadow:0 0 0 3px #4569e81c}.platformAdminCompanyList{padding:0 22px}.platformAdminCompany{display:grid;grid-template-columns:minmax(220px,1.5fr) minmax(85px,.55fr) minmax(90px,.65fr) minmax(180px,1fr);align-items:center;gap:16px;padding:15px 0;border-bottom:1px solid #eff1f4}.platformAdminCompany:last-child{border-bottom:0}.platformAdminCompanyName{display:flex;align-items:center;gap:11px;min-width:0}.platformAdminCompanyAvatar{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border-radius:12px;background:#edf1fc;color:#4d67bd;font-size:13px;font-weight:800}.platformAdminCompanyName>span:last-child{display:grid;min-width:0;gap:3px}.platformAdminCompanyName strong,.platformAdminCompanyEmployees strong,.platformAdminCompanyPlan strong{overflow:hidden;color:#243244;font-size:12px;text-overflow:ellipsis;white-space:nowrap}.platformAdminCompanyName small,.platformAdminCompanyEmployees small,.platformAdminCompanyPlan small,.platformAdminCompanyStatus small{display:block;color:#929daa;font-size:10px;line-height:1.45}.platformAdminCompanyEmployees strong,.platformAdminCompanyPlan strong{display:block;margin-bottom:3px}.platformAdminCompanyStatus{display:grid;justify-items:start;gap:5px}.platformAdminStatus{display:inline-flex;padding:5px 9px;border-radius:999px;background:#eef1f5;color:#738091;font-size:10px;font-weight:750}.platformAdminStatus.is-active{background:#e7f6ef;color:#29865e}.platformAdminStatus.is-trial,.platformAdminStatus.is-trialing{background:#f0ebff;color:#7556ba}.platformAdminStatus.is-grace-period{background:#fff4df;color:#a26c1f}.platformAdminStatus.is-overdue,.platformAdminStatus.is-past-due{background:#ffebeb;color:#b84c4c}.platformAdminEmpty,.platformAdminNotice{padding:20px;border:1px solid var(--admin-border);border-radius:16px;background:#fff;color:#758192;font-size:13px}.platformAdminNotice.is-error{border-color:#f0cccc;background:#fff7f7;color:#a84040}
-.platformAdmin .platformPaymentsPage{padding:0}.platformAdmin .platformPaymentsHeader{display:none}.platformAdmin .platformPaymentsSummary{margin-top:0}.platformAdmin .platformPaymentsList{gap:12px}
-@media(max-width:760px){.platformAdmin{padding:13px 14px 34px;gap:13px}.platformAdminHeader{grid-template-columns:1fr;padding:22px 20px;border-radius:19px;gap:18px}.platformAdminBrand{grid-column:auto}.platformAdminExit{justify-self:start}.platformAdminNav{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:3px}.platformAdminNav button{padding:10px 6px;font-size:12px}.platformAdminMetrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.platformAdminMetric{grid-template-columns:8px 1fr;gap:7px;min-height:76px;padding:13px}.platformAdminMetricDot{grid-row:1/3;align-self:start;margin-top:4px}.platformAdminMetricLabel{font-size:10px}.platformAdminMetric strong{grid-column:2;font-size:23px}.platformAdminSpotlight{align-items:flex-start;flex-direction:column;padding:17px}.platformAdminSpotlight button{padding-left:51px}.platformAdminCompanies>header{padding:17px}.platformAdminCompanies>header input{width:48%;min-width:130px}.platformAdminCompanyList{padding:0 16px}.platformAdminCompany{grid-template-columns:minmax(0,1fr) auto;gap:11px;padding:14px 0}.platformAdminCompanyName{grid-column:1/-1}.platformAdminCompanyEmployees,.platformAdminCompanyPlan{padding-left:47px}.platformAdminCompanyStatus{grid-column:1/-1;padding-left:47px}.platformAdminCompanyStatus small{font-size:10px}}
-@media(max-width:390px){.platformAdmin{padding-inline:10px}.platformAdminHeading>p:last-child{font-size:12px}.platformAdminMetrics{gap:7px}.platformAdminMetric{padding:11px 9px}.platformAdminMetricLabel{font-size:9px}.platformAdminMetric strong{font-size:21px}.platformAdminCompanies>header{align-items:flex-start;flex-direction:column}.platformAdminCompanies>header input{width:100%}}
+.appLayout--platformAdmin{min-height:100dvh;background:#f3f3f3;color:#111}
+.appLayout--platformAdmin .appLayout-workspaceBody{padding:0}
+.appLayout--platformAdmin .pageContainer{width:100%;max-width:none;margin:0;padding:0}
+.appLayout--platformAdmin .appLayout-main{width:100%;min-height:100dvh}
+.appLayout--workspace:not(.appLayout--withNav).appLayout--platformAdmin .pageContainer{width:100%;max-width:none;padding:0}
+.platformAdmin{--admin-black:#101010;--admin-ink:#171717;--admin-muted:#777;--admin-line:#e8e8e8;--admin-paper:#fff;min-height:100dvh;padding:0 0 48px;background:#f3f3f3;color:var(--admin-ink);font-family:inherit}
+.platformAdminTopbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:68px;padding:0 clamp(18px,5vw,72px);background:#101010;color:#fff}
+.platformAdminBrand{display:flex;align-items:center;gap:11px;color:#fff;text-decoration:none}
+.platformAdminMark{display:grid;place-items:center;width:33px;height:33px;border:1px solid #fff;border-radius:9px;background:#fff;color:#111;font-size:16px;font-weight:950;letter-spacing:-.1em}
+.platformAdminBrandName{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:850;letter-spacing:.13em}.platformAdminBrandName span{padding:4px 6px;border:1px solid #555;border-radius:4px;color:#bbb;font-size:8px;letter-spacing:.12em}
+.platformAdminTopbarMeta{display:flex;align-items:center;gap:9px;color:#aaa;font-size:10px;font-weight:700;letter-spacing:.1em}.platformAdminTopbarMeta i{width:1px;height:14px;background:#444}.platformAdminTopbarMeta strong{color:#eee;font-size:10px;letter-spacing:0}
+.platformAdminLiveDot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px #ffffff20}
+.platformAdminExit{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid #454545;border-radius:8px;color:#eee;text-decoration:none;font-size:11px;font-weight:700;white-space:nowrap}.platformAdminExit:hover{border-color:#888;background:#ffffff10}
+.platformAdminPageHead,.platformAdminNav,.platformAdminMetrics,.platformAdminSpotlight,.platformAdminCompanies,.platformAdminNotice,.platformPaymentsPage{width:min(100% - 40px,1320px);margin-right:auto;margin-left:auto}
+.platformAdminPageHead{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding:38px 0 22px}
+.platformAdminEyebrow{margin:0 0 11px;color:#777;font-size:9px;font-weight:800;letter-spacing:.16em}.platformAdminEyebrow span{padding:0 5px;color:#bbb}
+.platformAdminPageHead h1{margin:0;color:#111;font-size:clamp(29px,4vw,42px);font-weight:760;letter-spacing:-.055em;line-height:1.03}
+.platformAdminPageHead>div:first-child>p:last-child{max-width:610px;margin:9px 0 0;color:#737373;font-size:12px;line-height:1.5}
+.platformAdminHealth{display:flex;align-items:center;gap:9px;padding:9px 12px;border:1px solid #ddd;border-radius:7px;background:#fafafa;color:#555;font-size:10px;font-weight:700;white-space:nowrap}.platformAdminHealth .platformAdminLiveDot{background:#111;box-shadow:0 0 0 3px #11111112}
+.platformAdminNav{display:flex;align-items:center;gap:7px;padding:0 0 13px;border-bottom:1px solid #dcdcdc}
+.platformAdminNav button{position:relative;display:flex;align-items:center;justify-content:center;gap:9px;min-height:42px;padding:0 14px;border:1px solid transparent;border-radius:7px;background:transparent;color:#777;font:inherit;font-size:11px;font-weight:750;cursor:pointer;transition:background .16s ease,color .16s ease,border-color .16s ease}
+.platformAdminNav button svg{width:15px;height:15px;flex:none}
+.platformAdminNav button:hover{background:#e9e9e9;color:#111}
+.platformAdminNav button.is-active{border-color:#111;background:#111;color:#fff}
+.platformAdminNav button[aria-current="page"]::after{content:none}
+.platformAdminNav--bottom{display:none}
+.platformAdminMetrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin-top:22px}
+.platformAdminMetric{position:relative;display:grid;grid-template-columns:8px 1fr auto;align-items:center;gap:11px;min-height:83px;padding:17px 19px;border:1px solid #e5e5e5;border-radius:9px;background:#fff;box-shadow:0 1px 2px #00000005}
+.platformAdminMetricDot{width:7px;height:7px;border-radius:50%;background:#111}
+.platformAdminMetricLabel{color:#777;font-size:10px;font-weight:650}
+.platformAdminMetric strong{color:#111;font-size:26px;font-weight:680;letter-spacing:-.06em;font-variant-numeric:tabular-nums}
+.platformAdminMetric.accent-green .platformAdminMetricDot,.platformAdminMetric.accent-violet .platformAdminMetricDot,.platformAdminMetric.accent-orange .platformAdminMetricDot,.platformAdminMetric.accent-rose .platformAdminMetricDot{background:#111;box-shadow:none}
+.platformAdminMetrics .platformAdminMetric:first-child{border-color:#111;background:#111}.platformAdminMetrics .platformAdminMetric:first-child .platformAdminMetricDot{background:#fff}.platformAdminMetrics .platformAdminMetric:first-child .platformAdminMetricLabel{color:#aaa}.platformAdminMetrics .platformAdminMetric:first-child strong{color:#fff}
+.platformAdminSpotlight{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-top:13px;padding:16px 19px;border:1px solid #171717;border-radius:9px;background:#171717;color:#fff}
+.platformAdminSpotlight>div{display:flex;align-items:center;gap:12px}.platformAdminSpotlightIcon{display:grid;place-items:center;width:34px;height:34px;border:1px solid #4a4a4a;border-radius:7px;background:#252525;color:#fff;font-size:17px;font-weight:750}
+.platformAdminSpotlight h2{margin:0;color:#fff;font-size:12px;font-weight:750}.platformAdminSpotlight p{margin:4px 0 0;color:#aaa;font-size:10px}
+.platformAdminSpotlight button,.platformAdminCompanies>header>button{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #505050;border-radius:6px;background:transparent;color:#fff;font:inherit;font-size:10px;font-weight:750;cursor:pointer;white-space:nowrap}.platformAdminSpotlight button:hover{background:#fff;color:#111}.platformAdminSpotlight button span,.platformAdminCompanies>header>button span{font-size:15px;line-height:1}
+.platformAdminCompanies{overflow:hidden;margin-top:15px;border:1px solid #e4e4e4;border-radius:9px;background:#fff}
+.platformAdminCompanies>header{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:17px 19px;border-bottom:1px solid #ececec}
+.platformAdminCompanies>header .sectionEyebrow{margin:0 0 5px;color:#898989;font-size:8px;font-weight:800;letter-spacing:.16em}
+.platformAdminCompanies>header h2{margin:0;color:#171717;font-size:14px;font-weight:720;letter-spacing:-.025em}
+.platformAdminCompanies>header>button{border-color:#ddd;color:#333}.platformAdminCompanies>header>button:hover{border-color:#111;background:#111;color:#fff}
+.platformAdminCompanies>header input{width:min(300px,45%);height:36px;padding:0 11px;border:1px solid #ddd;border-radius:6px;background:#fafafa;color:#111;font:inherit;font-size:11px;outline:none}.platformAdminCompanies>header input:focus{border-color:#111;box-shadow:0 0 0 2px #11111112}
+.platformAdminCompanyList{padding:0 19px}
+.platformAdminCompany{display:grid;grid-template-columns:minmax(220px,1.5fr) minmax(85px,.55fr) minmax(90px,.65fr) minmax(180px,1fr);align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid #eee}.platformAdminCompany:last-child{border-bottom:0}
+.platformAdminCompanyName{display:flex;align-items:center;gap:11px;min-width:0}
+.platformAdminCompanyAvatar{display:grid;place-items:center;flex:0 0 35px;width:35px;height:35px;border:1px solid #ddd;border-radius:8px;background:#f5f5f5;color:#111;font-size:12px;font-weight:850}
+.platformAdminCompanyName>span:last-child{display:grid;min-width:0;gap:3px}
+.platformAdminCompanyName strong,.platformAdminCompanyEmployees strong,.platformAdminCompanyPlan strong{overflow:hidden;color:#222;font-size:11px;font-weight:730;text-overflow:ellipsis;white-space:nowrap}
+.platformAdminCompanyName small,.platformAdminCompanyEmployees small,.platformAdminCompanyPlan small,.platformAdminCompanyStatus small{display:block;color:#888;font-size:9px;line-height:1.45}
+.platformAdminCompanyEmployees strong,.platformAdminCompanyPlan strong{display:block;margin-bottom:3px}
+.platformAdminCompanyStatus{display:grid;justify-items:start;gap:5px}
+.platformAdminStatus{display:inline-flex;padding:4px 8px;border:1px solid #ddd;border-radius:4px;background:#f7f7f7;color:#555;font-size:9px;font-weight:750}
+.platformAdminStatus.is-active,.platformAdminStatus.is-trial,.platformAdminStatus.is-trialing,.platformAdminStatus.is-grace-period,.platformAdminStatus.is-overdue,.platformAdminStatus.is-past-due{border-color:#bbb;background:#fff;color:#171717}
+.platformAdminEmpty,.platformAdminNotice{width:min(100% - 40px,1320px);margin:18px auto;padding:20px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#666;font-size:12px}.platformAdminNotice.is-error{border-color:#bbb;background:#f7f7f7;color:#333}
+.platformAdmin .platformPaymentsPage{max-width:1320px;margin-top:20px;padding:0 0 50px}
+.platformAdmin .platformPaymentsHeader{display:none}
+.platformAdmin .platformPaymentsSummary{gap:11px}
+.platformAdmin .platformPaymentsSummaryCard{padding:16px 18px;border:1px solid #e4e4e4;border-radius:8px;background:#fff;box-shadow:none}
+.platformAdmin .platformPaymentsSummaryCard span{color:#777;font-size:11px}.platformAdmin .platformPaymentsSummaryCard strong{color:#111;font-size:23px}
+.platformAdmin .platformPaymentsList{gap:11px}
+.platformAdmin .platformPaymentCard{padding:18px;border:1px solid #e4e4e4;border-radius:8px;background:#fff;box-shadow:none}
+.platformAdmin .platformPaymentHeading{padding-bottom:13px;border-color:#eee}
+.platformAdmin .platformPaymentHeading small,.platformAdmin .platformPaymentDetails small{color:#777;font-size:10px}
+.platformAdmin .platformPaymentHeading h2{color:#111;font-size:16px}
+.platformAdmin .platformPaymentStatus,.platformAdmin .platformPaymentStatus.status-paid,.platformAdmin .platformPaymentStatus.status-rejected,.platformAdmin .platformPaymentStatus.status-overdue,.platformAdmin .platformPaymentStatus.status-pending{border:1px solid #ccc;border-radius:4px;background:#f6f6f6;color:#333;font-size:9px}
+.platformAdmin .platformPaymentDetails strong{color:#222;font-size:12px}
+.platformAdmin .platformPaymentActions{border-color:#eee}
+.platformAdmin .platformPaymentActions button{min-height:38px;border-radius:6px;font-size:11px}
+.platformAdmin .platformPaymentConfirm{border-color:#111;background:#111;color:#fff}.platformAdmin .platformPaymentConfirm:hover{background:#333}
+.platformAdmin .platformPaymentReject{border-color:#d8d8d8;background:#fff;color:#333}.platformAdmin .platformPaymentReject:hover{border-color:#111;background:#f5f5f5}
+.platformAdmin .platformPaymentsNotice{padding:17px 18px;border:1px solid #e4e4e4;border-radius:8px;background:#fff;color:#666;font-size:11px}
+.platformAdmin .platformPaymentsNotice.is-error{border-color:#bbb;background:#f7f7f7;color:#333}
+@media(min-width:761px){.platformAdmin{padding-bottom:44px}.platformAdminPageHead,.platformAdminNav,.platformAdminMetrics,.platformAdminSpotlight,.platformAdminCompanies,.platformAdmin .platformPaymentsPage{width:min(100% - 80px,1320px)}}
+@media(max-width:760px){
+  .appLayout--platformAdmin .appLayout-workspaceBody{padding:0 0 calc(78px + env(safe-area-inset-bottom))}
+  .platformAdmin{padding-bottom:calc(86px + env(safe-area-inset-bottom))}
+  .platformAdminTopbar{min-height:56px;padding:0 17px}
+  .platformAdminMark{width:29px;height:29px;border-radius:7px;font-size:14px}
+  .platformAdminBrand{gap:8px}.platformAdminBrandName{gap:7px;font-size:10px}.platformAdminBrandName span{font-size:7px}
+  .platformAdminTopbarMeta{display:none}.platformAdminExit{gap:0;width:32px;height:32px;justify-content:center;padding:0;border-radius:7px;font-size:14px}.platformAdminExit>span:last-child{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+  .platformAdminPageHead{align-items:flex-start;flex-direction:column;gap:13px;padding:25px 0 17px}
+  .platformAdminPageHead h1{font-size:31px}.platformAdminPageHead>div:first-child>p:last-child{font-size:10px}
+  .platformAdminHealth{padding:7px 9px;font-size:9px}
+  .platformAdminNav--top{gap:5px;padding-bottom:10px}
+  .platformAdminNav--top button{flex:1;gap:6px;min-width:0;min-height:38px;padding:0 8px;font-size:9px}
+  .platformAdminNav--top button svg{width:13px;height:13px}
+  .platformAdminNav--bottom{position:fixed;right:0;bottom:0;left:0;z-index:100;display:grid;grid-template-columns:repeat(3,1fr);gap:0;width:100%;max-width:none;margin:0;padding:7px 12px calc(7px + env(safe-area-inset-bottom));border:0;border-top:1px solid #303030;background:#101010;box-shadow:0 -8px 28px #00000010}
+  .platformAdminNav--bottom button{display:grid;gap:4px;min-height:49px;padding:5px 7px;border:0;border-radius:6px;color:#999;font-size:8px;font-weight:700}
+  .platformAdminNav--bottom button svg{width:17px;height:17px}
+  .platformAdminNav--bottom button:hover{background:#222;color:#fff}
+  .platformAdminNav--bottom button.is-active{background:#fff;color:#111}
+  .platformAdminMetrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:13px}
+  .platformAdminMetric{grid-template-columns:7px 1fr;gap:8px;min-height:68px;padding:12px}
+  .platformAdminMetricDot{grid-row:1/3;align-self:start;margin-top:4px}
+  .platformAdminMetricLabel{font-size:9px}.platformAdminMetric strong{grid-column:2;font-size:21px}
+  .platformAdminSpotlight{align-items:flex-start;flex-direction:column;gap:12px;margin-top:10px;padding:14px}
+  .platformAdminSpotlight button{margin-left:45px;padding:7px 9px;font-size:9px}
+  .platformAdminCompanies{margin-top:11px}
+  .platformAdminCompanies>header{padding:14px}
+  .platformAdminCompanies>header input{width:47%;min-width:122px;height:34px;font-size:10px}
+  .platformAdminCompanyList{padding:0 14px}
+  .platformAdminCompany{grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:12px 0}
+  .platformAdminCompanyName{grid-column:1/-1}
+  .platformAdminCompanyEmployees,.platformAdminCompanyPlan{padding-left:46px}
+  .platformAdminCompanyStatus{grid-column:1/-1;padding-left:46px}
+  .platformAdmin .platformPaymentsPage{width:min(100% - 40px,1320px);margin-top:13px;padding-bottom:0}
+  .platformAdmin .platformPaymentsSummary{gap:8px}
+  .platformAdmin .platformPaymentsSummaryCard{padding:13px}
+  .platformAdmin .platformPaymentsSummaryCard span{font-size:9px}.platformAdmin .platformPaymentsSummaryCard strong{font-size:20px}
+  .platformAdmin .platformPaymentCard{padding:14px}
+  .platformAdmin .platformPaymentHeading h2{font-size:14px}
+  .platformAdmin .platformPaymentDetails{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 9px;padding:14px 0}
+  .platformAdmin .platformPaymentDetails strong{font-size:11px}
+  .platformAdmin .platformPaymentActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:11px}
+  .platformAdmin .platformPaymentActions button{padding:0 7px;font-size:9px}
+}
+@media(max-width:390px){
+  .platformAdminPageHead,.platformAdminNav,.platformAdminMetrics,.platformAdminSpotlight,.platformAdminCompanies,.platformAdmin .platformPaymentsPage{width:calc(100% - 28px)}
+  .platformAdmin .platformAdminPageHead h1{font-size:28px}
+  .platformAdminNav--top button{gap:4px;padding:0 5px;font-size:8px}
+  .platformAdminMetric{padding:10px 8px}.platformAdminMetricLabel{font-size:8px}.platformAdminMetric strong{font-size:19px}
+  .platformAdminCompanies>header{align-items:flex-start;flex-direction:column}.platformAdminCompanies>header input{width:100%}
+}
