@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { baseApi } from '../../../../app/api/baseApi.js';
 import { RequestLoader } from '../../../../app/components/RequestLoader/RequestLoader.jsx';
@@ -14,6 +14,7 @@ import './LoginForm.css';
 export function LoginForm() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useI18n();
   const [login, { isLoading }] = useLoginMutation();
   const [email, setEmail] = useState('');
@@ -32,7 +33,11 @@ export function LoginForm() {
         lastVerifiedAt: new Date().toISOString(),
       });
       dispatch(setSession({ token: data.token, user: data.user }));
-      navigate('/dashboard', { replace: true });
+      const from = location.state?.from;
+      const destination = from?.pathname
+        ? `${from.pathname}${from.search || ''}${from.hash || ''}`
+        : '/dashboard';
+      navigate(destination, { replace: true });
     } catch {
       setError(t('auth.loginFailed'));
     }

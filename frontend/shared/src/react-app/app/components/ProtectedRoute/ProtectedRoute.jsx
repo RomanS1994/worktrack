@@ -50,14 +50,17 @@ export function ProtectedRoute({
   }
 
   if (!token || !user) {
-    return <Navigate to="/sign-in" replace />;
+    return <Navigate to="/sign-in" state={{ from: location }} replace />;
   }
 
   if (user.mustChangePassword && location.pathname !== '/profile') {
     return <Navigate to="/profile" replace />;
   }
 
-  if (!hasActiveCompanyAccess(user) && location.pathname !== '/profile') {
+  const canAccessPlatformAdmin = location.pathname.startsWith('/platform/')
+    && user.isPlatformSubscriptionAdmin === true;
+
+  if (!hasActiveCompanyAccess(user) && location.pathname !== '/profile' && !canAccessPlatformAdmin) {
     return <Navigate to="/profile" replace />;
   }
 
