@@ -7,7 +7,8 @@ import { createAuditLog } from '../db/prisma-helpers.js';
 
 import { SUBSCRIPTION_PLANS as PLANS, subscriptionPlanList as planList } from '../services/subscription-plans.js';
 const ANNUAL_TERM_MONTHS = 12;
-const ANNUAL_BILLED_MONTHS = 10;
+const ANNUAL_DISCOUNT_PERCENT = 20;
+const ANNUAL_BILLING_FACTOR = (100 - ANNUAL_DISCOUNT_PERCENT) / 100;
 const PAYMENT_SELECT = {
   id: true, companyId: true, invoiceNumber: true, planCode: true,
   employeeLimit: true, amountCzk: true, currency: true, variableSymbol: true,
@@ -267,7 +268,7 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
       ]);
       return { subscription: subscription ? { ...subscription, plan: PLANS[subscription.planCode]?.name || subscription.planCode,
         status: currentSubStatus(subscription), isTrial: Boolean(subscription.trialEndsAt && subscription.trialEndsAt > new Date()), trialEndsAt: subscription.trialEndsAt, daysRemaining: subscription.trialEndsAt && subscription.trialEndsAt > new Date() ? Math.ceil((subscription.trialEndsAt - new Date()) / 86400000) : 0 } : null,
-        employeeCount: activeEmployeeCount, activeEmployeeCount, plans: planList.map(plan => ({ ...plan, annualPriceCzk: plan.monthlyPriceCzk * ANNUAL_BILLED_MONTHS, annualMonthlyPriceCzk: Math.round(plan.monthlyPriceCzk * ANNUAL_BILLED_MONTHS / ANNUAL_TERM_MONTHS), annualSavingsCzk: plan.monthlyPriceCzk * (ANNUAL_TERM_MONTHS - ANNUAL_BILLED_MONTHS) })),
+        employeeCount: activeEmployeeCount, activeEmployeeCount, plans: planList.map(plan => ({ ...plan, annualPriceCzk: Math.round(plan.monthlyPriceCzk * ANNUAL_TERM_MONTHS * ANNUAL_BILLING_FACTOR), annualMonthlyPriceCzk: Math.round(plan.monthlyPriceCzk * ANNUAL_BILLING_FACTOR), annualSavingsCzk: Math.round(plan.monthlyPriceCzk * ANNUAL_TERM_MONTHS * (1 - ANNUAL_BILLING_FACTOR)) })),
         accountConfigured: accountDetails().accountConfigured, invoices: payments.map(serializeInvoice), payments: payments.map(serializeInvoice) };
     } });
     sendJson(response, 200, payload); return true;
@@ -286,7 +287,7 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
     const billingPeriod = String(body.billingPeriod || 'month');
     if (!['month', 'year'].includes(billingPeriod)) { sendError(response, 400, 'Unsupported subscription billing period'); return true; }
     const periodMonths = billingPeriod === 'year' ? ANNUAL_TERM_MONTHS : 1;
-    const amountCzk = plan.price * (billingPeriod === 'year' ? ANNUAL_BILLED_MONTHS : 1);
+    const amountCzk = Math.round(plan.price * (billingPeriod === 'year' ? ANNUAL_TERM_MONTHS * ANNUAL_BILLING_FACTOR : 1));
     const now = new Date();
     const created = await runStoreTransaction({ prisma: async tx => {
       const companyId = context.activeMembership.companyId;
