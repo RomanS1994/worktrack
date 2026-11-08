@@ -23,3 +23,100 @@
 .companySubTrialPrice{margin-left:auto;text-align:right;white-space:nowrap;font-size:15px}.companySubTrialPrice small{display:block;color:#63778d;font-size:10px;font-weight:500}
 .companySubGrace.is-expired{color:#a13d32}
 @media(max-width:520px){.companySubTrial{align-items:flex-start;flex-wrap:wrap}.companySubTrialPrice{margin-left:50px}}
+
+/* Company subscription redesign: WorkTrack mint + deep evergreen */
+.companySubscription{max-width:760px;padding:0 0 calc(116px + env(safe-area-inset-bottom,0px));gap:18px}
+.companySubHeader .sectionEyebrow{display:inline-flex;align-items:center;min-height:30px;margin:0 0 8px;padding:0 12px;border-radius:999px;background:#e4f5eb;color:#187a45;font-size:10px;letter-spacing:.14em}
+.companySubHeader h1{font-size:clamp(22px,3vw,28px);letter-spacing:-.045em}
+.companySubHeader .appTitleBlock>p:last-child{display:none}
+.companySubHero{position:relative;display:block;overflow:hidden;padding:20px 22px 16px;border:1px solid #183c38;border-radius:22px;background:radial-gradient(ellipse at 100% 0%,rgba(32,150,105,.37),transparent 35%),linear-gradient(145deg,#142d30 0%,#10252a 58%,#111e2b 100%);box-shadow:0 16px 36px rgba(23,65,55,.16);color:#fff}
+.companySubHeroTop{display:flex;align-items:center;gap:12px;color:#a8d9bf;font-size:10px;font-weight:800;letter-spacing:.16em}
+.companySubHeroTop::after{height:1px;flex:1;content:'';background:linear-gradient(90deg,rgba(169,221,190,.5),transparent)}
+.companySubHeroTop i{display:none}
+.companySubHeroMain{display:grid;grid-template-columns:48px minmax(0,1fr) auto;align-items:center;gap:12px;margin:17px 0 16px}
+.companySubHeroIcon{display:grid;place-items:center;width:46px;height:46px;flex:0 0 46px;border:1px solid rgba(218,255,232,.12);border-radius:15px;background:rgba(255,255,255,.1);color:#d9f6e4}
+.companySubHeroIcon svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.companySubHeroMain h2{min-width:0;margin:0;color:#fff;font-size:clamp(20px,4.8vw,27px);font-weight:750;letter-spacing:-.04em}
+.companySubHeroPrice{display:flex;flex-direction:column;align-items:flex-end;padding-left:14px;border-left:1px solid rgba(223,244,231,.2);text-align:right}
+.companySubHeroPrice strong{color:#fff;font-size:clamp(21px,5vw,28px);letter-spacing:-.045em;white-space:nowrap}
+.companySubHeroPrice span{color:#b8d5c6;font-size:12px}
+.companySubHeroPrice small{color:#b8d5c6}
+.companySubSeatCount{margin:0 0 9px;color:#f4fbf6;font-size:13px;font-weight:650}
+.companySubSeatMeter{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;margin-bottom:15px}
+.companySubSeatMeter i{height:8px;border-radius:99px;background:rgba(225,241,231,.19)}
+.companySubSeatMeter i.is-filled{background:linear-gradient(90deg,#21a56a,#54d18b);box-shadow:0 0 12px rgba(62,205,126,.2)}
+.companySubHeroRenewal{display:flex;align-items:center;gap:8px;padding-top:12px;border-top:1px solid rgba(223,244,231,.16);color:#c4d9cd;font-size:12px}
+.companySubHeroRenewal>span:first-child{display:grid;place-items:center;width:19px;height:19px;border:1.5px solid #a8d9bf;border-radius:50%;color:#a8d9bf;font-size:15px;line-height:1}
+.companySubGrace{margin:-9px 2px 0;color:#758477;font-size:11px;line-height:1.4}
+.companySubSectionHeading{margin:0 0 10px}
+.companySubSectionHeading h2{font-size:19px;letter-spacing:-.035em}
+.companySubSectionHeading p{margin-top:3px;font-size:12px}
+.companySubPlanList{display:grid;gap:8px}
+.companySubPlanOption{display:flex;align-items:center;gap:10px;width:100%;min-height:72px;padding:12px;border:1px solid #e4e9e5;border-radius:15px;background:rgba(255,255,255,.94);color:var(--text-primary,#17243a);text-align:left;box-shadow:0 5px 14px rgba(26,55,39,.035);cursor:pointer;transition:border-color .18s,background .18s,box-shadow .18s,transform .18s}
+.companySubPlanOption:hover{transform:translateY(-1px);border-color:#a8d9bd;box-shadow:0 8px 20px rgba(26,90,55,.08)}
+.companySubPlanOption.is-selected{border-color:#45ad73;background:linear-gradient(110deg,#f2fbf5,#e8f7ee);box-shadow:inset 0 0 0 1px rgba(40,152,89,.1)}
+.companySubPlanRadio{position:relative;display:block;width:19px;height:19px;flex:0 0 19px;border:1.7px solid #9aa79d;border-radius:50%}
+.companySubPlanOption.is-selected .companySubPlanRadio{border-color:#1a9a5a}
+.companySubPlanOption.is-selected .companySubPlanRadio::after{position:absolute;inset:4px;border-radius:50%;background:#1a9a5a;content:''}
+.companySubPlanInfo{display:grid;min-width:0;flex:1;gap:3px}
+.companySubPlanInfo strong{overflow:hidden;color:#17243a;font-size:14px;font-weight:750;text-overflow:ellipsis;white-space:nowrap}
+.companySubPlanInfo small{overflow:hidden;color:#718096;font-size:11px;text-overflow:ellipsis;white-space:nowrap}
+.companySubCurrentBadge{padding:4px 7px;border-radius:999px;background:#d8f1e2;color:#197a46;font-size:9px;font-weight:800;letter-spacing:.04em;white-space:nowrap}
+.companySubPlanOption .companySubPlanPrice{display:flex;flex:0 0 auto;align-items:flex-end;gap:2px;margin:0;text-align:right}
+.companySubPlanOption .companySubPlanPrice strong{font-size:14px;letter-spacing:-.035em;white-space:nowrap}
+.companySubPlanOption .companySubPlanPrice small{color:#778477;font-size:10px;font-weight:500;white-space:nowrap}
+.companySubPlanArrow{display:grid;place-items:center;width:12px;flex:0 0 12px;color:#829087;font-size:23px;font-weight:300;line-height:1}
+.companySubPlanOption.is-current .companySubPlanArrow{display:none}
+.companySubCustomPlan{margin:9px 2px 0;color:#718078;font-size:11px}
+.companySubCreateRow{position:sticky;z-index:3;bottom:calc(82px + env(safe-area-inset-bottom,0px));display:grid;gap:8px;margin:0;padding:11px 0 2px;background:linear-gradient(180deg,rgba(246,249,247,0),rgba(246,249,247,.96) 24%)}
+.companySubCreateRow p{margin:0;color:#64756b;text-align:center;font-size:11px}
+.companySubPrimary{width:100%;min-height:48px;border-radius:14px;background:linear-gradient(135deg,#1b9d5b,#16824c);box-shadow:0 8px 20px rgba(25,143,79,.2);font-size:14px}
+.companySubPrimary:hover:not(:disabled){background:linear-gradient(135deg,#16894e,#116e40)}
+.companySubPrimary:disabled{background:#e3eee7;color:#728078;box-shadow:none;opacity:1;cursor:default}
+.companySubNoPlan{padding:15px 16px;border:1px solid #dcefe2;border-radius:15px;background:#f0faf3;color:#39734d;font-size:13px}
+.companySubNotice{border-color:#e2e9d5;background:#f7faef;color:#68713d}
+.companySubNotice>span{background:#eaf0d4}
+.companySubPayment{border-color:#e2eae4;border-radius:18px}
+.companySubPaymentHeading{border-bottom-color:#e9efeb}
+.companySubPaymentHeading .sectionEyebrow{color:#218050}
+.companySubPaymentInfo dd button{color:#18824b}
+.companySubStatus.status-review_requested{background:#e8f5ec;color:#22814d}
+.companySubHistory{margin-top:4px}
+.companySubInvoice{border-color:#e5ebe6;border-radius:14px}
+.companySubEmpty,.companySubError{border-color:#e5ebe6;border-radius:14px}
+.companySubError button{background:#198b52}
+@media(max-width:640px){
+ .companySubscription{gap:15px;padding-right:0;padding-left:0;padding-bottom:calc(124px + env(safe-area-inset-bottom,0px))}
+ .companySubHeader .sectionEyebrow{min-height:26px;margin-bottom:6px;font-size:9px}
+ .companySubHeader h1{font-size:21px}
+ .companySubHero{padding:17px 15px 14px;border-radius:19px}
+ .companySubHeroMain{grid-template-columns:40px minmax(0,1fr) auto;gap:9px;margin:15px 0 14px}
+ .companySubHeroIcon{width:39px;height:39px;flex-basis:39px;border-radius:13px}
+ .companySubHeroIcon svg{width:21px;height:21px}
+ .companySubHeroPrice{padding-left:10px}
+ .companySubHeroPrice strong{font-size:20px}
+ .companySubHeroPrice span{font-size:10px}
+ .companySubHeroMain h2{font-size:19px}
+ .companySubSeatCount{font-size:12px}
+ .companySubSeatMeter{gap:4px}
+ .companySubSeatMeter i{height:7px}
+ .companySubHeroRenewal{font-size:10.5px}
+ .companySubSectionHeading h2{font-size:17px}
+ .companySubSectionHeading p{font-size:11px}
+ .companySubPlanOption{min-height:66px;gap:8px;padding:10px;border-radius:14px}
+ .companySubPlanInfo strong{font-size:13px}
+ .companySubPlanInfo small{font-size:10px}
+ .companySubCurrentBadge{padding:3px 5px;font-size:8px}
+ .companySubPlanOption .companySubPlanPrice{display:grid;gap:1px}
+ .companySubPlanOption .companySubPlanPrice strong{font-size:12px}
+ .companySubPlanOption .companySubPlanPrice small{font-size:9px}
+ .companySubPlanArrow{font-size:20px}
+ .companySubCreateRow{bottom:calc(76px + env(safe-area-inset-bottom,0px));}
+ .companySubPayment{padding:14px}
+}
+@media(max-width:360px){
+ .companySubPlanOption{gap:6px;padding:9px}
+ .companySubPlanInfo strong{font-size:12px}
+ .companySubCurrentBadge{font-size:7px}
+ .companySubPlanOption .companySubPlanPrice strong{font-size:11px}
+}
