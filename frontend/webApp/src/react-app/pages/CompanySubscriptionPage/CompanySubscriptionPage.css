@@ -189,3 +189,15 @@
  .companySubBillingToggle button .companySubSaleBadge{gap:3px;padding:3px 6px;font-size:8px}
  .companySubSaleBadge svg{width:11px;height:11px;flex-basis:11px}
 }
+
+/* Make the chosen billing interval unmistakable */
+.companySubBillingToggle button:not(.companySubBillingAnnual).is-active{border-color:#16884f;background:linear-gradient(145deg,#20a765,#16884c);color:#fff;box-shadow:0 4px 12px rgba(22,136,79,.2)}
+.companySubBillingToggle button:not(.companySubBillingAnnual).is-active::before{content:'✓';display:grid;place-items:center;width:18px;height:18px;border:1px solid rgba(255,255,255,.42);border-radius:50%;background:rgba(255,255,255,.16);color:#fff;font-size:11px;font-weight:900}
+.companySubBillingToggle button.companySubBillingAnnual:not(.is-active){border-color:#f1c5cb;background:#fffafa;color:#65545a}
+.companySubBillingToggle button.companySubBillingAnnual.is-active{border-color:#d94254;background:linear-gradient(145deg,#d83d50,#b9233a);color:#fff;box-shadow:0 4px 12px rgba(193,48,66,.2)}
+.companySubBillingToggle button.companySubBillingAnnual.is-active .companySubSaleBadge{border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.16);color:#fff;box-shadow:none}
+.companySubBillingToggle button.companySubBillingAnnual.is-active .companySubSaleBadge svg{stroke:#fff}
+@media(max-width:640px){
+ .companySubBillingToggle button:not(.companySubBillingAnnual).is-active{flex-direction:row}
+ .companySubBillingToggle button:not(.companySubBillingAnnual).is-active::before{flex:0 0 18px}
+}
