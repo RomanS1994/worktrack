@@ -178,3 +178,14 @@
  .companySubPaymentInfo dd{font-size:11px}
  .companySubPaymentInfo dd button{font-size:9px}
 }
+
+
+/* Annual billing promotion badge */
+.companySubBillingToggle button.companySubBillingAnnual{border-color:#f1c5cb;background:linear-gradient(145deg,#fffafa,#fff2f3)}
+.companySubBillingToggle button.companySubBillingAnnual.is-active{border-color:#de5262;background:linear-gradient(145deg,#fff5f6,#ffe8eb);color:#8f2634;box-shadow:0 3px 10px rgba(193,48,66,.1)}
+.companySubBillingToggle button .companySubSaleBadge{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border:1px solid #f2c1c8;border-radius:999px;background:linear-gradient(135deg,#fff0f2,#ffdfe4);color:#b42336;font-size:9px;font-weight:850;letter-spacing:.035em;line-height:1.2;text-transform:uppercase;white-space:nowrap;box-shadow:0 2px 5px rgba(190,35,55,.08)}
+.companySubSaleBadge svg{width:12px;height:12px;flex:0 0 12px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:640px){
+ .companySubBillingToggle button .companySubSaleBadge{gap:3px;padding:3px 6px;font-size:8px}
+ .companySubSaleBadge svg{width:11px;height:11px;flex-basis:11px}
+}
