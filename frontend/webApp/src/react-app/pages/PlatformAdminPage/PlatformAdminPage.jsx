@@ -11,9 +11,9 @@ import { PlatformSubscriptionPaymentsPage } from '../PlatformSubscriptionPayment
 import './PlatformAdminPage.css';
 
 const COPY = {
-  uk: { title:'Адміністрування WorkTrack', intro:'Керування компаніями, доступом і ручними платежами підписок.', overview:'Огляд', companies:'Компанії', payments:'Платежі', companiesCount:'Компанії', activeSubscriptions:'Активні підписки', trials:'Пробний період', overdue:'Потребують уваги', employees:'Працівники', reviews:'Очікують перевірки', companyList:'Компанії та підписки', recentCompanies:'Нещодавні компанії', manager:'Менеджер', plan:'План', status:'Статус', trialUntil:'Пробний період до', periodUntil:'Підписка до', empty:'Компаній поки немає.', access:'Цей розділ доступний лише адміністратору WorkTrack.', loadError:'Не вдалося завантажити дані.', loading:'Завантаження даних…', unknown:'Невідомо', trial:'Пробний період', active:'Активна', grace:'Пільговий період', overdueStatus:'Прострочено', inactive:'Неактивна', platform:'ПЛАТФОРМА', workspace:'Адміністративний простір', attentionCopy:'Платежі, які очікують на ручну перевірку', viewPayments:'Переглянути платежі', back:'До WorkTrack', consoleActive:'Кабінет активний', allReviewed:'Усі платежі перевірені', employeesShort:'Працівники', viewAll:'Усі компанії' },
-  cs: { title:'Správa WorkTrack', intro:'Správa společností, přístupu a ručních plateb předplatného.', overview:'Přehled', companies:'Společnosti', payments:'Platby', companiesCount:'Společnosti', activeSubscriptions:'Aktivní předplatná', trials:'Zkušební období', overdue:'Vyžadují pozornost', employees:'Zaměstnanci', reviews:'Čeká na kontrolu', companyList:'Společnosti a předplatná', recentCompanies:'Nedávné společnosti', manager:'Manažer', plan:'Tarif', status:'Stav', trialUntil:'Zkušební období do', periodUntil:'Předplatné do', empty:'Zatím zde nejsou žádné společnosti.', access:'Tato část je dostupná pouze administrátorovi WorkTrack.', loadError:'Data se nepodařilo načíst.', loading:'Načítání dat…', unknown:'Neznámý', trial:'Zkušební období', active:'Aktivní', grace:'Dodatečná lhůta', overdueStatus:'Po splatnosti', inactive:'Neaktivní', platform:'PLATFORMA', workspace:'Administrátorský prostor', attentionCopy:'Platby čekající na ruční kontrolu', viewPayments:'Zobrazit platby', back:'Zpět do WorkTrack', consoleActive:'Panel je aktivní', allReviewed:'Všechny platby jsou zkontrolovány', employeesShort:'Zaměstnanci', viewAll:'Všechny společnosti' },
-  en: { title:'WorkTrack admin', intro:'Manage companies, access and manual subscription payments.', overview:'Overview', companies:'Companies', payments:'Payments', companiesCount:'Companies', activeSubscriptions:'Active subscriptions', trials:'On trial', overdue:'Need attention', employees:'Employees', reviews:'Awaiting review', companyList:'Companies and subscriptions', recentCompanies:'Recent companies', manager:'Manager', plan:'Plan', status:'Status', trialUntil:'Trial ends', periodUntil:'Subscription ends', empty:'No companies yet.', access:'This area is available to WorkTrack administrators only.', loadError:'Could not load admin data.', loading:'Loading admin data…', unknown:'Unknown', trial:'Trial', active:'Active', grace:'Grace period', overdueStatus:'Overdue', inactive:'Inactive', platform:'PLATFORM', workspace:'Administration workspace', attentionCopy:'Payments waiting for manual review', viewPayments:'View payments', back:'Back to WorkTrack', consoleActive:'Admin console active', allReviewed:'All payments are reviewed', employeesShort:'Employees', viewAll:'All companies' },
+  uk: { title:'Адміністрування WorkTrack', intro:'Керування компаніями, доступом і ручними платежами підписок.', overview:'Огляд', companies:'Компанії', payments:'Платежі', companiesCount:'Компанії', activeSubscriptions:'Активні підписки', trials:'Пробний період', overdue:'Потребують уваги', employees:'Працівники', reviews:'Очікують перевірки', companyList:'Компанії та підписки', recentCompanies:'Нещодавні компанії', manager:'Менеджер', plan:'План', status:'Статус', trialUntil:'Пробний період до', periodUntil:'Підписка до', empty:'Компаній поки немає.', access:'Цей розділ доступний лише адміністратору WorkTrack.', loadError:'Не вдалося завантажити дані.', loading:'Завантаження даних…', unknown:'Невідомо', trial:'Пробний період', active:'Активна', grace:'Пільговий період', overdueStatus:'Прострочено', inactive:'Неактивна', platform:'ПЛАТФОРМА', workspace:'Адміністративний простір', attentionCopy:'Платежі, які очікують на ручну перевірку', viewPayments:'Переглянути платежі', back:'До WorkTrack', consoleActive:'Кабінет активний', allReviewed:'Усі платежі перевірені', employeesShort:'Працівники', viewAll:'Усі компанії', searchCompanies:'Пошук компаній або менеджерів', filters:{all:'Усі',active:'Активні',trial:'Пробний період',attention:'Потребують уваги',inactive:'Без підписки'}, tasks:'Потрібна увага', trialEnding:'Пробний період скоро завершиться', upcomingTrials:'Пробний період завершується протягом 7 днів', openCompanies:'Переглянути компанії', details:'Деталі', noResults:'За цими фільтрами компаній немає.', created:'Створена', activeEmployees:'Активні працівники', dueSoon:'Завершується', clearFilter:'Скинути фільтри', close:'Згорнути' },
+  cs: { title:'Správa WorkTrack', intro:'Správa společností, přístupu a ručních plateb předplatného.', overview:'Přehled', companies:'Společnosti', payments:'Platby', companiesCount:'Společnosti', activeSubscriptions:'Aktivní předplatná', trials:'Zkušební období', overdue:'Vyžadují pozornost', employees:'Zaměstnanci', reviews:'Čeká na kontrolu', companyList:'Společnosti a předplatná', recentCompanies:'Nedávné společnosti', manager:'Manažer', plan:'Tarif', status:'Stav', trialUntil:'Zkušební období do', periodUntil:'Předplatné do', empty:'Zatím zde nejsou žádné společnosti.', access:'Tato část je dostupná pouze administrátorovi WorkTrack.', loadError:'Data se nepodařilo načíst.', loading:'Načítání dat…', unknown:'Neznámý', trial:'Zkušební období', active:'Aktivní', grace:'Dodatečná lhůta', overdueStatus:'Po splatnosti', inactive:'Neaktivní', platform:'PLATFORMA', workspace:'Administrátorský prostor', attentionCopy:'Platby čekající na ruční kontrolu', viewPayments:'Zobrazit platby', back:'Zpět do WorkTrack', consoleActive:'Panel je aktivní', allReviewed:'Všechny platby jsou zkontrolovány', employeesShort:'Zaměstnanci', viewAll:'Všechny společnosti', searchCompanies:'Hledat společnosti nebo manažery', filters:{all:'Vše',active:'Aktivní',trial:'Zkušební období',attention:'Vyžadují pozornost',inactive:'Bez předplatného'},tasks:'Vyžaduje pozornost',trialEnding:'Zkušební období brzy končí',upcomingTrials:'Zkušební období končí během 7 dnů',openCompanies:'Zobrazit společnosti',details:'Detaily',noResults:'Žádné společnosti neodpovídají filtrům.',created:'Vytvořena',activeEmployees:'Aktivní zaměstnanci',dueSoon:'Končí',clearFilter:'Zrušit filtry',close:'Skrýt' },
+  en: { title:'WorkTrack admin', intro:'Manage companies, access and manual subscription payments.', overview:'Overview', companies:'Companies', payments:'Payments', companiesCount:'Companies', activeSubscriptions:'Active subscriptions', trials:'On trial', overdue:'Need attention', employees:'Employees', reviews:'Awaiting review', companyList:'Companies and subscriptions', recentCompanies:'Recent companies', manager:'Manager', plan:'Plan', status:'Status', trialUntil:'Trial ends', periodUntil:'Subscription ends', empty:'No companies yet.', access:'This area is available to WorkTrack administrators only.', loadError:'Could not load admin data.', loading:'Loading admin data…', unknown:'Unknown', trial:'Trial', active:'Active', grace:'Grace period', overdueStatus:'Overdue', inactive:'Inactive', platform:'PLATFORM', workspace:'Administration workspace', attentionCopy:'Payments waiting for manual review', viewPayments:'View payments', back:'Back to WorkTrack', consoleActive:'Admin console active', allReviewed:'All payments are reviewed', employeesShort:'Employees', viewAll:'All companies', searchCompanies:'Search companies or managers', filters:{all:'All',active:'Active',trial:'Trial',attention:'Need attention',inactive:'No subscription'},tasks:'Needs attention',trialEnding:'Trial ending soon',upcomingTrials:'Trials ending within 7 days',openCompanies:'View companies',details:'Details',noResults:'No companies match these filters.',created:'Created',activeEmployees:'Active employees',dueSoon:'Ends',clearFilter:'Clear filters',close:'Hide' },
 };
 
 function formatDate(value, language) {
@@ -39,15 +39,29 @@ export function PlatformAdminPage() {
   const copy = COPY[language] || COPY.uk;
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState('');
+  const [expandedCompany, setExpandedCompany] = useState(null);
   const deferredSearch = useDeferredValue(search);
   const section = ['overview', 'companies', 'payments'].includes(searchParams.get('section')) ? searchParams.get('section') : 'overview';
+  const companyFilter = ['all','active','trial','attention','inactive'].includes(searchParams.get('filter')) ? searchParams.get('filter') : 'all';
   const isAdmin = Boolean(user?.isPlatformSubscriptionAdmin);
   const overviewQuery = useGetPlatformAdminOverviewQuery(undefined, { skip: !isAdmin });
-  const companiesQuery = useGetPlatformAdminCompaniesQuery({ search: deferredSearch }, { skip: !isAdmin || section === 'payments' });
+  const companiesQuery = useGetPlatformAdminCompaniesQuery({ search: section === 'companies' ? deferredSearch : '' }, { skip: !isAdmin || section === 'payments' });
   const overview = overviewQuery.data || {};
   const companies = useMemo(() => Array.isArray(companiesQuery.data?.companies) ? companiesQuery.data.companies : [], [companiesQuery.data]);
 
   const selectSection = (next) => setSearchParams(next === 'overview' ? {} : { section: next });
+  const showCompanies = (filter = 'all') => setSearchParams(filter === 'all' ? { section:'companies' } : { section:'companies', filter });
+  const now = Date.now();
+  const upcomingTrialsCount = companies.filter(company => {
+    if (!String(company.subscriptionStatus || '').toUpperCase().includes('TRIAL') || !company.trialEndsAt) return false;
+    const remaining = new Date(company.trialEndsAt).getTime() - now;
+    return remaining >= 0 && remaining <= 7 * 86400000;
+  }).length;
+  const attentionItems = [
+    ...(metricValue(overview.pendingPaymentReviewsCount) > 0 ? [{ id:'payments', label:copy.reviews, count:metricValue(overview.pendingPaymentReviewsCount), action:() => selectSection('payments') }] : []),
+    ...(metricValue(overview.overdueCompaniesCount) > 0 ? [{ id:'overdue', label:copy.overdue, count:metricValue(overview.overdueCompaniesCount), action:() => showCompanies('attention') }] : []),
+    ...(upcomingTrialsCount > 0 ? [{ id:'trials', label:copy.trialEnding, count:upcomingTrialsCount, action:() => showCompanies('trial'), hint:copy.upcomingTrials }] : []),
+  ];
   const statusError = overviewQuery.error || (section !== 'payments' && companiesQuery.error);
 
   return <section className="platformAdmin">
@@ -69,24 +83,21 @@ export function PlatformAdminPage() {
           {section === 'overview' ? <>
             <section className="platformAdminOverview" aria-label={copy.overview}>
               <article className="platformAdminOverviewHero">
-                <div className="platformAdminOverviewPrimary"><span>{copy.companiesCount}</span><strong>{metricValue(overview.companiesCount).toLocaleString()}</strong></div>
+                <button className="platformAdminOverviewPrimary" type="button" onClick={() => showCompanies('all')}><span>{copy.companiesCount}</span><strong>{metricValue(overview.companiesCount).toLocaleString()}</strong></button>
                 <div className="platformAdminOverviewSecondary">
-                  <div><svg className="platformAdminOverviewIcon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/></svg><strong>{metricValue(overview.activeSubscriptionsCount).toLocaleString()}</strong><span>{copy.activeSubscriptions}</span></div>
-                  <div><svg className="platformAdminOverviewIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><strong>{metricValue(overview.activeEmployeesCount).toLocaleString()}</strong><span>{copy.employeesShort}</span></div>
+                  <button type="button" onClick={() => showCompanies('active')}><svg className="platformAdminOverviewIcon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/></svg><strong>{metricValue(overview.activeSubscriptionsCount).toLocaleString()}</strong><span>{copy.activeSubscriptions}</span></button>
+                  <button type="button" onClick={() => showCompanies('all')}><svg className="platformAdminOverviewIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><strong>{metricValue(overview.activeEmployeesCount).toLocaleString()}</strong><span>{copy.employeesShort}</span></button>
                 </div>
               </article>
               <div className="platformAdminOverviewStats">
-                <Metric label={copy.trials} value={overview.trialCompaniesCount} />
-                <Metric label={copy.overdue} value={overview.overdueCompaniesCount} attention />
-                <Metric label={copy.reviews} value={overview.pendingPaymentReviewsCount} attention />
+                <Metric label={copy.trials} value={overview.trialCompaniesCount} onClick={() => showCompanies('trial')} />
+                <Metric label={copy.overdue} value={overview.overdueCompaniesCount} attention onClick={() => showCompanies('attention')} />
+                <Metric label={copy.reviews} value={overview.pendingPaymentReviewsCount} attention onClick={() => selectSection('payments')} />
               </div>
             </section>
-            {metricValue(overview.pendingPaymentReviewsCount) > 0 ? <section className="platformAdminSpotlight is-pending">
-              <div><span className="platformAdminSpotlightIcon" aria-hidden="true">↗</span><div><h2>{copy.reviews}</h2><p>{copy.attentionCopy}</p></div></div>
-              <button type="button" onClick={() => selectSection('payments')}>{copy.viewPayments}<span aria-hidden="true">→</span></button>
-            </section> : <div className="platformAdminReviewed"><span aria-hidden="true">✓</span>{copy.allReviewed}</div>}
-            <CompaniesTable companies={companies} copy={copy} language={language} onShowAll={() => selectSection('companies')} compact />
-          </> : <CompaniesTable companies={companies} copy={copy} language={language} search={search} onSearch={setSearch} />}
+            {attentionItems.length ? <section className="platformAdminTasks"><header><span>{copy.tasks}</span><span>{attentionItems.reduce((sum,item)=>sum+item.count,0)}</span></header>{attentionItems.map(item=><button type="button" key={item.id} onClick={item.action}><span className="platformAdminTaskDot"/><span className="platformAdminTaskText"><strong>{item.label}</strong>{item.hint?<small>{item.hint}</small>:null}</span><b>{item.count}</b><span className="platformAdminTaskArrow" aria-hidden="true">→</span></button>)}</section> : <div className="platformAdminReviewed"><span aria-hidden="true">✓</span>{copy.allReviewed}</div>}
+            <CompaniesTable companies={companies} copy={copy} language={language} onShowAll={() => selectSection('companies')} compact expandedCompany={expandedCompany} onExpand={setExpandedCompany} />
+          </> : <CompaniesTable companies={companies} copy={copy} language={language} search={search} onSearch={setSearch} filter={companyFilter} onFilter={showCompanies} expandedCompany={expandedCompany} onExpand={setExpandedCompany} />}
         </> : null}
       </>}
     </>}
@@ -107,16 +118,25 @@ function AdminTabs({ section, copy, onSelect, variant }) {
   </nav>;
 }
 
-function Metric({ label, value, attention = false }) {
+function Metric({ label, value, attention = false, onClick }) {
   const count = metricValue(value);
-  return <article className={`platformAdminMetric${attention && count > 0 ? ' has-attention' : ''}`}><span className="platformAdminMetricLabel">{label}</span><strong>{count.toLocaleString()}</strong></article>;
+  return <button type="button" className={`platformAdminMetric${attention && count > 0 ? ' has-attention' : ''}`} onClick={onClick}><span className="platformAdminMetricLabel">{label}</span><strong>{count.toLocaleString()}</strong></button>;
 }
 
-function CompaniesTable({ companies, copy, language, compact = false, onShowAll, search, onSearch }) {
-  const visible = compact ? companies.slice(0, 5) : companies;
+function CompaniesTable({ companies, copy, language, compact = false, onShowAll, search, onSearch, filter='all', onFilter, expandedCompany, onExpand }) {
+  const filtered = companies.filter(company => {
+    const status = String(company.subscriptionStatus || company.status || '').toUpperCase();
+    if (filter === 'active') return status === 'ACTIVE';
+    if (filter === 'trial') return status.includes('TRIAL');
+    if (filter === 'attention') return ['OVERDUE','PAST_DUE','EXPIRED','GRACE_PERIOD'].some(value => status.includes(value));
+    if (filter === 'inactive') return !status || status === 'INACTIVE';
+    return true;
+  });
+  const visible = compact ? filtered.slice(0, 5) : filtered;
   return <section className={`platformAdminCompanies${compact ? ' is-compact' : ''}`}>
-    <header><div><p className="sectionEyebrow">{copy.platform}</p><h2>{compact ? copy.recentCompanies : copy.companyList}</h2></div>{compact ? <button type="button" onClick={onShowAll}>{copy.viewAll} <span aria-hidden="true">→</span></button> : <input type="search" value={search} onChange={event => onSearch(event.target.value)} placeholder={language === 'en' ? 'Search companies or managers' : language === 'cs' ? 'Hledat společnosti nebo manažery' : 'Пошук компанії або менеджера'} aria-label={copy.companies} />}</header>
-    {!visible.length ? <div className="platformAdminEmpty">{copy.empty}</div> : <div className="platformAdminCompanyList">{visible.map(company => {
+    <header><div><p className="sectionEyebrow">{copy.platform}</p><h2>{compact ? copy.recentCompanies : copy.companyList}</h2></div>{compact ? <button type="button" onClick={onShowAll}>{copy.viewAll} <span aria-hidden="true">→</span></button> : <input type="search" value={search} onChange={event => onSearch(event.target.value)} placeholder={copy.searchCompanies} aria-label={copy.companies} />}</header>
+    {!compact ? <nav className="platformAdminFilters" aria-label={copy.status}>{Object.entries(copy.filters).map(([key,label])=><button type="button" key={key} aria-pressed={filter===key} className={filter===key?'is-active':''} onClick={()=>onFilter(key)}>{label}</button>)}</nav> : null}
+    {!visible.length ? <div className="platformAdminEmpty">{companies.length ? copy.noResults : copy.empty}{filter!=='all'||search?<button type="button" onClick={()=>{onFilter('all');onSearch('');}}>{copy.clearFilter}</button>:null}</div> : <div className="platformAdminCompanyList">{visible.map(company => {
       const status = company.subscriptionStatus || company.status;
       const isTrial = String(status || '').toUpperCase().includes('TRIAL');
       return <article key={company.id} className="platformAdminCompany">
@@ -124,6 +144,8 @@ function CompaniesTable({ companies, copy, language, compact = false, onShowAll,
         <div className="platformAdminCompanyEmployees"><strong>{metricValue(company.activeEmployees)}</strong><small>{copy.employees.toLowerCase()}</small></div>
         <div className="platformAdminCompanyPlan"><strong>{company.planCode || '—'}</strong><small>{copy.plan}</small></div>
         <div className="platformAdminCompanyStatus"><span className={`platformAdminStatus is-${String(status || 'inactive').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>{statusText(status, copy)}</span><small>{isTrial ? copy.trialUntil : copy.periodUntil}: {formatDate(isTrial ? company.trialEndsAt : company.currentPeriodEnd, language)}</small></div>
+        <button className="platformAdminCompanyToggle" type="button" aria-expanded={expandedCompany===company.id} onClick={()=>onExpand(expandedCompany===company.id?null:company.id)}>{expandedCompany===company.id?copy.close:copy.details}<span aria-hidden="true">{expandedCompany===company.id?'−':'+'}</span></button>
+        {expandedCompany===company.id?<div className="platformAdminCompanyDetails"><span><small>{copy.manager}</small><strong>{company.managerName||company.managerEmail||'—'}</strong></span><span><small>{copy.status}</small><strong>{statusText(status,copy)}</strong></span><span><small>{copy.plan}</small><strong>{company.planCode||'—'}</strong></span><span><small>{isTrial?copy.trialUntil:copy.periodUntil}</small><strong>{formatDate(isTrial?company.trialEndsAt:company.currentPeriodEnd,language)}</strong></span></div>:null}
       </article>;
     })}</div>}
   </section>;
