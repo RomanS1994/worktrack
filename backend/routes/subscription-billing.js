@@ -43,14 +43,29 @@ function accountDetails() {
   return { accountConfigured: configured, account, holder };
 }
 
+function czechIban(accountNumber, bankCode, prefix = '') {
+  const account = String(accountNumber || '');
+  const bank = String(bankCode || '');
+  const accountPrefix = String(prefix || '');
+  if (!/^\\d{1,10}$/.test(account) || !/^\\d{4}$/.test(bank) || (accountPrefix && !/^\\d{1,6}$/.test(accountPrefix))) return null;
+
+  const bban = `${bank}${accountPrefix.padStart(6, '0')}${account.padStart(10, '0')}`;
+  const rearranged = `${bban}123500`;
+  let remainder = 0;
+  for (const digit of rearranged) remainder = (remainder * 10 + Number(digit)) % 97;
+  return `CZ${String(98 - remainder).padStart(2, '0')}${bban}`;
+}
+
 function spaydFor(payment) {
   const details = accountDetails();
   if (!details.accountConfigured) return null;
   const [localAccount, bankCode] = details.account.split('/');
   const [prefix, number] = localAccount.includes('-') ? localAccount.split('-', 2) : ['', localAccount];
+  const iban = czechIban(number, bankCode, prefix);
+  if (!iban) return null;
   const fields = [
     'SPD*1.0',
-    `ACC:${prefix ? `${prefix}-` : ''}${number}/${bankCode}`,
+    `ACC:${iban}`,
     `AM:${Number(payment.amountCzk).toFixed(2)}`,
     'CC:CZK',
     `X-VS:${payment.variableSymbol}`,
