@@ -330,7 +330,7 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
     if (!context) return true;
     const status = request.url ? new URL(request.url, `http://${request.headers.host || 'localhost'}`).searchParams.get('status') : null;
     const where = status && ['PENDING', 'REVIEW_REQUESTED', 'PAID', 'REJECTED', 'OVERDUE'].includes(status) ? { status } : {};
-    const rows = await runStoreRead({ prisma: client => client.subscriptionPayment.findMany({ where, include: { company: { select: { id: true, name: true, memberships: { where: { role: 'MANAGER', status: 'ACTIVE', deletedAt: null }, take: 1, include: { user: { select: { name: true, email: true } } } } } } }, orderBy: { createdAt: 'desc' }, take: 100 }) });
+    const rows = await runStoreRead({ prisma: client => client.subscriptionPayment.findMany({ where, include: { company: { select: { id: true, name: true, memberships: { where: { role: 'MANAGER', status: 'ACTIVE', deletedAt: null }, orderBy: { createdAt: 'asc' }, take: 1, include: { user: { select: { name: true, email: true } } } } } } }, orderBy: { createdAt: 'desc' }, take: 100 }) });
     const payments = rows.map(({ company, ...payment }) => ({
       id: payment.id,
       company: { name: company.name },
