@@ -122,3 +122,59 @@
  .companySubCurrentBadge{font-size:7px}
  .companySubPlanOption .companySubPlanPrice strong{font-size:11px}
 }
+
+
+/* Clear billing interval and payment instructions */
+.companySubHeroPrice small{margin-top:3px;color:#b8d5c6;font-size:10px}
+.companySubBillingToggle{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;border:1px solid #e3eae5;border-radius:15px;background:#eef4f0}
+.companySubBillingToggle button{display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:7px 10px;border:1px solid transparent;border-radius:11px;background:transparent;color:#54645a;font:inherit;font-size:12px;font-weight:750;cursor:pointer}
+.companySubBillingToggle button.is-active{border-color:#dcebe1;background:#fff;color:#173c2a;box-shadow:0 2px 7px rgba(23,65,42,.07)}
+.companySubBillingToggle button small{padding:3px 6px;border-radius:999px;background:#dff4e6;color:#17844d;font-size:9px;font-weight:800;white-space:nowrap}
+.companySubBillingToggle button:focus-visible,.companySubPlanOption:focus-visible{outline:3px solid rgba(35,162,96,.3);outline-offset:2px}
+.companySubAnnualNotice{margin:-4px 2px 0;color:#6d7d73;font-size:11px;line-height:1.45}
+.companySubPlanOption .companySubPlanPrice{flex-direction:column;align-items:flex-end;gap:1px}
+.companySubPlanOption .companySubPlanPrice em{color:#18824b;font-size:9px;font-style:normal;font-weight:700;white-space:nowrap}
+.companySubPayment{display:grid;gap:14px}
+.companySubPaymentHeading{padding-bottom:12px}
+.companySubInvoiceNumber{display:block;max-width:min(100%,380px);overflow-wrap:anywhere;color:#6c7c72;font-size:11px;font-weight:650;letter-spacing:.025em;line-height:1.35}
+.companySubPaymentAmount{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;border:1px solid #dceee2;border-radius:15px;background:linear-gradient(110deg,#f0faf4,#f8fcf9)}
+.companySubPaymentAmount>div{display:grid;gap:3px}
+.companySubPaymentAmount>div:last-child{text-align:right}
+.companySubPaymentAmount span,.companySubPaymentAmount small{color:#718078;font-size:11px}
+.companySubPaymentAmount strong{color:#173c2a;font-size:25px;letter-spacing:-.04em}
+.companySubPaymentAmount b{color:#354b3e;font-size:12px}
+.companySubPaymentGrid{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:12px;padding-top:0}
+.companySubQrWrap{display:grid;grid-template-columns:minmax(96px,150px) minmax(0,1fr);align-content:center;justify-items:center;gap:10px;min-height:0;padding:13px;border-color:#dceee2;border-radius:16px;background:#f6fbf7}
+.companySubQr{display:block;width:min(100%,150px);height:auto;image-rendering:pixelated}
+.companySubQrCopy{display:grid;gap:5px;align-content:center}
+.companySubQrCopy strong{color:#214b34;font-size:12px;line-height:1.35}
+.companySubQrCopy small{margin:0;color:#6d7d73;text-align:left;font-size:10px;line-height:1.45}
+.companySubQrMissing{grid-column:1/-1;width:100%;padding:15px;border:1px dashed #b6cabc;border-radius:12px;color:#65786b;text-align:center;font-size:11px;line-height:1.45}
+.companySubPaymentStep{margin:0 0 4px;color:#365b43;font-size:12px;font-weight:800}
+.companySubPaymentInfo dl>div{align-items:flex-start}
+.companySubPaymentInfo dd{min-width:0;flex-wrap:wrap;overflow-wrap:anywhere}
+.companySubPaymentInfo dd strong{font-size:12px;overflow-wrap:anywhere}
+.companySubPaymentInfo dd button{min-height:30px;padding:4px 8px;border-color:#dce9df;border-radius:8px;color:#17824b;font-size:10px;font-weight:750}
+.companySubPaymentInfo>.companySubPrimary{margin-top:5px}
+@media(max-width:640px){
+ .companySubBillingToggle{gap:4px}
+ .companySubBillingToggle button{flex-direction:column;gap:3px;min-height:48px;padding:6px 4px;font-size:11px}
+ .companySubBillingToggle button small{font-size:8px}
+ .companySubPlanOption .companySubPlanPrice{display:grid;justify-items:end}
+ .companySubPlanOption .companySubPlanPrice strong{font-size:12px}
+ .companySubPlanOption .companySubPlanPrice small{display:block;margin:0;font-size:9px}
+ .companySubPlanOption .companySubPlanPrice em{font-size:8px}
+ .companySubPayment{gap:11px;padding:13px}
+ .companySubPaymentHeading{align-items:flex-start;padding-bottom:10px}
+ .companySubPaymentGrid{grid-template-columns:1fr;gap:10px}
+ .companySubPaymentAmount{padding:11px 12px}
+ .companySubPaymentAmount strong{font-size:23px}
+ .companySubQrWrap{grid-template-columns:minmax(96px,128px) minmax(0,1fr);justify-items:center;padding:10px}
+ .companySubQr{width:min(100%,128px)}
+ .companySubQrCopy strong{font-size:11px}
+ .companySubQrCopy small{font-size:9.5px}
+ .companySubPaymentInfo dl>div{gap:8px;padding:8px 0}
+ .companySubPaymentInfo dt{font-size:10px}
+ .companySubPaymentInfo dd{font-size:11px}
+ .companySubPaymentInfo dd button{font-size:9px}
+}

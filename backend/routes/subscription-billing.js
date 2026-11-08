@@ -6,6 +6,8 @@ import { readJsonBody, sendError, sendJson } from '../lib/http.js';
 import { createAuditLog } from '../db/prisma-helpers.js';
 
 import { SUBSCRIPTION_PLANS as PLANS, subscriptionPlanList as planList } from '../services/subscription-plans.js';
+const ANNUAL_TERM_MONTHS = 12;
+const ANNUAL_BILLED_MONTHS = 10;
 const PAYMENT_SELECT = {
   id: true, companyId: true, invoiceNumber: true, planCode: true,
   employeeLimit: true, amountCzk: true, currency: true, variableSymbol: true,
@@ -47,7 +49,7 @@ function czechIban(accountNumber, bankCode, prefix = '') {
   const account = String(accountNumber || '');
   const bank = String(bankCode || '');
   const accountPrefix = String(prefix || '');
-  if (!/^\\d{1,10}$/.test(account) || !/^\\d{4}$/.test(bank) || (accountPrefix && !/^\\d{1,6}$/.test(accountPrefix))) return null;
+  if (!/^\d{1,10}$/.test(account) || !/^\d{4}$/.test(bank) || (accountPrefix && !/^\d{1,6}$/.test(accountPrefix))) return null;
 
   const bban = `${bank}${accountPrefix.padStart(6, '0')}${account.padStart(10, '0')}`;
   const rearranged = `${bban}123500`;
@@ -76,14 +78,24 @@ function spaydFor(payment) {
   return fields.join('*');
 }
 
-function addMonth(date) {
+function addMonths(date, months = 1) {
   const result = new Date(date);
   const day = result.getDate();
   result.setDate(1);
-  result.setMonth(result.getMonth() + 1);
+  result.setMonth(result.getMonth() + months);
   const lastDay = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
   result.setDate(Math.min(day, lastDay));
   return result;
+}
+
+function addMonth(date) {
+  return addMonths(date, 1);
+}
+
+function monthsBetween(startDate, endDate) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  return Math.max(1, (end.getFullYear() - start.getFullYear()) * 12 + end.getMonth() - start.getMonth());
 }
 
 function invoiceNumber(now) {
@@ -255,7 +267,7 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
       ]);
       return { subscription: subscription ? { ...subscription, plan: PLANS[subscription.planCode]?.name || subscription.planCode,
         status: currentSubStatus(subscription), isTrial: Boolean(subscription.trialEndsAt && subscription.trialEndsAt > new Date()), trialEndsAt: subscription.trialEndsAt, daysRemaining: subscription.trialEndsAt && subscription.trialEndsAt > new Date() ? Math.ceil((subscription.trialEndsAt - new Date()) / 86400000) : 0 } : null,
-        employeeCount: activeEmployeeCount, activeEmployeeCount, plans: planList,
+        employeeCount: activeEmployeeCount, activeEmployeeCount, plans: planList.map(plan => ({ ...plan, annualPriceCzk: plan.monthlyPriceCzk * ANNUAL_BILLED_MONTHS, annualMonthlyPriceCzk: Math.round(plan.monthlyPriceCzk * ANNUAL_BILLED_MONTHS / ANNUAL_TERM_MONTHS), annualSavingsCzk: plan.monthlyPriceCzk * (ANNUAL_TERM_MONTHS - ANNUAL_BILLED_MONTHS) })),
         accountConfigured: accountDetails().accountConfigured, invoices: payments.map(serializeInvoice), payments: payments.map(serializeInvoice) };
     } });
     sendJson(response, 200, payload); return true;
@@ -271,6 +283,10 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
     const body = await readJsonBody(request);
     const plan = PLANS[String(body.planCode || '')];
     if (!plan) { sendError(response, 400, 'Unsupported subscription plan'); return true; }
+    const billingPeriod = String(body.billingPeriod || 'month');
+    if (!['month', 'year'].includes(billingPeriod)) { sendError(response, 400, 'Unsupported subscription billing period'); return true; }
+    const periodMonths = billingPeriod === 'year' ? ANNUAL_TERM_MONTHS : 1;
+    const amountCzk = plan.price * (billingPeriod === 'year' ? ANNUAL_BILLED_MONTHS : 1);
     const now = new Date();
     const created = await runStoreTransaction({ prisma: async tx => {
       const companyId = context.activeMembership.companyId;
@@ -283,11 +299,11 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
       if (outstanding) { const error = new Error('An unpaid subscription invoice already exists'); error.statusCode = 409; throw error; }
       const subscription = await tx.companySubscription.findUnique({ where: { companyId } });
       const periodStart = subscription?.currentPeriodEnd && subscription.currentPeriodEnd > now ? subscription.currentPeriodEnd : now;
-      const periodEnd = addMonth(periodStart);
+      const periodEnd = addMonths(periodStart, periodMonths);
       const dueDate = new Date(now); dueDate.setDate(dueDate.getDate() + 14);
       return tx.subscriptionPayment.create({ data: {
         id: randomUUID(), companyId, invoiceNumber: invoiceNumber(now), planCode: body.planCode,
-        employeeLimit: plan.max, amountCzk: plan.price, variableSymbol: variableSymbol(),
+        employeeLimit: plan.max, amountCzk, variableSymbol: variableSymbol(),
         periodStart, periodEnd, dueDate, status: 'PENDING',
       }, select: PAYMENT_SELECT });
     } });
@@ -360,15 +376,17 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
       const currentEnd = subscription?.currentPeriodEnd && subscription.currentPeriodEnd > paidAt ? subscription.currentPeriodEnd : paidAt;
       const start = currentEnd;
       const periodStart = payment.periodStart > start ? payment.periodStart : start;
-      const periodEnd = addMonth(periodStart);
+      const termMonths = monthsBetween(payment.periodStart, payment.periodEnd);
+      const periodEnd = addMonths(periodStart, termMonths);
+      const monthlyPriceCzk = PLANS[payment.planCode]?.price || payment.amountCzk;
       const confirmed = await tx.subscriptionPayment.update({ where: { id: paymentId }, data: {
         status: 'PAID', paidAt, reviewedByEmail: context.user.email, periodStart, periodEnd,
       }, select: PAYMENT_SELECT });
       await tx.companySubscription.upsert({ where: { companyId: payment.companyId }, create: {
         id: randomUUID(), companyId: payment.companyId, planCode: payment.planCode, employeeLimit: payment.employeeLimit,
-        monthlyPriceCzk: payment.amountCzk, status: 'ACTIVE', currentPeriodStart: periodStart,
+        monthlyPriceCzk, status: 'ACTIVE', currentPeriodStart: periodStart,
         currentPeriodEnd: periodEnd, gracePeriodEnd: new Date(periodEnd.getTime() + 5 * 86400000),
-      }, update: { planCode: payment.planCode, employeeLimit: payment.employeeLimit, monthlyPriceCzk: payment.amountCzk,
+      }, update: { planCode: payment.planCode, employeeLimit: payment.employeeLimit, monthlyPriceCzk,
         status: 'ACTIVE', currentPeriodStart: periodStart, currentPeriodEnd: periodEnd,
         gracePeriodEnd: new Date(periodEnd.getTime() + 5 * 86400000) } });
       return confirmed;
