@@ -129,12 +129,27 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
           employeeCount: employees, managerCount: managers, subscription: company.subscription };
       });
       const now = new Date();
+      const trendStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1));
+      const [companyHistory, employeeHistory] = await Promise.all([
+        client.company.findMany({ where: { createdAt: { gte: trendStart } }, select: { createdAt: true } }),
+        client.companyMembership.findMany({ where: { role: 'EMPLOYEE', createdAt: { gte: trendStart } }, select: { createdAt: true } }),
+      ]);
+      const trends = Array.from({ length: 6 }, (_, offset) => {
+        const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5 + offset, 1));
+        const nextMonth = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1));
+        const inMonth = value => value >= date && value < nextMonth;
+        return {
+          month: date.toISOString().slice(0, 7),
+          companiesCreated: companyHistory.filter(row => inMonth(row.createdAt)).length,
+          employeesAdded: employeeHistory.filter(row => inMonth(row.createdAt)).length,
+        };
+      });
       const overdueIds = new Set(overduePayments.map(row => row.companyId));
       return { companiesCount: items.length,
         activeSubscriptionsCount: items.filter(c => c.subscription && currentSubStatus(c.subscription, now) === 'ACTIVE').length,
         trialCompaniesCount: items.filter(c => c.subscription && currentSubStatus(c.subscription, now) === 'TRIAL').length,
         overdueCompaniesCount: items.filter(c => overdueIds.has(c.id) || (c.subscription && ['EXPIRED', 'GRACE_PERIOD'].includes(currentSubStatus(c.subscription, now)))).length,
-        activeEmployeesCount: items.reduce((n, c) => n + c.employeeCount, 0), pendingPaymentReviewsCount };
+        activeEmployeesCount: items.reduce((n, c) => n + c.employeeCount, 0), pendingPaymentReviewsCount, trends };
     } });
     sendJson(response, 200, overview); return true;
   }
@@ -145,15 +160,20 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
     const url = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
     const search = (url.searchParams.get('search') || '').trim().toLocaleLowerCase();
     const companies = await runStoreRead({ prisma: async client => {
-      const rows = await client.company.findMany({ orderBy: { createdAt: 'desc' }, select: {
-        id: true, name: true, subscription: { select: { planCode: true, status: true, currentPeriodEnd: true, trialEndsAt: true } },
-        memberships: { where: { status: 'ACTIVE', deletedAt: null }, select: { role: true, user: { select: { name: true, email: true } } }, orderBy: { createdAt: 'asc' } },
-      } });
+      const [rows, overduePayments] = await Promise.all([
+        client.company.findMany({ orderBy: { createdAt: 'desc' }, select: {
+          id: true, name: true, subscription: { select: { planCode: true, status: true, currentPeriodEnd: true, trialEndsAt: true } },
+          memberships: { where: { status: 'ACTIVE', deletedAt: null }, select: { role: true, user: { select: { name: true, email: true } } }, orderBy: { createdAt: 'asc' } },
+        } }),
+        client.subscriptionPayment.findMany({ where: { status: 'OVERDUE' }, select: { companyId: true } }),
+      ]);
+      const overdueCompanyIds = new Set(overduePayments.map(payment => payment.companyId));
       return rows.map(company => {
         const manager = company.memberships.find(m => m.role === 'MANAGER')?.user;
         return { id: company.id, name: company.name, managerName: manager?.name || '', managerEmail: manager?.email || '',
           activeEmployees: company.memberships.filter(m => m.role === 'EMPLOYEE').length,
           planCode: company.subscription?.planCode || '', subscriptionStatus: company.subscription ? currentSubStatus(company.subscription) : 'INACTIVE',
+          hasOverduePayment: overdueCompanyIds.has(company.id),
           trialEndsAt: company.subscription?.trialEndsAt || null, currentPeriodEnd: company.subscription?.currentPeriodEnd || null,
           _search: `${company.name} ${manager?.name || ''} ${manager?.email || ''}`.toLocaleLowerCase() };
       }).filter(company => !search || company._search.includes(search)).map(({ _search, ...company }) => company);

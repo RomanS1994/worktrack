@@ -11,7 +11,7 @@ import { PlatformSubscriptionPaymentsPage } from '../PlatformSubscriptionPayment
 import './PlatformAdminPage.css';
 
 const COPY = {
-  uk: { title:'Адміністрування WorkTrack', intro:'Керування компаніями, доступом і ручними платежами підписок.', overview:'Огляд', companies:'Компанії', payments:'Платежі', companiesCount:'Компанії', activeSubscriptions:'Активні підписки', trials:'Пробний період', overdue:'Потребують уваги', employees:'Працівники', reviews:'Очікують перевірки', companyList:'Компанії та підписки', recentCompanies:'Нещодавні компанії', manager:'Менеджер', plan:'План', status:'Статус', trialUntil:'Пробний період до', periodUntil:'Підписка до', empty:'Компаній поки немає.', access:'Цей розділ доступний лише адміністратору WorkTrack.', loadError:'Не вдалося завантажити дані.', loading:'Завантаження даних…', unknown:'Невідомо', trial:'Пробний період', active:'Активна', grace:'Пільговий період', overdueStatus:'Прострочено', inactive:'Неактивна', platform:'ПЛАТФОРМА', workspace:'Адміністративний простір', attentionCopy:'Платежі, які очікують на ручну перевірку', viewPayments:'Переглянути платежі', back:'До WorkTrack', consoleActive:'Кабінет активний', allReviewed:'Усі платежі перевірені', employeesShort:'Працівники', viewAll:'Усі компанії', searchCompanies:'Пошук компаній або менеджерів', filters:{all:'Усі',active:'Активні',trial:'Пробний період',attention:'Потребують уваги',inactive:'Без підписки'}, tasks:'Потрібна увага', trialEnding:'Пробний період скоро завершиться', upcomingTrials:'Пробний період завершується протягом 7 днів', openCompanies:'Переглянути компанії', details:'Деталі', noResults:'За цими фільтрами компаній немає.', created:'Створена', activeEmployees:'Активні працівники', dueSoon:'Завершується', clearFilter:'Скинути фільтри', close:'Згорнути' },
+  uk: { title:'Адміністрування WorkTrack', intro:'Керування компаніями, доступом і ручними платежами підписок.', overview:'Огляд', companies:'Компанії', payments:'Платежі', companiesCount:'Компанії', activeSubscriptions:'Активні підписки', trials:'Пробний період', overdue:'Потребують уваги', employees:'Працівники', reviews:'Очікують перевірки', companyList:'Компанії та підписки', recentCompanies:'Нещодавні компанії', manager:'Менеджер', plan:'План', status:'Статус', trialUntil:'Пробний період до', periodUntil:'Підписка до', empty:'Компаній поки немає.', access:'Цей розділ доступний лише адміністратору WorkTrack.', loadError:'Не вдалося завантажити дані.', loading:'Завантаження даних…', unknown:'Невідомо', trial:'Пробний період', active:'Активна', grace:'Пільговий період', overdueStatus:'Прострочено', inactive:'Неактивна', platform:'ПЛАТФОРМА', workspace:'Адміністративний простір', attentionCopy:'Платежі, які очікують на ручну перевірку', viewPayments:'Переглянути платежі', back:'До WorkTrack', consoleActive:'Кабінет активний', allReviewed:'Усі платежі перевірені', employeesShort:'Працівники', viewAll:'Усі компанії', searchCompanies:'Пошук компаній або менеджерів', filters:{all:'Усі',active:'Активні',trial:'Пробний період',attention:'Потребують уваги',inactive:'Без підписки'}, tasks:'Потрібна увага', trialEnding:'Пробний період скоро завершиться', upcomingTrials:'Пробний період завершується протягом 7 днів', openCompanies:'Переглянути компанії', details:'Деталі', noResults:'За цими фільтрами компаній немає.', created:'Створена', activeEmployees:'Активні працівники', dueSoon:'Завершується', clearFilter:'Скинути фільтри', close:'Згорнути', trendsTitle:'Динаміка за місяць', companiesCreated:'Нові компанії', employeesAdded:'Додані працівники' },
   cs: { title:'Správa WorkTrack', intro:'Správa společností, přístupu a ručních plateb předplatného.', overview:'Přehled', companies:'Společnosti', payments:'Platby', companiesCount:'Společnosti', activeSubscriptions:'Aktivní předplatná', trials:'Zkušební období', overdue:'Vyžadují pozornost', employees:'Zaměstnanci', reviews:'Čeká na kontrolu', companyList:'Společnosti a předplatná', recentCompanies:'Nedávné společnosti', manager:'Manažer', plan:'Tarif', status:'Stav', trialUntil:'Zkušební období do', periodUntil:'Předplatné do', empty:'Zatím zde nejsou žádné společnosti.', access:'Tato část je dostupná pouze administrátorovi WorkTrack.', loadError:'Data se nepodařilo načíst.', loading:'Načítání dat…', unknown:'Neznámý', trial:'Zkušební období', active:'Aktivní', grace:'Dodatečná lhůta', overdueStatus:'Po splatnosti', inactive:'Neaktivní', platform:'PLATFORMA', workspace:'Administrátorský prostor', attentionCopy:'Platby čekající na ruční kontrolu', viewPayments:'Zobrazit platby', back:'Zpět do WorkTrack', consoleActive:'Panel je aktivní', allReviewed:'Všechny platby jsou zkontrolovány', employeesShort:'Zaměstnanci', viewAll:'Všechny společnosti', searchCompanies:'Hledat společnosti nebo manažery', filters:{all:'Vše',active:'Aktivní',trial:'Zkušební období',attention:'Vyžadují pozornost',inactive:'Bez předplatného'},tasks:'Vyžaduje pozornost',trialEnding:'Zkušební období brzy končí',upcomingTrials:'Zkušební období končí během 7 dnů',openCompanies:'Zobrazit společnosti',details:'Detaily',noResults:'Žádné společnosti neodpovídají filtrům.',created:'Vytvořena',activeEmployees:'Aktivní zaměstnanci',dueSoon:'Končí',clearFilter:'Zrušit filtry',close:'Skrýt' },
   en: { title:'WorkTrack admin', intro:'Manage companies, access and manual subscription payments.', overview:'Overview', companies:'Companies', payments:'Payments', companiesCount:'Companies', activeSubscriptions:'Active subscriptions', trials:'On trial', overdue:'Need attention', employees:'Employees', reviews:'Awaiting review', companyList:'Companies and subscriptions', recentCompanies:'Recent companies', manager:'Manager', plan:'Plan', status:'Status', trialUntil:'Trial ends', periodUntil:'Subscription ends', empty:'No companies yet.', access:'This area is available to WorkTrack administrators only.', loadError:'Could not load admin data.', loading:'Loading admin data…', unknown:'Unknown', trial:'Trial', active:'Active', grace:'Grace period', overdueStatus:'Overdue', inactive:'Inactive', platform:'PLATFORM', workspace:'Administration workspace', attentionCopy:'Payments waiting for manual review', viewPayments:'View payments', back:'Back to WorkTrack', consoleActive:'Admin console active', allReviewed:'All payments are reviewed', employeesShort:'Employees', viewAll:'All companies', searchCompanies:'Search companies or managers', filters:{all:'All',active:'Active',trial:'Trial',attention:'Need attention',inactive:'No subscription'},tasks:'Needs attention',trialEnding:'Trial ending soon',upcomingTrials:'Trials ending within 7 days',openCompanies:'View companies',details:'Details',noResults:'No companies match these filters.',created:'Created',activeEmployees:'Active employees',dueSoon:'Ends',clearFilter:'Clear filters',close:'Hide' },
 };
@@ -24,11 +24,17 @@ function formatDate(value, language) {
 
 function metricValue(value) { return Number.isFinite(Number(value)) ? Number(value) : 0; }
 
+function trendMonth(value, language) {
+  const [year, month] = String(value || '').split('-').map(Number);
+  if (!year || !month) return value;
+  return new Intl.DateTimeFormat(language === 'cs' ? 'cs-CZ' : language === 'en' ? 'en-GB' : 'uk-UA', { month:'short' }).format(new Date(year, month - 1, 1));
+}
+
 function statusText(status, copy) {
   const normalized = String(status || '').toUpperCase();
   if (normalized.includes('TRIAL')) return copy.trial;
   if (normalized.includes('GRACE')) return copy.grace;
-  if (normalized.includes('OVERDUE') || normalized.includes('PAST_DUE')) return copy.overdueStatus;
+  if (normalized.includes('OVERDUE') || normalized.includes('PAST_DUE') || normalized.includes('EXPIRED')) return copy.overdueStatus;
   if (normalized === 'ACTIVE' || normalized === 'PAID') return copy.active;
   return copy.inactive;
 }
@@ -63,6 +69,11 @@ export function PlatformAdminPage() {
     ...(upcomingTrialsCount > 0 ? [{ id:'trials', label:copy.trialEnding, count:upcomingTrialsCount, action:() => showCompanies('trial'), hint:copy.upcomingTrials }] : []),
   ];
   const statusError = overviewQuery.error || (section !== 'payments' && companiesQuery.error);
+  const trendLabels = language === 'cs'
+    ? { title:'Vývoj za měsíc', companies:'Nové společnosti', employees:'Noví zaměstnanci' }
+    : language === 'en'
+      ? { title:'Monthly activity', companies:'New companies', employees:'Employees added' }
+      : { title:copy.trendsTitle, companies:copy.companiesCreated, employees:copy.employeesAdded };
 
   return <section className="platformAdmin">
     <header className="platformAdminTopbar">
@@ -95,6 +106,18 @@ export function PlatformAdminPage() {
                 <Metric label={copy.reviews} value={overview.pendingPaymentReviewsCount} attention onClick={() => selectSection('payments')} />
               </div>
             </section>
+            {Array.isArray(overview.trends) && overview.trends.length ? <section className="platformAdminTrends" aria-label={trendLabels.title}>
+              <header><h2>{trendLabels.title}</h2><div><span><i className="is-company"/>{trendLabels.companies}</span><span><i className="is-employee"/>{trendLabels.employees}</span></div></header>
+              <div className="platformAdminTrendChart" role="img" aria-label={overview.trends.map(item => `${trendMonth(item.month,language)}: ${trendLabels.companies} ${metricValue(item.companiesCreated)}, ${trendLabels.employees} ${metricValue(item.employeesAdded)}`).join('; ')}>
+                {overview.trends.map(item => {
+                  const max = Math.max(1,...overview.trends.flatMap(point => [metricValue(point.companiesCreated),metricValue(point.employeesAdded)]));
+                  return <div className="platformAdminTrendMonth" key={item.month}>
+                    <div className="platformAdminTrendBars"><span className="is-company" style={{height:`${metricValue(item.companiesCreated)/max*100}%`}}/><span className="is-employee" style={{height:`${metricValue(item.employeesAdded)/max*100}%`}}/></div>
+                    <small>{trendMonth(item.month,language)}</small>
+                  </div>;
+                })}
+              </div>
+            </section> : null}
             {attentionItems.length ? <section className="platformAdminTasks"><header><span>{copy.tasks}</span><span>{attentionItems.reduce((sum,item)=>sum+item.count,0)}</span></header>{attentionItems.map(item=><button type="button" key={item.id} onClick={item.action}><span className="platformAdminTaskDot"/><span className="platformAdminTaskText"><strong>{item.label}</strong>{item.hint?<small>{item.hint}</small>:null}</span><b>{item.count}</b><span className="platformAdminTaskArrow" aria-hidden="true">→</span></button>)}</section> : <div className="platformAdminReviewed"><span aria-hidden="true">✓</span>{copy.allReviewed}</div>}
             <CompaniesTable companies={companies} copy={copy} language={language} onShowAll={() => selectSection('companies')} compact expandedCompany={expandedCompany} onExpand={setExpandedCompany} />
           </> : <CompaniesTable companies={companies} copy={copy} language={language} search={search} onSearch={setSearch} filter={companyFilter} onFilter={showCompanies} expandedCompany={expandedCompany} onExpand={setExpandedCompany} />}
@@ -128,7 +151,7 @@ function CompaniesTable({ companies, copy, language, compact = false, onShowAll,
     const status = String(company.subscriptionStatus || company.status || '').toUpperCase();
     if (filter === 'active') return status === 'ACTIVE';
     if (filter === 'trial') return status.includes('TRIAL');
-    if (filter === 'attention') return ['OVERDUE','PAST_DUE','EXPIRED','GRACE_PERIOD'].some(value => status.includes(value));
+    if (filter === 'attention') return Boolean(company.hasOverduePayment) || ['OVERDUE','PAST_DUE','EXPIRED','GRACE_PERIOD'].some(value => status.includes(value));
     if (filter === 'inactive') return !status || status === 'INACTIVE';
     return true;
   });
