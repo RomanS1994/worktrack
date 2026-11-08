@@ -201,3 +201,34 @@
  .companySubBillingToggle button:not(.companySubBillingAnnual).is-active{flex-direction:row}
  .companySubBillingToggle button:not(.companySubBillingAnnual).is-active::before{flex:0 0 18px}
 }
+
+/* Subscription plan list: clearer price alignment and non-overlapping status */
+.companySubAnnualNotice{display:flex;align-items:flex-start;gap:10px;margin:0;padding:11px 12px;border:1px solid #f1dfbd;border-radius:13px;background:linear-gradient(110deg,#fff8e9,#fffdf7);color:#765a2e;font-size:11px;line-height:1.45}
+.companySubAnnualNoticeIcon{display:grid;place-items:center;width:20px;height:20px;flex:0 0 20px;border-radius:50%;background:#f9ebca;color:#9b6914;font-size:13px;font-weight:850}
+.companySubAnnualNotice strong{display:block;margin:0 0 2px;color:#765017;font-size:11px;font-weight:800}
+.companySubAnnualNotice p{margin:0;color:#786b55}
+.companySubPlanOption{min-height:76px;gap:10px}
+.companySubPlanInfo{gap:4px}
+.companySubPlanTitle{display:flex;align-items:center;gap:7px;min-width:0}
+.companySubPlanTitle strong{min-width:0}
+.companySubCurrentBadge{flex:0 0 auto;font-style:normal}
+.companySubPlanOption .companySubPlanPrice{min-width:76px;flex:0 0 auto}
+.companySubPlanOption .companySubPlanPrice strong{font-size:14px}
+.companySubPlanArrow{display:none}
+.companySubCustomPlan{padding:0 2px 8px;line-height:1.5}
+@media(max-width:640px){
+ .companySubscription{padding-bottom:calc(180px + env(safe-area-inset-bottom,0px))}
+ .companySubAnnualNotice{gap:8px;padding:10px}
+ .companySubPlanOption{min-height:72px;gap:9px;padding:10px}
+ .companySubPlanTitle{flex-wrap:wrap;gap:5px}
+ .companySubPlanTitle strong{font-size:13px}
+ .companySubCurrentBadge{padding:3px 6px;font-size:8px}
+ .companySubPlanOption .companySubPlanPrice{min-width:72px}
+ .companySubPlanOption .companySubPlanPrice strong{font-size:13px}
+ .companySubCustomPlan{padding-bottom:12px}
+}
+@media(max-width:360px){
+ .companySubPlanOption{gap:7px;padding:9px}
+ .companySubPlanOption .companySubPlanPrice{min-width:66px}
+ .companySubPlanTitle{gap:4px}
+}
