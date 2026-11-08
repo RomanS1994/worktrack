@@ -71,6 +71,12 @@
 .platformAdmin .platformPaymentReject{border-color:#d8d8d8;background:#fff;color:#333}.platformAdmin .platformPaymentReject:hover{border-color:#111;background:#f5f5f5}
 .platformAdmin .platformPaymentsNotice{padding:17px 18px;border:1px solid #e4e4e4;border-radius:8px;background:#fff;color:#666;font-size:11px}
 .platformAdmin .platformPaymentsNotice.is-error{border-color:#bbb;background:#f7f7f7;color:#333}
+.platformAdminOverviewHero{position:relative;overflow:hidden}
+.platformAdminOverviewHero::before{position:absolute;top:0;left:27px;width:54px;height:3px;border-radius:0 0 4px 4px;background:#f28c28;content:""}
+.platformAdminMetric.has-attention strong{color:#d66c13}
+.platformAdminNav button.is-active{position:relative;border-color:#f28c28;background:#202022;color:#fff}
+.platformAdminNav--top button.is-active::after{position:absolute;right:12px;bottom:0;left:12px;height:2px;border-radius:2px;background:#f28c28;content:""}
+.platformAdminBrandName span{border-color:#6f4a2d;color:#f3a45d}
 @media(min-width:761px){.platformAdmin{padding-bottom:44px}.platformAdminPageHead,.platformAdminNav,.platformAdminCompanies,.platformAdmin .platformPaymentsPage{width:min(100% - 80px,1320px)}.platformAdminOverview,.platformAdminReviewed,.platformAdminSpotlight{width:min(100% - 80px,1320px)}}
 @media(max-width:760px){
   .appLayout--platformAdmin .appLayout-workspaceBody{padding:0 0 calc(78px + env(safe-area-inset-bottom))}
@@ -86,9 +92,12 @@
   .platformAdminNav--bottom button{display:grid;gap:4px;min-height:49px;padding:5px 7px;border:0;border-radius:6px;color:#999;font-size:8px;font-weight:700}
   .platformAdminNav--bottom button svg{width:17px;height:17px}
   .platformAdminNav--bottom button:hover{background:#222;color:#fff}
-  .platformAdminNav--bottom button.is-active{background:#fff;color:#111}
+  .platformAdminNav--bottom button.is-active{background:#29292b;color:#fff}
+  .platformAdminNav--bottom button.is-active svg{color:#f28c28}
+  .platformAdminNav--bottom button.is-active::after{position:absolute;top:0;left:50%;width:27px;height:2px;border-radius:2px;background:#f28c28;content:"";transform:translateX(-50%)}
   .platformAdminOverview{grid-template-columns:1fr;gap:14px;margin-top:0}
   .platformAdminOverviewHero{min-height:198px;padding:22px 21px;border-radius:17px}
+  .platformAdminOverviewHero::before{left:21px}
   .platformAdminOverviewPrimary>span{font-size:11px}.platformAdminOverviewPrimary>strong{font-size:67px}
   .platformAdminOverviewSecondary{padding-top:13px}.platformAdminOverviewSecondary>div{grid-template-columns:auto auto 1fr;gap:8px}.platformAdminOverviewSecondary>div+div{padding-left:13px}.platformAdminOverviewSecondary strong{font-size:21px}.platformAdminOverviewSecondary>div>span:last-child{font-size:9px}
   .platformAdminOverviewStats{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto;border:0;border-bottom:1px solid #d9dadd}.platformAdminMetric{display:flex;align-items:flex-start;flex-direction:column;justify-content:space-between;gap:9px;min-height:74px;padding:7px 10px 12px;border:0;border-right:1px solid #d9dadd}.platformAdminMetric:first-child{padding-left:0}.platformAdminMetric:last-child{padding-right:0;border-right:0}.platformAdminMetricLabel{font-size:9px}.platformAdminMetric strong{font-size:22px}
@@ -119,7 +128,7 @@
   .platformAdminPageHead,.platformAdminNav,.platformAdminCompanies,.platformAdmin .platformPaymentsPage{width:calc(100% - 28px)}
   .platformAdminOverview,.platformAdminReviewed,.platformAdminSpotlight{width:calc(100% - 28px)}
   .platformAdmin .platformAdminPageHead h1{font-size:28px}
-  .platformAdminOverviewHero{min-height:184px;padding:20px 17px}.platformAdminOverviewPrimary>strong{font-size:61px}.platformAdminOverviewSecondary>div{gap:6px}.platformAdminOverviewSecondary>div+div{padding-left:9px}.platformAdminOverviewSecondary>div>span:last-child{font-size:8px}
+  .platformAdminOverviewHero{min-height:184px;padding:20px 17px}.platformAdminOverviewHero::before{left:17px}.platformAdminOverviewPrimary>strong{font-size:61px}.platformAdminOverviewSecondary>div{gap:6px}.platformAdminOverviewSecondary>div+div{padding-left:9px}.platformAdminOverviewSecondary>div>span:last-child{font-size:8px}
   .platformAdminMetric{padding:7px 7px 11px}.platformAdminMetricLabel{font-size:8px}.platformAdminMetric strong{font-size:19px}
   .platformAdminCompanies>header{align-items:flex-start;flex-direction:column}.platformAdminCompanies>header input{width:100%}
 }

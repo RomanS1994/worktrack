@@ -77,8 +77,8 @@ export function PlatformAdminPage() {
               </article>
               <div className="platformAdminOverviewStats">
                 <Metric label={copy.trials} value={overview.trialCompaniesCount} />
-                <Metric label={copy.overdue} value={overview.overdueCompaniesCount} />
-                <Metric label={copy.reviews} value={overview.pendingPaymentReviewsCount} />
+                <Metric label={copy.overdue} value={overview.overdueCompaniesCount} attention />
+                <Metric label={copy.reviews} value={overview.pendingPaymentReviewsCount} attention />
               </div>
             </section>
             {metricValue(overview.pendingPaymentReviewsCount) > 0 ? <section className="platformAdminSpotlight is-pending">
@@ -107,8 +107,9 @@ function AdminTabs({ section, copy, onSelect, variant }) {
   </nav>;
 }
 
-function Metric({ label, value }) {
-  return <article className="platformAdminMetric"><span className="platformAdminMetricLabel">{label}</span><strong>{metricValue(value).toLocaleString()}</strong></article>;
+function Metric({ label, value, attention = false }) {
+  const count = metricValue(value);
+  return <article className={`platformAdminMetric${attention && count > 0 ? ' has-attention' : ''}`}><span className="platformAdminMetricLabel">{label}</span><strong>{count.toLocaleString()}</strong></article>;
 }
 
 function CompaniesTable({ companies, copy, language, compact = false, onShowAll, search, onSearch }) {
