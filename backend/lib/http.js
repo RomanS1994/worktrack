@@ -5,6 +5,8 @@ const ERROR_CODE_BY_MESSAGE = new Map([
   ['Manager access is required', 'MANAGER_ACCESS_REQUIRED'],
   ['Employee access is required', 'EMPLOYEE_ACCESS_REQUIRED'],
   ['Employee cabinet access is disabled', 'EMPLOYEE_CABINET_ACCESS_DISABLED'],
+  ['Test company is not eligible for deletion', 'TEST_COMPANY_NOT_ELIGIBLE'],
+  ['Test company contains business data and cannot be deleted', 'TEST_COMPANY_HAS_DATA'],
   ['Authorization token is required', 'AUTH_TOKEN_REQUIRED'],
   ['Invalid or expired access token', 'ACCESS_TOKEN_INVALID'],
   ['Invalid or expired session', 'SESSION_INVALID'],
@@ -154,8 +156,8 @@ export function getErrorCode(message) {
   return ERROR_CODE_BY_MESSAGE.get(String(message || '')) || '';
 }
 
-export function sendError(response, statusCode, message, details = null) {
-  const errorCode = getErrorCode(message);
+export function sendError(response, statusCode, message, details = null, explicitErrorCode = '') {
+  const errorCode = explicitErrorCode || getErrorCode(message);
   sendJson(response, statusCode, {
     error: message,
     ...(errorCode ? { errorCode } : {}),
