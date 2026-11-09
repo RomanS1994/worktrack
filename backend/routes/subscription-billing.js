@@ -241,7 +241,7 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
       }
       await createAuditLog(tx, { action: 'platform.test_company_deleted', actorUserId: context.user.id,
         entityType: 'company', entityId: company.id,
-        before: { name: company.name, createdAt: company.createdAt },
+        before: { name: company.name, createdAt: company.createdAt.toISOString() },
         after: null, meta: { actorEmail: context.user.email, source: 'platform_admin_cabinet', at: new Date().toISOString() } });
       await tx.company.delete({ where: { id: company.id } });
       return { id: company.id, name: company.name };
