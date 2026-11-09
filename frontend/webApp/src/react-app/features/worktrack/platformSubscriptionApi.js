@@ -17,6 +17,9 @@ const platformSubscriptionApi = baseApi.injectEndpoints({
     rejectPlatformSubscriptionPayment: builder.mutation({
       query: paymentId => ({ url: `/platform/subscription-payments/${paymentId}/reject`, method: 'POST' }),
     }),
+    deletePlatformAdminTestCompany: builder.mutation({
+      query: companyId => ({ url: `/platform/admin/companies/${encodeURIComponent(companyId)}`, method: 'DELETE' }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -27,4 +30,5 @@ export const {
   useGetPlatformAdminCompaniesQuery,
   useConfirmPlatformSubscriptionPaymentMutation,
   useRejectPlatformSubscriptionPaymentMutation,
+  useDeletePlatformAdminTestCompanyMutation,
 } = platformSubscriptionApi;
