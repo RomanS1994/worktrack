@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { hashPassword } from '../auth/tokens.js';
 import { createAuditLog } from '../db/prisma-helpers.js';
 import { normalizeEmail, normalizeText, nowIso } from '../validation/common.js';
+import { assertEmployeeSeatAvailable, lockCompanyForSeatChange } from './subscription-plans.js';
 
 const REVIEWABLE_STATUS = 'SUBMITTED';
 const WEEKLY_SUBMISSION_STATUS_VALUES = ['DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED'];
@@ -249,18 +250,9 @@ export async function createManagerEmployee(client, context, payload = {}) {
   if (!lastName) throw new Error('Last name is required');
   if (!email) throw new Error('Email is required');
 
-  // Existing companies without a subscription retain their current onboarding
-  // flow. Once a company starts billing, new employee seats follow its plan.
+  // Manager memberships do not consume employee seats.
   if (payload.canAccessManagerCabinet !== true) {
-    const subscription = await client.companySubscription.findUnique({ where: { companyId: managerMembership.companyId } });
-    if (subscription) {
-      const now = new Date();
-      const inPaidPeriod = ['ACTIVE', 'TRIAL'].includes(subscription.status) && subscription.currentPeriodEnd > now;
-      const inGracePeriod = subscription.gracePeriodEnd && subscription.gracePeriodEnd > now;
-      if (!inPaidPeriod && !inGracePeriod) throw new Error('Subscription payment is required to add employees');
-      const activeSeats = await client.companyMembership.count({ where: { companyId: managerMembership.companyId, role: 'EMPLOYEE', status: 'ACTIVE', deletedAt: null } });
-      if (activeSeats >= subscription.employeeLimit) throw new Error('Subscription employee limit reached');
-    }
+    await assertEmployeeSeatAvailable(client, managerMembership.companyId);
   }
 
   const existingUser = await client.user.findUnique({ where: { email } });
@@ -322,8 +314,9 @@ export async function createManagerEmployee(client, context, payload = {}) {
 
 export async function updateEmployeeMembership(client, context, employeeMembershipId, payload = {}, inTransaction = false) {
   const editingRates = Object.prototype.hasOwnProperty.call(payload, 'hourlyRateCzk') || Object.prototype.hasOwnProperty.call(payload, 'customerRateCzk');
-  if (editingRates && !inTransaction && client.$transaction) return client.$transaction(async tx => {
-    await tx.$queryRaw`SELECT id FROM company_memberships WHERE id = ${employeeMembershipId} FOR UPDATE`;
+  if (!inTransaction && client.$transaction) return client.$transaction(async tx => {
+    const manager = ensureManagerContext(context);
+    await lockCompanyForSeatChange(tx, manager.companyId);
     return updateEmployeeMembership(tx, context, employeeMembershipId, payload, true);
   });
   const managerMembership = ensureManagerContext(context);
@@ -346,6 +339,16 @@ export async function updateEmployeeMembership(client, context, employeeMembersh
     Object.assign(data, ratesForDate({ ...existing, rateHistory:data.rateHistory }, new Date()));
     const next = data.rateHistory.find(item => item.effectiveFrom > effectiveFrom);
     rateChange = { rates, workDate: { gte:new Date(`${effectiveFrom}T00:00:00Z`), ...(next ? { lt:new Date(`${next.effectiveFrom}T00:00:00Z`) } : {}) } };
+  }
+  const nextRole = Object.prototype.hasOwnProperty.call(payload, 'canAccessManagerCabinet')
+    ? (payload.canAccessManagerCabinet === true ? 'MANAGER' : 'EMPLOYEE')
+    : existing.role;
+  const nextStatus = Object.prototype.hasOwnProperty.call(payload, 'status')
+    ? normalizeText(payload.status).toUpperCase()
+    : existing.status;
+  if (nextRole === 'EMPLOYEE' && nextStatus === 'ACTIVE'
+    && (existing.role !== 'EMPLOYEE' || existing.status !== 'ACTIVE')) {
+    await assertEmployeeSeatAvailable(client, managerMembership.companyId);
   }
   if (Object.prototype.hasOwnProperty.call(payload, 'canAccessManagerCabinet')) {
     const managerAccess = payload.canAccessManagerCabinet === true;

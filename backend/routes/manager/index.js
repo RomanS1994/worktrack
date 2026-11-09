@@ -16,6 +16,7 @@ import {
   updateSubmittedWorkEntryByManager,
 } from '../../services/manager-workflow.js';
 import { notifyEmployeeAboutReview, notifyEmployeeApprovalReopened } from '../../services/notifications.js';
+import { assertEmployeeSeatAvailable, lockCompanyForSeatChange } from '../../services/subscription-plans.js';
 import { calculateNetWorkEntries, calculateNetWorkSummary } from '../../services/work-time-calculation.js';
 
 function isoDate(value) {
@@ -262,11 +263,13 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
   if (request.method === 'POST' && restoreEmployeeMatch) {
     const context = await requireManager(request, response); if (!context) return true;
     const employee = await runStoreTransaction({ prisma: async client => {
+      await lockCompanyForSeatChange(client, context.activeMembership.companyId);
       const membership = await client.companyMembership.findFirst({
         where: { id: restoreEmployeeMatch[1], companyId: context.activeMembership.companyId, role: 'EMPLOYEE', deletedAt: { not: null } },
         select: { id: true, userId: true, deletedAt: true },
       });
       if (!membership) throw new Error('Archived employee not found');
+      await assertEmployeeSeatAvailable(client, context.activeMembership.companyId);
       const restored = await client.companyMembership.update({
         where: { id: membership.id },
         data: { deletedAt: null, status: 'ACTIVE' },

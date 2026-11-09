@@ -152,6 +152,13 @@ model CompanySubscription {
   gracePeriodEnd     DateTime?
   trialStartedAt     DateTime?
   trialEndsAt        DateTime?
+  billingPeriod      String                   @default("month")
+  scheduledPlanCode  String?
+  scheduledEmployeeLimit Int?
+  scheduledMonthlyPriceCzk Decimal?            @db.Decimal(10, 2)
+  scheduledBillingPeriod String?
+  scheduledEffectiveAt DateTime?
+  scheduledPeriodEnd DateTime?
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @updatedAt
 
@@ -167,6 +174,8 @@ model SubscriptionPayment {
   invoiceNumber     String                   @unique
   planCode          String
   employeeLimit     Int
+  changeType        String                   @default("RENEWAL")
+  billingPeriod     String                   @default("month")
   amountCzk         Decimal                  @db.Decimal(10, 2)
   currency          String                   @default("CZK")
   variableSymbol    String                   @unique

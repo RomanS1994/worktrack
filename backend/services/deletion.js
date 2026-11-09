@@ -1,4 +1,5 @@
 import { createAuditLog } from '../db/prisma-helpers.js';
+import { assertEmployeeSeatAvailable } from './subscription-plans.js';
 
 const USER_SUMMARY_SELECT = {
   id: true,
@@ -90,6 +91,9 @@ export async function restoreDeletedManagerEmployee(client, context, payload = {
     },
   });
   if (!membership?.deletedAt) return null;
+  if (membership.role === 'EMPLOYEE') {
+    await assertEmployeeSeatAvailable(client, managerMembership.companyId);
+  }
 
   const firstName = String(payload.firstName || '').trim();
   const lastName = String(payload.lastName || '').trim();
