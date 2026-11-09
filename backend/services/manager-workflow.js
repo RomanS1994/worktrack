@@ -346,8 +346,9 @@ export async function updateEmployeeMembership(client, context, employeeMembersh
   const nextStatus = Object.prototype.hasOwnProperty.call(payload, 'status')
     ? normalizeText(payload.status).toUpperCase()
     : existing.status;
-  if (nextRole === 'EMPLOYEE' && nextStatus === 'ACTIVE'
-    && (existing.role !== 'EMPLOYEE' || existing.status !== 'ACTIVE')) {
+  const existingAlreadyUsesEmployeeSeat = existing.status === 'ACTIVE' && !existing.deletedAt
+    && (existing.role === 'EMPLOYEE' || (existing.role === 'MANAGER' && existing.canAccessEmployeeCabinet === true));
+  if (nextRole === 'EMPLOYEE' && nextStatus === 'ACTIVE' && !existingAlreadyUsesEmployeeSeat) {
     await assertEmployeeSeatAvailable(client, managerMembership.companyId);
   }
   if (Object.prototype.hasOwnProperty.call(payload, 'canAccessManagerCabinet')) {
@@ -359,6 +360,10 @@ export async function updateEmployeeMembership(client, context, employeeMembersh
   }
   if (Object.prototype.hasOwnProperty.call(payload, 'canAccessEmployeeCabinet')) {
     data.canAccessEmployeeCabinet = payload.canAccessEmployeeCabinet === true;
+    if (existing.role === 'MANAGER' && existing.status === 'ACTIVE' && !existing.deletedAt
+      && existing.canAccessEmployeeCabinet === false && payload.canAccessEmployeeCabinet === true) {
+      await assertEmployeeSeatAvailable(client, managerMembership.companyId);
+    }
   }
   if (Object.prototype.hasOwnProperty.call(payload, 'status')) {
     const status = normalizeText(payload.status).toUpperCase();
