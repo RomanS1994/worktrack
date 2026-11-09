@@ -232,3 +232,7 @@
  .companySubPlanOption .companySubPlanPrice{min-width:66px}
  .companySubPlanTitle{gap:4px}
 }
+
+.companySubScheduledNotice{margin:12px 0;padding:14px 16px;border:1px solid #b8dfc9;border-radius:16px;background:#eff9f2;color:#176c44;font-size:14px;line-height:1.45;font-weight:650}
+.companySubPlanOption.is-over-limit{border-color:#e8c7c7}
+.companySubPlanLimitWarning{display:block;margin-top:7px;color:#a34343;font-size:12px;line-height:1.35;font-style:normal;font-weight:600}
