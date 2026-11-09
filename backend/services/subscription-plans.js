@@ -11,6 +11,22 @@ export function getSubscriptionPlan(code) {
 }
 export const subscriptionPlanList = Object.values(SUBSCRIPTION_PLANS).map(plan => ({ code: plan.code, name: plan.name, employeeLimit: plan.max, minEmployees: plan.min, monthlyPriceCzk: plan.price }));
 
+export function billableMembershipWhere(companyId) {
+  return {
+    companyId,
+    status: 'ACTIVE',
+    deletedAt: null,
+    OR: [
+      { role: 'EMPLOYEE' },
+      { role: 'MANAGER', canAccessEmployeeCabinet: true },
+    ],
+  };
+}
+
+export async function countBillableSeats(client, companyId) {
+  return client.companyMembership.count({ where: billableMembershipWhere(companyId) });
+}
+
 
 export async function lockCompanyForSeatChange(client, companyId) {
   if (client?.$queryRaw) {
@@ -55,9 +71,7 @@ export async function assertEmployeeSeatAvailable(client, companyId, now = new D
   const inGracePeriod = subscription.gracePeriodEnd && subscription.gracePeriodEnd > now;
   if (!inPaidPeriod && !inGracePeriod) throw new Error('Subscription payment is required to add employees');
 
-  const activeSeats = await client.companyMembership.count({
-    where: { companyId, role: 'EMPLOYEE', status: 'ACTIVE', deletedAt: null },
-  });
+  const activeSeats = await countBillableSeats(client, companyId);
   const limit = subscription.scheduledEffectiveAt
     && subscription.scheduledEmployeeLimit < subscription.employeeLimit
     ? subscription.scheduledEmployeeLimit
