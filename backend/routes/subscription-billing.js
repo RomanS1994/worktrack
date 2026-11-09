@@ -5,7 +5,7 @@ import { runStoreRead, runStoreTransaction } from '../db/store.js';
 import { readJsonBody, sendError, sendJson } from '../lib/http.js';
 import { createAuditLog } from '../db/prisma-helpers.js';
 
-import { SUBSCRIPTION_PLANS as PLANS, subscriptionPlanList as planList, applyScheduledCompanyPlan, lockCompanyForSeatChange } from '../services/subscription-plans.js';
+import { SUBSCRIPTION_PLANS as PLANS, subscriptionPlanList as planList, applyScheduledCompanyPlan, lockCompanyForSeatChange, billableMembershipWhere, countBillableSeats } from '../services/subscription-plans.js';
 const ANNUAL_TERM_MONTHS = 12;
 const ANNUAL_DISCOUNT_PERCENT = 20;
 const ANNUAL_BILLING_FACTOR = (100 - ANNUAL_DISCOUNT_PERCENT) / 100;
@@ -154,11 +154,11 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
         orderBy: { createdAt: 'desc' },
         select: { id: true, name: true, createdAt: true,
           subscription: { select: { planCode: true, employeeLimit: true, status: true, currentPeriodEnd: true, trialEndsAt: true } },
-          memberships: { where: { status: 'ACTIVE', deletedAt: null }, select: { role: true } } },
+          memberships: { where: { status: 'ACTIVE', deletedAt: null }, select: { role: true, canAccessEmployeeCabinet: true } } },
       }), client.subscriptionPayment.count({ where: { status: 'REVIEW_REQUESTED' } }),
       client.subscriptionPayment.findMany({ where: { status: 'OVERDUE' }, select: { companyId: true } })]);
       const items = companies.map(company => {
-        const employees = company.memberships.filter(m => m.role === 'EMPLOYEE').length;
+        const employees = company.memberships.filter(m => m.role === 'EMPLOYEE' || (m.role === 'MANAGER' && m.canAccessEmployeeCabinet)).length;
         const managers = company.memberships.filter(m => m.role === 'MANAGER').length;
         return { id: company.id, name: company.name, createdAt: company.createdAt,
           employeeCount: employees, managerCount: managers, subscription: company.subscription };
@@ -167,7 +167,7 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
       const trendStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1));
       const [companyHistory, employeeHistory] = await Promise.all([
         client.company.findMany({ where: { createdAt: { gte: trendStart } }, select: { createdAt: true } }),
-        client.companyMembership.findMany({ where: { role: 'EMPLOYEE', createdAt: { gte: trendStart } }, select: { createdAt: true } }),
+        client.companyMembership.findMany({ where: { role: { in: ['EMPLOYEE', 'MANAGER'] }, createdAt: { gte: trendStart }, OR: [{ role: 'EMPLOYEE' }, { role: 'MANAGER', canAccessEmployeeCabinet: true }] }, select: { role: true, canAccessEmployeeCabinet: true, createdAt: true } }),
       ]);
       const trends = Array.from({ length: 6 }, (_, offset) => {
         const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5 + offset, 1));
@@ -198,7 +198,7 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
       const [rows, overduePayments] = await Promise.all([
         client.company.findMany({ orderBy: { createdAt: 'desc' }, select: {
           id: true, name: true, subscription: { select: { planCode: true, status: true, currentPeriodEnd: true, trialEndsAt: true } },
-          memberships: { where: { status: 'ACTIVE', deletedAt: null }, select: { role: true, user: { select: { name: true, email: true } } }, orderBy: { createdAt: 'asc' } },
+          memberships: { where: { status: 'ACTIVE', deletedAt: null }, select: { role: true, canAccessEmployeeCabinet: true, user: { select: { name: true, email: true } } }, orderBy: { createdAt: 'asc' } },
         } }),
         client.subscriptionPayment.findMany({ where: { status: 'OVERDUE' }, select: { companyId: true } }),
       ]);
@@ -206,7 +206,7 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
       return rows.map(company => {
         const manager = company.memberships.find(m => m.role === 'MANAGER')?.user;
         return { id: company.id, name: company.name, managerName: manager?.name || '', managerEmail: manager?.email || '',
-          activeEmployees: company.memberships.filter(m => m.role === 'EMPLOYEE').length,
+          activeEmployees: company.memberships.filter(m => m.role === 'EMPLOYEE' || (m.role === 'MANAGER' && m.canAccessEmployeeCabinet)).length,
           planCode: company.subscription?.planCode || '', subscriptionStatus: company.subscription ? currentSubStatus(company.subscription) : 'INACTIVE',
           hasOverduePayment: overdueCompanyIds.has(company.id),
           trialEndsAt: company.subscription?.trialEndsAt || null, currentPeriodEnd: company.subscription?.currentPeriodEnd || null,
@@ -322,7 +322,7 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
       const companyId = context.activeMembership.companyId;
       const subscription = await applyScheduledCompanyPlan(client, companyId);
       const [activeEmployeeCount, payments] = await Promise.all([
-        client.companyMembership.count({ where: { companyId, role: 'EMPLOYEE', status: 'ACTIVE', deletedAt: null } }),
+        countBillableSeats(client, companyId),
         client.subscriptionPayment.findMany({ where: { companyId }, orderBy: { createdAt: 'desc' }, take: 24, select: PAYMENT_SELECT }),
       ]);
       return { subscription: subscription ? { ...subscription, plan: PLANS[subscription.planCode]?.name || subscription.planCode,
@@ -351,7 +351,7 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
       const companyId = context.activeMembership.companyId;
       await lockCompanyForSeatChange(tx, companyId);
       const subscription = await applyScheduledCompanyPlan(tx, companyId, now);
-      const activeEmployeeCount = await tx.companyMembership.count({ where: { companyId, role: 'EMPLOYEE', status: 'ACTIVE', deletedAt: null } });
+      const activeEmployeeCount = await countBillableSeats(tx, companyId);
       if (activeEmployeeCount > plan.max) {
         const error = new Error(`Plan supports up to ${plan.max} active employees; the company currently has ${activeEmployeeCount}`);
         error.statusCode = 400; throw error;
