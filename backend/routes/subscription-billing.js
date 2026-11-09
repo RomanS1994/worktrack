@@ -238,7 +238,6 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
       const blockers = [
         ...(company.subscription ? [{ key: 'subscription', count: 1 }] : []),
         ...[
-          ['employees', company.memberships.filter(membership => membership.role === 'EMPLOYEE').length],
           ['payments', company._count.subscriptionPayments],
           ['workEntries', company._count.workEntries],
           ['weeklySubmissions', company._count.weeklySubmissions],
@@ -259,6 +258,8 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
       await createAuditLog(tx, { action: 'platform.test_company_deleted', actorUserId: context.user.id,
         entityType: 'company', entityId: company.id,
         before: { name: company.name, createdAt: company.createdAt.toISOString(),
+          removedManagerMemberships: company.memberships.filter(membership => membership.role === 'MANAGER').length,
+          removedEmployeeMemberships: company.memberships.filter(membership => membership.role === 'EMPLOYEE').length,
           removedEmptyProjects: company._count.projects, removedNotifications: company._count.notifications },
         after: null, meta: { actorEmail: context.user.email, source: 'platform_admin_cabinet', at: new Date().toISOString() } });
       await tx.company.delete({ where: { id: company.id } });
