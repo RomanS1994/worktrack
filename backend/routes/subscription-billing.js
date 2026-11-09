@@ -233,15 +233,35 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
       const isNamedTestCompany = /^Codex (?:Audit|Payload|Final|Compact) \d{13}$/.test(company.name);
       const hasOnlyCodexManagers = company.memberships.length > 0
         && company.memberships.every(membership => membership.role === 'MANAGER' && /^Codex\b/i.test(membership.user?.name || ''));
-      const hasNoBusinessData = !company.subscription
-        && Object.values(company._count).every(count => count === 0);
-      if (!isNamedTestCompany || !hasOnlyCodexManagers || !hasNoBusinessData) {
-        const error = new Error('Only empty Codex test companies with no employees, subscription or work data can be deleted');
+      if (!isNamedTestCompany || !hasOnlyCodexManagers) {
+        const error = new Error('Test company is not eligible for deletion');
         error.statusCode = 409; throw error;
+      }
+      const blockers = [
+        ...(company.subscription ? [{ key: 'subscription', count: 1 }] : []),
+        ...[
+          ['employees', company.memberships.filter(membership => membership.role === 'EMPLOYEE').length],
+          ['payments', company._count.subscriptionPayments],
+          ['workEntries', company._count.workEntries],
+          ['weeklySubmissions', company._count.weeklySubmissions],
+          ['invoices', company._count.invoices],
+          ['managerTimesheetEntries', company._count.managerTimesheetEntries],
+          ['salaryAdvances', company._count.salaryAdvances],
+          ['expenses', company._count.expenses],
+          ['chatAttachments', company._count.chatAttachments],
+        ].filter(([, count]) => count > 0).map(([key, count]) => ({ key, count })),
+      ];
+      if (blockers.length) {
+        const error = new Error('Test company contains business data and cannot be deleted');
+        error.statusCode = 409;
+        error.code = 'TEST_COMPANY_HAS_DATA';
+        error.details = { blockers };
+        throw error;
       }
       await createAuditLog(tx, { action: 'platform.test_company_deleted', actorUserId: context.user.id,
         entityType: 'company', entityId: company.id,
-        before: { name: company.name, createdAt: company.createdAt.toISOString() },
+        before: { name: company.name, createdAt: company.createdAt.toISOString(),
+          removedEmptyProjects: company._count.projects, removedNotifications: company._count.notifications },
         after: null, meta: { actorEmail: context.user.email, source: 'platform_admin_cabinet', at: new Date().toISOString() } });
       await tx.company.delete({ where: { id: company.id } });
       return { id: company.id, name: company.name };
