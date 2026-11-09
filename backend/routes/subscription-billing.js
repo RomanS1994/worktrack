@@ -5,7 +5,7 @@ import { runStoreRead, runStoreTransaction } from '../db/store.js';
 import { readJsonBody, sendError, sendJson } from '../lib/http.js';
 import { createAuditLog } from '../db/prisma-helpers.js';
 
-import { SUBSCRIPTION_PLANS as PLANS, subscriptionPlanList as planList } from '../services/subscription-plans.js';
+import { SUBSCRIPTION_PLANS as PLANS, subscriptionPlanList as planList, applyScheduledCompanyPlan, lockCompanyForSeatChange } from '../services/subscription-plans.js';
 const ANNUAL_TERM_MONTHS = 12;
 const ANNUAL_DISCOUNT_PERCENT = 20;
 const ANNUAL_BILLING_FACTOR = (100 - ANNUAL_DISCOUNT_PERCENT) / 100;
