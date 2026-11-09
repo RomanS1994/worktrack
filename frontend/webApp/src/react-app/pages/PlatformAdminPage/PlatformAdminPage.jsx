@@ -178,7 +178,7 @@ function CompaniesTable({ companies, copy, language, onDeleteCompany, compact = 
     {!visible.length ? <div className="platformAdminEmpty">{companies.length ? copy.noResults : copy.empty}{filter!=='all'||search?<button type="button" onClick={()=>{onFilter('all');onSearch('');}}>{copy.clearFilter}</button>:null}</div> : <div className="platformAdminCompanyList">{visible.map(company => {
       const status = company.subscriptionStatus || company.status;
       const isTrial = String(status || '').toUpperCase().includes('TRIAL');
-      const isCodexTestCompany = /^Codex (?:Audit|Payload|Final|Compact) \\d{13}$/.test(company.name || '');
+      const isCodexTestCompany = /^Codex (?:Audit|Payload|Final|Compact) \d{13}$/.test(company.name || '');
       return <article key={company.id} className="platformAdminCompany">
         <div className="platformAdminCompanyName"><span className="platformAdminCompanyAvatar" aria-hidden="true">{String(company.name || '?').trim().slice(0, 1).toUpperCase()}</span><span><strong>{company.name || copy.unknown}</strong><small>{company.managerName || company.managerEmail || '—'}</small></span></div>
         <div className="platformAdminCompanyEmployees"><strong>{metricValue(company.activeEmployees)}</strong><small>{copy.employees.toLowerCase()}</small></div>
