@@ -216,6 +216,39 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
     sendJson(response, 200, { companies }); return true;
   }
 
+  const deleteCompanyMatch = pathName.match(/^\/api\/platform\/admin\/companies\/([^/]+)$/);
+  if (request.method === 'DELETE' && deleteCompanyMatch) {
+    const context = await requirePlatformAdmin(request, response);
+    if (!context) return true;
+    const companyId = decodeURIComponent(deleteCompanyMatch[1]);
+    const deleted = await runStoreTransaction({ prisma: async tx => {
+      const company = await tx.company.findUnique({ where: { id: companyId }, include: {
+        subscription: { select: { companyId: true } },
+        memberships: { select: { role: true, user: { select: { name: true } } } },
+        _count: { select: { projects: true, workEntries: true, weeklySubmissions: true, notifications: true,
+          invoices: true, subscriptionPayments: true, managerTimesheetEntries: true, salaryAdvances: true,
+          expenses: true, chatAttachments: true } },
+      } });
+      if (!company) { const error = new Error('Company not found'); error.statusCode = 404; throw error; }
+      const isNamedTestCompany = /^Codex (?:Audit|Payload|Final|Compact) \d{13}$/.test(company.name);
+      const hasOnlyCodexManagers = company.memberships.length > 0
+        && company.memberships.every(membership => membership.role === 'MANAGER' && /^Codex\b/i.test(membership.user?.name || ''));
+      const hasNoBusinessData = !company.subscription
+        && Object.values(company._count).every(count => count === 0);
+      if (!isNamedTestCompany || !hasOnlyCodexManagers || !hasNoBusinessData) {
+        const error = new Error('Only empty Codex test companies with no employees, subscription or work data can be deleted');
+        error.statusCode = 409; throw error;
+      }
+      await createAuditLog(tx, { action: 'platform.test_company_deleted', actorUserId: context.user.id,
+        entityType: 'company', entityId: company.id,
+        before: { name: company.name, createdAt: company.createdAt },
+        after: null, meta: { actorEmail: context.user.email, source: 'platform_admin_cabinet', at: new Date().toISOString() } });
+      await tx.company.delete({ where: { id: company.id } });
+      return { id: company.id, name: company.name };
+    } });
+    sendJson(response, 200, { deleted: true, company: deleted }); return true;
+  }
+
   const companyMatch = pathName.match(/^\/api\/platform\/admin\/companies\/([^/]+)$/);
   if (request.method === 'GET' && companyMatch) {
     const context = await requirePlatformAdmin(request, response);
