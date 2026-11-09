@@ -231,9 +231,7 @@ export async function handleSubscriptionBillingRoutes(request, response, { pathN
       } });
       if (!company) { const error = new Error('Company not found'); error.statusCode = 404; throw error; }
       const isNamedTestCompany = /^Codex (?:Audit|Payload|Final|Compact) \d{13}$/.test(company.name);
-      const hasOnlyCodexManagers = company.memberships.length > 0
-        && company.memberships.every(membership => membership.role === 'MANAGER' && /^Codex\b/i.test(membership.user?.name || ''));
-      if (!isNamedTestCompany || !hasOnlyCodexManagers) {
+      if (!isNamedTestCompany) {
         const error = new Error('Test company is not eligible for deletion');
         error.statusCode = 409; throw error;
       }
