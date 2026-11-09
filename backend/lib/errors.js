@@ -83,6 +83,11 @@ const STATUS_BY_MESSAGE = new Map([
 ]);
 
 export function resolveErrorStatus(error) {
+  const explicitStatus = Number(error?.statusCode);
+  if (Number.isInteger(explicitStatus) && explicitStatus >= 400 && explicitStatus < 500) {
+    return explicitStatus;
+  }
+
   const message = error instanceof Error ? error.message : String(error);
   return STATUS_BY_MESSAGE.get(message) || 500;
 }
@@ -95,5 +100,5 @@ export function sendHttpError(response, error) {
     console.error('Backend error:', error);
   }
 
-  return sendError(response, status, message);
+  return sendError(response, status, message, error?.details ?? null, error?.code || '');
 }
