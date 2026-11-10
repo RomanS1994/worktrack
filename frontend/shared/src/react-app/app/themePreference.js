@@ -41,4 +41,6 @@ export function applyThemePreference(preference) {
   document.documentElement.dataset.themePreference = normalized;
   const themeColor = document.querySelector('meta[name="theme-color"]');
   if (themeColor) themeColor.setAttribute('content', resolvedTheme === 'dark' ? '#101820' : '#16a34a');
+  const appleStatusBarStyle = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  if (appleStatusBarStyle) appleStatusBarStyle.setAttribute('content', resolvedTheme === 'dark' ? 'black' : 'default');
 }

@@ -10,6 +10,8 @@
     <title>WorkTrack</title>
     <meta name="description" content="WorkTrack employee time tracking." />
     <meta name="theme-color" content="#16a34a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <script>
       (() => {
         try {
@@ -21,6 +23,7 @@
           document.documentElement.dataset.theme = dark ? 'dark' : 'light';
           document.documentElement.dataset.themePreference = preference;
           document.querySelector('meta[name="theme-color"]').content = dark ? '#101820' : '#16a34a';
+          document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]').content = dark ? 'black' : 'default';
         } catch {
           document.documentElement.dataset.theme = 'light';
         }
