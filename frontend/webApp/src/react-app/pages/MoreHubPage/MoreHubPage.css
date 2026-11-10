@@ -185,23 +185,6 @@
 .moreHubRow--language .moreHubIcon{background:var(--accent-soft);border-color:#d8eeee;color:#278486}
 .moreHubRow--security .moreHubIcon{background:var(--surface-subtle);border-color:#e6e8ec;color:var(--muted)}
 
-/* Keep the settings icon family crisp and cohesive on dark surfaces. */
-html[data-theme="dark"] .moreHubIcon{
-  border-color:rgba(148,163,184,.2);
-  border-radius:12px;
-  background:var(--surface-subtle);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
-}
-html[data-theme="dark"] .moreHubRow--personal .moreHubIcon,
-html[data-theme="dark"] .moreHubRow--security .moreHubIcon{color:#b6c2cf}
-html[data-theme="dark"] .moreHubRow--notifications .moreHubIcon{background:rgba(245,158,11,.12);border-color:rgba(251,191,36,.24);color:#fbbf24}
-html[data-theme="dark"] .moreHubRow--company .moreHubIcon{background:rgba(59,130,246,.14);border-color:rgba(96,165,250,.25);color:#60a5fa}
-html[data-theme="dark"] .moreHubRow--billing .moreHubIcon{background:rgba(139,92,246,.14);border-color:rgba(167,139,250,.25);color:#c4b5fd}
-html[data-theme="dark"] .moreHubRow--work .moreHubIcon{background:rgba(34,197,94,.13);border-color:rgba(74,222,128,.24);color:#4ade80}
-html[data-theme="dark"] .moreHubRow--language .moreHubIcon{background:rgba(45,212,191,.12);border-color:rgba(45,212,191,.24);color:#5eead4}
-html[data-theme="dark"] .moreHubRow--danger .moreHubIcon,
-html[data-theme="dark"] .moreHubRow--dangerStrong .moreHubIcon{background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.24);color:#f87171}
-
 .moreHubRowText{display:grid;min-width:0;gap:2px}
 .moreHubRowText strong{
   overflow:hidden;
