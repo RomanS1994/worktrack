@@ -170,7 +170,12 @@ html[data-theme="dark"] .companySubPaymentAmount small { color: var(--muted); }
 html[data-theme="dark"] .companySubError { color: var(--danger); }
 html[data-theme="dark"] .companySubCreateRow { background: linear-gradient(180deg, rgba(11, 17, 23, 0), rgba(11, 17, 23, .96) 24%); }
 
-html[data-theme="dark"] .dashboardEarningsCard { background: linear-gradient(145deg, var(--surface-strong), var(--surface-subtle)); }
+html[data-theme="dark"] .dashboardEarningsCard {
+  background: linear-gradient(145deg, #263944 0%, #1b2933 100%);
+  border: 1px solid rgba(74, 222, 128, 0.38);
+  border-top: 3px solid var(--success);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22), 0 0 18px rgba(34, 197, 94, 0.1);
+}
 html[data-theme="dark"] .dashboardEarningsAmount > strong { color: var(--success); }
 html[data-theme="dark"] .dashboardSelfCard > span,
 html[data-theme="dark"] .dashboardSelfCard.is-submitted em { color: var(--info); }
