@@ -38,6 +38,25 @@
 .employeeFinance-taxNote{margin:0;padding:8px 10px;border-radius:var(--radius-sm,10px);font-size:var(--font-size-secondary,12px);line-height:1.5}
 .employeeFinance-actions{grid-template-columns:minmax(0,1.45fr) minmax(104px,.75fr);gap:var(--space-2,8px)}
 .employeeFinance-actions button{min-height:var(--control-height-touch,44px);border-radius:var(--radius-md,14px);font-size:var(--font-size-secondary,12px);font-weight:var(--weight-semibold,600)}
+html[data-theme="dark"] .employeeFinance-hero{
+  border:1px solid rgba(74,222,128,.42);
+  border-top:3px solid var(--success);
+  background:linear-gradient(145deg,#263944 0%,#1b2933 100%);
+  box-shadow:0 12px 30px rgba(0,0,0,.22),0 0 18px rgba(34,197,94,.1);
+}
+html[data-theme="dark"] .employeeFinance-heroTop>div>span{color:var(--text)}
+html[data-theme="dark"] .employeeFinance-heroTop small,
+html[data-theme="dark"] .employeeFinance-progressMeta{color:var(--muted)}
+html[data-theme="dark"] .employeeFinance-progress{background:var(--surface-subtle)}
+html[data-theme="dark"] .employeeFinance-progress>span{background:var(--success)}
+html[data-theme="dark"] .employeeFinance-status{color:var(--success);background:var(--accent-soft)}
+html[data-theme="dark"] .employeeFinance-status i{background:var(--success)}
+html[data-theme="dark"] .employeeFinance-payable{
+  border:1px solid var(--line);
+  background:linear-gradient(145deg,var(--surface-strong),var(--surface-subtle));
+}
+html[data-theme="dark"] .employeeFinance-payable span{color:var(--text)}
+html[data-theme="dark"] .employeeFinance-payable small{color:var(--muted)}
 @media(max-width:480px){
   .employeeFinance{gap:10px}
   .employeeFinance-heading h1{font-size:22px}
