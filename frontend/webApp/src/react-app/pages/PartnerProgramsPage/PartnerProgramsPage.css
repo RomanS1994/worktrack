@@ -6,7 +6,7 @@
 .partnerProgramsHeader h1{margin:0;max-width:none;white-space:nowrap;font-size:clamp(16px,4.3vw,19px);font-weight:600;line-height:1.1;letter-spacing:-.015em}
 .partnerProgramsHeader p{margin:4px 0 0;color:var(--muted);font-size:12px;font-weight:400;line-height:1.3}
 
-.partnerProgramsHero{--pipe-blue:#1676d2;--pipe-ink:#142b49;display:grid;gap:8px;overflow:hidden;padding:0 12px 11px;border:1px solid #cfe4fc;border-radius:20px;background:linear-gradient(145deg,#f3f9ff,#fff 70%);box-shadow:0 9px 20px rgba(30,111,196,.07)}
+.partnerProgramsHero{--pipe-blue:#1676d2;--pipe-ink:#142b49;display:grid;gap:8px;overflow:hidden;padding:0 12px 11px;border:1px solid #cfe4fc;border-radius:20px;background:linear-gradient(145deg,var(--info-soft),var(--surface-strong) 70%);box-shadow:0 9px 20px rgba(30,111,196,.07)}
 .partnerProgramsVisual{position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:flex-start;min-height:158px;padding:12px 0 8px}
 .partnerProgramsVisual:before{content:'';position:absolute;inset:0 -14px;z-index:-2;background:radial-gradient(circle at 84% 32%,#e8f3ff 0,transparent 48%)}
 
@@ -20,7 +20,7 @@
 .partnerProgramsName{min-width:0;flex:1}
 .partnerProgramsName h2{margin:0;color:var(--pipe-ink);font-size:clamp(20px,5vw,25px);font-weight:700;line-height:1.02;letter-spacing:-.035em}
 .partnerProgramsName h2 span{color:var(--pipe-blue)}
-.partnerProgramsBadge{display:inline-block;margin-top:4px;padding:3px 9px;border-radius:999px;background:#e4f2ff;color:#1268b5;font-size:10px;font-weight:800}
+.partnerProgramsBadge{display:inline-block;margin-top:4px;padding:3px 9px;border-radius:999px;background:var(--info-soft);color:#1268b5;font-size:10px;font-weight:800}
 
 .partnerProgramsIntro{position:relative;z-index:1;width:60%;margin-top:10px;text-shadow:0 1px 8px #f6fbff}
 .partnerProgramsIntro h3{margin:0;color:var(--pipe-ink);font-size:clamp(18px,4.5vw,21px);font-weight:650;line-height:1.06;letter-spacing:-.025em}
@@ -32,9 +32,9 @@
 .partnerProgramsFeatures>div:last-child{padding-right:0}
 .partnerProgramsFeatures>div+div{border-left:1px solid #d9e8f9}
 .partnerProgramsFeatureIcon{display:grid;flex:none;place-items:center;width:29px;height:29px;border:1px solid transparent;border-radius:9px}
-.partnerProgramsFeatures>div:nth-child(1) .partnerProgramsFeatureIcon{background:#e8f3ff;border-color:#d6e9ff;color:#1676d2}
-.partnerProgramsFeatures>div:nth-child(2) .partnerProgramsFeatureIcon{background:#eaf8ee;border-color:#d7f0df;color:#16a34a}
-.partnerProgramsFeatures>div:nth-child(3) .partnerProgramsFeatureIcon{background:#fff5df;border-color:#fdebc2;color:#f59e0b}
+.partnerProgramsFeatures>div:nth-child(1) .partnerProgramsFeatureIcon{background:var(--info-soft);border-color:#d6e9ff;color:#1676d2}
+.partnerProgramsFeatures>div:nth-child(2) .partnerProgramsFeatureIcon{background:var(--accent-soft);border-color:#d7f0df;color:var(--accent-strong)}
+.partnerProgramsFeatures>div:nth-child(3) .partnerProgramsFeatureIcon{background:var(--warning-soft);border-color:#fdebc2;color:#f59e0b}
 .partnerProgramsFeatureIcon svg{width:16px;height:16px}
 
 .partnerProgramsOpen{display:flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:0 13px;border-radius:12px;background:linear-gradient(110deg,#2289e5,#116cc8);color:#fff;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 7px 16px rgba(22,118,210,.16);transition:filter .15s ease}

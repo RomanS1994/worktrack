@@ -24,5 +24,5 @@
 }
 
 @media print{
-  .appLayout--workspace{background:#fff}
+  .appLayout--workspace{background:var(--surface-strong)}
 }

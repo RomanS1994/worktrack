@@ -40,5 +40,5 @@ export function AppProviders() {
     };
   }, []);
 
-  return <SharedAppProviders router={router} store={store} />;
+  return <SharedAppProviders router={router} store={store} enableThemePreference />;
 }

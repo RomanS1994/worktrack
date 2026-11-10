@@ -22,7 +22,7 @@
   padding: 14px;
   border: 1px solid rgba(15, 95, 215, 0.1);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--surface);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
@@ -39,7 +39,7 @@
   padding: 0 12px;
   border: 1px solid rgba(15, 95, 215, 0.12);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--surface);
   font: inherit;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
 }
@@ -83,7 +83,7 @@
   padding: 0 14px;
   border: 1px solid rgba(15, 95, 215, 0.14);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--surface);
   color: var(--accent);
   font: inherit;
   font-size: 13px;
