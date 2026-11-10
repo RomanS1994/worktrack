@@ -70,3 +70,12 @@
  .managerPayrollMobile .managerPayrollMobile-rowMoney strong{font-size:13px;font-weight:650}
  .managerPayrollMobile .managerPayrollMobile-rowMoney span{font-size:9px}
 }
+
+html[data-theme="dark"] .managerPayrollMobile .managerPayrollMobile-rowMoney>div{background:var(--surface-subtle)}
+html[data-theme="dark"] .managerPayrollMobile .managerPayrollMobile-rowMoney>.is-net{background:var(--accent-soft)}
+html[data-theme="dark"] .managerPayrollMobile .managerPayrollMobile-rowMoney span{color:var(--muted)}
+html[data-theme="dark"] .managerPayrollMobile .managerPayrollMobile-detailHours{background:var(--surface-subtle)}
+html[data-theme="dark"] .managerPayrollMobile .managerPayrollMobile-employeeAmounts.is-net-pay .managerPayrollMobile-detailHours{background:var(--surface-subtle)}
+html[data-theme="dark"] .managerPayrollMobile .hourStat{background:var(--surface-subtle);color:var(--text)}
+html[data-theme="dark"] .managerPayrollMobile .hourStat-1{background:var(--accent-soft);color:var(--success)}
+html[data-theme="dark"] .managerPayrollMobile .hourStat-2{background:var(--warning-soft);color:var(--warning)}
