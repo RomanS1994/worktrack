@@ -19,7 +19,7 @@
     padding: 0 8px 0 13px;
     border: 1px solid #dbe8df;
     border-radius: 999px;
-    background: #fff;
+    background: var(--surface-strong);
     color: #253449;
     box-shadow: 0 2px 8px rgba(15, 23, 42, .035);
     font: inherit;
@@ -43,14 +43,14 @@
     padding: 0;
     border-radius: 0;
     background: transparent;
-    color: #15803d;
+    color: var(--success);
     font-size: 13px;
     font-weight: 850;
     font-variant-numeric: tabular-nums;
   }
 
   .managerPayrollMobile-employeesToggleLabel {
-    color: #334155;
+    color: var(--text);
     font-size: 12px;
     font-weight: 650;
   }
@@ -63,8 +63,8 @@
     margin-left: 5px;
     padding: 6px;
     border-radius: 50%;
-    background: #edf8f0;
-    color: #15803d;
+    background: var(--accent-soft);
+    color: var(--success);
     fill: none;
     stroke: currentColor;
     stroke-width: 2;
@@ -78,12 +78,12 @@
   }
 
   .managerPayrollMobile-employeesToggle:hover {
-    background: #f8fcf9;
+    background: var(--surface-subtle);
     border-color: #bddbc9;
   }
 
   .managerPayrollMobile-employeesToggle:active {
-    background: #edf8f0;
+    background: var(--accent-soft);
   }
 
   .managerPayrollMobile-employeesToggle:focus-visible {

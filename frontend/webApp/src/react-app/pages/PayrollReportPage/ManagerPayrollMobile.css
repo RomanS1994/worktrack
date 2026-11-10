@@ -7,61 +7,61 @@
 
   .managerPayrollMobile-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 4px}
   .managerPayrollMobile-header h1{min-width:0;margin:0;font-size:23px;line-height:1.05;letter-spacing:-.03em;font-weight:850;white-space:nowrap}
-  .managerPayrollMobile-pdf{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:0 0 auto;min-width:76px;min-height:40px;padding:0 13px;border:1px solid rgba(22,163,74,.14);border-radius:13px;background:#fff;color:#15803d;box-shadow:0 4px 14px rgba(15,23,42,.045);font-size:12px;font-weight:800}
+  .managerPayrollMobile-pdf{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:0 0 auto;min-width:76px;min-height:40px;padding:0 13px;border:1px solid rgba(22,163,74,.14);border-radius:13px;background:var(--surface-strong);color:var(--success);box-shadow:0 4px 14px rgba(15,23,42,.045);font-size:12px;font-weight:800}
   .managerPayrollMobile-pdf span:first-child{font-size:14px}
 
-  .managerPayrollMobile-controls{display:grid;gap:10px;padding:8px;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:0 8px 24px rgba(15,23,42,.035)}
-  .managerPayrollMobile-toggle{display:grid;grid-template-columns:1fr 1fr;padding:4px;border-radius:15px;background:#f2f5f8}
-  .managerPayrollMobile-toggle button{min-height:38px;padding:0 10px;border:0;border-radius:12px;background:transparent;box-shadow:none;color:#667085;font-size:12px;font-weight:800}
-  .managerPayrollMobile-toggle button.is-active{background:#fff;color:#15803d;box-shadow:0 4px 12px rgba(15,23,42,.06)}
+  .managerPayrollMobile-controls{display:grid;gap:10px;padding:8px;border:1px solid var(--line);border-radius:18px;background:var(--surface-strong);box-shadow:0 8px 24px rgba(15,23,42,.035)}
+  .managerPayrollMobile-toggle{display:grid;grid-template-columns:1fr 1fr;padding:4px;border-radius:15px;background:var(--surface-subtle)}
+  .managerPayrollMobile-toggle button{min-height:38px;padding:0 10px;border:0;border-radius:12px;background:transparent;box-shadow:none;color:var(--muted);font-size:12px;font-weight:800}
+  .managerPayrollMobile-toggle button.is-active{background:var(--surface-strong);color:var(--success);box-shadow:0 4px 12px rgba(15,23,42,.06)}
 
   .managerPayrollMobile-dateNav{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:12px}
-  .managerPayrollMobile-arrow{width:44px;min-width:44px;height:44px;min-height:44px;padding:0;border:1px solid var(--line);border-radius:13px;background:#fff;color:#23324a;box-shadow:0 3px 10px rgba(15,23,42,.035);font-size:26px;font-weight:800;line-height:1}
-  .managerPayrollMobile-date{position:relative;display:grid;place-items:center;min-width:0;height:44px;border:1px solid var(--line);border-radius:13px;background:#fff;overflow:hidden}
-  .managerPayrollMobile-date>span{max-width:100%;padding:0 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#111827;font-size:13px;font-weight:750;text-align:center}
+  .managerPayrollMobile-arrow{width:44px;min-width:44px;height:44px;min-height:44px;padding:0;border:1px solid var(--line);border-radius:13px;background:var(--surface-strong);color:#23324a;box-shadow:0 3px 10px rgba(15,23,42,.035);font-size:26px;font-weight:800;line-height:1}
+  .managerPayrollMobile-date{position:relative;display:grid;place-items:center;min-width:0;height:44px;border:1px solid var(--line);border-radius:13px;background:var(--surface-strong);overflow:hidden}
+  .managerPayrollMobile-date>span{max-width:100%;padding:0 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);font-size:13px;font-weight:750;text-align:center}
   .managerPayrollMobile-date input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:.001;cursor:pointer}
 
-  .managerPayrollMobile-hero{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:0 18px;padding:18px;border:1px solid rgba(22,163,74,.16);border-radius:20px;background:linear-gradient(135deg,#f5fcf7 0%,#fff 78%);box-shadow:0 8px 24px rgba(15,23,42,.04);overflow:hidden}
-  .managerPayrollMobile-wallet{position:absolute;right:18px;top:18px;display:grid;width:46px;height:46px;place-items:center;border-radius:50%;background:#eaf8ee;color:#159447}
+  .managerPayrollMobile-hero{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:0 18px;padding:18px;border:1px solid rgba(22,163,74,.16);border-radius:20px;background:linear-gradient(135deg,var(--accent-softer) 0%,var(--surface-strong) 78%);box-shadow:0 8px 24px rgba(15,23,42,.04);overflow:hidden}
+  .managerPayrollMobile-wallet{position:absolute;right:18px;top:18px;display:grid;width:46px;height:46px;place-items:center;border-radius:50%;background:var(--accent-soft);color:#159447}
   .managerPayrollMobile-wallet svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-  .managerPayrollMobile-eyebrow{grid-column:1/-1;max-width:calc(100% - 62px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#667085;font-size:11px;font-weight:700}
+  .managerPayrollMobile-eyebrow{grid-column:1/-1;max-width:calc(100% - 62px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:11px;font-weight:700}
   .managerPayrollMobile-total{grid-column:1/-1;margin-top:3px;padding-right:62px;color:#159447;font-size:33px;line-height:1;letter-spacing:-.03em;font-weight:760;font-variant-numeric:tabular-nums}
   .managerPayrollMobile-moneyGrid{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
   .managerPayrollMobile-moneyGrid>div{display:grid;gap:4px;min-width:0}
   .managerPayrollMobile-moneyGrid>div+div{padding-left:18px;border-left:1px solid rgba(17,24,39,.07)}
-  .managerPayrollMobile-moneyGrid span{color:#667085;font-size:10px}
+  .managerPayrollMobile-moneyGrid span{color:var(--muted);font-size:10px}
   .managerPayrollMobile-moneyGrid strong{font-size:16px;line-height:1.15;font-weight:800;white-space:nowrap}
-  .managerPayrollMobile-moneyGrid>div:first-child strong{color:#15803d}
+  .managerPayrollMobile-moneyGrid>div:first-child strong{color:var(--success)}
   .managerPayrollMobile-hours{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(17,24,39,.07)}
-  .managerPayrollMobile-hours span{display:flex;align-items:center;gap:5px;min-width:0;color:#667085;font-size:10px;line-height:1.25}
+  .managerPayrollMobile-hours span{display:flex;align-items:center;gap:5px;min-width:0;color:var(--muted);font-size:10px;line-height:1.25}
   .managerPayrollMobile-hours span:last-child{justify-content:flex-end;text-align:right}
-  .managerPayrollMobile-hours b{color:#111827;font-size:12px;white-space:nowrap}
+  .managerPayrollMobile-hours b{color:var(--text);font-size:12px;white-space:nowrap}
   .managerPayrollMobile-hours i{width:6px;height:6px;border-radius:50%;flex:0 0 auto}.managerPayrollMobile-hours i.is-confirmed{background:#22c55e}.managerPayrollMobile-hours i.is-pending{background:#f59e0b}
 
   .managerPayrollMobile-employees{display:grid;gap:10px}
   .managerPayrollMobile-employees>header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 4px}
   .managerPayrollMobile-employees h2{margin:0;font-size:17px;line-height:1.15;font-weight:850}
-  .managerPayrollMobile-employees>header>span{padding:5px 9px;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:10px;font-weight:750}
+  .managerPayrollMobile-employees>header>span{padding:5px 9px;border-radius:999px;background:var(--surface-subtle);color:var(--muted);font-size:10px;font-weight:750}
   .managerPayrollMobile-list{display:grid;gap:9px}
-  .managerPayrollMobile-employee{position:relative;display:grid;grid-template-columns:38px minmax(0,1fr) auto 18px;gap:10px 11px;width:100%;min-height:0;padding:13px 14px;border:1px solid var(--line);border-radius:17px;background:#fff;box-shadow:0 6px 18px rgba(15,23,42,.035);color:inherit;text-align:left;transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease,transform .16s ease}
+  .managerPayrollMobile-employee{position:relative;display:grid;grid-template-columns:38px minmax(0,1fr) auto 18px;gap:10px 11px;width:100%;min-height:0;padding:13px 14px;border:1px solid var(--line);border-radius:17px;background:var(--surface-strong);box-shadow:0 6px 18px rgba(15,23,42,.035);color:inherit;text-align:left;transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease,transform .16s ease}
   .managerPayrollMobile-employee.is-selected{border-color:rgba(22,163,74,.28);background:#fbfffc;box-shadow:0 8px 22px rgba(22,163,74,.07)}
   .managerPayrollMobile-employee:active{transform:scale(.992)}
-  .managerPayrollMobile-avatar{display:grid;width:38px;height:38px;place-items:center;border-radius:50%;background:#edf9f0;color:#15803d;font-size:12px;font-weight:850}
-  .managerPayrollMobile-employee.is-selected .managerPayrollMobile-avatar{background:#dcfce7}
+  .managerPayrollMobile-avatar{display:grid;width:38px;height:38px;place-items:center;border-radius:50%;background:var(--accent-soft);color:var(--success);font-size:12px;font-weight:850}
+  .managerPayrollMobile-employee.is-selected .managerPayrollMobile-avatar{background:var(--accent-soft)}
   .managerPayrollMobile-person{display:grid;align-content:center;gap:2px;min-width:0}
   .managerPayrollMobile-person strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;line-height:1.15;font-weight:850}
-  .managerPayrollMobile-person span{color:#667085;font-size:10px}
+  .managerPayrollMobile-person span{color:var(--muted);font-size:10px}
   .managerPayrollMobile-rowMoney{display:grid;align-content:center;gap:2px;text-align:right}
   .managerPayrollMobile-rowMoney strong{font-size:12px;line-height:1.1;white-space:nowrap}
-  .managerPayrollMobile-rowMoney span{color:#15803d;font-size:10px;font-weight:800;white-space:nowrap}
-  .managerPayrollMobile-chevron{align-self:start;justify-self:end;color:#334155;font-size:24px;line-height:1;font-weight:700}
-  .managerPayrollMobile-employee.is-selected .managerPayrollMobile-chevron{color:#15803d;font-size:18px;margin-top:2px}
+  .managerPayrollMobile-rowMoney span{color:var(--success);font-size:10px;font-weight:800;white-space:nowrap}
+  .managerPayrollMobile-chevron{align-self:start;justify-self:end;color:var(--text);font-size:24px;line-height:1;font-weight:700}
+  .managerPayrollMobile-employee.is-selected .managerPayrollMobile-chevron{color:var(--success);font-size:18px;margin-top:2px}
   .managerPayrollMobile-employeeAmounts{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:2px;padding-top:10px;border-top:1px solid rgba(17,24,39,.07)}
   .managerPayrollMobile-employeeAmounts>div{display:grid;gap:3px;min-width:0}
   .managerPayrollMobile-employeeAmounts>div+div{padding-left:18px;border-left:1px solid rgba(17,24,39,.07);text-align:right}
-  .managerPayrollMobile-employeeAmounts span{font-size:9px;font-weight:700;color:#667085;white-space:nowrap}
+  .managerPayrollMobile-employeeAmounts span{font-size:9px;font-weight:700;color:var(--muted);white-space:nowrap}
   .managerPayrollMobile-employeeAmounts strong{font-size:12px;font-weight:820;white-space:nowrap}
-  .managerPayrollMobile-employeeAmounts .is-confirmed strong{color:#15803d}
+  .managerPayrollMobile-employeeAmounts .is-confirmed strong{color:var(--success)}
   .managerPayrollMobile-employeeAmounts .is-pending span{color:#b76e00}
 }
 

@@ -17,7 +17,7 @@
 }
 
 .appLayout--dashboard {
-  background: linear-gradient(180deg, #fbfdfb 0%, #f3f7f4 100%);
+  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
 }
 
 .appLayout-body {

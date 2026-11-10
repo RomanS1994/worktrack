@@ -15,8 +15,8 @@
   padding: 0 13px;
   border: 1px solid #fecaca;
   border-radius: 11px;
-  background: #fff;
-  color: #991b1b;
+  background: var(--surface-strong);
+  color: var(--danger);
   font-weight: 800;
 }
 

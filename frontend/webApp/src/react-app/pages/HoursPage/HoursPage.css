@@ -7,7 +7,7 @@
   align-items: start;
   padding: 20px;
   border-color: rgba(22, 163, 74, 0.16);
-  background: linear-gradient(145deg, #f3fbf5, #ffffff);
+  background: linear-gradient(145deg, var(--accent-softer), var(--surface-strong));
 }
 
 .hoursStatusBadge {
@@ -18,28 +18,28 @@
   padding: 0 12px;
   border: 1px solid rgba(148, 163, 184, 0.24);
   border-radius: 999px;
-  color: #475569;
-  background: #f8fafc;
+  color: var(--text);
+  background: var(--surface-subtle);
   font-size: 11px;
   font-weight: 800;
   text-transform: capitalize;
 }
 
 .hoursStatusBadge--submitted {
-  color: #b45309;
-  background: #fff7ed;
+  color: var(--warning);
+  background: var(--warning-soft);
   border-color: rgba(245, 158, 11, 0.22);
 }
 
 .hoursStatusBadge--approved {
-  color: #15803d;
-  background: #f0fdf4;
+  color: var(--success);
+  background: var(--accent-soft);
   border-color: rgba(22, 163, 74, 0.2);
 }
 
 .hoursStatusBadge--rejected {
-  color: #b42318;
-  background: #fef2f2;
+  color: var(--danger);
+  background: var(--danger-soft);
   border-color: rgba(180, 35, 24, 0.18);
 }
 
@@ -59,7 +59,7 @@
   padding: 0 14px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface-strong);
   box-shadow: none;
   font-size: 12px;
   font-weight: 750;
@@ -94,11 +94,11 @@
   padding: 14px 16px;
   border: 1px solid rgba(180, 35, 24, 0.18);
   border-radius: 16px;
-  background: #fef2f2;
+  background: var(--danger-soft);
 }
 
 .hoursRejectionNotice strong {
-  color: #b42318;
+  color: var(--danger);
 }
 
 .hoursRejectionNotice p {
@@ -120,12 +120,12 @@
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: #fff;
+  background: var(--surface-strong);
 }
 
 .hoursSummaryCard:first-child {
   border-color: rgba(22, 163, 74, 0.22);
-  background: linear-gradient(145deg, #f4fbf6, #fff);
+  background: linear-gradient(145deg, var(--accent-softer), var(--surface-strong));
 }
 
 .hoursSummaryCard span {
@@ -160,7 +160,7 @@
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: #fff;
+  background: var(--surface-strong);
 }
 
 .hoursDay-top {
@@ -203,7 +203,7 @@
   border: 1px solid var(--line);
   border-radius: 12px;
   color: var(--text);
-  background: #f8fafc;
+  background: var(--surface-subtle);
   font-weight: 650;
 }
 
@@ -216,7 +216,7 @@
 .hoursEntryRow select:disabled,
 .hoursEntryRow input:disabled {
   color: var(--muted);
-  background: #f1f5f9;
+  background: var(--surface-subtle);
 }
 
 .hoursEntryRow--new {
@@ -235,9 +235,9 @@
 
 .hoursEntryRow--new button:not(:disabled),
 .hoursDay-actions button:first-child:not(:disabled) {
-  color: #166534;
+  color: var(--success);
   border: 1px solid rgba(22, 163, 74, 0.18);
-  background: #f0fdf4;
+  background: var(--accent-soft);
 }
 
 .hoursDay-status {
@@ -247,26 +247,26 @@
   align-items: center;
   padding: 0 8px;
   border-radius: 999px;
-  color: #475569;
-  background: #f1f5f9;
+  color: var(--text);
+  background: var(--surface-subtle);
   font-size: 10px;
   font-weight: 800;
   text-transform: capitalize;
 }
 
 .hoursDay-status--submitted {
-  color: #b45309;
-  background: #fff7ed;
+  color: var(--warning);
+  background: var(--warning-soft);
 }
 
 .hoursDay-status--approved {
-  color: #15803d;
-  background: #f0fdf4;
+  color: var(--success);
+  background: var(--accent-soft);
 }
 
 .hoursDay-status--rejected {
-  color: #b42318;
-  background: #fef2f2;
+  color: var(--danger);
+  background: var(--danger-soft);
 }
 
 .hoursDay-actions {
@@ -280,8 +280,8 @@
   display: grid;
   place-items: center;
   padding: 0;
-  color: #b42318;
-  background: #fff;
+  color: var(--danger);
+  background: var(--surface-strong);
   border: 1px solid rgba(180, 35, 24, 0.14);
 }
 
@@ -301,7 +301,7 @@
   padding: 18px;
   border: 1px solid rgba(22, 163, 74, 0.18);
   border-radius: 20px;
-  background: linear-gradient(145deg, #f4fbf6, #fff);
+  background: linear-gradient(145deg, var(--accent-softer), var(--surface-strong));
 }
 
 .hoursSubmitPanel strong,

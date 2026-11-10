@@ -36,7 +36,7 @@
   padding: 13px 15px;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.86);
+  background: var(--surface);
 }
 
 .approvalsHeaderStats strong {
@@ -75,7 +75,7 @@
   height: 46px;
   border-radius: 15px;
   color: var(--accent);
-  background: #fff;
+  background: var(--surface-strong);
 }
 
 .approvalsEmpty svg {
@@ -110,7 +110,7 @@
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--surface);
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.045);
 }
 
@@ -140,8 +140,8 @@
   height: 30px;
   padding: 0 9px;
   border-radius: 999px;
-  color: #b45309;
-  background: #fff7ed;
+  color: var(--warning);
+  background: var(--warning-soft);
   font-size: 13px;
 }
 
@@ -173,7 +173,7 @@
 
 .approvalItem:hover:not(:disabled) {
   transform: none;
-  background: #f8fafc;
+  background: var(--surface-subtle);
   box-shadow: none;
 }
 
@@ -188,8 +188,8 @@
   width: 40px;
   height: 40px;
   border-radius: 999px;
-  color: #166534;
-  background: #dcfce7;
+  color: var(--success);
+  background: var(--accent-soft);
   font-size: 14px;
   font-weight: 800;
 }
@@ -229,7 +229,7 @@
 }
 
 .approvalItemMeta i {
-  color: #b45309;
+  color: var(--warning);
   font-size: 10px;
   font-style: normal;
   font-weight: 750;
@@ -255,7 +255,7 @@
 .approvalWeekSummary,
 .approvalEntriesCard {
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--surface);
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.045);
 }
 
@@ -358,7 +358,7 @@
   place-items: center;
   padding: 0;
   color: #475467;
-  background: #fff;
+  background: var(--surface-strong);
   box-shadow: none;
 }
 
@@ -431,7 +431,7 @@
   place-items: center;
   width: 40px;
   height: 40px;
-  color: #be123c;
+  color: var(--danger);
 }
 
 .approvalMismatchIcon svg {
@@ -539,7 +539,7 @@
   padding: 0;
   border: 0;
   border-radius: 0;
-  color: #be123c;
+  color: var(--danger);
   background: transparent;
   box-shadow: none;
   font-size: 10px;
@@ -566,7 +566,7 @@
   padding: 0 11px;
   border: 1px solid rgba(22, 163, 74, 0.08);
   border-radius: 10px;
-  color: #166534;
+  color: var(--success);
   background: #effaf2;
   font-size: 13px;
   white-space: nowrap;
@@ -574,8 +574,8 @@
 
 .approvalEntry.is-mismatch .approvalEntryHours {
   border-color: rgba(190, 18, 60, 0.09);
-  color: #be123c;
-  background: #fff1f2;
+  color: var(--danger);
+  background: var(--danger-soft);
 }
 
 .approvalEntryMore {
@@ -600,7 +600,7 @@
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.96);
+  background: var(--surface);
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.055);
 }
 
@@ -617,8 +617,8 @@
 
 .approvalRejectButton {
   border-color: rgba(190, 18, 60, 0.35);
-  color: #be123c;
-  background: #fff;
+  color: var(--danger);
+  background: var(--surface-strong);
 }
 
 .approvalRejectButton > span {
@@ -664,9 +664,9 @@
 .approvalActionMenu {
   width: min(300px, calc(100vw - 40px));
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--line);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.97);
+  background: var(--surface);
   box-shadow: 0 22px 60px rgba(15, 23, 42, 0.24);
   animation: approvalMenuIn 170ms ease-out;
 }
@@ -692,7 +692,7 @@
 
 .approvalActionMenu button:hover:not(:disabled) {
   transform: none;
-  background: #f8fafc;
+  background: var(--surface-subtle);
   box-shadow: none;
 }
 
@@ -713,7 +713,7 @@
 }
 
 .approvalActionMenu .is-danger {
-  color: #be123c;
+  color: var(--danger);
 }
 
 .approvalSheetBackdrop {
@@ -726,9 +726,9 @@
   max-height: min(90dvh, 820px);
   padding: 20px;
   overflow-y: auto;
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--line);
   border-radius: 24px 24px 0 0;
-  background: #fff;
+  background: var(--surface-strong);
   box-shadow: 0 -18px 60px rgba(15, 23, 42, 0.18);
   animation: approvalSheetIn 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -778,8 +778,8 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  color: #334155;
-  background: #f3f4f6;
+  color: var(--text);
+  background: var(--surface-subtle);
   box-shadow: none;
   font-size: 26px;
   font-weight: 400;
@@ -809,7 +809,7 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: #344054;
+  color: var(--text);
   font-size: 13px;
   font-weight: 650;
 }
@@ -817,7 +817,7 @@
 .approvalMismatchCompare svg {
   width: 19px;
   height: 19px;
-  color: #667085;
+  color: var(--muted);
   fill: none;
   stroke: currentColor;
 }
@@ -828,13 +828,13 @@
 }
 
 .approvalMismatchCompare .is-difference {
-  color: #be123c;
+  color: var(--danger);
   background: #fff4f5;
 }
 
 .approvalMismatchCompare .is-difference span,
 .approvalMismatchCompare .is-difference svg {
-  color: #be123c;
+  color: var(--danger);
 }
 
 .approvalMismatchReason {
@@ -844,7 +844,7 @@
   padding: 15px;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: #fff;
+  background: var(--surface-strong);
 }
 
 .approvalMismatchReason span {
@@ -856,7 +856,7 @@
 .approvalMismatchReason p,
 .approvalMismatchHelp p {
   margin: 0;
-  color: #344054;
+  color: var(--text);
   font-size: 14px;
   line-height: 1.45;
 }
@@ -886,7 +886,7 @@
 
 .approvalSheetSecondary {
   margin-top: 10px;
-  background: #fff;
+  background: var(--surface-strong);
   box-shadow: none;
 }
 
@@ -923,7 +923,7 @@
   border: 1px solid var(--line);
   border-radius: 13px;
   color: var(--text);
-  background: #fff;
+  background: var(--surface-strong);
 }
 
 .approvalEditorSheet textarea,
@@ -954,7 +954,7 @@
   min-height: 48px;
   padding: 0 13px;
   border-radius: 13px;
-  color: #166534;
+  color: var(--success);
   background: var(--accent-soft);
 }
 
@@ -1040,7 +1040,7 @@
     min-height: 54px;
     padding: 8px 11px;
     border-radius: 14px;
-    background: #fff;
+    background: var(--surface-strong);
   }
 
   .approvalsHeaderStats strong {
@@ -1291,7 +1291,7 @@
     margin: 0 auto;
     padding: 9px;
     border-radius: 18px;
-    background: rgba(255, 255, 255, 0.94);
+    background: var(--surface);
     box-shadow: 0 12px 34px rgba(15, 23, 42, 0.14);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);

@@ -14,26 +14,26 @@
 .employeeSettingsHelp{position:relative;color:var(--muted)}
 .employeeSettingsHelp summary{cursor:pointer;list-style:none}
 .employeeSettingsHelp summary::-webkit-details-marker{display:none}
-.employeeSettingsHelp[open] small{position:absolute;z-index:3;top:22px;left:-55px;width:180px;padding:10px;border:1px solid var(--line);border-radius:9px;background:#fff;box-shadow:0 5px 16px #17203316}
-.employeeSettingsInput{display:flex;align-items:center;min-width:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.employeeSettingsHelp[open] small{position:absolute;z-index:3;top:22px;left:-55px;width:180px;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--surface-strong);box-shadow:0 5px 16px #17203316}
+.employeeSettingsInput{display:flex;align-items:center;min-width:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface-strong)}
 .employeeSettingsInput:focus-within{outline:2px solid var(--accent);outline-offset:2px}
 .employeesModal.is-drawer .employeeSettingsInput input{width:100%;min-width:0;border:0;outline:none;box-shadow:none;padding:10px;min-height:44px;font-size:16px;background:transparent}
 .employeeSettingsInput>span{flex-shrink:0;padding-right:9px;color:var(--muted);font-size:10px}
 .employeeSettingsGroup{border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.employeeSettingsAccess,.employeeSettingsAction{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:12px;border:0;border-radius:0;background:#fff;box-shadow:none;text-align:left;color:var(--text);font:inherit}
+.employeeSettingsAccess,.employeeSettingsAction{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:12px;border:0;border-radius:0;background:var(--surface-strong);box-shadow:none;text-align:left;color:var(--text);font:inherit}
 .employeeSettingsGroup>*+*{border-top:1px solid var(--line)}
 .employeeSettingsAccess>svg,.employeeSettingsAction>svg{flex-shrink:0;width:20px;height:20px;color:#657487}
 .employeeSettingsAccess>span,.employeeSettingsAction>span{flex:1;min-width:0;font-size:13px;font-weight:500;line-height:1.4}
 .employeeSettingsAccess small,.employeeSettingsAction small{display:block;margin-top:3px;font-size:11px;color:var(--muted);font-weight:400}
 .employeeSettingsAccess>i{flex-shrink:0;width:38px;height:24px;border-radius:20px;background:#a9b2bb;position:relative;transition:background .15s}
-.employeeSettingsAccess>i::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .15s}
+.employeeSettingsAccess>i::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:var(--surface-strong);border-radius:50%;transition:transform .15s}
 .employeeSettingsAccess>i.is-on{background:#159447}.employeeSettingsAccess>i.is-on::after{transform:translateX(14px)}
 .employeeSettingsAction>b{font-size:20px;color:var(--muted)}
-.employeeSettingsAction.is-danger{color:#b91c1c}.employeeSettingsAction.is-success{color:#15803d}
+.employeeSettingsAction.is-danger{color:var(--danger)}.employeeSettingsAction.is-success{color:var(--success)}
 .employeeSettingsArchive{font-size:12px;color:var(--muted)}
 .employeeSettingsArchive summary{padding:8px 0;cursor:pointer}
 .employeeSettingsArchive p{font-size:11px;line-height:1.5}
-.employeeSettingsFooter{flex-shrink:0;padding:12px 20px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:#fff}
+.employeeSettingsFooter{flex-shrink:0;padding:12px 20px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--surface-strong)}
 .employeeSettingsFooter button{width:100%;min-height:44px;border-radius:11px;font-size:14px}
 .employeeSettingsAccess:disabled,.employeeSettingsAction:disabled{opacity:.5}
 @media(max-width:600px){.employeesModal.is-drawer .employeeSettingsBody{padding:16px;gap:20px}.employeeSettingsFooter{padding-left:16px;padding-right:16px}.employeeSettingsRates{gap:9px}}
@@ -76,15 +76,15 @@
  .employeesModal.is-drawer .employeeSettingsInput>span{font-size:10px;padding-right:7px}
  .employeesModal.is-drawer .employeeSettingsHelp[open] small{left:auto;right:-10px;width:min(170px,65vw)}
 }
-.employeesModal.is-drawer .employeeSettingsDateControl{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;min-width:0;min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
+.employeesModal.is-drawer .employeeSettingsDateControl{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;min-width:0;min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface-strong);overflow:hidden}
 .employeeSettingsDateValue{font-size:16px;color:var(--text);font-weight:400;font-variant-numeric:tabular-nums}
 .employeeSettingsDateControl>svg{width:19px;height:19px;flex-shrink:0;color:var(--muted);pointer-events:none}
 .employeesModal.is-drawer .employeeSettingsDateControl>input[type=date]{position:absolute;inset:0;width:100%;height:100%;min-width:0;margin:0;padding:0;border:0;opacity:.01;cursor:pointer}
 .employeeSettingsDateControl:focus-within{outline:2px solid var(--accent);outline-offset:2px}
 .employeeSettingsDateControl:has(input:disabled){opacity:.55}
 
-.employeeSettingsPage{position:fixed;inset:0;z-index:1050;display:flex;flex-direction:column;background:#fff;padding-top:env(safe-area-inset-top);isolation:isolate}
-.employeeSettingsPage .employeesModal.is-drawer{width:100%;max-width:100%;height:100%;max-height:100%;margin:0;border:0;border-radius:0;box-shadow:none;animation:none;background:#fff;min-height:0}
+.employeeSettingsPage{position:fixed;inset:0;z-index:1050;display:flex;flex-direction:column;background:var(--surface-strong);padding-top:env(safe-area-inset-top);isolation:isolate}
+.employeeSettingsPage .employeesModal.is-drawer{width:100%;max-width:100%;height:100%;max-height:100%;margin:0;border:0;border-radius:0;box-shadow:none;animation:none;background:var(--surface-strong);min-height:0}
 .employeeSettingsPage .employeesModal>header{flex-direction:row-reverse;justify-content:flex-end;gap:10px;padding:12px 16px;position:static;backdrop-filter:none}
 .employeeSettingsPage .employeesModal>header>div{flex:1}
 .employeeSettingsPage .employeesModal>header>button{background:transparent;font-size:30px;min-width:40px;min-height:40px}

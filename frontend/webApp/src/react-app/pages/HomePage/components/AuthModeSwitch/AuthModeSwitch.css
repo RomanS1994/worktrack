@@ -24,7 +24,7 @@
 }
 
 .authModeSwitch-btn.is-active {
-  background: rgba(255, 255, 255, 0.96);
+  background: var(--surface);
   color: var(--text);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.96) inset,
