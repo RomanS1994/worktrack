@@ -104,5 +104,9 @@ html[data-theme="dark"] .companyChatDeleteDialog p,html[data-theme="dark"] .comp
 html[data-theme="dark"] .companyChatRooms{background:var(--bg-bottom)}
 html[data-theme="dark"] .companyChatRoomRow{border-color:var(--line)}
 html[data-theme="dark"] .companyChatRoomRow:active{background:var(--surface-subtle)}
+html[data-theme="dark"] .companyChatRoomCopy strong{color:var(--text)}
+html[data-theme="dark"] .companyChatRoomCopy small,
+html[data-theme="dark"] .companyChatRoomMeta{color:var(--muted)}
+html[data-theme="dark"] .companyChatRoomAvatar{background:var(--accent-soft);color:var(--success)}
 html[data-theme="dark"] .companyChatFieldLabel,html[data-theme="dark"] .companyChatMembersHeading{color:var(--text)}
 html[data-theme="dark"] .companyChatMemberList{background:var(--surface-strong);border-color:var(--line)}
