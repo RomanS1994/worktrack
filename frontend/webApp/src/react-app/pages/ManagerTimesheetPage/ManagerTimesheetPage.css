@@ -87,27 +87,27 @@
 
 
 @media(max-width:760px){
-  .managerTimesheetModal.managerTimesheetQuickModal{align-content:start;gap:6px;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px calc(env(safe-area-inset-bottom,0px) + 10px);overflow-y:auto;}
-  .managerTimesheetQuickModal .managerTimesheetModalHead{align-items:center;margin:0;}
-  .managerTimesheetQuickModal .managerTimesheetModalHead h2{font-size:17px;line-height:1.1;}
-  .managerTimesheetQuickModal .managerTimesheetModalHead>button{width:34px;height:34px;min-height:34px;}
-  .managerTimesheetQuickModal .managerTimesheetQuickHint{display:none;}
-  .managerTimesheetQuickSection{padding:4px 5px;border-radius:10px;}
-  .managerTimesheetQuickSection legend{font-size:12px;}
-  .managerTimesheetQuickDays{grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;max-height:none;overflow:visible;}
-  .managerTimesheetQuickDays label>span{min-height:30px;padding:2px 0;border-radius:6px;}
-  .managerTimesheetQuickDays b{font-size:11px;line-height:1;}
-  .managerTimesheetQuickDays small{font-size:8px;line-height:1;}
-  .managerTimesheetQuickEmployeeTrigger{min-height:32px;padding:0 8px;}
-  .managerTimesheetQuickEmployeeList{grid-template-columns:1fr;gap:3px;max-height:180px;}
-  .managerTimesheetQuickEmployeeList label,.managerTimesheetQuickSelectAll{min-height:30px;padding:3px 7px;}
-  .managerTimesheetQuickFields{gap:6px;}
-  .managerTimesheetQuickFields label,.managerTimesheetQuickProject{gap:2px;font-size:11px;}
-  .managerTimesheetQuickFields input,.managerTimesheetQuickProject select{min-height:36px;padding:0 8px;}
-  .managerTimesheetModal .managerTimesheetQuickOverwrite{min-height:30px;padding:2px 0;border:0;background:transparent;font-size:11px!important;}
-  .managerTimesheetModal .managerTimesheetQuickOverwrite input{appearance:none;-webkit-appearance:none;display:grid;place-items:center;flex:0 0 17px;width:17px;height:17px;padding:0;border:1px solid var(--muted);border-radius:5px;background:var(--surface-strong);}
+  .managerTimesheetModal.managerTimesheetQuickModal{align-content:start;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px calc(env(safe-area-inset-bottom,0px) + 16px);overflow-y:auto;}
+  .managerTimesheetQuickModal .managerTimesheetModalHead{align-items:center;margin:0 0 2px;}
+  .managerTimesheetQuickModal .managerTimesheetModalHead h2{font-size:20px;line-height:1.2;}
+  .managerTimesheetQuickModal .managerTimesheetModalHead>button{width:40px;height:40px;min-height:40px;}
+  .managerTimesheetQuickModal .managerTimesheetQuickHint{display:block;margin:0;color:var(--muted);font-size:13px;line-height:1.4;}
+  .managerTimesheetQuickSection{padding:8px;border-radius:14px;}
+  .managerTimesheetQuickSection legend{font-size:14px;}
+  .managerTimesheetQuickDays{grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;max-height:none;overflow:visible;}
+  .managerTimesheetQuickDays label>span{min-height:42px;padding:4px 0;border-radius:8px;}
+  .managerTimesheetQuickDays b{font-size:14px;line-height:1.1;}
+  .managerTimesheetQuickDays small{font-size:10px;line-height:1.1;}
+  .managerTimesheetQuickEmployeeTrigger{min-height:42px;padding:0 11px;font-size:14px;}
+  .managerTimesheetQuickEmployeeList{grid-template-columns:1fr;gap:5px;max-height:190px;}
+  .managerTimesheetQuickEmployeeList label,.managerTimesheetQuickSelectAll{min-height:38px;padding:5px 9px;font-size:13px;}
+  .managerTimesheetQuickFields{gap:9px;}
+  .managerTimesheetQuickFields label,.managerTimesheetQuickProject{gap:4px;font-size:13px;}
+  .managerTimesheetQuickFields input,.managerTimesheetQuickProject select{min-height:44px;padding:0 10px;}
+  .managerTimesheetModal .managerTimesheetQuickOverwrite{min-height:38px;padding:4px 0;border:0;background:transparent;font-size:13px!important;}
+  .managerTimesheetModal .managerTimesheetQuickOverwrite input{appearance:none;-webkit-appearance:none;display:grid;place-items:center;flex:0 0 19px;width:19px;height:19px;padding:0;border:1px solid var(--muted);border-radius:5px;background:var(--surface-strong);}
   .managerTimesheetModal .managerTimesheetQuickOverwrite input:checked{border-color:var(--accent);background:var(--accent);}
   .managerTimesheetModal .managerTimesheetQuickOverwrite input:checked::after{content:'✓';color:#fff;font-size:13px;font-weight:800;line-height:1;}
-  .managerTimesheetQuickFooter{position:sticky;bottom:0;margin-top:0;padding:5px 0;background:var(--surface-strong);}
-  .managerTimesheetQuickFooter button{min-height:38px;padding:0 12px;}
+  .managerTimesheetQuickFooter{position:sticky;bottom:0;margin-top:2px;padding:8px 0;background:var(--surface-strong);}
+  .managerTimesheetQuickFooter button{min-height:46px;padding:0 16px;}
 }
