@@ -159,6 +159,7 @@ export function ManagerTimesheetPage() {
   const [projectId, setProjectId] = useState('');
   const [quickFillOpen, setQuickFillOpen] = useState(false);
   const [quickFillEmployees, setQuickFillEmployees] = useState([]);
+  const [quickFillEmployeesOpen, setQuickFillEmployeesOpen] = useState(false);
   const [quickFillDates, setQuickFillDates] = useState([]);
   const [quickFillHours, setQuickFillHours] = useState('8');
   const [quickFillBreak, setQuickFillBreak] = useState('30');
@@ -201,6 +202,7 @@ export function ManagerTimesheetPage() {
 
   function openQuickFill() {
     setQuickFillEmployees(editableRows.map(row => row.employeeId));
+    setQuickFillEmployeesOpen(false);
     setQuickFillDates(days.filter(day => day.isCurrentMonth !== false && new Date(`${day.date}T12:00:00`).getDay() % 6 !== 0).map(day => day.date));
     setQuickFillHours('8');
     setQuickFillBreak('30');
@@ -358,10 +360,11 @@ export function ManagerTimesheetPage() {
         </fieldset>
         <fieldset className="managerTimesheetQuickSection">
           <legend>{copy.selectEmployees}</legend>
-          <div className="managerTimesheetQuickEmployeeList">
+          <button type="button" className="managerTimesheetQuickEmployeeTrigger" aria-expanded={quickFillEmployeesOpen} onClick={() => setQuickFillEmployeesOpen(value => !value)}><span>{quickFillEmployees.length ? `${quickFillEmployees.length} · ${copy.selectEmployees.toLowerCase()}` : copy.selectEmployees}</span><b aria-hidden="true">{quickFillEmployeesOpen ? '⌃' : '⌄'}</b></button>
+          {quickFillEmployeesOpen ? <div className="managerTimesheetQuickEmployeeList">
             <label className="managerTimesheetQuickSelectAll"><input type="checkbox" checked={editableRows.length > 0 && quickFillEmployees.length === editableRows.length} onChange={event => setQuickFillEmployees(event.target.checked ? editableRows.map(row => row.employeeId) : [])}/><span>{copy.selectAll}</span></label>
             {editableRows.map(row => <label key={row.employeeId}><input type="checkbox" checked={quickFillEmployees.includes(row.employeeId)} onChange={event => setQuickFillEmployees(current => event.target.checked ? [...current, row.employeeId] : current.filter(id => id !== row.employeeId))}/><span>{row.name}</span></label>)}
-          </div>
+          </div> : null}
         </fieldset>
         <div className="managerTimesheetQuickFields">
           <label>{copy.yourHours}<input type="number" min="0.01" max="24" step="0.01" value={quickFillHours} onChange={event => setQuickFillHours(event.target.value)}/></label>
