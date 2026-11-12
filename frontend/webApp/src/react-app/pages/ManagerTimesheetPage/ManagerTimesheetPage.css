@@ -11,6 +11,33 @@
 .managerTimesheetSummary strong{font-size:var(--font-size-body);font-weight:var(--weight-bold);color:var(--text)}
 .managerTimesheetSummary .is-ok strong{color:var(--success)}
 .managerTimesheetSummary .is-warning strong{color:#c66f00}
+.managerTimesheetQuickActions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:-4px}
+.managerTimesheetQuickActions>span{color:var(--success);font-size:var(--font-size-caption);font-weight:var(--weight-semibold)}
+.managerTimesheetQuickTrigger{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface-strong);color:var(--text);font-size:var(--font-size-secondary);font-weight:var(--weight-semibold)}
+.managerTimesheetQuickTrigger svg{width:17px;height:17px;stroke:currentColor}
+.managerTimesheetQuickModal{display:grid;gap:10px}
+.managerTimesheetQuickHint{margin:-4px 0 0;color:var(--muted);font-size:var(--font-size-caption);line-height:1.35}
+.managerTimesheetQuickSection{min-width:0;margin:0;padding:8px;border:1px solid var(--line);border-radius:12px}
+.managerTimesheetQuickSection legend{padding:0 5px;font-size:var(--font-size-caption);font-weight:var(--weight-bold)}
+.managerTimesheetQuickDays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;max-height:180px;overflow:auto}
+.managerTimesheetQuickDays label{position:relative;cursor:pointer}
+.managerTimesheetQuickDays input,.managerTimesheetQuickEmployeeList input,.managerTimesheetQuickOverwrite input,.managerTimesheetQuickSelectAll input{position:absolute;width:1px;height:1px;opacity:0}
+.managerTimesheetQuickDays label>span{display:grid;justify-items:center;gap:2px;padding:6px 2px;border:1px solid var(--line);border-radius:9px;background:var(--surface-strong)}
+.managerTimesheetQuickDays label.is-selected>span{border-color:var(--accent);background:var(--accent-soft);color:var(--success)}
+.managerTimesheetQuickDays b{font-size:var(--font-size-caption)}
+.managerTimesheetQuickDays small{color:var(--muted);font-size:9px;text-transform:lowercase}
+.managerTimesheetQuickEmployeeList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;max-height:140px;overflow:auto}
+.managerTimesheetQuickEmployeeList label,.managerTimesheetQuickOverwrite,.managerTimesheetQuickSelectAll{display:flex;align-items:center;gap:8px;min-height:32px;padding:5px 8px;border:1px solid var(--line);border-radius:9px;background:var(--surface-strong);font-size:var(--font-size-caption);cursor:pointer}
+.managerTimesheetQuickEmployeeList label:has(input:checked),.managerTimesheetQuickOverwrite:has(input:checked),.managerTimesheetQuickSelectAll:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--success)}
+.managerTimesheetQuickEmployeeList input,.managerTimesheetQuickOverwrite input,.managerTimesheetQuickSelectAll input{position:static;flex:0 0 15px;width:15px;height:15px;opacity:1;accent-color:var(--accent)}
+.managerTimesheetQuickFields{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.managerTimesheetQuickFields label,.managerTimesheetQuickProject{display:grid;gap:4px;font-size:var(--font-size-caption);font-weight:var(--weight-semibold)}
+.managerTimesheetQuickFields input,.managerTimesheetQuickProject select{min-height:var(--control-height);padding:0 9px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface-strong);color:var(--text)}
+.managerTimesheetQuickOverwrite{width:max-content;max-width:100%;}
+.managerTimesheetQuickFooter{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:2px}
+.managerTimesheetQuickFooter>span{color:var(--muted);font-size:var(--font-size-caption)}
+.managerTimesheetQuickFooter>span strong{color:var(--text)}
+.managerTimesheetQuickFooter button{min-height:42px;padding:0 15px;border-radius:11px;font-weight:var(--weight-bold)}
 .managerTimesheetDesktop{display:block;padding:0;overflow:hidden}
 .managerTimesheetScroll{overflow-x:auto}
 .managerTimesheetScroll table{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;font-size:var(--font-size-secondary)}

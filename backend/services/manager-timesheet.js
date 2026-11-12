@@ -433,3 +433,22 @@ export async function upsertManagerTimesheetCell(client, context, employeeMember
     },
   };
 }
+
+export async function upsertManagerTimesheetBulk(client, context, entries) {
+  if (!Array.isArray(entries) || entries.length < 1 || entries.length > 500) {
+    throw new Error('Invalid bulk timesheet entries');
+  }
+  const keys = new Set();
+  for (const entry of entries) {
+    const key = `${entry?.employeeId || ''}:${entry?.date || ''}`;
+    if (!entry?.employeeId || !/^\d{4}-\d{2}-\d{2}$/.test(String(entry?.date || '')) || keys.has(key)) {
+      throw new Error('Invalid or duplicate bulk timesheet entry');
+    }
+    keys.add(key);
+  }
+  const results = [];
+  for (const entry of entries) {
+    results.push(await upsertManagerTimesheetCell(client, context, entry.employeeId, entry));
+  }
+  return { saved: results.length };
+}
