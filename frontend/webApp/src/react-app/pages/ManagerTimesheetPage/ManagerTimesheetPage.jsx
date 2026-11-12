@@ -364,7 +364,7 @@ export function ManagerTimesheetPage() {
           </div>
         </fieldset>
         <div className="managerTimesheetQuickFields">
-          <label>{copy.yourHours}<input type="number" min="0.01" max="24" step="0.25" value={quickFillHours} onChange={event => setQuickFillHours(event.target.value)}/></label>
+          <label>{copy.yourHours}<input type="number" min="0.01" max="24" step="0.01" value={quickFillHours} onChange={event => setQuickFillHours(event.target.value)}/></label>
           <label>{copy.lunch}<input type="number" min="0" max="1440" step="1" value={quickFillBreak} onChange={event => setQuickFillBreak(event.target.value)}/></label>
         </div>
         <label className="managerTimesheetQuickProject">{copy.projectLabel}<select value={quickFillProject} onChange={event => setQuickFillProject(event.target.value)}><option value="">{copy.notSpecified}</option>{projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
