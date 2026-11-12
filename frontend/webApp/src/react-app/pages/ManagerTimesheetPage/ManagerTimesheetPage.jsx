@@ -158,7 +158,8 @@ export function ManagerTimesheetPage() {
   const [breakMinutes, setBreakMinutes] = useState('');
   const [projectId, setProjectId] = useState('');
   const [quickFillOpen, setQuickFillOpen] = useState(false);
-  const [quickFillEmployees, setQuickFillEmployees] = useState([]);\n  const [quickFillEmployeesOpen, setQuickFillEmployeesOpen] = useState(false);
+  const [quickFillEmployees, setQuickFillEmployees] = useState([]);
+  const [quickFillEmployeesOpen, setQuickFillEmployeesOpen] = useState(false);
   const [quickFillDates, setQuickFillDates] = useState([]);
   const [quickFillHours, setQuickFillHours] = useState('8');
   const [quickFillBreak, setQuickFillBreak] = useState('30');
@@ -200,7 +201,8 @@ export function ManagerTimesheetPage() {
   }
 
   function openQuickFill() {
-    setQuickFillEmployees(editableRows.map(row => row.employeeId));\n    setQuickFillEmployeesOpen(false);
+    setQuickFillEmployees(editableRows.map(row => row.employeeId));
+    setQuickFillEmployeesOpen(false);
     setQuickFillDates(days.filter(day => day.isCurrentMonth !== false && new Date(`${day.date}T12:00:00`).getDay() % 6 !== 0).map(day => day.date));
     setQuickFillHours('8');
     setQuickFillBreak('30');
