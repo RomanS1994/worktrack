@@ -6,7 +6,7 @@ import { deleteManagerEmployee, restoreDeletedManagerEmployee } from '../../serv
 import { getManagerEmployees } from '../../services/manager-employees.js';
 import { resetEmployeePassword } from '../../services/employee-password-reset.js';
 import { getManagerPayroll } from '../../services/manager-payroll.js';
-import { getManagerTimesheet, upsertManagerTimesheetCell } from '../../services/manager-timesheet.js';
+import { getManagerTimesheet, upsertManagerTimesheetBulk, upsertManagerTimesheetCell } from '../../services/manager-timesheet.js';
 import {
   createManagerEmployee,
   getManagerSubmissionById,
@@ -210,6 +210,13 @@ export async function handleManagerRoutes(request, response, { pathName, url }) 
   if (request.method === 'GET' && pathName === '/api/manager/timesheet') {
     const context = await requireManager(request, response); if (!context) return true;
     const payload = await runStoreRead({ prisma: client => getManagerTimesheet(client, context, { month: url.searchParams.get('month'), compact: url.searchParams.get('compact') === '1' }) });
+    sendJson(response, 200, payload); return true;
+  }
+
+  if (request.method === 'PUT' && pathName === '/api/manager/timesheet/bulk') {
+    const context = await requireManager(request, response); if (!context) return true;
+    const body = await readJsonBody(request);
+    const payload = await runStoreTransaction({ prisma: client => upsertManagerTimesheetBulk(client, context, body?.entries) });
     sendJson(response, 200, payload); return true;
   }
 

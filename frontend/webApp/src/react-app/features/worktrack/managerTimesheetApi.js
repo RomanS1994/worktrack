@@ -17,7 +17,14 @@ export const managerTimesheetApi = baseApi.injectEndpoints({
         { type: 'WeeklySubmissions' },
       ],
     }),
+    saveManagerTimesheetBulk: builder.mutation({
+      query: entries => ({ url: '/manager/timesheet/bulk', method: 'PUT', body: { entries } }),
+      invalidatesTags: [
+        { type: 'WorkEntries', id: 'MANAGER_TIMESHEET' },
+        { type: 'WeeklySubmissions' },
+      ],
+    }),
   }),
 });
 
-export const { useGetManagerTimesheetQuery, useSaveManagerTimesheetCellMutation } = managerTimesheetApi;
+export const { useGetManagerTimesheetQuery, useSaveManagerTimesheetCellMutation, useSaveManagerTimesheetBulkMutation } = managerTimesheetApi;

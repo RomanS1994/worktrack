@@ -2,13 +2,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getApiErrorMessage } from '@shared/app/api/getApiErrorMessage.js';
 import { useI18n } from '@shared/app/i18n/useI18n.js';
-import { useGetManagerTimesheetQuery, useSaveManagerTimesheetCellMutation } from '../../features/worktrack/managerTimesheetApi.js';
+import { SvgIcon } from '@shared/app/components/SvgIcon/SvgIcon.jsx';
+import { useGetManagerTimesheetQuery, useSaveManagerTimesheetBulkMutation, useSaveManagerTimesheetCellMutation } from '../../features/worktrack/managerTimesheetApi.js';
 import './ManagerTimesheetPage.css';
 
 const COPY = {
-  uk: { outside:'Інший місяць', missingManager:'Немає запису менеджера', missingEmployee:'Немає запису працівника', hours:'години', break:'перерва', project:'об’єкт', difference:'Різниця', mismatch:'Невідповідність', matchTitle:'Усе збігається', matchText:'Записи менеджера і працівника збігаються.', yourMissing:'Немає вашого запису', employeeRecorded:'Працівник записав', yourTimesheet:'У вашому табелі є', hoursMismatch:'Не збігаються години', breakMismatch:'Не збігається перерва', projectMismatch:'Не збігається об’єкт', notSpecified:'не вказано', back:'Назад до погодження', previousMonth:'Попередній місяць', nextMonth:'Наступний місяць', matched:'Збігається', mismatches:'Розбіжності', missing:'Без запису', loading:'Завантаження…', employee:'Працівник', total:'Разом', ownRow:'Власний контрольний рядок може редагувати інший менеджер', empty:'Немає записів для цього місяця.', close:'Закрити', you:'Ви', yourHours:'Ваші години', lunch:'Перерва, хв', projectLabel:'Об’єкт', clear:'Очистити', cancel:'Скасувати', saving:'Збереження…', saveReturn:'Зберегти й повернутись', save:'Зберегти' },
-  cs: { outside:'Mimo tento měsíc', missingManager:'Chybí záznam vedoucího', missingEmployee:'Chybí záznam zaměstnance', hours:'hodiny', break:'přestávka', project:'projekt', difference:'Rozdíl', mismatch:'Nesrovnalost', matchTitle:'Vše souhlasí', matchText:'Záznamy vedoucího a zaměstnance se shodují.', yourMissing:'Chybí váš záznam', employeeRecorded:'Zaměstnanec zaznamenal', yourTimesheet:'Ve vašem výkazu je', hoursMismatch:'Hodiny se neshodují', breakMismatch:'Přestávka se neshoduje', projectMismatch:'Projekt se neshoduje', notSpecified:'neuvedeno', back:'Zpět na schvalování', previousMonth:'Předchozí měsíc', nextMonth:'Další měsíc', matched:'Shoduje se', mismatches:'Rozdíly', missing:'Bez záznamu', loading:'Načítání…', employee:'Zaměstnanec', total:'Celkem', ownRow:'Tento kontrolní řádek může upravit jiný vedoucí', empty:'Pro tento měsíc nejsou žádné záznamy.', close:'Zavřít', you:'Vy', yourHours:'Vaše hodiny', lunch:'Přestávka (min)', projectLabel:'Projekt', clear:'Vymazat', cancel:'Zrušit', saving:'Ukládání…', saveReturn:'Uložit a vrátit se', save:'Uložit' },
-  en: { outside:'Outside this month', missingManager:'Missing manager entry', missingEmployee:'Missing employee entry', hours:'hours', break:'break', project:'project', difference:'Difference', mismatch:'Mismatch', matchTitle:'All entries match', matchText:'The manager and employee entries match.', yourMissing:'Your entry is missing', employeeRecorded:'Employee recorded', yourTimesheet:'Your timesheet has', hoursMismatch:'Hours do not match', breakMismatch:'Breaks do not match', projectMismatch:'Projects do not match', notSpecified:'not specified', back:'Back to approvals', previousMonth:'Previous month', nextMonth:'Next month', matched:'Matches', mismatches:'Mismatches', missing:'Missing entries', loading:'Loading…', employee:'Employee', total:'Total', ownRow:'Another manager can edit this self-review row', empty:'No entries for this month.', close:'Close', you:'You', yourHours:'Your hours', lunch:'Break (min)', projectLabel:'Project', clear:'Clear', cancel:'Cancel', saving:'Saving…', saveReturn:'Save and return', save:'Save' },
+  uk: { outside:'Інший місяць', missingManager:'Немає запису менеджера', missingEmployee:'Немає запису працівника', hours:'години', break:'перерва', project:'об’єкт', difference:'Різниця', mismatch:'Невідповідність', matchTitle:'Усе збігається', matchText:'Записи менеджера і працівника збігаються.', yourMissing:'Немає вашого запису', employeeRecorded:'Працівник записав', yourTimesheet:'У вашому табелі є', hoursMismatch:'Не збігаються години', breakMismatch:'Не збігається перерва', projectMismatch:'Не збігається об’єкт', notSpecified:'не вказано', back:'Назад до погодження', previousMonth:'Попередній місяць', nextMonth:'Наступний місяць', matched:'Збігається', mismatches:'Розбіжності', missing:'Без запису', loading:'Завантаження…', employee:'Працівник', total:'Разом', ownRow:'Власний контрольний рядок може редагувати інший менеджер', empty:'Немає записів для цього місяця.', close:'Закрити', you:'Ви', yourHours:'Ваші години', lunch:'Перерва, хв', projectLabel:'Об’єкт', clear:'Очистити', cancel:'Скасувати', saving:'Збереження…', saveReturn:'Зберегти й повернутись', save:'Зберегти', quickFill:'Швидке заповнення', quickFillTitle:'Заповнити кілька комірок', quickFillHint:'Виберіть працівників і дні. За замовчуванням заповнюються лише порожні комірки.', selectAll:'Усі', selectDays:'Дні', selectEmployees:'Працівники', onlyEmpty:'Лише порожні комірки', overwrite:'Перезаписати наявні записи', selectedCells:'Буде заповнено комірок', applyFill:'Заповнити', noSelection:'Виберіть хоча б одного працівника і день.', fillDone:'Заповнено', fillFailed:'Не вдалося виконати швидке заповнення.' },
+  cs: { outside:'Mimo tento měsíc', missingManager:'Chybí záznam vedoucího', missingEmployee:'Chybí záznam zaměstnance', hours:'hodiny', break:'přestávka', project:'projekt', difference:'Rozdíl', mismatch:'Nesrovnalost', matchTitle:'Vše souhlasí', matchText:'Záznamy vedoucího a zaměstnance se shodují.', yourMissing:'Chybí váš záznam', employeeRecorded:'Zaměstnanec zaznamenal', yourTimesheet:'Ve vašem výkazu je', hoursMismatch:'Hodiny se neshodují', breakMismatch:'Přestávka se neshoduje', projectMismatch:'Projekt se neshoduje', notSpecified:'neuvedeno', back:'Zpět na schvalování', previousMonth:'Předchozí měsíc', nextMonth:'Další měsíc', matched:'Shoduje se', mismatches:'Rozdíly', missing:'Bez záznamu', loading:'Načítání…', employee:'Zaměstnanec', total:'Celkem', ownRow:'Tento kontrolní řádek může upravit jiný vedoucí', empty:'Pro tento měsíc nejsou žádné záznamy.', close:'Zavřít', you:'Vy', yourHours:'Vaše hodiny', lunch:'Přestávka (min)', projectLabel:'Projekt', clear:'Vymazat', cancel:'Zrušit', saving:'Ukládání…', saveReturn:'Uložit a vrátit se', save:'Uložit', quickFill:'Rychlé vyplnění', quickFillTitle:'Vyplnit více buněk', quickFillHint:'Vyberte zaměstnance a dny. Ve výchozím stavu se vyplní pouze prázdné buňky.', selectAll:'Všichni', selectDays:'Dny', selectEmployees:'Zaměstnanci', onlyEmpty:'Pouze prázdné buňky', overwrite:'Přepsat existující záznamy', selectedCells:'Vyplní se buněk', applyFill:'Vyplnit', noSelection:'Vyberte alespoň jednoho zaměstnance a den.', fillDone:'Vyplněno', fillFailed:'Rychlé vyplnění se nepodařilo.' },
+  en: { outside:'Outside this month', missingManager:'Missing manager entry', missingEmployee:'Missing employee entry', hours:'hours', break:'break', project:'project', difference:'Difference', mismatch:'Mismatch', matchTitle:'All entries match', matchText:'The manager and employee entries match.', yourMissing:'Your entry is missing', employeeRecorded:'Employee recorded', yourTimesheet:'Your timesheet has', hoursMismatch:'Hours do not match', breakMismatch:'Breaks do not match', projectMismatch:'Projects do not match', notSpecified:'not specified', back:'Back to approvals', previousMonth:'Previous month', nextMonth:'Next month', matched:'Matches', mismatches:'Mismatches', missing:'Missing entries', loading:'Loading…', employee:'Employee', total:'Total', ownRow:'Another manager can edit this self-review row', empty:'No entries for this month.', close:'Close', you:'You', yourHours:'Your hours', lunch:'Break (min)', projectLabel:'Project', clear:'Clear', cancel:'Cancel', saving:'Saving…', saveReturn:'Save and return', save:'Save', quickFill:'Quick fill', quickFillTitle:'Fill multiple cells', quickFillHint:'Choose employees and days. Only empty cells are filled by default.', selectAll:'All', selectDays:'Days', selectEmployees:'Employees', onlyEmpty:'Only empty cells', overwrite:'Overwrite existing entries', selectedCells:'Cells to fill', applyFill:'Fill cells', noSelection:'Select at least one employee and one day.', fillDone:'Filled', fillFailed:'Quick fill failed.' },
 };
 
 function currentMonth() {
@@ -156,9 +157,18 @@ export function ManagerTimesheetPage() {
   const [hours, setHours] = useState('');
   const [breakMinutes, setBreakMinutes] = useState('');
   const [projectId, setProjectId] = useState('');
+  const [quickFillOpen, setQuickFillOpen] = useState(false);
+  const [quickFillEmployees, setQuickFillEmployees] = useState([]);
+  const [quickFillDates, setQuickFillDates] = useState([]);
+  const [quickFillHours, setQuickFillHours] = useState('8');
+  const [quickFillBreak, setQuickFillBreak] = useState('30');
+  const [quickFillProject, setQuickFillProject] = useState('');
+  const [quickFillOverwrite, setQuickFillOverwrite] = useState(false);
+  const [quickFillMessage, setQuickFillMessage] = useState('');
 
   const { data, error, isFetching } = useGetManagerTimesheetQuery(month);
   const [saveCell, { isLoading: isSaving, error: saveError }] = useSaveManagerTimesheetCellMutation();
+  const [saveBulk, { isLoading: isBulkSaving, error: bulkSaveError }] = useSaveManagerTimesheetBulkMutation();
 
   const { rows, days } = useMemo(() => normalizeTimesheetRows(data), [data]);
   const summary = data?.summary || {};
@@ -171,11 +181,49 @@ export function ManagerTimesheetPage() {
   }, [days]);
   const safeWeekIndex = Math.min(weekIndex, Math.max(weeks.length - 1, 0));
   const mobileWeek = weeks[safeWeekIndex] || [];
+  const editableRows = useMemo(() => rows.filter(row => row.canEdit !== false), [rows]);
+  const quickFillTargets = useMemo(() => {
+    const employees = new Set(quickFillEmployees);
+    const dates = new Set(quickFillDates);
+    return rows.flatMap(row => {
+      if (!employees.has(row.employeeId)) return [];
+      return row.days.filter(day => dates.has(day.date) && day.isCurrentMonth !== false && (
+        quickFillOverwrite || (day.managerHours == null && day.managerBreakMinutes == null && !day.managerProjectId)
+      )).map(day => ({ employeeId: row.employeeId, date: day.date, hours: quickFillHours, breakMinutes: quickFillBreak, projectId: quickFillProject }));
+    });
+  }, [rows, quickFillEmployees, quickFillDates, quickFillHours, quickFillBreak, quickFillProject, quickFillOverwrite]);
 
   function changeMonth(amount) {
     deepLinkHandled.current = true;
     setMonth(value => shiftMonth(value, amount));
     setWeekIndex(0);
+  }
+
+  function openQuickFill() {
+    setQuickFillEmployees(editableRows.map(row => row.employeeId));
+    setQuickFillDates(days.filter(day => day.isCurrentMonth !== false && new Date(`${day.date}T12:00:00`).getDay() % 6 !== 0).map(day => day.date));
+    setQuickFillHours('8');
+    setQuickFillBreak('30');
+    setQuickFillProject('');
+    setQuickFillOverwrite(false);
+    setQuickFillMessage('');
+    setQuickFillOpen(true);
+  }
+
+  async function submitQuickFill(event) {
+    event.preventDefault();
+    setQuickFillMessage('');
+    if (!quickFillTargets.length) {
+      setQuickFillMessage(copy.noSelection);
+      return;
+    }
+    try {
+      const result = await saveBulk(quickFillTargets).unwrap();
+      setQuickFillMessage(`${copy.fillDone}: ${result.saved}`);
+      setQuickFillOpen(false);
+    } catch (requestError) {
+      setQuickFillMessage(getApiErrorMessage(requestError) || copy.fillFailed);
+    }
   }
 
   function openCell(row, day) {
@@ -254,6 +302,10 @@ export function ManagerTimesheetPage() {
     {isFetching ? <p className="statusNote">{copy.loading}</p> : null}
 
     {!isFetching && rows.length ? <>
+      <div className="managerTimesheetQuickActions">
+        <button type="button" className="managerTimesheetQuickTrigger" onClick={openQuickFill}><SvgIcon name="plus" />{copy.quickFill}</button>
+        {quickFillMessage && !quickFillOpen ? <span role="status">{quickFillMessage}</span> : null}
+      </div>
       <section className="managerTimesheetDesktop screenCard">
         <div className="managerTimesheetScroll">
           <table>
@@ -295,6 +347,32 @@ export function ManagerTimesheetPage() {
     </> : null}
 
     {!isFetching && !rows.length ? <section className="screenCard managerTimesheetEmpty">{copy.empty}</section> : null}
+
+    {quickFillOpen ? <div className="managerTimesheetModalBackdrop" onMouseDown={event => { if (event.target === event.currentTarget && !isBulkSaving) setQuickFillOpen(false); }}>
+      <form className="managerTimesheetModal managerTimesheetQuickModal screenCard" onSubmit={submitQuickFill}>
+        <div className="managerTimesheetModalHead"><div><span>{label}</span><h2>{copy.quickFillTitle}</h2></div><button type="button" onClick={() => setQuickFillOpen(false)} disabled={isBulkSaving} aria-label={copy.close}>×</button></div>
+        <p className="managerTimesheetQuickHint">{copy.quickFillHint}</p>
+        <fieldset className="managerTimesheetQuickSection">
+          <legend>{copy.selectDays}</legend>
+          <div className="managerTimesheetQuickDays">{days.filter(day => day.isCurrentMonth !== false).map(day => <label className={quickFillDates.includes(day.date) ? 'is-selected' : ''} key={day.date}><input type="checkbox" checked={quickFillDates.includes(day.date)} onChange={event => setQuickFillDates(current => event.target.checked ? [...current, day.date] : current.filter(date => date !== day.date))}/><span><b>{day.day}</b><small>{new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(new Date(`${day.date}T00:00:00`))}</small></span></label>)}</div>
+        </fieldset>
+        <fieldset className="managerTimesheetQuickSection">
+          <legend>{copy.selectEmployees}</legend>
+          <div className="managerTimesheetQuickEmployeeList">
+            <label className="managerTimesheetQuickSelectAll"><input type="checkbox" checked={editableRows.length > 0 && quickFillEmployees.length === editableRows.length} onChange={event => setQuickFillEmployees(event.target.checked ? editableRows.map(row => row.employeeId) : [])}/><span>{copy.selectAll}</span></label>
+            {editableRows.map(row => <label key={row.employeeId}><input type="checkbox" checked={quickFillEmployees.includes(row.employeeId)} onChange={event => setQuickFillEmployees(current => event.target.checked ? [...current, row.employeeId] : current.filter(id => id !== row.employeeId))}/><span>{row.name}</span></label>)}
+          </div>
+        </fieldset>
+        <div className="managerTimesheetQuickFields">
+          <label>{copy.yourHours}<input type="number" min="0.01" max="24" step="0.25" value={quickFillHours} onChange={event => setQuickFillHours(event.target.value)}/></label>
+          <label>{copy.lunch}<input type="number" min="0" max="1440" step="1" value={quickFillBreak} onChange={event => setQuickFillBreak(event.target.value)}/></label>
+        </div>
+        <label className="managerTimesheetQuickProject">{copy.projectLabel}<select value={quickFillProject} onChange={event => setQuickFillProject(event.target.value)}><option value="">{copy.notSpecified}</option>{projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
+        <label className="managerTimesheetQuickOverwrite"><input type="checkbox" checked={quickFillOverwrite} onChange={event => setQuickFillOverwrite(event.target.checked)}/><span>{copy.overwrite}</span></label>
+        <div className="managerTimesheetQuickFooter"><span>{copy.selectedCells}: <strong>{quickFillTargets.length}</strong></span><button type="submit" className="primaryButton" disabled={isBulkSaving || !quickFillTargets.length}>{isBulkSaving ? copy.saving : copy.applyFill}</button></div>
+        {quickFillMessage || bulkSaveError ? <p className="statusNote is-error" role="alert">{quickFillMessage || getApiErrorMessage(bulkSaveError)}</p> : null}
+      </form>
+    </div> : null}
 
     {selected ? <div className="managerTimesheetModalBackdrop" onMouseDown={event => { if (event.target === event.currentTarget) setSelected(null); }}>
       <form className="managerTimesheetModal screenCard" onSubmit={submitCell}>
