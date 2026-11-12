@@ -348,7 +348,7 @@ export function ManagerTimesheetPage() {
 
     {!isFetching && !rows.length ? <section className="screenCard managerTimesheetEmpty">{copy.empty}</section> : null}
 
-    {quickFillOpen ? <div className="managerTimesheetModalBackdrop" onMouseDown={event => { if (event.target === event.currentTarget && !isBulkSaving) setQuickFillOpen(false); }}>
+    {quickFillOpen ? <div className="managerTimesheetModalBackdrop managerTimesheetQuickBackdrop" onMouseDown={event => { if (event.target === event.currentTarget && !isBulkSaving) setQuickFillOpen(false); }}>
       <form className="managerTimesheetModal managerTimesheetQuickModal screenCard" onSubmit={submitQuickFill}>
         <div className="managerTimesheetModalHead"><div><span>{label}</span><h2>{copy.quickFillTitle}</h2></div><button type="button" onClick={() => setQuickFillOpen(false)} disabled={isBulkSaving} aria-label={copy.close}>×</button></div>
         <p className="managerTimesheetQuickHint">{copy.quickFillHint}</p>
