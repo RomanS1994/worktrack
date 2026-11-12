@@ -203,7 +203,7 @@ export function ManagerTimesheetPage() {
   function openQuickFill() {
     setQuickFillEmployees(editableRows.map(row => row.employeeId));
     setQuickFillEmployeesOpen(false);
-    setQuickFillDates(days.filter(day => day.isCurrentMonth !== false && new Date(`${day.date}T12:00:00`).getDay() % 6 !== 0).map(day => day.date));
+    setQuickFillDates([]);
     setQuickFillHours('8');
     setQuickFillBreak('30');
     setQuickFillProject('');

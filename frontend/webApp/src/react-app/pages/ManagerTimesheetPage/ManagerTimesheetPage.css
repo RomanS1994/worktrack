@@ -111,3 +111,14 @@
   .managerTimesheetQuickFooter{position:sticky;bottom:0;margin-top:2px;padding:8px 0;background:var(--surface-strong);}
   .managerTimesheetQuickFooter button{min-height:46px;padding:0 16px;}
 }
+
+@media(max-width:760px){
+  .managerTimesheetQuickSection{padding:9px;border-radius:16px;background:var(--surface-subtle);}
+  .managerTimesheetQuickDays label>span{min-height:44px;border-color:transparent;border-radius:10px;}
+  .managerTimesheetQuickDays label.is-selected>span{border-color:transparent;background:var(--accent-soft);}
+  .managerTimesheetQuickEmployeeTrigger,.managerTimesheetQuickFields input,.managerTimesheetQuickProject select{border-radius:12px;}
+  .managerTimesheetModal .managerTimesheetQuickOverwrite input{min-height:19px!important;max-height:19px;box-sizing:border-box;align-self:center;}
+  .managerTimesheetQuickFooter{display:grid;grid-template-columns:1fr;gap:9px;padding:10px 0 calc(env(safe-area-inset-bottom,0px) + 8px);border-top:1px solid var(--line);}
+  .managerTimesheetQuickFooter>span{font-size:13px;}
+  .managerTimesheetQuickFooter button{width:100%;min-height:48px;border-radius:13px;}
+}
