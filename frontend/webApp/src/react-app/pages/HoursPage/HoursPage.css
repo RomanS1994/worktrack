@@ -415,11 +415,3 @@
     font-size: 18px;
   }
 }
-
-.hoursSubmitButton:disabled {
-  color: var(--text);
-  background: var(--surface-subtle);
-  border: 1px solid var(--line);
-  opacity: 1;
-  box-shadow: none;
-}
